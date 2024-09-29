@@ -24,7 +24,7 @@ migrate_working_dir/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
-.dart_tool/
+.dart_tool
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
@@ -45,3 +45,4 @@ devtools_options.yaml
 *.gr.dart
 *.freezed.dart
 *.g.dart
+ios/Flutter/*.xcconfig

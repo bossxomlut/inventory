@@ -1,4 +1,4 @@
-package com.idev.i_protect
+package com.vihtago.sample_app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -46,3 +46,7 @@ devtools_options.yaml
 *.freezed.dart
 *.g.dart
 ios/Flutter/*.xcconfig
+Podfile.lock
+injection.config.dart
+ios/Runner.xcodeproj/project.pbxproj
+ios/Runner.xcworkspace/contents.xcworkspacedata

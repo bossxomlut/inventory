@@ -29,7 +29,7 @@ mixin BlocListenerMixin<T extends StatefulWidget, S, C extends Cubit<S>> on Stat
   }
 
   /// Called when the [cubit] state has changed
-  void onStateChange(S state);
+  void onStateChange(S state) {}
 }
 
 mixin SafeEmit<T> on Cubit<T> {

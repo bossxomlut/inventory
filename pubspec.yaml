@@ -1,4 +1,4 @@
-name: i_protect
+name: sample_app
 description: "A new Flutter project."
 publish_to: 'none'
 
@@ -6,81 +6,125 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
-  flutter: 3.23.4 #The version of Flutter used in this project.
+  flutter: 3.24.4 #The version of Flutter used in this project.
 
 dependencies:
   flutter:
     sdk: flutter
 
-
   # A
-  auto_route: ^9.2.2  # A powerful routing library, supports features like nested routes and route guards.
+  analyzer: any
+  auto_route: any  # A powerful routing library, supports features like nested routes and route guards.
+  animation_list: ^3.1.0
 
   # C
-  cupertino_icons: ^1.0.6  # A set of iOS-style icons for Flutter apps on iOS.
+  cupertino_icons: ^1.0.8  # A set of iOS-style icons for Flutter apps on iOS.
   curl_logger_dio_interceptor: ^1.0.0  # Logs Dio HTTP requests in a cURL-like format for easier debugging.
+  cached_network_image: ^3.4.1
+  csv: ^6.0.0
 
   # D
   dartz: ^0.10.1  # Provides functional data types like Either and Option in Dart.
-  dio: ^5.0.1  # A powerful HTTP client library for Flutter, with support for interceptors, global configuration, and retry logic.
+  dio: ^5.7.0  # A powerful HTTP client library for Flutter, with support for interceptors, global configuration, and retry logic.
+  dotted_border: ^2.1.0
+  device_preview:
 
   # E
-  easy_localization: ^3.0.0  # A localization library that makes it easy to handle internationalization in Flutter apps.
+  easy_localization: ^3.0.7  # A localization library that makes it easy to handle internationalization in Flutter apps.
+  equatable: ^2.0.5
 
   # F
-  flutter_bloc: ^8.0.1  # State management using the Bloc pattern for Flutter applications.
-  flutter_screenutil: ^5.8.0  # Supports responsive design for multiple screen sizes.
-  freezed_annotation: ^2.4.4  # Annotation support for the Freezed package to create immutable and sealed classes.
+  flutter_svg: ^2.0.10+1
+  flutter_bloc: ^8.1.6  # State management using the Bloc pattern for Flutter applications.
+  flutter_screenutil: ^5.9.3  # Supports responsive design for multiple screen sizes.
+  freezed_annotation: any  # Annotation support for the Freezed package to create immutable and sealed classes.
+  flutter_secure_storage: ^9.2.2 #Flutter Secure Storage provides API to store data in secure storage.
+  flutter_slidable: ^3.1.2
 
   # G
-  gap: ^4.0.0  # Provides spacing between widgets in Flutter layouts.
-  geocoding: ^2.1.0  # Converts addresses into geographical coordinates (geocode) and vice versa (reverse geocode).
-  geolocator: ^11.0.0  # A GPS location library providing location data for Flutter apps.
+  gap: ^3.0.1  # Provides spacing between widgets in Flutter layouts.
   get_it: ^7.2.0  # Service locator for Flutter and Dart, helps with dependency injection.
+  google_fonts: ^6.2.1
+  google_nav_bar: ^5.0.7
+  extension_google_sign_in_as_googleapis_auth: ^2.0.12
+  googleapis: ^13.2.0
+
+  # H
+  highlight_text: ^1.8.0
 
   # I
-  injectable: ^2.1.0  # Simplifies dependency registration with GetIt using code generation.
-  intl: ^0.18.1  # Provides internationalization features like number formatting, date/time formatting, and translations.
+  injectable: ^2.4.4  # Simplifies dependency registration with GetIt using code generation.
+  intl: ^0.19.0  # Provides internationalization features like number formatting, date/time formatting, and translations.
+  image_picker: ^1.1.2
+  isar_key_value: ^0.3.0
+  isar:
 
   # J
   json_annotation: ^4.9.0  # Annotations to help with serializing/deserializing JSON in Dart.
 
   # L
-  logger: ^1.1.0  # A lightweight logging library for Flutter and Dart, with support for multiple log outputs.
+  logger: ^2.4.0  # A lightweight logging library for Flutter and Dart, with support for multiple log outputs.
+  line_icons: ^2.0.3
+  loading_animation_widget: ^1.3.0
 
   # P
   pretty_dio_logger: ^1.4.0  # A Dio plugin for logging requests/responses in a more readable format.
+  pin_code_fields: ^8.0.1
+  permission_handler: ^11.3.1
+  package_info_plus: ^8.1.0
+  path_provider: ^2.1.5
+
+  # S
+  smooth_page_indicator: ^1.2.0+3
+  shared_preferences: ^2.3.2
+  screenshot: ^3.0.0
+  share_plus: ^10.1.4
+  sign_in_button: ^3.0.0
+
+  # U
+  url_launcher: ^6.3.1
+  uuid: ^4.5.1
 
   # R
-  retrofit: ^4.0.1  # A library that simplifies making RESTful HTTP requests using code generation and annotations.
+  retrofit: ^4.4.1  # A library that simplifies making RESTful HTTP requests using code generation and annotations.
+  # https://medium.com/mindful-engineering/retrofit-the-easiest-way-to-call-rest-apis-is-flutter-fe55d1e7c5c2
+
+  # T
+  toastification: ^2.3.0
+
+  # W
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   # B
-  build_runner: ^2.4.12  # A build system for Dart projects, allowing you to run code generation and other build tasks.
+  build_runner: any  # A build system for Dart projects, allowing you to run code generation and other build tasks.
 
   # F
-  freezed: ^2.5.7  # A package that simplifies the creation of immutable classes and unions/sealed classes in Dart.
+  freezed: any # A package that simplifies the creation of immutable classes and unions/sealed classes in Dart.
 
   # I
-  injectable_generator: ^2.6.2   # A code generator for injectable that simplifies dependency injection in Dart applications.
+  injectable_generator: any  # A code generator for injectable that simplifies dependency injection in Dart applications.
+  isar_generator: any
 
   # J
-  json_serializable: ^6.8.0  # A code generator that simplifies JSON serialization/deserialization in Dart.
+#  json_serializable: ^6.8.0  # A code generator that simplifies JSON serialization/deserialization in Dart.
 
   # R
-  auto_route_generator: ^9.0.0  # A code generator for the auto_route package to simplify route management.
-  retrofit_generator: ^9.1.2  # A code generator for Retrofit, facilitating the creation of RESTful API clients.
+  auto_route_generator: any  # A code generator for the auto_route package to simplify route management.
+#  retrofit_generator: ^9.1.2  # A code generator for Retrofit, facilitating the creation of RESTful API clients.
 
   # L
-  flutter_lints: ^3.0.0  # A set of recommended lints for Flutter projects to improve code quality and maintainability.
+  flutter_lints: ^5.0.0  # A set of recommended lints for Flutter projects to improve code quality and maintainability.
 
+  # F
+  flutter_launcher_icons: ^0.14.2
 flutter:
   uses-material-design: true
 
   assets:
     - assets/config/
+    - assets/image/
     - assets/translations/
     - assets/translations/en-US.json

@@ -1,8 +1,10 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-import '../../route/app_router.gr.dart';
-import '../utils/scaffold_utils.dart';
+import '../../core/utils/app_remote_config.dart';
+import '../../injection/injection.dart';
+import '../../route/app_router.dart';
+import '../../widget/index.dart';
+import '../utils/index.dart';
 
 @RoutePage()
 class SplashPage extends StatefulWidget {
@@ -16,15 +18,36 @@ class _SplashPageState extends State<SplashPage> with StateTemplate<SplashPage> 
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 5), () {
-      context.router.replace(LoginRoute());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getIt.get<RemoteAppConfigLoader>().load().whenComplete(() {
+        if (getIt.get<RemoteAppConfigService>().isLockedApp) {
+          try {
+            showDialog(
+              context: appRouter.navigatorKey.currentContext!,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return PopScope(canPop: false, child: Container());
+              },
+            );
+          } catch (e) {}
+        }
+      });
+
+      navigationHandler();
     });
   }
 
+  void navigationHandler() {}
+
   @override
   Widget buildBody(BuildContext context) {
-    return const Center(
-      child: Text('Splash Screen\nHello World!'),
+    return Stack(
+      children: [
+        Center(
+          child: AppImage.asset(url: 'assets/image/logo.png', width: 200, height: 200),
+        ),
+        LoadingWidget(),
+      ],
     );
   }
 }

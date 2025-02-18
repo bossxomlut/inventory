@@ -42,12 +42,15 @@ class _SplashPageState extends State<SplashPage> with StateTemplate<SplashPage> 
   }
 
   void navigationHandler() {
-    //nav to DemoRiverpodRoute
-    appRouter.replace(DemoRiverpodRoute());
+    appRouter.goHome();
   }
 
   @override
   Widget buildBody(BuildContext context) {
+    return ScannerPage(
+      onBarcodeScanned: (barcode) {},
+    );
+
     return Stack(
       children: [
         Center(

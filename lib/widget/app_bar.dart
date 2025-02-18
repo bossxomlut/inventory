@@ -57,3 +57,44 @@ class AppBackButton extends StatelessWidget {
     );
   }
 }
+
+class SliverMultilineAppBar extends StatelessWidget {
+  final String title;
+
+  SliverMultilineAppBar({
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+
+    double availableWidth = mediaQuery.size.width - 160;
+
+    final theme = Theme.of(context);
+
+    return SliverAppBar(
+      forceElevated: true,
+      pinned: true,
+      expandedHeight: 64,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      foregroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      flexibleSpace: FlexibleSpaceBar(
+        centerTitle: false,
+        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+        title: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: availableWidth,
+          ),
+          child: Text(
+            title,
+            textScaleFactor: .68,
+            style: Theme.of(context).textTheme.displaySmall,
+            textAlign: TextAlign.start,
+          ),
+        ),
+      ),
+    );
+  }
+}

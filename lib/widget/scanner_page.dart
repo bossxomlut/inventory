@@ -9,7 +9,7 @@ class ScannerPage extends StatefulWidget {
   const ScannerPage({
     super.key,
     required this.onBarcodeScanned,
-    this.autoStopCamera = true,
+    this.autoStopCamera = false,
   });
 
   final ValueChanged<String> onBarcodeScanned;
@@ -20,6 +20,7 @@ class ScannerPage extends StatefulWidget {
 }
 
 class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
+  final stopWatch = Stopwatch();
   final MobileScannerController controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.unrestricted,
     // torchEnabled: true,
@@ -50,24 +51,27 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    stopWatch.start();
     WidgetsBinding.instance.addObserver(this);
     startScanner();
 
-    _barcodeSubscription = controller.barcodes.listen(
-      (BarcodeCapture event) {
-        //print last barcode
-        //log all information of barcode
-        // print(event.barcodes.last);
-
-        //check null
-        if (event.barcodes.last.displayValue != null) {
-          widget.onBarcodeScanned(event.barcodes.last.displayValue!);
-        }
-
-        //start timer again
-        resetTimer();
-      },
-    );
+    // _barcodeSubscription = controller.barcodes.listen(
+    //   (BarcodeCapture event) {
+    //     //print last barcode
+    //     //log all information of barcode
+    //     // print(event.barcodes.last);
+    //
+    //     //check null
+    //     if (event.barcodes.last.displayValue != null) {
+    //       print('Detected time: ${stopWatch.elapsedMilliseconds}');
+    //
+    //       widget.onBarcodeScanned(event.barcodes.last.displayValue!);
+    //     }
+    //
+    //     //start timer again
+    //     resetTimer();
+    //   },
+    // );
 
     if (widget.autoStopCamera) {
       controller.addListener(_listenAutoStopCamera);
@@ -76,6 +80,7 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
 
   void _listenAutoStopCamera() {
     if (controller.value.isRunning) {
+      print('Camera is running time: ${stopWatch.elapsedMilliseconds}');
       resetTimer();
     }
   }
@@ -156,68 +161,140 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.sizeOf(context);
-    final scanWindow = Rect.fromCenter(
-      center: screenSize.center(Offset.zero) - Offset(0, screenSize.height * 0.0), // Lên trên 20% chiều cao màn hình
-      width: 230,
-      height: 230,
-    );
-    return Scaffold(
-      // appBar: AppBar(title: const Text('With controller')),
-      backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
+    return Material(
+      child: Column(
         children: [
-          MobileScanner(
-            controller: controller,
-            errorBuilder: (context, error, _) {
-              return ErrorWidget('Camera error: $error');
-            },
-            fit: BoxFit.contain,
-            scanWindow: scanWindow,
-          ),
-          _buildBarcodeOverlay(),
-          _buildScanWindow(scanWindow),
-          ValueListenableBuilder(
-            valueListenable: controller,
-            builder: (context, value, child) {
-              if (!value.isInitialized || !value.isRunning || value.error != null) {
-                return const SizedBox();
-              }
+          Expanded(
+            child: LayoutBuilder(builder: (context, constraints) {
+              final screenSize = MediaQuery.sizeOf(context);
+              print('lol: ${screenSize.width} - ${screenSize.height}');
+              //print constraints
+              print('constraints: ${constraints.maxWidth} - ${constraints.maxHeight}');
 
-              return CustomPaint(
-                painter: BorderScannerOverlay(scanWindow: scanWindow),
+              final padding = 40.0;
+
+              final w = constraints.maxWidth - padding;
+              final h = constraints.maxHeight - padding;
+
+              final scanWindow = Rect.fromCenter(
+                center: Size(constraints.maxWidth, constraints.maxHeight).center(Offset.zero),
+                width: w,
+                height: h,
               );
-            },
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              height: 100,
-              color: const Color.fromRGBO(0, 0, 0, 0.4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+              return Stack(
+                fit: StackFit.expand,
                 children: [
-                  ToggleFlashlightButton(controller: controller),
-                  StartStopMobileScannerButton(controller: controller),
-                  PauseMobileScannerButton(controller: controller),
-                  Expanded(
-                    child: Center(
-                      child: ScannedBarcodeLabel(
-                        barcodes: controller.barcodes,
-                      ),
+                  MobileScanner(
+                    controller: controller,
+                    onDetect: (BarcodeCapture barcodes) {
+                      print('Detected time: ${stopWatch.elapsedMilliseconds}');
+                      widget.onBarcodeScanned(barcodes.barcodes.last.displayValue!);
+                    },
+                    errorBuilder: (context, error, _) {
+                      return ErrorWidget('Camera error: $error');
+                    },
+                    fit: BoxFit.fitWidth,
+                    // scanWindow: scanWindow,
+                  ),
+                  _buildBarcodeOverlay(),
+                  _buildScanWindow(scanWindow),
+                  ValueListenableBuilder(
+                    valueListenable: controller,
+                    builder: (context, value, child) {
+                      if (!value.isInitialized || !value.isRunning || value.error != null) {
+                        return const SizedBox();
+                      }
+
+                      return CustomPaint(
+                        painter: BorderScannerOverlay(scanWindow: scanWindow),
+                      );
+                    },
+                  ),
+                ],
+              );
+            }),
+          ),
+          Container(
+            constraints: const BoxConstraints(maxHeight: 50),
+            color: Colors.black.withAlpha(80),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ToggleFlashlightButton(controller: controller),
+                StartStopMobileScannerButton(controller: controller),
+                PauseMobileScannerButton(controller: controller),
+                Expanded(
+                  child: Center(
+                    child: ScannedBarcodeLabel(
+                      barcodes: controller.barcodes,
                     ),
                   ),
-                  SwitchCameraButton(controller: controller),
-                  AnalyzeImageFromGalleryButton(controller: controller),
-                ],
-              ),
+                ),
+                SwitchCameraButton(controller: controller),
+                AnalyzeImageFromGalleryButton(controller: controller),
+              ],
             ),
           ),
         ],
       ),
     );
+    // return Scaffold(
+    //   // appBar: AppBar(title: const Text('With controller')),
+    //   backgroundColor: Colors.black,
+    //   body: Stack(
+    //     fit: StackFit.expand,
+    //     children: [
+    //       MobileScanner(
+    //         controller: controller,
+    //         errorBuilder: (context, error, _) {
+    //           return ErrorWidget('Camera error: $error');
+    //         },
+    //         fit: BoxFit.contain,
+    //         scanWindow: scanWindow,
+    //       ),
+    //       _buildBarcodeOverlay(),
+    //       _buildScanWindow(scanWindow),
+    //       ValueListenableBuilder(
+    //         valueListenable: controller,
+    //         builder: (context, value, child) {
+    //           if (!value.isInitialized || !value.isRunning || value.error != null) {
+    //             return const SizedBox();
+    //           }
+    //
+    //           return CustomPaint(
+    //             painter: BorderScannerOverlay(scanWindow: scanWindow),
+    //           );
+    //         },
+    //       ),
+    //       Align(
+    //         alignment: Alignment.bottomCenter,
+    //         child: Container(
+    //           alignment: Alignment.bottomCenter,
+    //           height: 100,
+    //           color: const Color.fromRGBO(0, 0, 0, 0.4),
+    //           child: Row(
+    //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    //             children: [
+    //               ToggleFlashlightButton(controller: controller),
+    //               StartStopMobileScannerButton(controller: controller),
+    //               PauseMobileScannerButton(controller: controller),
+    //               Expanded(
+    //                 child: Center(
+    //                   child: ScannedBarcodeLabel(
+    //                     barcodes: controller.barcodes,
+    //                   ),
+    //                 ),
+    //               ),
+    //               SwitchCameraButton(controller: controller),
+    //               AnalyzeImageFromGalleryButton(controller: controller),
+    //             ],
+    //           ),
+    //         ),
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 
   @override

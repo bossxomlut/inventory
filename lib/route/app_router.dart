@@ -14,13 +14,15 @@ class AppRouter extends $AppRouter {
   List<AutoRoute> get routes => <AutoRoute>[
         AutoRoute(page: SplashRoute.page, initial: true),
         AutoRoute(page: DemoRiverpodRoute.page),
+        AutoRoute(page: HomeRoute.page),
+        AutoRoute(page: InventoryRoute.page),
       ];
 }
 
 extension AppRouterX on AppRouter {
   void goHome() {
     //todo: fix
-    replaceAll(const []);
+    replaceAll(const [HomeRoute()]);
   }
 
   void pushAndRemoveUntilHome(PageRouteInfo route) {
@@ -29,5 +31,11 @@ extension AppRouterX on AppRouter {
 
   void pushAndReplaceAll(PageRouteInfo route) {
     pushAndPopUntil(route, predicate: (r) => false);
+  }
+}
+
+extension InventoryRouterX on AppRouter {
+  void goInventory() {
+    push(const InventoryRoute());
   }
 }

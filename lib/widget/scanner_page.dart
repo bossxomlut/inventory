@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'index.dart';
+
 class ScannerPage extends StatefulWidget {
   const ScannerPage({
     super.key,
@@ -12,7 +14,7 @@ class ScannerPage extends StatefulWidget {
     this.autoStopCamera = false,
   });
 
-  final ValueChanged<String> onBarcodeScanned;
+  final ValueChanged<Barcode> onBarcodeScanned;
   final bool autoStopCamera;
 
   @override
@@ -87,9 +89,9 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!controller.value.hasCameraPermission) {
-      return;
-    }
+    // if (!controller.value.hasCameraPermission) {
+    //   return;
+    // }
 
     switch (state) {
       case AppLifecycleState.detached:
@@ -167,9 +169,6 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
           Expanded(
             child: LayoutBuilder(builder: (context, constraints) {
               final screenSize = MediaQuery.sizeOf(context);
-              print('lol: ${screenSize.width} - ${screenSize.height}');
-              //print constraints
-              print('constraints: ${constraints.maxWidth} - ${constraints.maxHeight}');
 
               final padding = 40.0;
 
@@ -188,8 +187,11 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
                   MobileScanner(
                     controller: controller,
                     onDetect: (BarcodeCapture barcodes) {
-                      print('Detected time: ${stopWatch.elapsedMilliseconds}');
-                      widget.onBarcodeScanned(barcodes.barcodes.last.displayValue!);
+                      //print all barcodes
+
+                      print('detected barcodes: ${barcodes.barcodes.map((e) => e.displayValue).join(', ')}');
+
+                      widget.onBarcodeScanned(barcodes.barcodes.last!);
                     },
                     errorBuilder: (context, error, _) {
                       return ErrorWidget('Camera error: $error');
@@ -299,13 +301,46 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
 
   @override
   Future<void> dispose() async {
+    stopWatch.stop();
     _barcodeSubscription?.cancel();
     if (widget.autoStopCamera) {
       controller.removeListener(_listenAutoStopCamera);
     }
     WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
     await controller.dispose();
+    super.dispose();
+  }
+}
+
+class InnerScannerPage extends StatelessWidget with ShowDialog {
+  const InnerScannerPage({
+    super.key,
+    required this.onBarcodeScanned,
+    required this.child,
+  });
+
+  final ValueChanged<Barcode> onBarcodeScanned;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Flexible(
+          flex: 3,
+          child: ScannerPage(
+            onBarcodeScanned: (Barcode value) {
+              onBarcodeScanned(value);
+            },
+          ),
+        ),
+        const AppDivider(),
+        Expanded(
+          flex: 5,
+          child: child,
+        ),
+      ],
+    );
   }
 }
 
@@ -320,7 +355,7 @@ extension ScannerPageStateX on ScannerPageState {
   }
 
   void pauseScanner() {
-    controller.pause();
+    controller.stop();
   }
 
   void switchCamera() {
@@ -530,7 +565,7 @@ class PauseMobileScannerButton extends StatelessWidget {
           iconSize: 32.0,
           icon: const Icon(Icons.pause),
           onPressed: () async {
-            await controller.pause();
+            await controller.stop();
           },
         );
       },

@@ -70,7 +70,7 @@ dependencies:
   loading_animation_widget: ^1.3.0
 
   # M
-  mobile_scanner: ^6.0.6
+  mobile_scanner: 6.0.6
 
   # P
   pretty_dio_logger: ^1.4.0  # A Dio plugin for logging requests/responses in a more readable format.

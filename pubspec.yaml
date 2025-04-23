@@ -6,7 +6,7 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
-  flutter: 3.24.4 #The version of Flutter used in this project.
+  flutter: '>=3.24.4' #The version of Flutter used in this project.
 
 dependencies:
   flutter:
@@ -35,7 +35,6 @@ dependencies:
 
   # F
   flutter_svg: ^2.0.10+1
-  flutter_bloc: ^8.1.6  # State management using the Bloc pattern for Flutter applications.
   flutter_screenutil: ^5.9.3  # Supports responsive design for multiple screen sizes.
   freezed_annotation: any  # Annotation support for the Freezed package to create immutable and sealed classes.
   flutter_secure_storage: ^9.2.2 #Flutter Secure Storage provides API to store data in secure storage.
@@ -88,6 +87,7 @@ dependencies:
   # R
   retrofit: ^4.4.1  # A library that simplifies making RESTful HTTP requests using code generation and annotations.
   # https://medium.com/mindful-engineering/retrofit-the-easiest-way-to-call-rest-apis-is-flutter-fe55d1e7c5c2
+  riverpod: ^2.6.1
 
   # T
   toastification: ^2.3.0

@@ -1,7 +1,6 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:toastification/toastification.dart';
 
@@ -42,9 +41,6 @@ void main() async {
   // await getIt.get<EnvLoader>().load(env);
 
   ThemeUtils.initThemeMode();
-
-  ///Observer for bloc changes
-  Bloc.observer = getIt.get();
 
   List<Locale> supportedLocales = <Locale>[
     const Locale('en', 'US'),

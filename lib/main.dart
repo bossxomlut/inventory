@@ -1,6 +1,7 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:toastification/toastification.dart';
 
@@ -58,10 +59,12 @@ void main() async {
     );
   } else {
     runApp(
-      EasyLocalization(
-        supportedLocales: supportedLocales,
-        path: 'assets/translations', // <-- change the path of the translation files
-        fallbackLocale: supportedLocales.first, child: const MyApp(),
+      ProviderScope(
+        child: EasyLocalization(
+          supportedLocales: supportedLocales,
+          path: 'assets/translations', // <-- change the path of the translation files
+          fallbackLocale: supportedLocales.first, child: const MyApp(),
+        ),
       ),
     );
   }

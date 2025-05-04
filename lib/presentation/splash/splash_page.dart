@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../core/utils/app_remote_config.dart';
 import '../../injection/injection.dart';
 import '../../route/app_router.dart';
-import '../../widget/index.dart';
+import '../../route/app_router.gr.dart';
+import '../../widget/image/image.dart';
+import '../../widget/loading_widget.dart';
 import '../utils/index.dart';
 
 @RoutePage()
@@ -37,7 +39,10 @@ class _SplashPageState extends State<SplashPage> with StateTemplate<SplashPage> 
     });
   }
 
-  void navigationHandler() {}
+  void navigationHandler() {
+    //nav to DemoRiverpodRoute
+    appRouter.replace(DemoRiverpodRoute());
+  }
 
   @override
   Widget buildBody(BuildContext context) {

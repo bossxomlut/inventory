@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 import '../../core/utils/app_remote_config.dart';
 import '../../injection/injection.dart';
 import '../../route/app_router.dart';
-import '../../widget/index.dart';
-import '../../widget/scanner_page.dart';
 import '../../route/app_router.gr.dart';
-import '../../widget/image/image.dart';
-import '../../widget/loading_widget.dart';
+import '../../widget/index.dart';
 import '../utils/index.dart';
 
 @RoutePage()
@@ -42,14 +39,16 @@ class _SplashPageState extends State<SplashPage> with StateTemplate<SplashPage> 
   }
 
   void navigationHandler() {
+    appRouter.replace(LoginRoute());
+    return;
     appRouter.goHome();
   }
 
   @override
   Widget buildBody(BuildContext context) {
-    return ScannerPage(
-      onBarcodeScanned: (barcode) {},
-    );
+    // return ScannerPage(
+    //   onBarcodeScanned: (barcode) {},
+    // );
 
     return Stack(
       children: [

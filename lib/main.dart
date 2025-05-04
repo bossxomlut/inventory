@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sample_app/provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
 import 'core/persistence/persistence_config.dart';
 import 'injection/injection.dart';
 import 'resource/index.dart';
 import 'route/app_router.dart';
+import 'widget/toast.dart';
 
 bool get showDevicePreview => false;
 
@@ -50,10 +52,14 @@ void main() async {
   if (showDevicePreview) {
     runApp(
       DevicePreview(
-        builder: (BuildContext context) => EasyLocalization(
-          supportedLocales: supportedLocales,
-          path: 'assets/translations', // <-- change the path of the translation files
-          fallbackLocale: supportedLocales.first, child: const MyApp(),
+        builder: (BuildContext context) => ProviderScope(
+          child: EasyLocalization(
+            supportedLocales: supportedLocales,
+            path: 'assets/translations',
+            // <-- change the path of the translation files
+            fallbackLocale: supportedLocales.first,
+            child: const MyApp(),
+          ),
         ),
       ),
     );
@@ -84,21 +90,73 @@ class MyApp extends StatelessWidget {
               valueListenable: ThemeUtils.themeModeNotifier,
               builder: (context, ThemeMode themeMode, _) {
                 return ToastificationWrapper(
-                  child: MaterialApp.router(
-                    routerConfig: appRouter.config(
-                      navigatorObservers: () => <NavigatorObserver>[
-                        RouteLoggerObserver(),
-                      ],
-                    ),
-                    theme: ThemeUtils.lightTheme,
-                    darkTheme: ThemeUtils.darkTheme,
-                    themeMode: themeMode,
-                    localizationsDelegates: context.localizationDelegates,
-                    supportedLocales: context.supportedLocales,
-                    locale: context.locale,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    alignment: Alignment.topCenter,
+                    children: [
+                      MaterialApp.router(
+                        routerConfig: appRouter.config(
+                          navigatorObservers: () => <NavigatorObserver>[
+                            RouteLoggerObserver(),
+                          ],
+                        ),
+                        theme: ThemeUtils.lightTheme,
+                        darkTheme: ThemeUtils.darkTheme,
+                        themeMode: themeMode,
+                        localizationsDelegates: context.localizationDelegates,
+                        supportedLocales: context.supportedLocales,
+                        locale: context.locale,
+                      ),
+                      const RootLoadingWidget(),
+                      const RootNotificationWidget(),
+                    ],
                   ),
                 );
               });
         });
+  }
+}
+
+class RootLoadingWidget extends ConsumerWidget {
+  const RootLoadingWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bool isLoading = ref.watch(isLoadingProvider);
+    if (isLoading) {
+      return Container(
+        color: Colors.black.withOpacity(0.5),
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(),
+      );
+    }
+    return const SizedBox();
+  }
+}
+
+//root notification widget
+class RootNotificationWidget extends ConsumerWidget {
+  const RootNotificationWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(
+      notificationProvider,
+      (previous, next) {
+        if (next.isShow) {
+          toastification.dismissAll(delayForAnimation: false);
+          switch (next.type!) {
+            case NotificationType.success:
+              showSuccess(message: next.message!);
+            case NotificationType.error:
+              showError(message: next.message!);
+            case NotificationType.warning:
+              showSimpleInfo(message: next.message!);
+          }
+        }
+      },
+    );
+
+    return const SizedBox();
   }
 }

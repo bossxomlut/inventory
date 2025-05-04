@@ -14,6 +14,7 @@ class AppRouter extends $AppRouter {
   List<AutoRoute> get routes => <AutoRoute>[
         AutoRoute(page: SplashRoute.page, initial: true),
         AutoRoute(page: DemoRiverpodRoute.page),
+        AutoRoute(page: LoginRoute.page),
         AutoRoute(page: AnalyzeScannerRoute.page),
         AutoRoute(page: HomeRoute.page),
         AutoRoute(page: InventoryRoute.page),

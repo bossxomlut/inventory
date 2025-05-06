@@ -6,11 +6,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sample_app/provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
-import 'core/persistence/persistence_config.dart';
-import 'injection/injection.dart';
-import 'resource/index.dart';
-import 'route/app_router.dart';
-import 'widget/toast.dart';
+import 'resources/index.dart';
+import 'routes/app_router.dart';
+import 'shared_widgets/toast.dart';
 
 bool get showDevicePreview => false;
 
@@ -31,14 +29,6 @@ void main() async {
       DeviceOrientation.portraitDown,
     ]),
   ]);
-
-  ///Configure dependencies for the app
-  ///This will be used to inject dependencies
-  ///Using [GetIt] package and [injectable] package
-  configureDependencies();
-
-  ///Init persistence storage
-  await PersistenceConfig.init();
 
   ///Start load environment
   // await getIt.get<EnvLoader>().load(env);

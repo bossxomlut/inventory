@@ -1,4 +1,4 @@
-export 'entity/index.dart';
-export 'exception/index.dart';
-export 'repository/index.dart';
-export 'use_case/index.dart';
+export 'entities/index.dart';
+export 'exceptions/index.dart';
+export 'repositories/index.dart';
+export 'use_cases/index.dart';

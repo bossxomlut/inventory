@@ -1,28 +1,17 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/entities/inventory.dart';
+import '../../../domain/repositories/product_repository.dart';
+import '../../../provider/load_list.dart';
 
-part 'product_provider.g.dart';
+final loadProductProvider = NotifierProvider<LoadProductController, LoadListState<Product>>(() {
+  return LoadProductController.new();
+});
 
-@riverpod
-class ProductProvider extends _$ProductProvider {
+class LoadProductController extends LoadListController<Product> {
   @override
-  List<Product> build() {
-    // Initialize with an empty list or fetch initial data
-    return [];
-  }
-
-  void addProduct(Product product) {
-    state = [...state, product];
-  }
-
-  void removeProduct(String productId) {
-    state = state.where((product) => product.id != productId).toList();
-  }
-
-  void updateProduct(Product updatedProduct) {
-    state = state.map((product) {
-      return product.id == updatedProduct.id ? updatedProduct : product;
-    }).toList();
+  Future<List<Product>> fetchData(LoadListQuery query) {
+    final productRepo = ref.watch(productRepositoryProvider);
+    return productRepo.search(query.search ?? '', query.page, query.pageSize);
   }
 }

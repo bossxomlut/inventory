@@ -5,20 +5,14 @@ abstract class CrudRepository<T, Id> {
   Future<bool> delete(T item);
 }
 
-abstract class CrudException implements Exception {}
-
-class NotFoundException extends CrudException {}
-
-class CreateErrorException extends CrudException {}
-
-abstract class SearchRepository<T> {
-  Future<List<T>> search(String keyword);
+abstract class SearchRepositoryWithPagination<T> {
+  Future<List<T>> search(String keyword, int page, int limit);
 }
 
 abstract class GetOneByNameRepository<T> {
   Future<T?> getOneByName(String name);
 }
 
-abstract class GetListRepository<T> {
+abstract class GetAllRepository<T> {
   Future<List<T>> getAll();
 }

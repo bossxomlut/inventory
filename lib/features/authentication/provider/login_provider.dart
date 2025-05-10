@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/entities/index.dart';
 import '../../../domain/index.dart';
+import '../../../domain/repositories/index.dart';
 import '../../../provider/provider.dart';
 import '../../../resources/string.dart';
 import '../../../routes/app_router.dart';
@@ -22,37 +23,36 @@ class LoginController extends _$LoginController with CommonProvider<LoginState> 
 
   void login() async {
     //validate username/password
-    print('userName: ${state.userName}');
-    print('password: ${state.password}');
     final userName = state.userName;
     final password = state.password;
 
+    print('userName: $userName, password: $password');
+
     showLoading();
 
-    // await Future.delayed(const Duration(seconds: 2));
+    final authRepository = ref.read(authRepositoryProvider);
 
-    final defaultUser = {
-      'userName': 'admin',
-      'password': 'admin',
-    };
+    authRepository.login(userName, password).then(
+      (User value) async {
+        //read authProvider
+        final authProvider = ref.read(authControllerProvider.notifier);
 
-    if (userName != defaultUser['userName'] || password != defaultUser['password']) {
-      hideLoading();
-      showError(LKey.loginValidateMessageUserAccount.tr());
-      return;
-    }
+        await authProvider.login(id: value.id, username: value.username, role: value.role);
 
-    //read authProvider
-    final authProvider = ref.read(authControllerProvider.notifier);
+        hideLoading();
 
-    await authProvider.login(id: '1', username: userName, role: UserRole.admin);
-
-    hideLoading();
-
-    appRouter.goHome();
+        appRouter.goHome();
+      },
+    ).onError(
+      (error, StackTrace stackTrace) {
+        hideLoading();
+        showError(LKey.loginValidateMessageUserAccount.tr());
+      },
+    );
   }
 
   void updateUserName(String userName) {
+    print('userName: $userName');
     state = state.copyWith(userName: userName);
   }
 
@@ -69,6 +69,10 @@ class LoginState with _$LoginState {
   }) = _LoginState;
 }
 
+extension LoginStateX on LoginState {
+  bool get isValid => userName.isNotEmpty && password.isNotEmpty;
+}
+
 @freezed
 class SignUpState with _$SignUpState {
   const factory SignUpState({
@@ -77,6 +81,10 @@ class SignUpState with _$SignUpState {
     required String confirmPassword,
     required UserRole role,
   }) = _SignUpState;
+}
+
+extension SignUpStateX on SignUpState {
+  bool get isValid => userName.isNotEmpty && password.isNotEmpty && confirmPassword.isNotEmpty;
 }
 
 //sign up user with role
@@ -93,6 +101,12 @@ class SignUpController extends _$SignUpController with CommonProvider<SignUpStat
   }
 
   void signUp() async {
+    //check empty data
+    if (state.userName.isEmpty || state.password.isEmpty) {
+      showError(LKey.messageDefaultApiError);
+      return;
+    }
+
     //check if password and confirm password are same
     if (state.password != state.confirmPassword) {
       showError(LKey.signUpValidateMessagePasswordMatch.tr());
@@ -100,34 +114,30 @@ class SignUpController extends _$SignUpController with CommonProvider<SignUpStat
     }
 
     //validate username/password
-    print('userName: ${state.userName}');
-    print('password: ${state.password}');
-
     final userName = state.userName;
     final password = state.password;
+    print('userName: $userName, password: $password');
 
     showLoading();
 
-    // await Future.delayed(const Duration(seconds: 2));
+    final authRepository = ref.read(authRepositoryProvider);
+    authRepository.register(userName, password, state.role).then(
+      (value) async {
+        //read authProvider
+        final authProvider = ref.read(authControllerProvider.notifier);
 
-    final defaultUser = {
-      'userName': 'admin',
-      'password': 'admin',
-    };
+        await authProvider.login(id: value.id, username: value.username, role: value.role);
 
-    if (userName == defaultUser['userName']) {
-      hideLoading();
-      showError(LKey.signUpValidateMessageUserAccount.tr());
-      return;
-    }
+        hideLoading();
 
-    //read authProvider
-    final authProvider = ref.read(authControllerProvider.notifier);
-    await authProvider.login(id: '1', username: userName, role: state.role);
-
-    hideLoading();
-
-    appRouter.goHome();
+        appRouter.goHome();
+      },
+    ).onError(
+      (error, StackTrace stackTrace) {
+        hideLoading();
+        showError(LKey.signUpValidateMessageUserAccount.tr());
+      },
+    );
   }
 
   void updateUserName(String userName) {

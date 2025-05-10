@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sample_app/provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
+import 'core/persistence/isar_storage.dart';
 import 'resources/index.dart';
 import 'routes/app_router.dart';
 import 'shared_widgets/toast.dart';
@@ -34,6 +35,7 @@ void main() async {
   // await getIt.get<EnvLoader>().load(env);
 
   // ThemeUtils.initThemeMode();
+  await IsarDatabase().initialize();
 
   List<Locale> supportedLocales = <Locale>[
     const Locale('en', 'US'),

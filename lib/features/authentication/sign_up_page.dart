@@ -52,6 +52,7 @@ class SignUpPage extends WidgetByDeviceTemplate {
   Widget buildCommon(BuildContext context, WidgetRef ref) {
     return HookBuilder(builder: (context) {
       final pageController = usePageController();
+      final signUpState = ref.watch(signUpControllerProvider);
 
       return PageView(
         controller: pageController,
@@ -106,6 +107,7 @@ class SignUpPage extends WidgetByDeviceTemplate {
                       label: LKey.signUpAccount.tr(context: context),
                       onChanged: ref.read(signUpControllerProvider.notifier).updateUserName,
                       textInputAction: TextInputAction.next,
+                      initialValue: signUpState.userName,
                     ),
                     const SizedBox(height: 20),
                     //text field for password
@@ -113,6 +115,7 @@ class SignUpPage extends WidgetByDeviceTemplate {
                       label: LKey.signUpPassword.tr(context: context),
                       textInputAction: TextInputAction.next,
                       onChanged: ref.read(signUpControllerProvider.notifier).updatePassword,
+                      initialValue: signUpState.password,
                     ),
                     const SizedBox(height: 20),
                     //text field for password
@@ -121,22 +124,25 @@ class SignUpPage extends WidgetByDeviceTemplate {
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => ref.read(signUpControllerProvider.notifier).signUp(),
                       onChanged: ref.read(signUpControllerProvider.notifier).updateConfirmPassword,
+                      initialValue: signUpState.confirmPassword,
                     ),
                     const Gap(30),
                     AppButton.primary(
                       title: LKey.buttonDone.tr(context: context),
-                      onPressed: ref.read(signUpControllerProvider.notifier).signUp,
+                      onPressed: signUpState.isValid ? ref.read(signUpControllerProvider.notifier).signUp : null,
                     ),
                   ],
                 ),
               ),
-              BackButton(
-                onPressed: () {
-                  pageController.previousPage(
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.linear,
-                  );
-                },
+              SafeArea(
+                child: BackButton(
+                  onPressed: () {
+                    pageController.previousPage(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.linear,
+                    );
+                  },
+                ),
               ),
             ],
           ),

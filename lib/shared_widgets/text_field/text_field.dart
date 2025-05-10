@@ -48,10 +48,12 @@ class CustomTextField extends StatefulWidget {
     Key? key,
     TextInputAction? textInputAction,
     ValueChanged<String>? onSubmitted,
+    String? initialValue,
   }) {
     return CustomTextField(
       key: key,
       label: label,
+      initialValue: initialValue,
       controller: controller,
       isRequired: isRequired,
       onChanged: onChanged,

@@ -45,6 +45,7 @@ class LoginPage extends WidgetByDeviceTemplate {
 
   @override
   Widget buildCommon(BuildContext context, WidgetRef ref) {
+    final loginState = ref.watch(loginControllerProvider);
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -58,6 +59,7 @@ class LoginPage extends WidgetByDeviceTemplate {
             label: LKey.signUpAccount.tr(context: context),
             onChanged: ref.read(loginControllerProvider.notifier).updateUserName,
             textInputAction: TextInputAction.next,
+            initialValue: loginState.userName,
           ),
           const SizedBox(height: 20),
           //text field for password
@@ -66,6 +68,7 @@ class LoginPage extends WidgetByDeviceTemplate {
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => ref.read(loginControllerProvider.notifier).login(),
             onChanged: ref.read(loginControllerProvider.notifier).updatePassword,
+            initialValue: loginState.password,
           ),
           const Gap(16),
           Align(
@@ -80,7 +83,7 @@ class LoginPage extends WidgetByDeviceTemplate {
           const Gap(30),
           AppButton.primary(
             title: LKey.login.tr(context: context),
-            onPressed: ref.read(loginControllerProvider.notifier).login,
+            onPressed: loginState.isValid ? ref.read(loginControllerProvider.notifier).login : null,
           ),
           const Gap(8),
           AppButton.ghost(

@@ -1,8 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:line_icons/line_icons.dart';
 
-import '../../resources/index.dart';
+import '../../provider/theme.dart';
 
 // Custom TextField Widget for Reuse
 class CustomTextField extends StatefulWidget {
@@ -17,7 +18,9 @@ class CustomTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final Widget? prefixIcon;
   final bool isReadOnly;
-
+  final bool isDisable;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
   const CustomTextField({
     Key? key,
     this.label,
@@ -31,6 +34,9 @@ class CustomTextField extends StatefulWidget {
     this.focusNode,
     this.prefixIcon,
     this.isReadOnly = false,
+    this.isDisable = false,
+    this.textInputAction,
+    this.onSubmitted,
   }) : super(key: key);
 
   factory CustomTextField.password({
@@ -40,6 +46,8 @@ class CustomTextField extends StatefulWidget {
     required ValueChanged<String> onChanged,
     FocusNode? focusNode,
     Key? key,
+    TextInputAction? textInputAction,
+    ValueChanged<String>? onSubmitted,
   }) {
     return CustomTextField(
       key: key,
@@ -49,6 +57,8 @@ class CustomTextField extends StatefulWidget {
       onChanged: onChanged,
       hideText: true,
       focusNode: focusNode,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
     );
   }
 
@@ -136,8 +146,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
       height: 54,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4.0), // Bo góc
-        border: Border.all(color: theme.borderColor),
-        color: theme.canvasColor,
+        border: Border.all(color: theme.colorBorderField),
+        color: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4.0), // Bo góc
@@ -146,33 +156,38 @@ class _CustomTextFieldState extends State<CustomTextField> {
           controller: _controller,
           onChanged: widget.onChanged,
           keyboardType: widget.keyboardType,
-          // style: theme.textMedium15Default, // Màu
-          // cursorColor: theme.colorPrimary,
+          style: theme.textMedium15Default, // Màu
+          cursorColor: theme.colorPrimary,
           selectionControls: materialTextSelectionControls, // Dùng Selection Control mặc định
           selectionHeightStyle: BoxHeightStyle.tight,
           selectionWidthStyle: BoxWidthStyle.tight,
           obscureText: !showText,
           obscuringCharacter: '*',
-          readOnly: widget.isReadOnly,
+          readOnly: widget.isReadOnly || widget.isDisable,
+          textInputAction: widget.textInputAction,
+          onFieldSubmitted: widget.onSubmitted,
           decoration: InputDecoration(
             labelText: widget.isRequired ? '${widget.label}*' : widget.label, // Hiển thị dấu * nếu bắt buộc
-            // labelStyle: theme.textRegular15Sublest, // Màu label
-            // hintStyle: theme.textMedium15Sublest,
+            labelStyle: theme.textRegular15Sublest, // Màu label
+            hintStyle: theme.textMedium15Sublest,
             hintText: widget.hint,
             // filled: true,
-            // fillColor: Color(0x0DFFFFFF),
+            // fillColor: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
             border: InputBorder.none,
-            // focusColor: theme.colorPrimary,
+            focusColor: theme.colorPrimary,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 9),
             prefixIcon: widget.prefixIcon,
-            // prefixIconColor: theme.colorTextSublest,
+            prefixIconColor: theme.colorTextSublest,
             suffixIcon: widget.hideText
                 ? AnimatedBuilder(
                     animation: _focusNode,
                     builder: (context, child) {
                       return showText
                           ? IconButton(
-                              icon: const Icon(Icons.remove_red_eye),
+                              icon: Icon(
+                                LineIcons.eye,
+                                color: theme.colorIcon,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   showText = !showText;
@@ -180,7 +195,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
                               },
                             )
                           : IconButton(
-                              icon: const Icon(Icons.remove_red_eye_outlined),
+                              icon: Icon(
+                                LineIcons.eyeSlash,
+                                color: theme.colorIcon,
+                              ),
                               onPressed: () {
                                 setState(() {
                                   showText = !showText;

@@ -1,58 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
+import '../authentication/provider/auth_provider.dart';
 
 @RoutePage()
-class SplashPage extends StatefulWidget {
+class SplashPage extends ConsumerWidget {
   const SplashPage({super.key});
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Trigger checkLogin on first build
+    final authController = ref.read(authControllerProvider.notifier);
+    authController.checkLogin();
 
-class _SplashPageState extends State<SplashPage> with StateTemplate<SplashPage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // getIt.get<RemoteAppConfigLoader>().load().whenComplete(() {
-      //   if (getIt.get<RemoteAppConfigService>().isLockedApp) {
-      //     try {
-      //       showDialog(
-      //         context: appRouter.navigatorKey.currentContext!,
-      //         barrierDismissible: false,
-      //         builder: (BuildContext context) {
-      //           return PopScope(canPop: false, child: Container());
-      //         },
-      //       );
-      //     } catch (e) {}
-      //   }
-      // });
-
-      navigationHandler();
-    });
-  }
-
-  void navigationHandler() {
-    appRouter.replace(LoginRoute());
-    return;
-    appRouter.goHome();
-  }
-
-  @override
-  Widget buildBody(BuildContext context) {
-    // return ScannerPage(
-    //   onBarcodeScanned: (barcode) {},
-    // );
-
-    return Stack(
-      children: [
-        Center(
-          child: AppImage.asset(url: 'assets/image/logo.png', width: 200, height: 200),
+    return const Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FlutterLogo(size: 100),
+            SizedBox(height: 20),
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text('Loading...'),
+          ],
         ),
-        LoadingWidget(),
-      ],
+      ),
     );
   }
 }

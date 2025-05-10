@@ -9,6 +9,7 @@ export 'app_step_widget.dart';
 export 'bottom_sheet.dart';
 export 'dialog.dart';
 export 'file_picker.dart';
+export 'icon/icon.dart';
 export 'image/image.dart';
 export 'image/image_place_holder.dart';
 export 'keyboard_utils.dart';

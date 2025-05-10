@@ -1,4 +1,3 @@
-import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'key_value_storage.dart';
@@ -7,7 +6,6 @@ import 'key_value_storage.dart';
 /// and there is no guarantee that writes will be persisted to disk after returning,
 /// so this plugin must not be used for storing critical data.
 
-@singleton
 class SimpleStorage extends KeyValueStorage {
   static const String firstLaunchKey = 'firstLaunch';
 

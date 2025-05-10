@@ -1,12 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:injectable/injectable.dart';
+import 'package:riverpod/riverpod.dart';
 
 import 'key_value_storage.dart';
 import 'object_storage.dart';
 
-@singleton
+final securityStorageProvider = Provider<SecurityStorage>((ref) => SecurityStorage.new());
+
 class SecurityStorage implements KeyValueStorage, ObjectStorage {
   final _storage = const FlutterSecureStorage();
 

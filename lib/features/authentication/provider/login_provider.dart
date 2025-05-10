@@ -3,6 +3,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../domain/entities/index.dart';
 import '../../../domain/index.dart';
 import '../../../provider/provider.dart';
+import '../../../resources/string.dart';
+import '../../../routes/app_router.dart';
+import 'auth_provider.dart';
 
 part 'login_provider.freezed.dart';
 part 'login_provider.g.dart';
@@ -21,23 +24,32 @@ class LoginController extends _$LoginController with CommonProvider<LoginState> 
     //validate username/password
     print('userName: ${state.userName}');
     print('password: ${state.password}');
+    final userName = state.userName;
+    final password = state.password;
 
     showLoading();
 
-    await Future.delayed(const Duration(seconds: 2));
+    // await Future.delayed(const Duration(seconds: 2));
+
+    final defaultUser = {
+      'userName': 'admin',
+      'password': 'admin',
+    };
+
+    if (userName != defaultUser['userName'] || password != defaultUser['password']) {
+      hideLoading();
+      showError(LKey.loginValidateMessageUserAccount.tr());
+      return;
+    }
+
+    //read authProvider
+    final authProvider = ref.read(authControllerProvider.notifier);
+
+    await authProvider.login(id: '1', username: userName, role: UserRole.admin);
 
     hideLoading();
 
-    //call repository
-    //set loading
-    //show error message if any
-
-    //show success message
-    showSuccess('Login successful');
-
-    //save user data in shared preferences
-
-    //navigate to home page
+    appRouter.goHome();
   }
 
   void updateUserName(String userName) {
@@ -57,8 +69,80 @@ class LoginState with _$LoginState {
   }) = _LoginState;
 }
 
-enum UserRole {
-  admin,
-  user,
-  guest,
+@freezed
+class SignUpState with _$SignUpState {
+  const factory SignUpState({
+    required String userName,
+    required String password,
+    required String confirmPassword,
+    required UserRole role,
+  }) = _SignUpState;
+}
+
+//sign up user with role
+@riverpod
+class SignUpController extends _$SignUpController with CommonProvider<SignUpState> {
+  @override
+  SignUpState build() {
+    return SignUpState(
+      userName: '',
+      password: '',
+      confirmPassword: '',
+      role: UserRole.user,
+    );
+  }
+
+  void signUp() async {
+    //check if password and confirm password are same
+    if (state.password != state.confirmPassword) {
+      showError(LKey.signUpValidateMessagePasswordMatch.tr());
+      return;
+    }
+
+    //validate username/password
+    print('userName: ${state.userName}');
+    print('password: ${state.password}');
+
+    final userName = state.userName;
+    final password = state.password;
+
+    showLoading();
+
+    // await Future.delayed(const Duration(seconds: 2));
+
+    final defaultUser = {
+      'userName': 'admin',
+      'password': 'admin',
+    };
+
+    if (userName == defaultUser['userName']) {
+      hideLoading();
+      showError(LKey.signUpValidateMessageUserAccount.tr());
+      return;
+    }
+
+    //read authProvider
+    final authProvider = ref.read(authControllerProvider.notifier);
+    await authProvider.login(id: '1', username: userName, role: state.role);
+
+    hideLoading();
+
+    appRouter.goHome();
+  }
+
+  void updateUserName(String userName) {
+    state = state.copyWith(userName: userName);
+  }
+
+  void updatePassword(String password) {
+    state = state.copyWith(password: password);
+  }
+
+  void updateConfirmPassword(String confirmPassword) {
+    state = state.copyWith(confirmPassword: confirmPassword);
+  }
+
+  void updateRole(UserRole role) {
+    state = state.copyWith(role: role);
+  }
 }

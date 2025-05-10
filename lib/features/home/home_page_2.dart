@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/index.dart';
-import '../../domain/entities/user.dart';
+import '../../domain/entities/user/user.dart';
 import '../../shared_widgets/index.dart';
+import '../authentication/provider/auth_provider.dart';
 import '../product/product_page.dart';
 
 // Provider cho người dùng hiện tại
@@ -128,8 +129,7 @@ class HomePage2 extends ConsumerWidget {
             icon: const Icon(Icons.logout),
             onPressed: () {
               // Xử lý đăng xuất
-              ref.read(currentUserProvider.notifier).state = null;
-              Navigator.pushReplacementNamed(context, '/login');
+              ref.read(authControllerProvider.notifier).logout();
             },
           ),
         ],

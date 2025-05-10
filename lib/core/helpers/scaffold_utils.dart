@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../shared_widgets/index.dart';
 
@@ -84,5 +85,56 @@ mixin LoadingState<T extends StatefulWidget> on State<T> {
 
   Widget buildLoading(BuildContext context) {
     return const LoadingWidget();
+  }
+}
+
+abstract class WidgetByDeviceTemplate extends ConsumerWidget {
+  const WidgetByDeviceTemplate({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ResponsiveWidget(
+      mobileBuilder: (context) => buildMobile(context, ref),
+      tabletBuilder: (context) => buildTablet(context, ref),
+    );
+  }
+
+  //build for mobile
+  Widget buildMobile(BuildContext context, WidgetRef ref) {
+    return const SizedBox();
+  }
+
+  //build for tablet
+  Widget buildTablet(BuildContext context, WidgetRef ref) {
+    return const SizedBox();
+  }
+
+  //common build for both mobile and tablet
+  Widget buildCommon(BuildContext context, WidgetRef ref) {
+    return const SizedBox();
+  }
+}
+
+class ResponsiveWidget extends StatelessWidget {
+  const ResponsiveWidget({
+    super.key,
+    required this.mobileBuilder,
+    this.tabletBuilder,
+  });
+
+  final Widget Function(BuildContext context) mobileBuilder;
+  final Widget Function(BuildContext context)? tabletBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return constraints.maxWidth < 600
+            ? mobileBuilder(context)
+            : tabletBuilder != null
+                ? tabletBuilder!(context)
+                : mobileBuilder(context);
+      },
+    );
   }
 }

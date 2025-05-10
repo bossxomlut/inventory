@@ -1,6 +1,6 @@
 // import 'package:dartz/dartz.dart';
 // import 'package:freezed_annotation/freezed_annotation.dart';
-// import 'package:injectable/injectable.dart';
+//
 //
 // import '../../logger/logger.dart';
 // import 'converter_utils.dart';
@@ -19,7 +19,7 @@
 //   final String fileName;
 // }
 //
-// @singleton
+//
 // class EnvLoader {
 //   EnvConfigModel? _configModel;
 //

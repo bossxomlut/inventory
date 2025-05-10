@@ -7,7 +7,7 @@ import 'package:gap/gap.dart';
 import 'package:line_icons/line_icons.dart';
 
 import '../../domain/entities/index.dart';
-import '../../resources/index.dart';
+import '../../provider/theme.dart';
 import '../file_picker.dart';
 import 'image.dart';
 
@@ -29,7 +29,7 @@ class UploadImagePlaceholder extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: theme.borderColor,
+            color: theme.colorBorderField,
             width: 1,
           ),
         ),
@@ -80,7 +80,7 @@ class UploadImagePlaceholder extends StatelessWidget {
         });
       },
       child: DottedBorder(
-        color: theme.borderColor,
+        color: theme.colorBorderField,
         radius: Radius.circular(8),
         dashPattern: const [6, 6],
         strokeCap: StrokeCap.butt,
@@ -97,12 +97,12 @@ class UploadImagePlaceholder extends StatelessWidget {
               const Gap(8),
               Text(
                 title,
-                style: theme.textTheme.titleSmall,
+                style: theme.textMedium13Default,
               ),
               const Gap(8),
               Text(
                 'Chọn các tệp (PDF, JPG, PNG)',
-                style: theme.textTheme.labelMedium,
+                style: theme.textMedium13Default,
               ),
               const Gap(16),
             ],
@@ -130,7 +130,7 @@ class Base64ImagePlaceholder extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: theme.borderColor,
+          color: theme.colorBorderField,
           width: 1,
         ),
       ),

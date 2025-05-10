@@ -2,12 +2,10 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
-import 'package:injectable/injectable.dart';
 
 import '../../logger.dart';
 import '../index.dart';
 
-@singleton
 class RemoteAppConfigLoader {
   Future load() async {
     const String gistApiKey = 'todo_gist_api_key';
@@ -47,7 +45,6 @@ class RemoteAppConfigLoader {
   }
 }
 
-@singleton
 class RemoteAppConfigService {
   Map<String, dynamic> _data = {};
 

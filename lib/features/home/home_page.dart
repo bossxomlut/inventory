@@ -18,7 +18,7 @@ class _HomePageState extends State<HomePage> with StateTemplate<HomePage> {
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
           SliverMultilineAppBar(
-            title: LKey.home.tr(),
+            title: 'Home',
           ),
         ];
       },

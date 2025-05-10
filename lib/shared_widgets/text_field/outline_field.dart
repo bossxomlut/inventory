@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:line_icons/line_icons.dart';
 
-import '../../resources/index.dart';
+import '../../provider/theme.dart';
 
 class OutlineField extends StatelessWidget {
   const OutlineField({
@@ -34,9 +34,9 @@ class OutlineField extends StatelessWidget {
           height: 54,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            border: Border.all(color: theme.borderColor),
+            border: Border.all(color: theme.colorBorderField),
             borderRadius: BorderRadius.circular(4.0),
-            color: isDisabled ? theme.borderColor : theme.canvasColor,
+            color: isDisabled ? theme.colorBorderField : theme.colorTransparent,
           ),
           child: Builder(
             builder: (BuildContext context) {
@@ -52,15 +52,20 @@ class OutlineField extends StatelessWidget {
                           label,
                           key: ValueKey<String>(label), // Key để kiểm soát animation khi label thay đổi
                           style: value == null
-                              ? theme.textTheme.bodyMedium
-                              : theme.textTheme.labelSmall, // Style cho label
+                              ? theme.textMedium13Default
+                              : theme.textMedium13Inverse.copyWith(
+                                  color: theme.colorTextSublest, // Màu sắc cho label khi có value
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 12,
+                                  height: 14 / 12,
+                                ), // Style cho label
                         ),
                         // Hiển thị value nếu không null với hiệu ứng Fade
                         if (value != null)
                           Text(
                             value!,
                             key: ValueKey<String>(value!), // Key để kiểm soát animation khi value thay đổi
-                            style: theme.textTheme.bodyLarge, // Style cho value
+                            style: theme.textMedium13Default, // Style cho value
                             overflow: TextOverflow.ellipsis,
                           )
                         else
@@ -73,7 +78,7 @@ class OutlineField extends StatelessWidget {
                     trailing ??
                         Icon(
                           LineIcons.angleDown,
-                          color: theme.colorScheme.onSurface,
+                          color: theme.colorBackgroundSurface,
                           size: 18,
                           // color: theme.colorTextSublest,
                         ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../resources/index.dart';
+import '../provider/theme.dart';
 import 'index.dart';
 
 mixin ShowDialog<T> on Widget {
@@ -48,7 +48,7 @@ class AppDialog extends StatelessWidget with ShowDialog<dynamic> {
     return Center(
       child: Container(
         decoration: BoxDecoration(
-          color: theme.cardColor,
+          color: theme.colorBackgroundSurface,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -62,7 +62,7 @@ class AppDialog extends StatelessWidget with ShowDialog<dynamic> {
                   if (title != null)
                     Text(
                       title!,
-                      style: theme.textTheme.titleLarge?.copyWith(
+                      style: theme.textMedium14Default?.copyWith(
                         fontSize: 22,
                         height: 24 / 22,
                         fontWeight: FontWeight.w600,
@@ -73,7 +73,7 @@ class AppDialog extends StatelessWidget with ShowDialog<dynamic> {
                   if (description != null)
                     Text(
                       description!,
-                      style: theme.textTheme.bodyLarge?.copyWith(
+                      style: theme.textMedium14Default?.copyWith(
                         fontSize: 15,
                         height: 20 / 15,
                         fontWeight: FontWeight.w400,
@@ -85,7 +85,7 @@ class AppDialog extends StatelessWidget with ShowDialog<dynamic> {
             ),
             Divider(
               height: 1,
-              color: theme.dividerColor,
+              color: theme.colorDivider,
             ),
             Row(
               children: [
@@ -101,7 +101,7 @@ class AppDialog extends StatelessWidget with ShowDialog<dynamic> {
                         alignment: Alignment.center,
                         color: Colors.transparent,
                         child: Text(
-                          cancelText ?? LKey.cancel.tr(),
+                          cancelText ?? 'Cancel',
                           // style: theme.textRegular15Subtle.copyWith(
                           //   color: const Color(0xFF0A84FF),
                           //   fontSize: 17,
@@ -116,7 +116,7 @@ class AppDialog extends StatelessWidget with ShowDialog<dynamic> {
                   Container(
                     height: 44,
                     width: 1,
-                    color: theme.dividerColor,
+                    color: theme.colorDivider,
                   ),
                 Expanded(
                   child: GestureDetector(
@@ -129,7 +129,7 @@ class AppDialog extends StatelessWidget with ShowDialog<dynamic> {
                       alignment: Alignment.center,
                       color: Colors.transparent,
                       child: Text(
-                        confirmText ?? LKey.yes.tr(),
+                        confirmText ?? 'Yes',
                         // style: theme.textRegular15Subtle.copyWith(
                         //   color: const Color(0xFF0A84FF),
                         //   fontSize: 17,

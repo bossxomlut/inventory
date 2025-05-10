@@ -7,4 +7,5 @@ export 'helpers/list_utils.dart';
 export 'helpers/load_file_utils.dart';
 export 'helpers/parse_utils.dart';
 export 'helpers/string_utils.dart';
+export 'persistence/index.dart';
 export 'use_case.dart';

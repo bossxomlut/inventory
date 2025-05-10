@@ -2,7 +2,7 @@
 // import 'dart:developer';
 //
 // import 'package:dio/dio.dart';
-// import 'package:injectable/injectable.dart';
+//
 // import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 //
 // import '../../injection/injection.dart';
@@ -14,7 +14,7 @@
 //   Map<String, String> get headers;
 // }
 //
-// @Singleton(as: IConfig)
+// (as: IConfig)
 // class AppConfig extends IConfig {
 //   @override
 //   String get baseUrl => getIt<EnvLoader>().bareUrl;

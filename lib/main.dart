@@ -10,7 +10,7 @@ import 'resources/index.dart';
 import 'routes/app_router.dart';
 import 'shared_widgets/toast.dart';
 
-bool get showDevicePreview => false;
+bool get showDevicePreview => !false;
 
 /*
 * Manual configure environment to load sensitive data
@@ -33,7 +33,7 @@ void main() async {
   ///Start load environment
   // await getIt.get<EnvLoader>().load(env);
 
-  ThemeUtils.initThemeMode();
+  // ThemeUtils.initThemeMode();
 
   List<Locale> supportedLocales = <Locale>[
     const Locale('en', 'US'),
@@ -76,33 +76,34 @@ class MyApp extends StatelessWidget {
         minTextAdapt: true,
         splitScreenMode: true,
         builder: (context, _) {
-          return ValueListenableBuilder(
-              valueListenable: ThemeUtils.themeModeNotifier,
-              builder: (context, ThemeMode themeMode, _) {
-                return ToastificationWrapper(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    alignment: Alignment.topCenter,
-                    children: [
-                      MaterialApp.router(
-                        routerConfig: appRouter.config(
-                          navigatorObservers: () => <NavigatorObserver>[
-                            RouteLoggerObserver(),
-                          ],
-                        ),
-                        theme: ThemeUtils.lightTheme,
-                        darkTheme: ThemeUtils.darkTheme,
-                        themeMode: themeMode,
-                        localizationsDelegates: context.localizationDelegates,
-                        supportedLocales: context.supportedLocales,
-                        locale: context.locale,
+          return Consumer(
+            builder: (BuildContext context, WidgetRef ref, Widget? child) {
+              final theme = ref.watch(themeProvider);
+              return ToastificationWrapper(
+                child: Stack(
+                  fit: StackFit.expand,
+                  alignment: Alignment.topCenter,
+                  children: [
+                    MaterialApp.router(
+                      routerConfig: appRouter.config(
+                        navigatorObservers: () => <NavigatorObserver>[
+                          RouteLoggerObserver(),
+                        ],
                       ),
-                      const RootLoadingWidget(),
-                      const RootNotificationWidget(),
-                    ],
-                  ),
-                );
-              });
+                      themeMode: ThemeMode.light,
+                      theme: dTheme(context, theme.themeData),
+                      darkTheme: dTheme(context, theme.themeData),
+                      localizationsDelegates: context.localizationDelegates,
+                      supportedLocales: context.supportedLocales,
+                      locale: context.locale,
+                    ),
+                    const RootLoadingWidget(),
+                    const RootNotificationWidget(),
+                  ],
+                ),
+              );
+            },
+          );
         });
   }
 }

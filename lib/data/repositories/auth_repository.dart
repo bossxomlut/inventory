@@ -22,14 +22,20 @@ class AuthRepositoryImpl implements AuthRepository {
         return User(
           id: foundUser.id.toString(),
           username: foundUser.account,
-          role: UserRole.user,
+          role: UserRole.values[foundUser.role],
         );
       },
     );
   }
 
   @override
-  Future<User> register(String account, String password, UserRole role) async {
+  Future<User> register(
+    String account,
+    String password,
+    UserRole role,
+    int securityQuestionId,
+    String securityQuestionAnswer,
+  ) async {
     //print('Registering user: $account, $password');
 
     print('Registering user: $account');
@@ -46,18 +52,56 @@ class AuthRepositoryImpl implements AuthRepository {
       final newUser = UserCollection()
         ..account = account
         ..password = password
-        ..role = role.index;
+        ..role = role.index
+        ..securityQuestionId = securityQuestionId
+        ..securityQuestionAnswer = securityQuestionAnswer;
 
       _collection.putSync(newUser);
 
       return User(
         id: newUser.id.toString(),
         username: newUser.account,
-        role: UserRole.user,
+        role: role,
       );
     });
   }
 
   @override
   Future<void> logout() async {}
+
+  @override
+  Future<bool> checkExistAdmin() {
+    return _isar.txnSync(() async {
+      final foundUser = _collection.filter().roleEqualTo(UserRole.admin.index).findFirstSync();
+      return foundUser != null;
+    });
+  }
+
+  @override
+  Future<bool> checkSecurityQuestion(String account, int securityQuestionId, String answer) {
+    return _isar.txnSync(() async {
+      final foundUser = _collection
+          .filter()
+          .accountEqualTo(account)
+          .securityQuestionIdEqualTo(securityQuestionId)
+          .securityQuestionAnswerEqualTo(answer)
+          .findFirstSync();
+
+      return foundUser != null;
+    });
+  }
+
+  @override
+  Future<void> updatePassword(String account, String password) {
+    return _isar.writeTxnSync(() async {
+      final foundUser = _collection.filter().accountEqualTo(account).findFirstSync();
+
+      if (foundUser == null) {
+        throw NotFoundException('User not found');
+      }
+
+      foundUser.password = password;
+      _collection.putSync(foundUser);
+    });
+  }
 }

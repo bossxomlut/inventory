@@ -4,14 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../domain/entities/index.dart';
+import '../../domain/repositories/pin_code_repository.dart';
 import '../../provider/theme.dart';
-import '../../shared_widgets/button/button.dart';
 import '../../shared_widgets/index.dart';
+import '../../shared_widgets/toast.dart';
 import 'provider/login_provider.dart';
 
 @RoutePage()
 class SignUpPage extends WidgetByDeviceTemplate {
-  const SignUpPage({super.key});
+  SignUpPage({super.key});
 
   @override
   Widget buildMobile(BuildContext context, WidgetRef ref) {
@@ -50,9 +51,17 @@ class SignUpPage extends WidgetByDeviceTemplate {
 
   @override
   Widget buildCommon(BuildContext context, WidgetRef ref) {
+    final pinCode = ref.watch(pinCodeRepositoryProvider);
+    final List<SecurityQuestionEntity> questions = pinCode.securityQuestions;
+
     return HookBuilder(builder: (context) {
       final pageController = usePageController();
       final signUpState = ref.watch(signUpControllerProvider);
+      final selectedQuestion = useState<SecurityQuestionEntity?>(null);
+
+      useEffect(() {
+        ref.read(signUpControllerProvider.notifier).checkExistAdmin();
+      }, []);
 
       return PageView(
         controller: pageController,
@@ -74,14 +83,21 @@ class SignUpPage extends WidgetByDeviceTemplate {
                     children: [
                       UserRoleWidget(
                         role: role,
+                        isDisable: role == UserRole.admin && signUpState.isExistAdmin,
+                        message: LKey.signUpValidateMessageAdminExist.tr(context: context),
                         onTap: () {
                           ref.read(signUpControllerProvider.notifier).updateRole(role);
                           switch (role) {
                             case UserRole.admin:
+                              if (signUpState.isExistAdmin) {
+                                showSimpleInfo(message: LKey.signUpValidateMessageAdminExist.tr(context: context));
+                              } else {
+                                pageController.nextPage(duration: Duration(milliseconds: 400), curve: Curves.linear);
+                              }
                             case UserRole.user:
                               pageController.nextPage(duration: Duration(milliseconds: 400), curve: Curves.linear);
                             case UserRole.guest:
-                            //todo: navigate to guest page
+                            //todo:
                           }
                         },
                       ),
@@ -126,6 +142,49 @@ class SignUpPage extends WidgetByDeviceTemplate {
                       onChanged: ref.read(signUpControllerProvider.notifier).updateConfirmPassword,
                       initialValue: signUpState.confirmPassword,
                     ),
+                    const Gap(20),
+                    Container(
+                      height: 54,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: context.appTheme.colorBorderField,
+                          width: 1,
+                        ),
+                        color: context.appTheme.colorBackgroundField,
+                      ),
+                      child: ButtonTheme(
+                        alignedDropdown: true,
+                        child: DropdownButton<SecurityQuestionEntity>(
+                          items: questions.map((SecurityQuestionEntity question) {
+                            return DropdownMenuItem<SecurityQuestionEntity>(
+                              value: question,
+                              child: Text(question.question),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            selectedQuestion.value = value!;
+                            ref.read(signUpControllerProvider.notifier).updateSecurityQuestionId(value.id);
+                          },
+                          value: selectedQuestion.value,
+                          underline: const SizedBox(),
+                          hint: Text(
+                            LKey.addSecurityQuestion.tr(context: context),
+                            style: context.appTheme.textRegular15Sublest,
+                          ),
+                          isExpanded: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    //text field for password
+                    CustomTextField(
+                      label: LKey.addSecurityAnswer.tr(context: context),
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => ref.read(signUpControllerProvider.notifier).signUp(),
+                      onChanged: ref.read(signUpControllerProvider.notifier).updateSecurityAnswer,
+                      initialValue: signUpState.confirmPassword,
+                    ),
                     const Gap(30),
                     AppButton.primary(
                       title: LKey.buttonDone.tr(context: context),
@@ -153,10 +212,18 @@ class SignUpPage extends WidgetByDeviceTemplate {
 }
 
 class UserRoleWidget extends StatelessWidget {
-  const UserRoleWidget({super.key, required this.role, required this.onTap});
+  const UserRoleWidget({
+    super.key,
+    required this.role,
+    required this.onTap,
+    required this.isDisable,
+    this.message,
+  });
 
   final UserRole role;
   final VoidCallback onTap;
+  final bool isDisable;
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +234,7 @@ class UserRoleWidget extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            // color: theme.colorBackgroundSurface,
+            color: isDisable ? theme.colorBackgroundSublest : theme.colorBackgroundSurface,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: theme.colorBorderField,
@@ -178,10 +245,23 @@ class UserRoleWidget extends StatelessWidget {
             children: [
               buildIcon(context),
               Gap(20),
-              Text(
-                role.name,
-                style: theme.headingSemibold20Default,
+              Expanded(
+                child: Text(
+                  role.name,
+                  style: theme.headingSemibold20Default,
+                ),
               ),
+              if (isDisable)
+                IconButton(
+                  onPressed: () {
+                    showSimpleInfo(
+                      message: message ?? LKey.signUpValidateMessageAdminExist.tr(context: context),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.info_outline,
+                  ),
+                ),
             ],
           ),
         ),

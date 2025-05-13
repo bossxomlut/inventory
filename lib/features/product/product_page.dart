@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/inventory.dart';
@@ -18,19 +18,11 @@ class ProductListScreen extends ConsumerWidget {
     // Watch the product list from the provider (default isOutOfStock: false)
     return Scaffold(
       appBar: AppBar(title: const Text('Products')),
-      body: PageView(
-        children: [
-          const _ProductListView(),
-          const __ProductListView2(),
-        ],
-      ),
+      body: const _ProductListView(),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
-          final products = ref.read(loadProductProvider.notifier);
-          products.loadData(query: const LoadListQuery(page: 1, pageSize: 10));
-
-          // AddProductScreen().show(context);
+          AddProductScreen().show(context);
         },
       ),
     );
@@ -52,30 +44,11 @@ class ProductDetailScreen extends StatelessWidget {
 }
 
 // Add product bottom sheet
-class AddProductScreen extends ConsumerWidget with ShowBottomSheet {
+class AddProductScreen extends HookConsumerWidget with ShowBottomSheet {
   const AddProductScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AddProductForm(),
-        ],
-      ),
-    );
-  }
-}
-
-// Form for adding a product
-class AddProductForm extends HookWidget {
-  const AddProductForm({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Access the form state from the provider
     final _nameController = useTextEditingController();
     final _quantityController = useTextEditingController();
     final _priceController = useTextEditingController();
@@ -165,7 +138,7 @@ class AddProductForm extends HookWidget {
                         );
 
                         // Add product to the provider
-                        ref.read(loadProductProvider.notifier).add(newProduct);
+                        ref.read(loadProductProvider.notifier).createProduct(newProduct);
 
                         // Close bottom sheet
                         Navigator.pop(context);
@@ -238,61 +211,5 @@ class EmptyItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(child: Text('No products found.'));
-  }
-}
-
-class __ProductListView2 extends ConsumerStatefulWidget {
-  const __ProductListView2({super.key});
-
-  @override
-  ConsumerState createState() => ___ProductListView2State();
-}
-
-class ___ProductListView2State extends ConsumerState<__ProductListView2> {
-  @override
-  void initState() {
-    super.initState();
-    //add post call back
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(loadProductProvider.notifier).loadData(query: const LoadListQuery(page: 1, pageSize: 10));
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final products = ref.watch(loadProductProvider);
-    if (products.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    } else if (products.hasError) {
-      return Center(child: Text('Error: ${products.error}'));
-    } else if (products.isEmpty) {
-      return const Center(child: Text('No products found.'));
-    } else {
-      //add loading if have loadmore
-
-      final length = products.data.length;
-      return ListView.builder(
-        itemCount: products.isLoadingMore ? length + 1 : length,
-        itemBuilder: (context, index) {
-          if (products.isLoadingMore && index == length) {
-            return const SizedBox(height: 50, child: Center(child: CircularProgressIndicator()));
-          }
-
-          final product = products.data[index];
-          return ProductCard(
-            product: product,
-            onTap: () {
-              // Navigate to product detail screen (placeholder)
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailScreen(product: product),
-                ),
-              );
-            },
-          );
-        },
-      );
-    }
   }
 }

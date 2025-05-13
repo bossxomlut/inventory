@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../domain/index.dart';
-import '../../domain/entities/user/user.dart';
+import '../../domain/index.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 import '../product/product_page.dart';
-
-// Provider cho người dùng hiện tại
-final currentUserProvider = StateProvider<User?>((ref) => null);
+import '../user/user_page.dart';
 
 class CategoryListScreen extends StatelessWidget {
   const CategoryListScreen({super.key});
@@ -77,10 +74,17 @@ class HomePage2 extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
+    final user = ref.watch(authControllerProvider.select(
+      (value) {
+        return value.maybeMap(
+          orElse: () => null,
+          authenticated: (user) => user.user,
+        );
+      },
+    ));
 
     // Danh sách menu dựa trên vai trò người dùng
-    final menuItems = user?.role == 'admin'
+    final menuItems = user?.role == UserRole.admin
         ? [
             MenuItem(
               title: 'Products',
@@ -109,6 +113,11 @@ class HomePage2 extends ConsumerWidget {
             ),
           ]
         : [
+            MenuItem(
+              title: 'Users',
+              icon: Icons.inventory,
+              destination: const UserPage(),
+            ),
             MenuItem(
               title: 'Products',
               icon: Icons.inventory,

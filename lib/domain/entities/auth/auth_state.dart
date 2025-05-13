@@ -38,3 +38,54 @@ extension AuthStateX on AuthState {
         initial: () => {},
       );
 }
+
+@freezed
+class LoginState with _$LoginState {
+  const factory LoginState({
+    required String userName,
+    required String password,
+  }) = _LoginState;
+}
+
+extension LoginStateX on LoginState {
+  bool get isValid => userName.isNotEmpty && password.isNotEmpty;
+}
+
+@freezed
+class SignUpState with _$SignUpState {
+  const factory SignUpState({
+    required String userName,
+    required String password,
+    required String confirmPassword,
+    required UserRole role,
+    required int securityQuestionId,
+    required String securityAnswer,
+    required bool isExistAdmin,
+  }) = _SignUpState;
+}
+
+extension SignUpStateX on SignUpState {
+  bool get isValid =>
+      userName.isNotEmpty &&
+      password.isNotEmpty &&
+      confirmPassword.isNotEmpty &&
+      securityQuestionId > 0 &&
+      securityAnswer.isNotEmpty;
+}
+
+@freezed
+class ForgotPasswordState with _$ForgotPasswordState {
+  const factory ForgotPasswordState({
+    required String userAccount,
+    required int securityQuestionId,
+    required String securityAnswer,
+    required String password,
+    required String confirmPassword,
+  }) = _ForgotPasswordState;
+}
+
+extension ForgotPasswordStateX on ForgotPasswordState {
+  bool get isValidSecurityInfo => userAccount.isNotEmpty && securityQuestionId != -1 && securityAnswer.isNotEmpty;
+
+  bool get isValidPassword => password.isNotEmpty && confirmPassword.isNotEmpty;
+}

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 
+import '../domain/index.dart';
 import 'app_router.gr.dart';
 
 export 'package:sample_app/routes/app_router.gr.dart';
@@ -16,25 +17,44 @@ class AppRouter extends $AppRouter {
   List<AutoRoute> get routes => <AutoRoute>[
         AutoRoute(page: SplashRoute.page, initial: true),
         AutoRoute(page: DemoRiverpodRoute.page),
+        AutoRoute(page: AnalyzeScannerRoute.page),
+
+        //authentication routes
         AutoRoute(page: LoginRoute.page),
         AutoRoute(page: SignUpRoute.page),
-        AutoRoute(page: AnalyzeScannerRoute.page),
+        AutoRoute(page: ForgotPasswordRoute.page),
+
+        //home routes
         AutoRoute(page: HomeRoute.page),
         AutoRoute(page: HomeRoute.page),
         AutoRoute(page: HomeRoute2.page),
         AutoRoute(page: InventoryRoute.page),
+
+        //config admin route
+        AutoRoute(
+          page: UserRoute.page,
+          guards: [
+            AdminGuard(),
+          ],
+        ),
       ];
 }
 
-extension AppRouterX on AppRouter {
+extension AuthRouterX on AppRouter {
   void goToLogin() {
-    replaceAll(const [LoginRoute()]);
+    replaceAll([LoginRoute()]);
   }
 
   void goToSignUp() {
     push(SignUpRoute());
   }
 
+  void goToForgotPassword() {
+    push(ForgotPasswordRoute());
+  }
+}
+
+extension AppRouterX on AppRouter {
   void goHome() {
     replaceAll(const [HomeRoute2()]);
   }
@@ -51,5 +71,43 @@ extension AppRouterX on AppRouter {
 extension InventoryRouterX on AppRouter {
   void goInventory() {
     replaceAll([const InventoryRoute()]);
+  }
+}
+
+extension HomeByRoleRouterX on AppRouter {
+  void goHomeByRole(UserRole role) {
+    if (role == UserRole.admin) {
+      goToAdminHome();
+    } else if (role == UserRole.user) {
+      goToUserHome();
+    }
+  }
+
+  void goToAdminHome() {
+    replaceAll([const HomeRoute2()]);
+  }
+
+  void goToUserHome() {
+    replaceAll([const HomeRoute2()]);
+  }
+}
+
+extension AdminRouterX on AppRouter {
+  void goAdminHome() {
+    replaceAll(
+      [const UserRoute()],
+    );
+  }
+}
+
+class AdminGuard extends AutoRouteGuard {
+  @override
+  void onNavigation(NavigationResolver resolver, StackRouter router) {
+    final user = resolver.route.args as User;
+    if (user.role == UserRole.admin) {
+      resolver.next(true);
+    } else {
+      router.push(LoginRoute());
+    }
   }
 }

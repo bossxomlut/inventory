@@ -1,8 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/index.dart';
-import '../../../domain/entities/auth/auth_state.dart';
-import '../../../domain/entities/user/user.dart';
 import '../../../domain/index.dart';
 import '../../../routes/app_router.dart';
 

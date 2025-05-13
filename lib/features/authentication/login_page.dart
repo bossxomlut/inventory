@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/index.dart';
 import '../../provider/theme.dart';
 import '../../routes/app_router.dart';
-import '../../shared_widgets/button/button.dart';
 import '../../shared_widgets/index.dart';
 import 'provider/login_provider.dart';
 
 @RoutePage()
 class LoginPage extends WidgetByDeviceTemplate {
-  const LoginPage({super.key});
+  LoginPage({super.key});
 
   @override
   Widget buildMobile(BuildContext context, WidgetRef ref) {
@@ -74,7 +74,9 @@ class LoginPage extends WidgetByDeviceTemplate {
           Align(
             alignment: Alignment.centerRight,
             child: InkWell(
-              onTap: () {},
+              onTap: () {
+                appRouter.goToForgotPassword();
+              },
               child: LText(
                 LKey.buttonForgotPassword,
               ),

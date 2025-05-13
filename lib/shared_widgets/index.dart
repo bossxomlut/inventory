@@ -7,6 +7,7 @@ export 'app_bar.dart';
 export 'app_divider.dart';
 export 'app_step_widget.dart';
 export 'bottom_sheet.dart';
+export 'button/button.dart';
 export 'dialog.dart';
 export 'file_picker.dart';
 export 'icon/icon.dart';

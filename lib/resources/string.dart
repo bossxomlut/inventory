@@ -14,6 +14,13 @@ abstract class LKey {
   static const String lostConnectInternet = 'lostConnectInternet';
   static const String unknown = 'unknown';
 
+  //questions
+  static const String addSecurityQuestion = 'question.addSecurityQuestion';
+  static const String addSecurityAnswer = 'question.answer';
+  static const String whatIsYourFavoriteColor = 'question.whatIsYourFavoriteColor';
+  static const String whatIsYourFavoriteFood = 'question.whatIsYourFavoriteFood';
+  static const String whatIsYourFavoriteMovie = 'question.whatIsYourFavoriteMovie';
+
   // Toast
   static const String toastTitleError = 'toast.titleError';
   static const String toastTitleSuccess = 'toast.titleSuccess';
@@ -92,6 +99,7 @@ abstract class LKey {
   static const String signUpValidateMessageSpecialCharacter = 'signUp.validateMessage.specialCharacter';
   static const String signUpValidateMessageFieldIsRequired = 'signUp.validateMessage.required';
   static const String signUpValidateMessagePasswordMatch = 'signUp.validateMessage.passwordMatch';
+  static const String signUpValidateMessageAdminExist = 'signUp.validateMessage.adminExist';
 
   // SignUp Keys - Partner
   static const String signUpNewPartnerRegistration = 'signUp.newPartnerRegistration';

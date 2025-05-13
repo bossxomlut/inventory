@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'provider.dart';
+import 'index.dart';
 
 mixin CommonProvider<T> on AutoDisposeNotifier<T> {
   ///Provider used to manage loading state

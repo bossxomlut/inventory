@@ -8,4 +8,6 @@ class UserCollection {
   late String account;
   late String password;
   late int role;
+  late int securityQuestionId;
+  late String securityQuestionAnswer;
 }

@@ -1,9 +1,8 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:sample_app/provider/provider.dart';
+import 'package:sample_app/provider/index.dart';
 import 'package:toastification/toastification.dart';
 
 import 'core/persistence/isar_storage.dart';
@@ -25,10 +24,10 @@ void main() async {
   ///Ensure localization is initialized
   await Future.wait(<Future<void>>[
     EasyLocalization.ensureInitialized(),
-    SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]),
+    // SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+    //   DeviceOrientation.portraitUp,
+    //   DeviceOrientation.portraitDown,
+    // ]),
   ]);
 
   ///Start load environment
@@ -137,7 +136,6 @@ class RootNotificationWidget extends ConsumerWidget {
       notificationProvider,
       (previous, next) {
         if (next.isShow) {
-          toastification.dismissAll(delayForAnimation: false);
           switch (next.type!) {
             case NotificationType.success:
               showSuccess(message: next.message!);

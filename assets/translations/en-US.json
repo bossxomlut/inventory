@@ -17,6 +17,13 @@
     "titleWarning": "Warning",
     "titleInfo": "Info"
   },
+  "question": {
+    "addSecurityQuestion": "Add security question",
+    "answer": "Security answer",
+    "whatIsYourFavoriteColor": "What is your favorite color?",
+    "whatIsYourFavoriteFood": "What is your favorite food?",
+    "whatIsYourFavoriteMovie": "What is your favorite movie?"
+  },
   "button": {
     "next": "Next",
     "skip": "Skip",
@@ -114,7 +121,8 @@
       "uppercaseLetter": "Contain an uppercase letter",
       "specialCharacter": "Contain 1 special character '!@#$%^&*()\"\\'",
       "passwordMatch": "Password does not match",
-      "validateAccount": "Your account is not valid. Please use other account"
+      "validateAccount": "Your account is not valid. Please use other account",
+      "adminExist": "Amin account already exist. Only one admin can be registered"
     },
     "verification": {
       "selectMethod": "Select method of\nreceiving code",

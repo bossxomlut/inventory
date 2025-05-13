@@ -11,7 +11,7 @@ class SplashPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Trigger checkLogin on first build
-    final authController = ref.read(authControllerProvider.notifier);
+    final authController = ref.watch(authControllerProvider.notifier);
     authController.checkLogin();
 
     return const Scaffold(

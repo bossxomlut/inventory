@@ -18,6 +18,8 @@ class AuthController extends _$AuthController {
   // Load AuthState from SharedPreferences
   Future<void> checkLogin() async {
     final AuthState authState = await _loadAuthData();
+    state = authState;
+
     try {
       authState.maybeWhen(
         orElse: () {
@@ -30,8 +32,6 @@ class AuthController extends _$AuthController {
     } catch (e) {
       appRouter.goToLogin();
     }
-
-    state = authState;
   }
 
   Future<AuthState> _loadAuthData() async {

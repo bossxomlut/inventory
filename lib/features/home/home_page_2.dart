@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/index.dart';
+import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 import '../product/product_page.dart';
@@ -135,10 +136,12 @@ class HomePage2 extends ConsumerWidget {
         title: const Text('Inventory App'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () {
+              // Chuyển đến trang cài đặt
+              appRouter.goToSetting();
               // Xử lý đăng xuất
-              ref.read(authControllerProvider.notifier).logout();
+              // ref.read(authControllerProvider.notifier).logout();
             },
           ),
         ],

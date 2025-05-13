@@ -10,7 +10,7 @@ import 'resources/index.dart';
 import 'routes/app_router.dart';
 import 'shared_widgets/toast.dart';
 
-bool get showDevicePreview => !false;
+bool get showDevicePreview => false;
 
 /*
 * Manual configure environment to load sensitive data

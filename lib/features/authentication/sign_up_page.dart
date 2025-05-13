@@ -6,6 +6,7 @@ import 'package:hugeicons/hugeicons.dart';
 import '../../domain/entities/index.dart';
 import '../../domain/repositories/pin_code_repository.dart';
 import '../../provider/theme.dart';
+import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../../shared_widgets/toast.dart';
 import 'provider/login_provider.dart';
@@ -18,7 +19,7 @@ class SignUpPage extends WidgetByDeviceTemplate {
   Widget buildMobile(BuildContext context, WidgetRef ref) {
     return Scaffold(
       // appBar: CustomAppBar(
-      //   title: '',
+      //   title: LKey.buttonSignUp.tr(context: context),
       // ),
       body: buildCommon(context, ref),
     );
@@ -67,46 +68,59 @@ class SignUpPage extends WidgetByDeviceTemplate {
         controller: pageController,
         physics: const NeverScrollableScrollPhysics(),
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                LText(
-                  LKey.signUpSelectRole,
-                  style: context.appTheme.headingSemibold28Default,
-                ),
-                const Gap(30),
-                ...UserRole.values.map((role) {
-                  return Column(
-                    children: [
-                      UserRoleWidget(
-                        role: role,
-                        isDisable: role == UserRole.admin && signUpState.isExistAdmin,
-                        message: LKey.signUpValidateMessageAdminExist.tr(context: context),
-                        onTap: () {
-                          ref.read(signUpControllerProvider.notifier).updateRole(role);
-                          switch (role) {
-                            case UserRole.admin:
-                              if (signUpState.isExistAdmin) {
-                                showSimpleInfo(message: LKey.signUpValidateMessageAdminExist.tr(context: context));
-                              } else {
-                                pageController.nextPage(duration: Duration(milliseconds: 400), curve: Curves.linear);
+          Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  // mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Gap(100),
+                    LText(
+                      LKey.signUpSelectRole,
+                      style: context.appTheme.headingSemibold28Default,
+                    ),
+                    const Gap(30),
+                    ...UserRole.values.map((role) {
+                      return Column(
+                        children: [
+                          UserRoleWidget(
+                            role: role,
+                            isDisable: role == UserRole.admin && signUpState.isExistAdmin,
+                            message: LKey.signUpValidateMessageAdminExist.tr(context: context),
+                            onTap: () {
+                              ref.read(signUpControllerProvider.notifier).updateRole(role);
+                              switch (role) {
+                                case UserRole.admin:
+                                  if (signUpState.isExistAdmin) {
+                                    showSimpleInfo(message: LKey.signUpValidateMessageAdminExist.tr(context: context));
+                                  } else {
+                                    pageController.nextPage(
+                                        duration: Duration(milliseconds: 400), curve: Curves.linear);
+                                  }
+                                case UserRole.user:
+                                  pageController.nextPage(duration: Duration(milliseconds: 400), curve: Curves.linear);
+                                case UserRole.guest:
+                                //todo:
                               }
-                            case UserRole.user:
-                              pageController.nextPage(duration: Duration(milliseconds: 400), curve: Curves.linear);
-                            case UserRole.guest:
-                            //todo:
-                          }
-                        },
-                      ),
-                      const Gap(20),
-                    ],
-                  );
-                }),
-              ],
-            ),
+                            },
+                          ),
+                          const Gap(20),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              SafeArea(
+                child: BackButton(
+                  onPressed: () {
+                    appRouter.popForced();
+                  },
+                ),
+              ),
+            ],
           ),
           Stack(
             children: [
@@ -114,8 +128,8 @@ class SignUpPage extends WidgetByDeviceTemplate {
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Gap(100),
                     LText(LKey.signUpNewPartnerRegistration, style: context.appTheme.headingSemibold28Default),
                     Gap(20),
                     //text field for username

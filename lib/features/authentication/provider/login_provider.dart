@@ -14,7 +14,7 @@ part 'login_provider.g.dart';
 class LoginController extends _$LoginController with CommonProvider<LoginState> {
   @override
   LoginState build() {
-    return LoginState(
+    return const LoginState(
       userName: '',
       password: '',
     );
@@ -34,7 +34,7 @@ class LoginController extends _$LoginController with CommonProvider<LoginState> 
     authRepository.login(userName, password).then(
       (User value) async {
         //read authProvider
-        final authProvider = ref.read(authControllerProvider.notifier);
+        final authProvider = ref.watch(authControllerProvider.notifier);
 
         await authProvider.login(id: value.id, username: value.username, role: value.role);
 
@@ -65,7 +65,7 @@ class LoginController extends _$LoginController with CommonProvider<LoginState> 
 class SignUpController extends _$SignUpController with CommonProvider<SignUpState> {
   @override
   SignUpState build() {
-    return SignUpState(
+    return const SignUpState(
       userName: '',
       password: '',
       confirmPassword: '',
@@ -162,7 +162,7 @@ class SignUpController extends _$SignUpController with CommonProvider<SignUpStat
 class ForgotPasswordController extends _$ForgotPasswordController with CommonProvider<ForgotPasswordState> {
   @override
   ForgotPasswordState build() {
-    return ForgotPasswordState(
+    return const ForgotPasswordState(
       userAccount: '',
       securityQuestionId: -1,
       securityAnswer: '',
@@ -213,8 +213,6 @@ class ForgotPasswordController extends _$ForgotPasswordController with CommonPro
     final userAccount = state.userAccount;
     final password = state.password;
 
-    print('userAccount: $userAccount, password: $password');
-
     showLoading();
 
     final authRepository = ref.read(authRepositoryProvider);
@@ -231,39 +229,111 @@ class ForgotPasswordController extends _$ForgotPasswordController with CommonPro
     );
   }
 
-  //
-  // void login() async {
-  //   //validate username/password
-  //   final userName = state.userName;
-  //   final password = state.password;
-  //
-  //   print('userName: $userName, password: $password');
-  //
-  //   showLoading();
-  //
-  //   final authRepository = ref.read(authRepositoryProvider);
-  //
-  //   authRepository.login(userName, password).then(
-  //         (User value) async {
-  //       //read authProvider
-  //       final authProvider = ref.read(authControllerProvider.notifier);
-  //
-  //       await authProvider.login(id: value.id, username: value.username, role: value.role);
-  //
-  //       hideLoading();
-  //
-  //       appRouter.goHomeByRole(value.role);
-  //     },
-  //   ).onError(
-  //         (error, StackTrace stackTrace) {
-  //       hideLoading();
-  //       showError(LKey.loginValidateMessageUserAccount.tr());
-  //     },
-  //   );
-  // }
-
   void updateUserAccount(String userAccount) {
     state = state.copyWith(userAccount: userAccount);
+  }
+
+  void updatePassword(String password) {
+    state = state.copyWith(password: password);
+  }
+
+  void updateConfirmPassword(String confirmPassword) {
+    state = state.copyWith(confirmPassword: confirmPassword);
+  }
+
+  void updateSecurityQuestionId(int securityQuestionId) {
+    state = state.copyWith(securityQuestionId: securityQuestionId);
+  }
+
+  void updateSecurityAnswer(String securityAnswer) {
+    state = state.copyWith(securityAnswer: securityAnswer);
+  }
+}
+
+@riverpod
+class ResetPasswordController extends _$ResetPasswordController with CommonProvider<ForgotPasswordState> {
+  @override
+  ForgotPasswordState build() {
+    final authState = ref.watch(authControllerProvider);
+    return authState.maybeWhen(
+      orElse: () {
+        return const ForgotPasswordState(
+          userAccount: '',
+          securityQuestionId: -1,
+          securityAnswer: '',
+          password: '',
+          confirmPassword: '',
+        );
+      },
+      authenticated: (User user, DateTime? lastLoginTime) {
+        return ForgotPasswordState(
+          userAccount: user.username,
+          securityQuestionId: -1,
+          securityAnswer: '',
+          password: '',
+          confirmPassword: '',
+        );
+      },
+    );
+  }
+
+  Future<bool> checkInfo() async {
+    final repository = ref.read(authRepositoryProvider);
+    final userAccount = state.userAccount;
+    final securityQuestionId = state.securityQuestionId;
+    final securityAnswer = state.securityAnswer;
+    print('userAccount: $userAccount, securityQuestionId: $securityQuestionId, securityAnswer: $securityAnswer');
+
+    //check data
+    try {
+      final isValidFromDb = await repository.checkSecurityQuestion(
+        userAccount,
+        securityQuestionId,
+        securityAnswer,
+      );
+
+      if (isValidFromDb) {
+        return true;
+      } else {
+        showError('Not found');
+      }
+    } catch (e) {
+      showError(e.toString());
+    }
+    return false;
+  }
+
+  void setNewPassword() async {
+    //check empty data
+    if (state.password.isEmpty || state.confirmPassword.isEmpty) {
+      showError(LKey.messageDefaultApiError);
+      return;
+    }
+
+    //check if password and confirm password are same
+    if (state.password != state.confirmPassword) {
+      showError(LKey.signUpValidateMessagePasswordMatch.tr());
+      return;
+    }
+
+    //validate username/password
+    final userAccount = state.userAccount;
+    final password = state.password;
+
+    showLoading();
+
+    final authRepository = ref.read(authRepositoryProvider);
+    authRepository.updatePassword(userAccount, password).then(
+      (value) async {
+        hideLoading();
+        appRouter.popForced();
+      },
+    ).onError(
+      (error, StackTrace stackTrace) {
+        hideLoading();
+        showError(LKey.signUpValidateMessageUserAccount.tr());
+      },
+    );
   }
 
   void updatePassword(String password) {

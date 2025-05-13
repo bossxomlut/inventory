@@ -23,6 +23,10 @@ class AppRouter extends $AppRouter {
         AutoRoute(page: LoginRoute.page),
         AutoRoute(page: SignUpRoute.page),
         AutoRoute(page: ForgotPasswordRoute.page),
+        AutoRoute(page: ResetPasswordRoute.page),
+
+        //setting routes
+        AutoRoute(page: SettingRoute.page),
 
         //home routes
         AutoRoute(page: HomeRoute.page),
@@ -51,6 +55,10 @@ extension AuthRouterX on AppRouter {
 
   void goToForgotPassword() {
     push(ForgotPasswordRoute());
+  }
+
+  void goToResetPassword() {
+    push(ResetPasswordRoute());
   }
 }
 
@@ -97,6 +105,12 @@ extension AdminRouterX on AppRouter {
     replaceAll(
       [const UserRoute()],
     );
+  }
+}
+
+extension SettingRouterX on AppRouter {
+  void goToSetting() {
+    push(SettingRoute());
   }
 }
 

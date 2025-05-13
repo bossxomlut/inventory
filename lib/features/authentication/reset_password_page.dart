@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sample_app/domain/repositories/pin_code_repository.dart';
-import 'package:sample_app/routes/app_router.dart';
 
 import '../../domain/index.dart';
 import '../../provider/index.dart';
+import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import 'provider/login_provider.dart';
 
 @RoutePage()
-class ForgotPasswordPage extends WidgetByDeviceTemplate {
-  ForgotPasswordPage({super.key});
+class ResetPasswordPage extends WidgetByDeviceTemplate {
+  ResetPasswordPage({super.key});
 
   @override
   Widget buildMobile(BuildContext context, WidgetRef ref) {
@@ -31,11 +31,11 @@ class ForgotPasswordPage extends WidgetByDeviceTemplate {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             color: Colors.white,
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: Colors.black26,
                 blurRadius: 8,
-                offset: const Offset(0, 4),
+                offset: Offset(0, 4),
               ),
             ],
           ),
@@ -51,7 +51,7 @@ class ForgotPasswordPage extends WidgetByDeviceTemplate {
       builder: (context) {
         final pinCode = ref.watch(pinCodeRepositoryProvider);
         final List<SecurityQuestionEntity> questions = pinCode.securityQuestions;
-        final forgotPasswordState = ref.watch(forgotPasswordControllerProvider);
+        final forgotPasswordState = ref.watch(resetPasswordControllerProvider);
         final selectedQuestion = useState<SecurityQuestionEntity?>(null);
         final pageController = usePageController();
         return PageView(
@@ -67,13 +67,6 @@ class ForgotPasswordPage extends WidgetByDeviceTemplate {
                     children: [
                       const SizedBox(height: 100),
                       LText(LKey.forgotPasswordTitle, style: context.appTheme.headingSemibold28Default),
-                      Gap(20),
-                      //text field for username
-                      CustomTextField(
-                        label: LKey.signUpAccount.tr(context: context),
-                        onChanged: ref.read(forgotPasswordControllerProvider.notifier).updateUserAccount,
-                        textInputAction: TextInputAction.next,
-                      ),
                       const Gap(20),
                       Container(
                         height: 54,
@@ -96,7 +89,7 @@ class ForgotPasswordPage extends WidgetByDeviceTemplate {
                             }).toList(),
                             onChanged: (value) {
                               selectedQuestion.value = value!;
-                              ref.read(forgotPasswordControllerProvider.notifier).updateSecurityQuestionId(value.id);
+                              ref.read(resetPasswordControllerProvider.notifier).updateSecurityQuestionId(value.id);
                             },
                             value: selectedQuestion.value,
                             underline: const SizedBox(),
@@ -112,8 +105,8 @@ class ForgotPasswordPage extends WidgetByDeviceTemplate {
                       CustomTextField(
                         label: LKey.addSecurityAnswer.tr(context: context),
                         textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => ref.read(forgotPasswordControllerProvider.notifier).checkInfo(),
-                        onChanged: ref.read(forgotPasswordControllerProvider.notifier).updateSecurityAnswer,
+                        onSubmitted: (_) => ref.read(resetPasswordControllerProvider.notifier).checkInfo(),
+                        onChanged: ref.read(resetPasswordControllerProvider.notifier).updateSecurityAnswer,
                       ),
                       const Gap(30),
                       AppButton.primary(
@@ -121,7 +114,7 @@ class ForgotPasswordPage extends WidgetByDeviceTemplate {
                         onPressed: forgotPasswordState.isValidSecurityInfo
                             ? () async {
                                 final goToNextStep =
-                                    await ref.read(forgotPasswordControllerProvider.notifier).checkInfo();
+                                    await ref.read(resetPasswordControllerProvider.notifier).checkInfo();
                                 if (goToNextStep) {
                                   pageController.nextPage(
                                     duration: const Duration(milliseconds: 400),
@@ -153,7 +146,7 @@ class ForgotPasswordPage extends WidgetByDeviceTemplate {
                       const SizedBox(height: 100),
                       LText(LKey.forgotPasswordDescriptionCreateNewPassword,
                           style: context.appTheme.headingSemibold28Default),
-                      Gap(20),
+                      const Gap(20),
                       //text field for username
 
                       const SizedBox(height: 20),
@@ -161,21 +154,21 @@ class ForgotPasswordPage extends WidgetByDeviceTemplate {
                       CustomTextField.password(
                         label: LKey.signUpPassword.tr(context: context),
                         textInputAction: TextInputAction.next,
-                        onChanged: ref.read(forgotPasswordControllerProvider.notifier).updatePassword,
+                        onChanged: ref.read(resetPasswordControllerProvider.notifier).updatePassword,
                       ),
                       const SizedBox(height: 20),
                       //text field for password
                       CustomTextField.password(
                         label: LKey.signUpConfirmPassword.tr(context: context),
                         textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => ref.read(forgotPasswordControllerProvider.notifier).setNewPassword(),
-                        onChanged: ref.read(forgotPasswordControllerProvider.notifier).updateConfirmPassword,
+                        onSubmitted: (_) => ref.read(resetPasswordControllerProvider.notifier).setNewPassword(),
+                        onChanged: ref.read(resetPasswordControllerProvider.notifier).updateConfirmPassword,
                       ),
                       const Gap(30),
                       AppButton.primary(
                         title: LKey.buttonDone.tr(context: context),
                         onPressed: forgotPasswordState.isValidPassword
-                            ? ref.read(forgotPasswordControllerProvider.notifier).setNewPassword
+                            ? ref.read(resetPasswordControllerProvider.notifier).setNewPassword
                             : null,
                       ),
                     ],

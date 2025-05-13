@@ -29,6 +29,7 @@ abstract class LKey {
   // Button Keys
   static const String buttonLogin = 'button.login';
   static const String buttonSignUp = 'button.signUp';
+  static const String buttonLogout = 'button.logout';
   static const String buttonDontHaveAnAccount = 'button.dontHaveAnAccount';
   static const String buttonForgotPassword = 'button.forgotPassword';
   static const String buttonContinue = 'button.continue';

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../provider/theme.dart';
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final Widget? titleWidget;
@@ -22,12 +24,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.appTheme;
     return AppBar(
       automaticallyImplyLeading: showBackButton,
-      title: titleWidget ?? Text(title),
+      title: titleWidget ??
+          Text(
+            title,
+            style: theme.textMedium16Default.copyWith(
+              color: theme.colorTextWhite,
+            ),
+          ),
       leading: leading ?? AppBackButton(onBack: onBack),
       actions: actions,
       bottom: bottom,
+      backgroundColor: theme.colorPrimary,
     );
   }
 
@@ -46,9 +56,12 @@ class AppBackButton extends StatelessWidget {
       return const SizedBox();
     }
 
+    final theme = context.appTheme;
+
     return IconButton(
       icon: Icon(
-        Icons.arrow_back_ios,
+        Icons.arrow_back_ios_new,
+        color: theme.colorTextWhite,
       ),
       onPressed: onBack ??
           () {

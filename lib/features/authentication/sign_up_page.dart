@@ -54,11 +54,13 @@ class SignUpPage extends WidgetByDeviceTemplate {
   Widget buildCommon(BuildContext context, WidgetRef ref) {
     final pinCode = ref.watch(pinCodeRepositoryProvider);
     final List<SecurityQuestionEntity> questions = pinCode.securityQuestions;
+    final _key = GlobalKey();
 
     return HookBuilder(builder: (context) {
       final pageController = usePageController();
       final signUpState = ref.watch(signUpControllerProvider);
       final selectedQuestion = useState<SecurityQuestionEntity?>(null);
+      final focusNode = useFocusNode();
 
       useEffect(() {
         ref.read(signUpControllerProvider.notifier).checkExistAdmin();
@@ -126,8 +128,7 @@ class SignUpPage extends WidgetByDeviceTemplate {
             children: [
               Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                child: ListView(
                   children: [
                     Gap(100),
                     LText(LKey.signUpNewPartnerRegistration, style: context.appTheme.headingSemibold28Default),
@@ -154,39 +155,39 @@ class SignUpPage extends WidgetByDeviceTemplate {
                       textInputAction: TextInputAction.next,
                       onChanged: ref.read(signUpControllerProvider.notifier).updateConfirmPassword,
                       initialValue: signUpState.confirmPassword,
+                      onSubmitted: (String value) {
+                        focusNode.requestFocus();
+                      },
                     ),
                     const Gap(20),
-                    Container(
-                      height: 54,
-                      decoration: BoxDecoration(
+                    ButtonTheme(
+                      alignedDropdown: true,
+                      child: DropdownButtonFormField<SecurityQuestionEntity>(
+                        focusNode: focusNode,
+                        items: questions.map((SecurityQuestionEntity question) {
+                          return DropdownMenuItem<SecurityQuestionEntity>(
+                            value: question,
+                            child: Text(question.question),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          selectedQuestion.value = value!;
+                          ref.read(signUpControllerProvider.notifier).updateSecurityQuestionId(value.id);
+                        },
+                        value: selectedQuestion.value,
+                        padding: EdgeInsets.zero,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: context.appTheme.colorBackgroundField,
+                        ),
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: context.appTheme.colorBorderField,
-                          width: 1,
+                        hint: Text(
+                          LKey.addSecurityQuestion.tr(context: context),
+                          style: context.appTheme.textRegular15Sublest,
                         ),
-                        color: context.appTheme.colorBackgroundField,
-                      ),
-                      child: ButtonTheme(
-                        alignedDropdown: true,
-                        child: DropdownButton<SecurityQuestionEntity>(
-                          items: questions.map((SecurityQuestionEntity question) {
-                            return DropdownMenuItem<SecurityQuestionEntity>(
-                              value: question,
-                              child: Text(question.question),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            selectedQuestion.value = value!;
-                            ref.read(signUpControllerProvider.notifier).updateSecurityQuestionId(value.id);
-                          },
-                          value: selectedQuestion.value,
-                          underline: const SizedBox(),
-                          hint: Text(
-                            LKey.addSecurityQuestion.tr(context: context),
-                            style: context.appTheme.textRegular15Sublest,
-                          ),
-                          isExpanded: true,
-                        ),
+                        isExpanded: true,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -203,6 +204,7 @@ class SignUpPage extends WidgetByDeviceTemplate {
                       title: LKey.buttonDone.tr(context: context),
                       onPressed: signUpState.isValid ? ref.read(signUpControllerProvider.notifier).signUp : null,
                     ),
+                    const Gap(30),
                   ],
                 ),
               ),

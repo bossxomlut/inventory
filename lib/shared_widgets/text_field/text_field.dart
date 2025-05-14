@@ -181,9 +181,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
             prefixIcon: widget.prefixIcon,
             prefixIconColor: theme.colorTextSublest,
             suffixIcon: widget.hideText
-                ? AnimatedBuilder(
-                    animation: _focusNode,
-                    builder: (context, child) {
+                ? ExcludeFocus(
+                    child: Builder(builder: (context) {
                       return showText
                           ? IconButton(
                               icon: Icon(
@@ -207,7 +206,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
                                 });
                               },
                             );
-                    })
+                    }),
+                  )
                 : null,
           ),
           // inputFormatters: [

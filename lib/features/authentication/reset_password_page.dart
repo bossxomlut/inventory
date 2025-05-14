@@ -66,7 +66,7 @@ class ResetPasswordPage extends WidgetByDeviceTemplate {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: 100),
-                      LText(LKey.forgotPasswordTitle, style: context.appTheme.headingSemibold28Default),
+                      LText(LKey.settingChangePassword, style: context.appTheme.headingSemibold28Default),
                       const Gap(20),
                       Container(
                         height: 54,

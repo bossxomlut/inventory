@@ -151,8 +151,7 @@ class SignUpPage extends WidgetByDeviceTemplate {
                     //text field for password
                     CustomTextField.password(
                       label: LKey.signUpConfirmPassword.tr(context: context),
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => ref.read(signUpControllerProvider.notifier).signUp(),
+                      textInputAction: TextInputAction.next,
                       onChanged: ref.read(signUpControllerProvider.notifier).updateConfirmPassword,
                       initialValue: signUpState.confirmPassword,
                     ),

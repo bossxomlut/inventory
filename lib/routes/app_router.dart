@@ -24,6 +24,7 @@ class AppRouter extends $AppRouter {
         AutoRoute(page: SignUpRoute.page),
         AutoRoute(page: ForgotPasswordRoute.page),
         AutoRoute(page: ResetPasswordRoute.page),
+        AutoRoute(page: PinCodeRoute.page),
 
         //setting routes
         AutoRoute(page: SettingRoute.page),
@@ -47,6 +48,14 @@ class AppRouter extends $AppRouter {
 extension AuthRouterX on AppRouter {
   void goToLogin() {
     replaceAll([LoginRoute()]);
+  }
+
+  void goToLoginByPinCode() {
+    replaceAll([PinCodeRoute()]);
+  }
+
+  Future goToPinCode() {
+    return push(PinCodeRoute());
   }
 
   void goToSignUp() {

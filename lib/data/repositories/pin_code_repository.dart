@@ -8,6 +8,8 @@ class PinCodeRepositoryImpl extends PinCodeRepository {
 
   final SecurityStorage _securityStorage;
 
+  static const String _pinCodeKey = 'pin_code';
+
   @override
   Future<bool> get isSetPinCode {
     return getPinCode().then(
@@ -20,15 +22,17 @@ class PinCodeRepositoryImpl extends PinCodeRepository {
   }
 
   @override
-  void savePinCode(SecurityQuestionEntity securityQuestionEntity, String answer, String pin) {
-    _securityStorage.saveString('pin_code', pin);
-    _securityStorage.saveInt('security_question', securityQuestionEntity.id);
-    _securityStorage.saveString('security_answer', answer);
+  Future<void> savePinCode(SecurityQuestionEntity securityQuestionEntity, String answer, String pin) {
+    return Future.wait([
+      _securityStorage.saveString(_pinCodeKey, pin),
+      _securityStorage.saveInt('security_question', securityQuestionEntity.id),
+      _securityStorage.saveString('security_answer', answer),
+    ]);
   }
 
   @override
   Future<String> getPinCode() {
-    return _securityStorage.getString('pin_code').then(
+    return _securityStorage.getString(_pinCodeKey).then(
       (String? value) {
         return value ?? '';
       },
@@ -79,9 +83,28 @@ class PinCodeRepositoryImpl extends PinCodeRepository {
     final existPinCode = await getPinCode();
 
     if (existPinCode == confirmPin) {
-      _securityStorage.saveString('pin_code', newPin);
+      _securityStorage.saveString(_pinCodeKey, newPin);
     } else {
       throw Exception('Invalid pin code');
     }
+  }
+
+  @override
+  void logout() {
+    _securityStorage.remove(_pinCodeKey);
+    _securityStorage.remove('security_question');
+    _securityStorage.remove('security_answer');
+  }
+
+  @override
+  void listenPinCodeChange(Function(String? pin) callback) {
+    _securityStorage.addListener(_pinCodeKey, (String? value) {
+      callback(value);
+    });
+  }
+
+  @override
+  void removePinCodeListener() {
+    _securityStorage.removeListener(_pinCodeKey);
   }
 }

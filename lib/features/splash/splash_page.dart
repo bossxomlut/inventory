@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 
 @RoutePage()
-class SplashPage extends ConsumerWidget {
+class SplashPage extends HookConsumerWidget {
   const SplashPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Trigger checkLogin on first build
-    final authController = ref.watch(authControllerProvider.notifier);
-    authController.checkLogin();
+    useEffect(() {
+      // Simulate a delay for splash screen
+      ref.read(authControllerProvider.notifier).checkLogin();
+
+      return null; // No cleanup needed
+    }, []);
 
     return const Scaffold(
       body: Center(

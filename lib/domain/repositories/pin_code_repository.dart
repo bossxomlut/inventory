@@ -13,7 +13,7 @@ abstract class PinCodeRepository {
 
   Future<String> getPinCode();
 
-  void savePinCode(SecurityQuestionEntity securityQuestionEntity, String answer, String pin);
+  Future<void> savePinCode(SecurityQuestionEntity securityQuestionEntity, String answer, String pin);
 
   Future<void> updatePinCode(String confirmPin, String newPin);
 
@@ -22,4 +22,10 @@ abstract class PinCodeRepository {
   List<SecurityQuestionEntity> get securityQuestions;
 
   Future<void> login(String pin);
+
+  void logout();
+
+  void listenPinCodeChange(Function(String? pin) callback);
+
+  void removePinCodeListener();
 }

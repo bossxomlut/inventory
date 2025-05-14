@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
+import '../../domain/repositories/pin_code_repository.dart';
 import '../../provider/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
@@ -14,16 +15,18 @@ class SettingPage extends WidgetByDeviceTemplate {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
+    final pinCodeRepository = ref.read(pinCodeRepositoryProvider);
+
     return Scaffold(
       appBar: CustomAppBar(
-        title: LKey.buttonOpenSettings.tr(context: context),
+        title: LKey.setting.tr(context: context),
       ),
       body: ListView(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              'Account',
+            child: LText(
+              LKey.settingAccount,
               style: theme.headingSemibold20Default.copyWith(
                 color: theme.colorTextSubtle,
                 fontSize: 18,
@@ -34,20 +37,55 @@ class SettingPage extends WidgetByDeviceTemplate {
             color: Colors.white,
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(HugeIcons.strokeRoundedLockPassword),
-                  title: const Text(
-                    'Pin Code',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  onTap: () {},
-                ),
-                const _Divider(),
+                // HookBuilder(builder: (context) {
+                //   final isPinCodeEnabled = useState(false);
+                //
+                //   void loadPinCode() {
+                //     pinCodeRepository.isSetPinCode.then((value) => isPinCodeEnabled.value = value);
+                //   }
+                //
+                //   useEffect(() {
+                //     loadPinCode();
+                //
+                //     //
+                //     void listen(String? value) {
+                //       pinCodeRepository.isSetPinCode.then((value) => isPinCodeEnabled.value = value);
+                //     }
+                //
+                //     pinCodeRepository.listenPinCodeChange(listen);
+                //     return () {
+                //       pinCodeRepository.removePinCodeListener();
+                //     };
+                //   }, []);
+                //
+                //   return ListTile(
+                //     leading: const Icon(HugeIcons.strokeRoundedLockPassword),
+                //     title: const Text(
+                //       'Pin Code',
+                //       style: TextStyle(fontSize: 16),
+                //     ),
+                //     trailing: IgnorePointer(
+                //       child: Switch(
+                //         value: isPinCodeEnabled.value,
+                //         onChanged: (_) {},
+                //       ),
+                //     ),
+                //     onTap: () {
+                //       if (isPinCodeEnabled.value) {
+                //         final pinCode = ref.read(pinCodeRepositoryProvider);
+                //         pinCode.logout();
+                //         isPinCodeEnabled.value = false;
+                //       } else {
+                //         appRouter.goToPinCode();
+                //       }
+                //     },
+                //   );
+                // }),
+                // const _Divider(),
                 ListTile(
                   leading: const Icon(HugeIcons.strokeRoundedResetPassword),
-                  title: const Text(
-                    'Reset Password',
-                    style: TextStyle(fontSize: 16),
+                  title: LText(
+                    LKey.settingChangePassword,
                   ),
                   onTap: () {
                     appRouter.goToResetPassword();
@@ -75,8 +113,8 @@ class SettingPage extends WidgetByDeviceTemplate {
                           children: [
                             const Icon(HugeIcons.strokeRoundedLogout03),
                             const SizedBox(width: 10),
-                            Text(
-                              'Logout',
+                            LText(
+                              LKey.settingLogout,
                               style: theme.buttonSemibold14,
                             ),
                           ],

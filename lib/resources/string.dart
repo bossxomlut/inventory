@@ -13,13 +13,17 @@ abstract class LKey {
   static const String or = 'or';
   static const String lostConnectInternet = 'lostConnectInternet';
   static const String unknown = 'unknown';
-
   //questions
   static const String addSecurityQuestion = 'question.addSecurityQuestion';
   static const String addSecurityAnswer = 'question.answer';
   static const String whatIsYourFavoriteColor = 'question.whatIsYourFavoriteColor';
   static const String whatIsYourFavoriteFood = 'question.whatIsYourFavoriteFood';
   static const String whatIsYourFavoriteMovie = 'question.whatIsYourFavoriteMovie';
+  static const String messagePinCodeUpdatedSuccessfully = 'message.pinCodeUpdatedSuccessfully';
+  static const String messageIncorrectPinCode = 'message.incorrectPinCode';
+  static const String wrongPinCode = 'wrongPinCode';
+  static const String forgotPinCode = 'forgotPinCode';
+  static const String enterPinCode = 'enterPinCode';
 
   // Toast
   static const String toastTitleError = 'toast.titleError';
@@ -287,4 +291,13 @@ abstract class LKey {
   //Chat
   static const String chatJoinChat = 'chat.joinChat';
   static const String chatTypeAMessage = 'chat.typeAMessage';
+  static const String setting = 'setting.title';
+  static const String settingTheme = 'setting.theme';
+  static const String settingDarkMode = 'setting.darkMode';
+  static const String settingLightMode = 'setting.lightMode';
+  static const String settingSystemDefault = 'setting.systemDefault';
+  static const String settingLanguage = 'setting.language';
+  static const String settingChangePassword = 'setting.changePassword';
+  static const String settingLogout = 'setting.logout';
+  static const String settingAccount = 'setting.account';
 }

@@ -2,11 +2,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/index.dart';
 import '../../../domain/index.dart';
+import '../../../domain/repositories/pin_code_repository.dart';
 import '../../../routes/app_router.dart';
 
 part 'auth_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class AuthController extends _$AuthController {
   static const String _authStateKey = 'auth_state';
 
@@ -26,7 +27,16 @@ class AuthController extends _$AuthController {
           appRouter.goToLogin();
         },
         authenticated: (user, DateTime? lastLoginTime) {
-          appRouter.goHome();
+          final pinCodeRepository = ref.read(pinCodeRepositoryProvider);
+          pinCodeRepository.isSetPinCode.then(
+            (bool value) {
+              if (value) {
+                appRouter.goToLoginByPinCode();
+              } else {
+                appRouter.goHome();
+              }
+            },
+          );
         },
       );
     } catch (e) {

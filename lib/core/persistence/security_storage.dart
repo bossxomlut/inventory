@@ -85,4 +85,12 @@ class SecurityStorage implements KeyValueStorage, ObjectStorage {
   Future<void> saveObject<T>(String key, T value, Map Function(T value) toJson) {
     return _storage.write(key: key, value: jsonEncode(toJson(value)));
   }
+
+  void addListener(String key, Function(String? value) callback) {
+    _storage.registerListener(key: key, listener: callback);
+  }
+
+  void removeListener(String key) {
+    _storage.unregisterAllListenersForKey(key: key);
+  }
 }

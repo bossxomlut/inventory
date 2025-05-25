@@ -13,14 +13,20 @@ class CustomTextField extends StatefulWidget {
   final TextEditingController? controller;
   final TextInputType keyboardType;
   final bool isRequired;
+  final VoidCallback? onTap;
   final ValueChanged<String> onChanged;
   final bool hideText;
   final FocusNode? focusNode;
   final Widget? prefixIcon;
+  final Widget? suffixIcon;
   final bool isReadOnly;
   final bool isDisable;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
+  final int? minLines;
+  final int? maxLines;
+  final int? maxLength;
+
   const CustomTextField({
     Key? key,
     this.label,
@@ -30,13 +36,18 @@ class CustomTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.isRequired = false,
     this.hideText = false,
+    this.onTap,
     required this.onChanged,
     this.focusNode,
     this.prefixIcon,
+    this.suffixIcon,
     this.isReadOnly = false,
     this.isDisable = false,
     this.textInputAction,
     this.onSubmitted,
+    this.minLines,
+    this.maxLines,
+    this.maxLength,
   }) : super(key: key);
 
   factory CustomTextField.password({
@@ -61,6 +72,7 @@ class CustomTextField extends StatefulWidget {
       focusNode: focusNode,
       textInputAction: textInputAction,
       onSubmitted: onSubmitted,
+      maxLines: 1,
     );
   }
 
@@ -80,6 +92,31 @@ class CustomTextField extends StatefulWidget {
       onChanged: onChanged,
       focusNode: focusNode,
       prefixIcon: const Icon(Icons.search),
+    );
+  }
+
+  factory CustomTextField.multiLines({
+    Key? key,
+    String? label,
+    String? hint,
+    String? initialValue,
+    TextEditingController? controller,
+    FocusNode? focusNode,
+    Widget? prefixIcon,
+    TextInputAction? textInputAction,
+    ValueChanged<String>? onSubmitted,
+    int minLines = 3,
+    int? maxLines,
+    int? maxLength,
+  }) {
+    return CustomTextField(
+      key: key,
+      hint: hint,
+      controller: controller,
+      focusNode: focusNode,
+      onChanged: (String value) {},
+      minLines: minLines,
+      maxLines: maxLines,
     );
   }
 
@@ -145,17 +182,22 @@ class _CustomTextFieldState extends State<CustomTextField> {
   Widget build(BuildContext context) {
     final theme = context.appTheme;
     return Container(
-      height: 54,
+      constraints: const BoxConstraints(
+        minHeight: 54.0,
+        // maxHeight: 120.0,
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4.0), // Bo góc
         border: Border.all(color: theme.colorBorderField),
         color: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
       ),
+      alignment: Alignment.center,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4.0), // Bo góc
         child: TextFormField(
           focusNode: _focusNode,
           controller: _controller,
+          onTap: widget.onTap,
           onChanged: widget.onChanged,
           keyboardType: widget.keyboardType,
           style: theme.textMedium15Default, // Màu
@@ -168,6 +210,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
           readOnly: widget.isReadOnly || widget.isDisable,
           textInputAction: widget.textInputAction,
           onFieldSubmitted: widget.onSubmitted,
+          minLines: widget.minLines,
+          maxLines: widget.maxLines,
+          maxLength: widget.maxLength,
+          textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             labelText: widget.isRequired ? '${widget.label}*' : widget.label, // Hiển thị dấu * nếu bắt buộc
             labelStyle: theme.textRegular15Sublest, // Màu label
@@ -177,7 +223,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             // fillColor: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
             border: InputBorder.none,
             focusColor: theme.colorPrimary,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 9),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             prefixIcon: widget.prefixIcon,
             prefixIconColor: theme.colorTextSublest,
             suffixIcon: widget.hideText
@@ -208,8 +254,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
                             );
                     }),
                   )
-                : null,
+                : widget.suffixIcon,
           ),
+
+          // enabled: !(widget.isReadOnly || widget.isDisable),
           // inputFormatters: [
           //   //prevent space
           //   FilteringTextInputFormatter.deny(RegExp(r'\s')),

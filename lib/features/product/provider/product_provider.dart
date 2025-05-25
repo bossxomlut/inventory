@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/entities/inventory.dart';
-import '../../../domain/repositories/product_repository.dart';
+import '../../../domain/repositories/inventory_repository.dart';
 import '../../../provider/load_list.dart';
 import '../../../shared_widgets/toast.dart';
 

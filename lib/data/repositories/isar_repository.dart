@@ -3,10 +3,12 @@ import 'package:isar/isar.dart';
 import '../../domain/index.dart';
 import '../../domain/repositories/index.dart';
 
-mixin IsarCrudRepository<T extends GetIdX<int>, C> on CrudRepository<T, int> {
-  Isar get isar;
+mixin IsarCrudRepository<T, C> on CrudRepository<T, Id> {
+  final Isar _isar = Isar.getInstance()!;
 
-  IsarCollection<C> get collection;
+  Isar get isar => _isar;
+
+  IsarCollection<C> get iCollection => isar.collection<C>();
 
   C createNewItem(T item);
 
@@ -14,47 +16,50 @@ mixin IsarCrudRepository<T extends GetIdX<int>, C> on CrudRepository<T, int> {
 
   Future<T> getItemFromCollection(C collection);
 
+  int? getId(T item);
+
   @override
   Future<T> create(T item) {
     final C nItem = createNewItem(item);
 
-    return isar.writeTxn(() => collection.put(nItem)).then((id) => getItemFromCollection(nItem));
+    final id = isar.writeTxnSync(() => iCollection.putSync(nItem));
+    return read(id);
   }
 
   @override
   Future<bool> delete(T item) {
-    if (item.getId == null) {
+    final int? id = getId(item);
+    if (id == null) {
       throw NotFoundException('Item not found');
     }
 
     return isar.writeTxn(() async {
-      return collection.delete(item.getId!);
+      return iCollection.delete(id);
     });
   }
 
   @override
   Future<T> read(int id) {
-    return isar.writeTxn(() async {
-      return collection.get(id).then((collection) {
-        if (collection == null) {
-          throw NotFoundException('Item not found');
-        }
+    return iCollection.get(id).then((collection) {
+      if (collection == null) {
+        throw NotFoundException('Item not found');
+      }
 
-        return getItemFromCollection(collection);
-      });
+      return getItemFromCollection(collection);
     });
   }
 
   @override
   Future<T> update(T item) {
-    if (item.getId == null) {
+    final int? id = getId(item);
+
+    if (id == null) {
       throw UnimplementedError();
     }
 
     final nItem = updateNewItem(item);
-
     return isar.writeTxn(() async {
-      return collection.put(nItem).then((id) => getItemFromCollection(nItem));
+      return iCollection.put(nItem).then((id) => getItemFromCollection(nItem));
     });
   }
 }

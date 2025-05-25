@@ -35,6 +35,10 @@ class AppRouter extends $AppRouter {
         AutoRoute(page: HomeRoute2.page),
         AutoRoute(page: InventoryRoute.page),
 
+        //product routes
+        AutoRoute(page: ProductListRoute.page),
+        AutoRoute(page: CategoryRoute.page),
+
         //config admin route
         AutoRoute(
           page: UserRoute.page,
@@ -132,5 +136,15 @@ class AdminGuard extends AutoRouteGuard {
     } else {
       router.push(LoginRoute());
     }
+  }
+}
+
+extension AppRouterInventoryX on AppRouter {
+  void goToProduct() {
+    push(ProductListRoute());
+  }
+
+  void goToCategory() {
+    push(CategoryRoute());
   }
 }

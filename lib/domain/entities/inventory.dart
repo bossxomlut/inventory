@@ -1,4 +1,4 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'index.dart';
 
 part 'inventory.freezed.dart';
 
@@ -20,7 +20,7 @@ enum TransactionType { import, export }
 @freezed
 class Category with _$Category {
   const factory Category({
-    required String id, // Mã danh mục
+    required int id, // Mã danh mục
     required String name, // Tên danh mục
     String? description, // Mô tả (tùy chọn)
   }) = _Category;
@@ -30,26 +30,15 @@ class Category with _$Category {
 @freezed
 class Product with _$Product {
   const factory Product({
-    required String id, // Mã sản phẩm
+    required int id, // Mã sản phẩm
     required String name, // Tên sản phẩm
-    String? barcode, // Mã vạch (tùy chọn)
-    required double price, // Giá sản phẩm
     required int quantity, // Số lượng tồn kho
-    required String categoryId, // ID danh mục
-    String? imageUrl, // URL ảnh (tùy chọn)
+    double? price, // Giá sản phẩm
+    String? barcode, // Mã vạch (tùy chọn)
+    Category? category, // ID danh mục
+    List<String>? imageIds, // URL ảnh (tùy chọn)
     String? description, // Mô tả (tùy chọn)
   }) = _Product;
-}
-
-// Model cho Kho hàng (Warehouse)
-@freezed
-class Warehouse with _$Warehouse {
-  const factory Warehouse({
-    required String id, // Mã kho
-    required String name, // Tên kho
-    required String location, // Vị trí kho
-    @Default([]) List<String> productIds, // Danh sách ID sản phẩm
-  }) = _Warehouse;
 }
 
 // Model cho Giao dịch (Transaction)

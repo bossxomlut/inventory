@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-extension StringUtils on String? {
+extension StringX on String? {
   bool get isNullOrEmpty {
     return this == null || this!.isEmpty;
   }
@@ -26,15 +26,31 @@ extension StringUtils on String? {
 
   //first letter of string
   String get firstLetter {
-    if (isNullOrEmpty) {
-      return 'UNKN';
+    return getFirstLetter(this ?? '');
+  }
+
+  //two first letters of two strings
+  String get twoFirstLetters {
+    final parts = this?.split(' ') ?? [];
+    if (parts.length < 2) {
+      return getFirstLetter(this ?? '');
     }
-    return this![0].toUpperCase();
+    return getTwoFirstLetters(parts[0], parts[1]);
   }
 
   //get color from string
   Color get colorFromString {
     return getColorFromString(this ?? '');
+  }
+
+  //get text style from string
+  Color get colorTextStyle {
+    return getColorTextStyle(this ?? '');
+  }
+
+  //get background color from string
+  Color get backgroundColorFromString {
+    return colorFromString.withOpacity(0.1); // Adjust opacity for background
   }
 }
 
@@ -46,6 +62,13 @@ String getFirstLetter(String str) {
   return str[0].toUpperCase();
 }
 
+//get two first letters of two text from string
+String getTwoFirstLetters(String str1, String str2) {
+  final firstLetter = str1.isNotEmpty ? str1[0].toUpperCase() : 'U';
+  final secondLetter = str2.isNotEmpty ? str2[0].toUpperCase() : 'N';
+  return '$firstLetter$secondLetter';
+}
+
 Color getColorFromString(String str) {
   if (str.isEmpty) {
     return Colors.grey;
@@ -55,4 +78,16 @@ Color getColorFromString(String str) {
   final int g = (hash & 0x00FF00) >> 8;
   final int b = hash & 0x0000FF;
   return Color.fromARGB(255, r, g, b);
+}
+
+//get color from string for text style
+Color getColorTextStyle(String str) {
+  final color = getColorFromString(str);
+  return color.withOpacity(0.8); // Adjust opacity for text style
+}
+
+//get color from string for background color
+Color getBackgroundColorFromString(String str) {
+  final color = getColorFromString(str);
+  return color.withOpacity(0.1); // Adjust opacity for background
 }

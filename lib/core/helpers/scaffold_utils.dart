@@ -87,6 +87,38 @@ mixin LoadingState<T extends StatefulWidget> on State<T> {
     return const LoadingWidget();
   }
 }
+mixin SkeletonLoadingState<T extends StatefulWidget> on State<T> {
+  final ValueNotifier<bool> _loadingNotifier = ValueNotifier<bool>(false);
+
+  void loading() {
+    _loadingNotifier.value = true;
+  }
+
+  void loaded() {
+    _loadingNotifier.value = false;
+  }
+
+  @override
+  void dispose() {
+    _loadingNotifier.dispose();
+    super.dispose();
+  }
+
+  Widget buildLoaded(BuildContext context);
+
+  Widget buildLoadView(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: _loadingNotifier,
+      builder: (_, bool loading, __) {
+        return loading ? buildLoading(context) : buildLoaded(context);
+      },
+    );
+  }
+
+  Widget buildLoading(BuildContext context) {
+    return const LoadingWidget();
+  }
+}
 
 abstract class WidgetByDeviceTemplate extends ConsumerWidget {
   const WidgetByDeviceTemplate({super.key});

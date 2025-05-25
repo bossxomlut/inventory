@@ -30,18 +30,19 @@ class ProductCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Ảnh sản phẩm
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: product.imageUrl != null
-                    ? Image.network(
-                        product.imageUrl!,
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
-                      )
-                    : _buildPlaceholder(),
-              ),
+              // ClipRRect(
+              //   borderRadius: BorderRadius.circular(8),
+              //   child: product.imageUrl != null
+              //       ? Image.network(
+              //           product.imageUrl!,
+              //           width: 80,
+              //           height: 80,
+              //           fit: BoxFit.cover,
+              //           errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+              //         )
+              //       : _buildPlaceholder(),
+              // ),
+              _buildPlaceholder(),
               const SizedBox(width: 12),
 
               // Thông tin sản phẩm
@@ -63,7 +64,7 @@ class ProductCard extends StatelessWidget {
 
                     // Giá sản phẩm
                     Text(
-                      '\$${product.price.toStringAsFixed(2)}',
+                      '\$${product.price?.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.green,

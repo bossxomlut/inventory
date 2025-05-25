@@ -83,6 +83,8 @@ class AppImage extends StatelessWidget {
       height: height,
     );
 
+    final errorWidget = const ErrorImagePlaceholder();
+
     switch (type) {
       case ImageViewType.network:
         return CachedNetworkImage(
@@ -93,7 +95,7 @@ class AppImage extends StatelessWidget {
           memCacheWidth: width?.toInt(),
           fit: fit,
           placeholder: (context, url) => placeholder,
-          errorWidget: (context, url, error) => placeholder,
+          errorWidget: (context, url, error) => errorWidget,
         );
       case ImageViewType.asset:
         return Image.asset(
@@ -103,7 +105,7 @@ class AppImage extends StatelessWidget {
           cacheHeight: height?.toInt(),
           cacheWidth: width?.toInt(),
           fit: fit,
-          errorBuilder: (context, _, __) => placeholder,
+          errorBuilder: (context, _, __) => errorWidget,
         );
       case ImageViewType.file:
         return Image.file(
@@ -111,11 +113,23 @@ class AppImage extends StatelessWidget {
           width: width,
           height: height,
           fit: fit,
-          errorBuilder: (context, error, stackTrace) => placeholder,
+          errorBuilder: (context, error, stackTrace) => errorWidget,
           cacheHeight: height?.toInt(),
           cacheWidth: width?.toInt(),
         );
     }
+  }
+}
+
+//create error image placeholder
+class ErrorImagePlaceholder extends StatelessWidget {
+  const ErrorImagePlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Icon(Icons.error_outline),
+    );
   }
 }
 

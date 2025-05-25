@@ -1,57 +1,66 @@
-import 'dart:developer';
-
-import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../domain/entities/index.dart';
 
-class AppFilePicker extends StatelessWidget {
-  const AppFilePicker({Key? key, required this.allowMultiple}) : super(key: key);
+abstract class AppFilePicker {
+  const AppFilePicker();
 
-  final bool allowMultiple;
   // final FileType fileType;
 
-  Future<List<AppFile>?> opeFilePicker() {
+  Future<AppFile?> pickOne();
+  Future<List<AppFile>?> pickMultiFiles();
+
+  factory AppFilePicker.image() {
+    return ImageFilePicker();
+  }
+
+  factory AppFilePicker.camera() {
+    return CameraFilePicker();
+  }
+}
+
+class ImageFilePicker extends AppFilePicker {
+  const ImageFilePicker();
+
+  @override
+  Future<AppFile?> pickOne() async {
     final ImagePicker picker = ImagePicker();
-
-    return picker.pickMultiImage().then((value) {
-      return value
-          .map(
-            (file) => AppFile(name: file.name, path: file.path),
-          )
-          .toList();
-    }).onError(
-      (error, StackTrace stackTrace) async {
-        log('error: $error', stackTrace: stackTrace);
-        return [];
-      },
-    );
-
-    // return FilePicker.platform
-    //     .pickFiles(
-    //   type: fileType,
-    //   allowMultiple: allowMultiple,
-    //   withData: false,
-    //   onFileLoading: (status) {
-    //     print('status: $status');
-    //   },
-    // )
-    //     .then((filePickerResult) {
-    //   print('lol: ${filePickerResult?.files}');
-    //
-    //   return filePickerResult?.files
-    //       .map(
-    //         (file) => AppFile(name: file.name, path: file.path ?? ""),
-    //       )
-    //       .toList();
-    // });
+    final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+    if (file != null) {
+      return AppFile(path: file.path, name: file.name);
+    }
+    return null;
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const SizedBox();
+  Future<List<AppFile>?> pickMultiFiles() async {
+    final ImagePicker picker = ImagePicker();
+    final List<XFile>? files = await picker.pickMultiImage();
+    if (files != null && files.isNotEmpty) {
+      return files.map((e) => AppFile(path: e.path, name: e.name)).toList();
+    }
+    return null;
   }
 }
+
+//camera
+class CameraFilePicker extends AppFilePicker {
+  const CameraFilePicker();
+
+  @override
+  Future<AppFile?> pickOne() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? file = await picker.pickImage(source: ImageSource.camera);
+    if (file != null) {
+      return AppFile(path: file.path, name: file.name);
+    }
+    return null;
+  }
+
+  @override
+  Future<List<AppFile>?> pickMultiFiles() async {}
+}
+
 //
 // class VideoFilePicker extends AppFilePicker {
 //   const VideoFilePicker({

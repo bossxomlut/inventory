@@ -541,5 +541,10 @@ ThemeData dTheme(BuildContext context, AppThemeData theme) {
       selectionHandleColor: theme.colorPrimary,
     ),
     canvasColor: theme.colorBackgroundSurface,
+    floatingActionButtonTheme: baseTheme.floatingActionButtonTheme.copyWith(
+      backgroundColor: theme.colorPrimary,
+      foregroundColor: theme.colorTextWhite,
+      shape: const CircleBorder(),
+    ),
   );
 }

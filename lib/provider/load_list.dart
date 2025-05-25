@@ -5,6 +5,9 @@ import '../core/helpers/cancel_task_utils.dart';
 
 part 'load_list.freezed.dart';
 
+const int firstPage = 0;
+const int defaultPageSize = 20;
+
 abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T>> {
   final CancelTask<List<T>> _cancelTask = CompleterCancelTask<List<T>>();
 
@@ -19,8 +22,8 @@ abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T
     try {
       // Set loading state
       state = state.copyWith(
-        isLoading: query.page == 1,
-        isLoadingMore: query.page > 1,
+        isLoading: query.page == firstPage,
+        isLoadingMore: query.page > firstPage,
         error: null,
       );
 
@@ -33,7 +36,7 @@ abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T
       state = state.copyWith(
         isLoading: false,
         isLoadingMore: false,
-        data: query.page == 1 ? newData : [...state.data, ...newData],
+        data: query.page == firstPage ? newData : [...state.data, ...newData],
         error: null,
       );
     } catch (e, stackTrace) {
@@ -50,14 +53,14 @@ abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T
 
   Future<void> refresh({required LoadListQuery query}) async {
     await loadData(
-      query: query.copyWith(page: 1),
+      query: query.copyWith(page: firstPage),
     );
   }
 
   Future<void> search({
     required LoadListQuery query,
   }) async {
-    await loadData(query: query.copyWith(page: 1));
+    await loadData(query: query.copyWith(page: firstPage));
   }
 
   void loadMore({required LoadListQuery query}) {
@@ -178,4 +181,9 @@ class LoadListQuery with _$LoadListQuery {
     String? search,
     Map<String, dynamic>? filter,
   }) = _LoadListQuery;
+}
+
+extension LoadListQueryX on LoadListQuery {
+  //default LoadListQuery
+  static LoadListQuery get defaultQuery => const LoadListQuery(page: firstPage, pageSize: defaultPageSize);
 }

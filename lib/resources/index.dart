@@ -1,3 +1,4 @@
+export 'demension.dart';
 export 'icon_path.dart';
 export 'image_path.dart';
 export 'string.dart';

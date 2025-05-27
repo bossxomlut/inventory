@@ -7,33 +7,31 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'index.dart';
 
-class ScannerPage extends StatefulWidget {
-  const ScannerPage({
+class ScannerView extends StatefulWidget {
+  const ScannerView({
     super.key,
     required this.onBarcodeScanned,
     this.autoStopCamera = false,
+    this.singleScan = false, // New flag for single/multiple scans
   });
 
   final ValueChanged<Barcode> onBarcodeScanned;
   final bool autoStopCamera;
+  final bool singleScan; // Added parameter
 
   @override
-  State<ScannerPage> createState() => ScannerPageState();
+  State<ScannerView> createState() => ScannerViewState();
 }
 
-class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
+class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
   final stopWatch = Stopwatch();
   final MobileScannerController controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.unrestricted,
-    // torchEnabled: true,
-
-    // invertImage: true,
   );
 
-  //create a timer to auto stop scanner after 10s
   Timer? _timer;
-
   StreamSubscription<BarcodeCapture>? _barcodeSubscription;
+  bool _hasScanned = false; // Track if a scan has occurred
 
   void _startTimer() {
     if (!widget.autoStopCamera) {
@@ -55,29 +53,33 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
     super.initState();
     stopWatch.start();
     WidgetsBinding.instance.addObserver(this);
-    startScanner();
-
-    // _barcodeSubscription = controller.barcodes.listen(
-    //   (BarcodeCapture event) {
-    //     //print last barcode
-    //     //log all information of barcode
-    //     // print(event.barcodes.last);
-    //
-    //     //check null
-    //     if (event.barcodes.last.displayValue != null) {
-    //       print('Detected time: ${stopWatch.elapsedMilliseconds}');
-    //
-    //       widget.onBarcodeScanned(event.barcodes.last.displayValue!);
-    //     }
-    //
-    //     //start timer again
-    //     resetTimer();
-    //   },
-    // );
+    _startScanner();
 
     if (widget.autoStopCamera) {
       controller.addListener(_listenAutoStopCamera);
     }
+  }
+
+  void _startScanner() {
+    controller.start();
+    _barcodeSubscription = controller.barcodes.listen(
+      (BarcodeCapture event) {
+        if (event.barcodes.isNotEmpty && !_hasScanned) {
+          final barcode = event.barcodes.last;
+          if (barcode.displayValue != null) {
+            print('Detected time: ${stopWatch.elapsedMilliseconds}');
+            widget.onBarcodeScanned(barcode);
+
+            if (widget.singleScan) {
+              _hasScanned = true; // Prevent further scans
+              controller.stop(); // Stop the scanner
+            } else {
+              resetTimer(); // Reset timer for multiple scans
+            }
+          }
+        }
+      },
+    );
   }
 
   void _listenAutoStopCamera() {
@@ -89,17 +91,15 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // if (!controller.value.hasCameraPermission) {
-    //   return;
-    // }
-
     switch (state) {
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
         return;
       case AppLifecycleState.resumed:
-        unawaited(controller.start());
+        if (!_hasScanned || !widget.singleScan) {
+          unawaited(controller.start());
+        }
       case AppLifecycleState.inactive:
         unawaited(controller.stop());
     }
@@ -109,7 +109,6 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
     return ValueListenableBuilder(
       valueListenable: controller,
       builder: (context, value, child) {
-        // Not ready.
         if (!value.isInitialized || !value.isRunning || value.error != null) {
           return const SizedBox();
         }
@@ -119,14 +118,12 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
           builder: (context, snapshot) {
             final BarcodeCapture? barcodeCapture = snapshot.data;
 
-            // No barcode.
             if (barcodeCapture == null || barcodeCapture.barcodes.isEmpty) {
               return const SizedBox();
             }
 
             final scannedBarcode = barcodeCapture.barcodes.first;
 
-            // No barcode corners, or size, or no camera preview size.
             if (value.size.isEmpty || scannedBarcode.size.isEmpty || scannedBarcode.corners.isEmpty) {
               return const SizedBox();
             }
@@ -149,7 +146,6 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
     return ValueListenableBuilder(
       valueListenable: controller,
       builder: (context, value, child) {
-        // Not ready.
         if (!value.isInitialized || !value.isRunning || value.error != null || value.size.isEmpty) {
           return const SizedBox();
         }
@@ -163,140 +159,84 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Column(
-        children: [
-          Expanded(
-            child: LayoutBuilder(builder: (context, constraints) {
-              final screenSize = MediaQuery.sizeOf(context);
+    return Column(
+      children: [
+        Expanded(
+          child: LayoutBuilder(builder: (context, constraints) {
+            final screenSize = MediaQuery.sizeOf(context);
 
-              final padding = 40.0;
+            final padding = 40.0;
 
-              final w = constraints.maxWidth - padding;
-              final h = constraints.maxHeight - padding;
+            final w = constraints.maxWidth - padding;
+            final h = constraints.maxHeight - padding;
 
-              final scanWindow = Rect.fromCenter(
-                center: Size(constraints.maxWidth, constraints.maxHeight).center(Offset.zero),
-                width: w,
-                height: h,
-              );
+            final scanWindow = Rect.fromCenter(
+              center: Size(constraints.maxWidth, constraints.maxHeight).center(Offset.zero),
+              width: w,
+              height: h,
+            );
 
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  MobileScanner(
-                    controller: controller,
-                    onDetect: (BarcodeCapture barcodes) {
-                      //print all barcodes
-
-                      print('detected barcodes: ${barcodes.barcodes.map((e) => e.displayValue).join(', ')}');
-
-                      widget.onBarcodeScanned(barcodes.barcodes.last!);
-                    },
-                    errorBuilder: (context, error, _) {
-                      return ErrorWidget('Camera error: $error');
-                    },
-                    fit: BoxFit.fitWidth,
-                    // scanWindow: scanWindow,
-                  ),
-                  _buildBarcodeOverlay(),
-                  _buildScanWindow(scanWindow),
-                  ValueListenableBuilder(
-                    valueListenable: controller,
-                    builder: (context, value, child) {
-                      if (!value.isInitialized || !value.isRunning || value.error != null) {
-                        return const SizedBox();
-                      }
-
-                      return CustomPaint(
-                        painter: BorderScannerOverlay(scanWindow: scanWindow),
-                      );
-                    },
-                  ),
-                ],
-              );
-            }),
-          ),
-          Container(
-            constraints: const BoxConstraints(maxHeight: 50),
-            color: Colors.black.withAlpha(80),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            return Stack(
+              fit: StackFit.expand,
               children: [
-                ToggleFlashlightButton(controller: controller),
-                StartStopMobileScannerButton(controller: controller),
-                PauseMobileScannerButton(controller: controller),
-                Expanded(
-                  child: Center(
-                    child: ScannedBarcodeLabel(
-                      barcodes: controller.barcodes,
-                    ),
+                MobileScanner(
+                  controller: controller,
+                  onDetect: (BarcodeCapture barcodes) {
+                    if (barcodes.barcodes.isNotEmpty && (!_hasScanned || !widget.singleScan)) {
+                      print('detected barcodes: ${barcodes.barcodes.map((e) => e.displayValue).join(', ')}');
+                      widget.onBarcodeScanned(barcodes.barcodes.last!);
+                      if (widget.singleScan) {
+                        _hasScanned = true;
+                        controller.stop();
+                      }
+                    }
+                  },
+                  errorBuilder: (context, error, _) {
+                    return ErrorWidget('Camera error: $error');
+                  },
+                  fit: BoxFit.fitWidth,
+                ),
+                _buildBarcodeOverlay(),
+                _buildScanWindow(scanWindow),
+                ValueListenableBuilder(
+                  valueListenable: controller,
+                  builder: (context, value, child) {
+                    if (!value.isInitialized || !value.isRunning || value.error != null) {
+                      return const SizedBox();
+                    }
+
+                    return CustomPaint(
+                      painter: BorderScannerOverlay(scanWindow: scanWindow),
+                    );
+                  },
+                ),
+              ],
+            );
+          }),
+        ),
+        Container(
+          constraints: const BoxConstraints(maxHeight: 50),
+          color: Colors.black.withAlpha(80),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ToggleFlashlightButton(controller: controller),
+              StartStopMobileScannerButton(controller: controller),
+              PauseMobileScannerButton(controller: controller),
+              Expanded(
+                child: Center(
+                  child: ScannedBarcodeLabel(
+                    barcodes: controller.barcodes,
                   ),
                 ),
-                SwitchCameraButton(controller: controller),
-                AnalyzeImageFromGalleryButton(controller: controller),
-              ],
-            ),
+              ),
+              SwitchCameraButton(controller: controller),
+              AnalyzeImageFromGalleryButton(controller: controller),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
-    // return Scaffold(
-    //   // appBar: AppBar(title: const Text('With controller')),
-    //   backgroundColor: Colors.black,
-    //   body: Stack(
-    //     fit: StackFit.expand,
-    //     children: [
-    //       MobileScanner(
-    //         controller: controller,
-    //         errorBuilder: (context, error, _) {
-    //           return ErrorWidget('Camera error: $error');
-    //         },
-    //         fit: BoxFit.contain,
-    //         scanWindow: scanWindow,
-    //       ),
-    //       _buildBarcodeOverlay(),
-    //       _buildScanWindow(scanWindow),
-    //       ValueListenableBuilder(
-    //         valueListenable: controller,
-    //         builder: (context, value, child) {
-    //           if (!value.isInitialized || !value.isRunning || value.error != null) {
-    //             return const SizedBox();
-    //           }
-    //
-    //           return CustomPaint(
-    //             painter: BorderScannerOverlay(scanWindow: scanWindow),
-    //           );
-    //         },
-    //       ),
-    //       Align(
-    //         alignment: Alignment.bottomCenter,
-    //         child: Container(
-    //           alignment: Alignment.bottomCenter,
-    //           height: 100,
-    //           color: const Color.fromRGBO(0, 0, 0, 0.4),
-    //           child: Row(
-    //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    //             children: [
-    //               ToggleFlashlightButton(controller: controller),
-    //               StartStopMobileScannerButton(controller: controller),
-    //               PauseMobileScannerButton(controller: controller),
-    //               Expanded(
-    //                 child: Center(
-    //                   child: ScannedBarcodeLabel(
-    //                     barcodes: controller.barcodes,
-    //                   ),
-    //                 ),
-    //               ),
-    //               SwitchCameraButton(controller: controller),
-    //               AnalyzeImageFromGalleryButton(controller: controller),
-    //             ],
-    //           ),
-    //         ),
-    //       ),
-    //     ],
-    //   ),
-    // );
   }
 
   @override
@@ -312,7 +252,7 @@ class ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
   }
 }
 
-class InnerScannerPage extends StatelessWidget with ShowDialog {
+class InnerScannerPage extends StatelessWidget with ShowBottomSheet {
   const InnerScannerPage({
     super.key,
     required this.onBarcodeScanned,
@@ -324,27 +264,32 @@ class InnerScannerPage extends StatelessWidget with ShowDialog {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Flexible(
-          flex: 3,
-          child: ScannerPage(
-            onBarcodeScanned: (Barcode value) {
-              onBarcodeScanned(value);
-            },
+    return Scaffold(
+      appBar: AppBar(),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: 300,
+            child: ScannerView(
+              onBarcodeScanned: (Barcode value) {
+                Navigator.of(context).pop();
+                onBarcodeScanned(value);
+              },
+              singleScan: true,
+            ),
           ),
-        ),
-        const AppDivider(),
-        Expanded(
-          flex: 5,
-          child: child,
-        ),
-      ],
+          const AppDivider(),
+          Expanded(
+            child: child,
+          ),
+        ],
+      ),
     );
   }
 }
 
-extension ScannerPageStateX on ScannerPageState {
+extension ScannerPageStateX on ScannerViewState {
   //create action to control scanner
   void startScanner() {
     controller.start();

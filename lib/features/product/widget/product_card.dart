@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../../domain/entities/inventory.dart';
@@ -15,84 +17,86 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4, // Độ bóng đổ
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12), // Bo góc
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: InkWell(
-        onTap: onTap, // Xử lý sự kiện nhấn
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Ảnh sản phẩm
-              // ClipRRect(
-              //   borderRadius: BorderRadius.circular(8),
-              //   child: product.imageUrl != null
-              //       ? Image.network(
-              //           product.imageUrl!,
-              //           width: 80,
-              //           height: 80,
-              //           fit: BoxFit.cover,
-              //           errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
-              //         )
-              //       : _buildPlaceholder(),
-              // ),
-              _buildPlaceholder(),
-              const SizedBox(width: 12),
-
-              // Thông tin sản phẩm
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Tên sản phẩm
-                    Text(
-                      product.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+    final firstImage = (product.images != null && product.images!.isNotEmpty && product.images!.first.path != null)
+        ? product.images!.first.path
+        : null;
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 4,
+              offset: const Offset(0, 2), // Đổ bóng nhẹ
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Hero(
+              tag: 'product-image-${product.id}',
+              child: firstImage != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(
+                        File(firstImage),
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 80,
+                          height: 80,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                        ),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Giá sản phẩm
-                    Text(
-                      '\$${product.price?.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.green,
-                        fontWeight: FontWeight.w500,
+                    )
+                  : Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey[300],
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: Colors.grey,
+                        size: 40,
                       ),
                     ),
-                    const SizedBox(height: 4),
+            ),
+            const SizedBox(width: 12),
 
-                    // Số lượng tồn kho
-                    Text(
-                      'In stock: ${product.quantity}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+            // Thông tin sản phẩm
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tên sản phẩm
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  // Số lượng tồn kho
+                  Text(
+                    'In stock: ${product.quantity}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
               ),
-
-              // Nút hành động (tùy chọn)
-              IconButton(
-                icon: const Icon(Icons.arrow_forward_ios, size: 20),
-                onPressed: onTap,
-                color: Colors.blue,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

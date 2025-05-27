@@ -9,15 +9,16 @@ import 'add_category.dart';
 import 'category_card.dart';
 
 void showCategory(
-  BuildContext context,
-) {
+  BuildContext context, {
+  ValueChanged<Category>? onSelected,
+}) {
   SearchItemWidget<Category>(
     itemBuilder: (BuildContext item, Category p1, int p2) {
       return CategoryCard(
         category: p1,
         color: p2.color,
         onTap: () {
-          print('Selected category: ${p1.name}');
+          onSelected?.call(p1);
         },
       );
     },

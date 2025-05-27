@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+import 'image.dart';
+
 part 'inventory.g.dart';
 
 @collection
@@ -17,7 +19,7 @@ class ProductCollection {
   late double? price;
   late int quantity;
   final IsarLink<CategoryCollection> category = IsarLink<CategoryCollection>();
-  late List<String>? imageIds;
+  final IsarLinks<ImageStorageCollection> images = IsarLinks<ImageStorageCollection>();
   late String? description;
 }
 

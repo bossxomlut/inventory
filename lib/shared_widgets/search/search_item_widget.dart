@@ -68,9 +68,10 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Search bar
-                BackButton(),
+                IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.arrow_back, size: 18)),
                 Expanded(
                   child: TextField(
                     controller: _searchController,

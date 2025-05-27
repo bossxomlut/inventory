@@ -1,3 +1,4 @@
+import 'image.dart';
 import 'index.dart';
 
 part 'inventory.freezed.dart';
@@ -36,7 +37,7 @@ class Product with _$Product {
     double? price, // Giá sản phẩm
     String? barcode, // Mã vạch (tùy chọn)
     Category? category, // ID danh mục
-    List<String>? imageIds, // URL ảnh (tùy chọn)
+    List<ImageStorageModel>? images, // URL ảnh (tùy chọn)
     String? description, // Mô tả (tùy chọn)
   }) = _Product;
 }

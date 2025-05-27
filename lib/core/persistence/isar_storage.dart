@@ -15,6 +15,7 @@ class IsarDatabase {
               UserCollectionSchema,
               ProductCollectionSchema,
               CategoryCollectionSchema,
+              ImageStorageCollectionSchema,
             ],
             directory: dir.path,
           );

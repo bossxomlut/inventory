@@ -1,25 +1,33 @@
+import 'package:barcode/barcode.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sample_app/shared_widgets/index.dart';
 
+import '../../../domain/entities/image.dart';
 import '../../../domain/entities/index.dart';
 import '../../../provider/index.dart';
 import '../../../resources/index.dart';
+import '../../../shared_widgets/toast.dart';
 import '../../category/select_category_widget.dart';
 import '../provider/product_provider.dart';
+import 'image_manager_picker_page.dart';
 
 // Add product bottom sheet
-class AddProductScreen extends HookConsumerWidget with ShowBottomSheet {
+class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
   const AddProductScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final _nameController = useTextEditingController();
-    final _quantityController = useTextEditingController();
     final _priceController = useTextEditingController();
-    final _categoryController = useTextEditingController();
-    final _skuController = useTextEditingController();
+    final _noteController = useTextEditingController();
+    final _category = useState<Category?>(null);
+    final _sku = useState<String?>(null);
+    final quantity = useState<int>(0);
+    final images = useState<List<ImageStorageModel>>([]);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -31,32 +39,14 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      // Image placeholder
-                      // Container(
-                      //   width: 100,
-                      //   height: 100,
-                      //   color: Colors.grey[300],
-                      //   child: const Icon(Icons.image),
-                      // ),
-                      // const Gap(10),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            TitleBlockWidget(
-                              title: 'Product Name',
-                              isRequired: true,
-                              child: CustomTextField.multiLines(
-                                // label: 'Product Name',
-                                hint: 'Product Name',
-                                maxLines: 3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  TitleBlockWidget(
+                    title: 'Product Name',
+                    isRequired: true,
+                    child: CustomTextField.multiLines(
+                      controller: _nameController,
+                      hint: 'Product Name',
+                      maxLines: 3,
+                    ),
                   ),
                   separateGap,
                   // Quantity
@@ -66,7 +56,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet {
                     child: PlusMinusInputView(
                       initialValue: 0,
                       onChanged: (int p0) {
-                        // Handle quantity change
+                        quantity.value = p0;
                       },
                       minValue: 0,
                     ),
@@ -74,39 +64,21 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet {
                   separateGap,
                   TitleBlockWidget(
                     title: 'Category',
-                    child: CustomTextField(
-                      hint: 'Add category',
-                      onChanged: (String value) {},
-                      isReadOnly: true,
-                      controller: _categoryController,
-                      onTap: () {
-                        showCategory(context);
+                    child: AddCategoryPlaceHolder(
+                      value: _category.value,
+                      onSelected: (Category? value) {
+                        _category.value = value;
                       },
-                      suffixIcon: InkWell(
-                        onTap: () {
-                          _categoryController.clear();
-                        },
-                        child: const Icon(Icons.clear),
-                      ),
                     ),
                   ),
                   separateGap,
                   TitleBlockWidget(
                     title: 'SKU',
-                    child: CustomTextField(
-                      hint: 'Product Code',
-                      onChanged: (String value) {},
-                      isReadOnly: true,
-                      controller: _skuController,
-                      onTap: () {
-                        AddSKUWidget().show(context);
+                    child: AddSKUPlaceHolder(
+                      value: _sku.value,
+                      onSelected: (String? value) {
+                        _sku.value = value;
                       },
-                      suffixIcon: InkWell(
-                        onTap: () {
-                          _skuController.clear();
-                        },
-                        child: const Icon(Icons.clear),
-                      ),
                     ),
                   ),
                   separateGap,
@@ -123,9 +95,13 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet {
                     title: 'Image',
                     child: UploadImagePlaceholder(
                       title: 'Add Image',
-                      files: [
-                        AppFile(name: 'name', path: 'path'),
-                      ],
+                      files: images.value,
+                      onAdd: (value) {
+                        images.value = [...images.value, ...value];
+                      },
+                      onRemove: (file) {
+                        images.value = images.value.where((e) => e != file).toList();
+                      },
                     ),
                   ),
                 ],
@@ -140,42 +116,31 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet {
           onSave: () {
             // Create a new product
             final name = _nameController.text.trim();
-            final quantityStr = _quantityController.text.trim();
             final priceStr = _priceController.text.trim();
-            final category = _categoryController.text.trim();
+            final note = _noteController.text.trim();
+            final sku = _sku.value;
 
-            // // Validate inputs
-            // if (name.isEmpty || quantityStr.isEmpty || priceStr.isEmpty) {
-            //   ScaffoldMessenger.of(context).showSnackBar(
-            //     const SnackBar(content: Text('Please fill all required fields')),
-            //   );
-            //   return;
-            // }
+            // Validate inputs
+            if (name.isEmpty) {
+              showError(message: 'Please fill in all required fields.');
+              return;
+            }
 
-            final quantity = int.tryParse(quantityStr) ?? 0;
             final price = double.tryParse(priceStr) ?? 0.0;
 
             final newProduct = Product(
-              id: -1, // Generate unique ID
-              name: 'name',
-              description: '',
+              id: undefinedId, // Generate unique ID
+              name: name,
+              description: note,
               price: price,
-              imageIds: [], // Add image IDs if needed
-              quantity: quantity,
-              category: Category(id: 1, name: 'name', description: 'does'),
-              barcode: '',
+              images: [...images.value], // Add image IDs if needed
+              quantity: quantity.value,
+              category: _category.value,
+              barcode: sku,
             );
 
             // Add product to the provider
             ref.read(loadProductProvider.notifier).createProduct(newProduct);
-
-            // Close bottom sheet
-            Navigator.pop(context);
-
-            // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Product added successfully')),
-            );
           },
         ),
       ],
@@ -183,97 +148,128 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet {
   }
 }
 
-class AddCategoryPlaceHolder extends StatelessWidget {
-  const AddCategoryPlaceHolder({super.key, required this.category});
+class AddSKUWidget extends HookWidget with ShowBottomSheet {
+  const AddSKUWidget(this.onSelected, {super.key});
 
-  final Category category;
+  final ValueChanged<String> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        // Handle category selection
-        // showModalBottomSheet(
-        //   context: context,
-        //   builder: (context) {
-        //     return CategorySelectionScreen(categories: categories);
-        //   },
-        // );
-      },
-      child: Container(
-        // padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(),
-        child: Row(
+    // Use state hook for reactive SKU updates
+    final _skuController = useTextEditingController();
+    final theme = context.appTheme;
+    final dm = Barcode.qrCode();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ColoredBox(
+          color: Colors.grey.shade100,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.arrow_back, size: 18),
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _skuController,
+                    textInputAction: TextInputAction.search,
+                    textAlignVertical: TextAlignVertical.center,
+                    decoration: InputDecoration(
+                      hintText: 'Enter SKU Code',
+                      hintStyle: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () async {
+                    await InnerScannerPage(
+                      child: const Text('Scan QR Code'),
+                      onBarcodeScanned: (value) {
+                        final scannedValue = value.displayValue ?? '';
+                        _skuController.text = scannedValue;
+                      },
+                    ).show(context);
+                  },
+                  child: const Icon(Icons.camera_alt_outlined),
+                ),
+                const SizedBox(width: 8),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Column(
           children: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.add_circle_outline_rounded)),
-            const Gap(10),
-            const Text('Add Category'),
+            Text(
+              'Generated Barcode/QR Code:',
+              style: theme.headingSemibold20Sublest,
+            ),
+            const SizedBox(height: 10),
+            AnimatedBuilder(
+                animation: _skuController,
+                builder: (context, _) {
+                  // Rebuild the QR code when SKU changes
+                  if (_skuController.text.isEmpty) {
+                    return Container(
+                      width: 200,
+                      height: 200,
+                      alignment: Alignment.center,
+                      color: Colors.grey.shade200,
+                      child: const Text(
+                        'Please enter a SKU code to generate the QR code',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    );
+                  }
+
+                  return Builder(builder: (context) {
+                    try {
+                      final svg = dm.toSvg(
+                        _skuController.text,
+                        width: 200,
+                        height: 200,
+                      );
+                      return SvgPicture.string(
+                        svg,
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.contain,
+                        placeholderBuilder: (context) => const CircularProgressIndicator(),
+                      );
+                    } catch (e) {
+                      return const Text(
+                        'Error generating QR code',
+                        style: TextStyle(color: Colors.red),
+                      );
+                    }
+                  });
+                }),
           ],
         ),
-      ),
+        const SizedBox(height: 20),
+        BottomButtonBar(
+          onCancel: () {},
+          onSave: () {
+            final sku = _skuController.text.trim();
+            if (sku.isEmpty) {
+              return;
+            }
+            Navigator.of(context).pop();
+            onSelected(sku);
+          },
+        ),
+      ],
     );
   }
 }
 
-class AddSKUWidget extends StatelessWidget with ShowBottomSheet {
-  const AddSKUWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final _skuController = TextEditingController();
-
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _skuController,
-                  decoration: const InputDecoration(
-                    labelText: 'Enter SKU Code',
-                    border: OutlineInputBorder(),
-                  ),
-                  onChanged: (value) {
-                    // Handle SKU code input
-                  },
-                ),
-              ),
-              const Gap(10),
-              IconButton(
-                icon: const Icon(Icons.qr_code),
-                onPressed: () {},
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // if (_skuController.text.isNotEmpty)
-          Column(
-            children: [
-              Text(
-                'Generated Barcode/QR Code:',
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-              const SizedBox(height: 10),
-              // Replace with actual barcode/QR code widget
-              Container(
-                height: 100,
-                width: 100,
-                color: Colors.grey[300],
-                alignment: Alignment.center,
-                child: const Text('Barcode/QR Code'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<AppFile> {
+class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<List<ImageStorageModel>> {
   const SelectImageOptionWidget({super.key});
 
   @override
@@ -284,6 +280,7 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<AppFi
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Gap(20),
           Row(
             children: [
               const Gap(10),
@@ -294,7 +291,14 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<AppFi
                   label: 'Camera',
                   onTap: () {
                     // Handle camera selection
-                    AppFilePicker.camera().pickMultiFiles();
+                    AppFilePicker.camera().pickMultiFiles().then((files) {
+                      if (files != null && files.isNotEmpty) {
+                        Navigator.pop(context,
+                            files.map((AppFile e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
+                      } else {
+                        showError(message: 'No images selected from camera.');
+                      }
+                    });
                   },
                   theme: theme,
                 ),
@@ -306,7 +310,14 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<AppFi
                   icon: Icons.photo,
                   label: 'Photos',
                   onTap: () {
-                    AppFilePicker.image().pickMultiFiles();
+                    AppFilePicker.image().pickMultiFiles().then((files) {
+                      if (files != null && files.isNotEmpty) {
+                        Navigator.pop(context,
+                            files.map((AppFile e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
+                      } else {
+                        showError(message: 'No images selected from gallery.');
+                      }
+                    });
                   },
                   theme: theme,
                 ),
@@ -317,8 +328,21 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<AppFi
                   context: context,
                   icon: Icons.inventory,
                   label: 'Storage',
-                  onTap: () {
-                    // Handle remove selection
+                  onTap: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<List<ImageStorageModel>>(
+                        builder: (context) => ImageManagerPickerPage(
+                          onSelected: (List<ImageStorageModel> selectedImages) {},
+                        ),
+                      ),
+                    ).then(
+                      (files) {
+                        if (files != null) {
+                          Navigator.pop(context, files);
+                        }
+                      },
+                    );
                   },
                   theme: theme,
                 ),
@@ -326,6 +350,7 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<AppFi
               const Gap(10),
             ],
           ),
+          const Gap(10),
         ],
       ),
     );
@@ -362,6 +387,108 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<AppFi
               style: theme.textMedium15Subtle,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class AddSKUPlaceHolder extends CommonAddPlaceHolder<String> {
+  AddSKUPlaceHolder({
+    super.key,
+    String? value,
+    ValueChanged<String?>? onSelected,
+  }) : super(
+          onSelected: onSelected,
+          onTap: (context) {
+            AddSKUWidget(
+              (String value) {
+                onSelected?.call(value);
+              },
+            ).show(context);
+          },
+          value: value,
+          getName: (String? value) => value ?? '',
+          title: 'Add SKU',
+        );
+}
+
+class AddCategoryPlaceHolder extends CommonAddPlaceHolder<Category> {
+  AddCategoryPlaceHolder({
+    super.key,
+    Category? value,
+    ValueChanged<Category?>? onSelected,
+  }) : super(
+          onSelected: onSelected,
+          onTap: (context) {
+            showCategory(
+              context,
+              onSelected: (Category value) {
+                Navigator.pop(context);
+                onSelected?.call(value);
+              },
+            );
+          },
+          value: value,
+          getName: (Category? value) => value?.name ?? '',
+          title: 'Add Category',
+        );
+}
+
+class CommonAddPlaceHolder<T> extends StatelessWidget {
+  const CommonAddPlaceHolder({
+    super.key,
+    required this.value,
+    this.onSelected,
+    required this.title,
+    required this.getName,
+    required this.onTap,
+  });
+
+  final String title;
+  final T? value;
+  final String Function(T? value) getName;
+  final ValueChanged<T?>? onSelected;
+  final void Function(BuildContext context)? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    if (value != null) {
+      return CustomTextField(
+        key: ObjectKey(value),
+        onChanged: (String value) {},
+        isReadOnly: true,
+        initialValue: getName(value),
+        onTap: () => onTap?.call(context),
+        suffixIcon: InkWell(
+          onTap: () {
+            // Clear the selected category
+            onSelected?.call(null);
+          },
+          child: const Icon(Icons.clear),
+        ),
+      );
+    }
+    return InkWell(
+      onTap: () => onTap?.call(context),
+      child: DottedBorder(
+        color: theme.colorBorderField,
+        radius: Radius.circular(8),
+        dashPattern: const [6, 6],
+        strokeCap: StrokeCap.butt,
+        child: Container(
+          // padding: const EdgeInsets.all(10),
+          height: 50,
+          decoration: BoxDecoration(),
+          child: Row(
+            children: [
+              const Gap(10),
+              const Icon(Icons.add_circle_outline_rounded),
+              const Gap(10),
+              Text(title),
+            ],
+          ),
         ),
       ),
     );

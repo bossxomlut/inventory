@@ -6,30 +6,36 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:line_icons/line_icons.dart';
 
-import '../../core/index.dart';
-import '../../domain/entities/index.dart';
+import '../../domain/entities/image.dart';
 import '../../features/product/widget/add_product_widget.dart';
 import '../../provider/theme.dart';
 import '../../resources/theme.dart';
 import 'image.dart';
 
 class UploadImagePlaceholder extends StatelessWidget {
-  const UploadImagePlaceholder({super.key, required this.title, this.files, this.onChanged, this.onRemove});
+  const UploadImagePlaceholder({
+    super.key,
+    required this.title,
+    required this.onAdd,
+    this.files,
+    this.onRemove,
+  });
   final String title;
-  final List<AppFile>? files;
-  final ValueChanged<List<AppFile>?>? onChanged;
-  final VoidCallback? onRemove;
+  final List<ImageStorageModel>? files;
+  final ValueChanged<List<ImageStorageModel>> onAdd;
+  final ValueChanged<ImageStorageModel>? onRemove;
 
   @override
   Widget build(BuildContext context) {
     final height = 120.0;
     final theme = context.appTheme;
-    if (files.isNotNullAndEmpty) {
+    if (files != null && files!.isNotEmpty) {
       return Row(
         children: [
           _AddHolder(
             theme: theme,
             title: title,
+            onChanged: onAdd,
           ),
           const Gap(8),
           Expanded(
@@ -37,44 +43,49 @@ class UploadImagePlaceholder extends StatelessWidget {
               height: height,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: files?.length ?? 0,
+                itemCount: files!.length,
                 itemBuilder: (BuildContext context, int index) {
-                  final AppFile e = files![index];
-                  return Container(
-                    height: height,
-                    width: height,
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: theme.colorBorderField,
-                        width: 1,
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Stack(
-                      children: [
-                        ClipRRect(
+                  final e = files![index];
+                  return Stack(
+                    children: [
+                      Container(
+                        height: height,
+                        width: height,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: theme.colorBorderField,
+                            width: 1,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: ClipRRect(
                           child: AppImage.file(
-                            url: e.path,
+                            url: e.path ?? '',
                             fit: BoxFit.cover,
                             height: height,
                           ),
                         ),
-                        if (onRemove != null)
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: InkWell(
-                              onTap: () {
-                                onRemove?.call();
-                              },
+                      ),
+                      if (onRemove != null)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: InkWell(
+                            onTap: () {
+                              onRemove?.call(e);
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(8),
+                                bottomLeft: Radius.circular(8),
+                              ),
                               child: Container(
-                                width: 20,
-                                height: 20,
+                                width: 30,
+                                height: 30,
                                 decoration: BoxDecoration(
                                   color: Color(0x66000000),
-                                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(4)),
                                 ),
                                 child: Icon(
                                   Icons.close,
@@ -84,8 +95,8 @@ class UploadImagePlaceholder extends StatelessWidget {
                               ),
                             ),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   );
                 },
                 separatorBuilder: (BuildContext context, int index) => const Gap(8),
@@ -96,7 +107,12 @@ class UploadImagePlaceholder extends StatelessWidget {
       );
     }
 
-    return _AddHolder(theme: theme, title: title);
+    return _AddHolder(
+      theme: theme,
+      title: title,
+      isExpand: true,
+      onChanged: onAdd,
+    );
   }
 }
 
@@ -105,16 +121,23 @@ class _AddHolder extends StatelessWidget {
     super.key,
     required this.theme,
     required this.title,
+    required this.onChanged,
+    this.isExpand = false,
   });
 
   final AppThemeData theme;
   final String title;
-
+  final bool isExpand;
+  final ValueChanged<List<ImageStorageModel>> onChanged;
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
-        SelectImageOptionWidget().show(context);
+        SelectImageOptionWidget().show(context).then((value) {
+          if (value != null) {
+            onChanged.call(value);
+          }
+        });
       },
       child: DottedBorder(
         color: theme.colorBorderField,
@@ -126,6 +149,7 @@ class _AddHolder extends StatelessWidget {
             minHeight: 120.0,
             minWidth: 120.0,
           ),
+          alignment: isExpand ? Alignment.center : null,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

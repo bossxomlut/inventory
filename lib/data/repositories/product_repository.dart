@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 
 import '../../domain/index.dart';
 import '../../domain/repositories/inventory_repository.dart';
+import '../model/image.dart';
 import '../model/inventory.dart';
 import '../model/inventory_mapping.dart';
 import 'isar_repository.dart';
@@ -20,20 +21,22 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       quantity: collection.quantity,
       category: CategoryMapping().from(collection.category.value),
       barcode: collection.barcode,
-      imageIds: collection.imageIds ?? [],
+      images: collection.images.map((image) => ImageStorageModelMapping().from(image)).toList(),
     );
   }
 
   @override
   ProductCollection createNewItem(Product item) {
-    return ProductCollection()
+    final p = ProductCollection()
       ..name = item.name
       ..description = item.description
       ..price = item.price
       ..quantity = item.quantity
       ..category.value = CategoryCollectionMapping().from(item.category)
       ..barcode = item.barcode
-      ..imageIds = item.imageIds;
+      ..images.addAll(item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? []);
+
+    return p;
   }
 
   @override
@@ -46,7 +49,7 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       ..quantity = item.quantity
       ..category.value = CategoryCollectionMapping().from(item.category)
       ..barcode = item.barcode
-      ..imageIds = item.imageIds;
+      ..images.update(link: item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? []);
   }
 
   @override
@@ -66,10 +69,18 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
         quantity: e.quantity,
         category: CategoryMapping().from(e.category.value),
         barcode: e.barcode,
-        imageIds: e.imageIds ?? [],
+        images: e.images.map((image) => ImageStorageModelMapping().from(image)).toList(),
       );
     }).toList();
   }
+
+  // @override
+  // Future<Product> create(Product item) {
+  //   final ProductCollection nItem = createNewItem(item);
+  //
+  //   final id = isar.writeTxnSync(() => iCollection.put(nItem));
+  //   return read(id);
+  // }
 }
 
 class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<Category, CategoryCollection> {

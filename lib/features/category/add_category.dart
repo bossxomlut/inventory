@@ -9,7 +9,7 @@ import '../../shared_widgets/toast.dart';
 import 'provider/category_provider.dart';
 
 //add category form
-class AddCategory extends StatefulWidget with ShowBottomSheet {
+class AddCategory extends StatefulWidget with ShowBottomSheet<Category> {
   const AddCategory({super.key, this.category});
 
   final Category? category;
@@ -92,8 +92,8 @@ class _AddCategoryState extends State<AddCategory> {
                   } else {
                     final category = Category(id: undefinedId, name: name, description: description);
 
-                    await ref.read(categoryProvider.notifier).addCategory(category);
-                    Navigator.pop(context);
+                    final cate = await ref.read(categoryProvider.notifier).addCategory(category);
+                    Navigator.pop(context, cate);
                   }
                 },
               ),

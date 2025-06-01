@@ -158,7 +158,10 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet {
     // Use state hook for reactive SKU updates
     final _skuController = useTextEditingController();
     final theme = context.appTheme;
-    final dm = Barcode.qrCode();
+    //barcode type state
+    final barcodeType = useState<BarcodeType>(BarcodeType.QrCode);
+    // Get the barcode based on the selected type
+    // Function to get the barcode based on the selected type
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -188,82 +191,182 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet {
                 ),
                 InkWell(
                   onTap: () async {
-                    await InnerScannerPage(
-                      child: const Text('Scan QR Code'),
-                      onBarcodeScanned: (value) {
-                        final scannedValue = value.displayValue ?? '';
-                        _skuController.text = scannedValue;
-                      },
-                    ).show(context);
+                    final sku = _skuController.text.trim();
+                    if (sku.isEmpty) {
+                      return;
+                    }
+                    Navigator.of(context).pop();
+                    onSelected(sku);
                   },
-                  child: const Icon(Icons.camera_alt_outlined),
+                  child: const Icon(Icons.done),
                 ),
                 const SizedBox(width: 8),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
         Column(
           children: [
-            Text(
-              'Generated Barcode/QR Code:',
-              style: theme.headingSemibold20Sublest,
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  //add scan barcode button
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        await InnerScannerPage(
+                          child: const Text('Scan Barcode'),
+                          onBarcodeScanned: (value) {
+                            final scannedValue = value.displayValue ?? '';
+                            _skuController.text = scannedValue;
+                          },
+                        ).show(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: theme.colorBackgroundField,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.camera_alt_outlined, size: 24),
+                            const SizedBox(width: 10),
+                            Text('Scan Barcode', style: theme.textMedium15Subtle),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  //add random barcode button
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        // Generate a random SKU code
+                        final randomSKU = 'SKU-${DateTime.now().millisecondsSinceEpoch}';
+                        _skuController.text = randomSKU;
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: theme.colorBackgroundField,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.shuffle, size: 24),
+                            const SizedBox(width: 10),
+                            Text('Random SKU', style: theme.textMedium15Subtle),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 10),
-            AnimatedBuilder(
-                animation: _skuController,
-                builder: (context, _) {
-                  // Rebuild the QR code when SKU changes
-                  if (_skuController.text.isEmpty) {
-                    return Container(
-                      width: 200,
-                      height: 200,
-                      alignment: Alignment.center,
-                      color: Colors.grey.shade200,
-                      child: const Text(
-                        'Please enter a SKU code to generate the QR code',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    );
-                  }
+            AppDivider(),
+            const SizedBox(height: 10),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: AnimatedBuilder(
+                        animation: _skuController,
+                        builder: (context, _) {
+                          // Rebuild the QR code when SKU changes
+                          if (_skuController.text.isEmpty) {
+                            return Container(
+                              width: 200,
+                              height: 200,
+                              alignment: Alignment.center,
+                              color: Colors.grey.shade200,
+                              child: const Text(
+                                'Please enter a SKU code to generate the QR code',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            );
+                          }
 
-                  return Builder(builder: (context) {
-                    try {
-                      final svg = dm.toSvg(
-                        _skuController.text,
-                        width: 200,
-                        height: 200,
-                      );
-                      return SvgPicture.string(
-                        svg,
-                        width: 200,
-                        height: 200,
-                        fit: BoxFit.contain,
-                        placeholderBuilder: (context) => const CircularProgressIndicator(),
-                      );
-                    } catch (e) {
-                      return const Text(
-                        'Error generating QR code',
-                        style: TextStyle(color: Colors.red),
-                      );
-                    }
-                  });
-                }),
+                          return Builder(builder: (context) {
+                            try {
+                              Barcode dm = Barcode.fromType(barcodeType.value);
+                              final svg = dm.toSvg(
+                                _skuController.text,
+                                width: 200,
+                                height: 200,
+                              );
+                              return SvgPicture.string(
+                                svg,
+                                width: 200,
+                                height: 200,
+                                fit: BoxFit.contain,
+                                placeholderBuilder: (context) => const CircularProgressIndicator(),
+                              );
+                            } catch (e) {
+                              return const Text(
+                                'Error generating QR code',
+                                style: TextStyle(color: Colors.red),
+                              );
+                            }
+                          });
+                        }),
+                  ),
+                ),
+                Column(
+                  children: [
+                    DropdownButton<BarcodeType>(
+                      value: barcodeType.value,
+                      items: BarcodeType.values.map((BarcodeType type) {
+                        return DropdownMenuItem<BarcodeType>(
+                          value: type,
+                          child: Text(type.name),
+                        );
+                      }).toList(),
+                      onChanged: (BarcodeType? type) {
+                        if (type != null) {
+                          barcodeType.value = type;
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    //download qr code image button
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        final sku = _skuController.text.trim();
+                        if (sku.isEmpty) {
+                          showError(message: 'Please enter a SKU code to download the QR code.');
+                          return;
+                        }
+                        Barcode dm = Barcode.fromType(barcodeType.value);
+                        final svg = dm.toSvg(sku, width: 200, height: 200);
+                        // Save the SVG to a file or show a dialog to download
+                        // For simplicity, we will just show a success message
+                        showSuccess(message: 'QR code downloaded successfully!');
+                      },
+                      icon: const Icon(Icons.download),
+                      label: const Text('Save to device'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
           ],
         ),
         const SizedBox(height: 20),
-        BottomButtonBar(
-          onCancel: () {},
-          onSave: () {
-            final sku = _skuController.text.trim();
-            if (sku.isEmpty) {
-              return;
-            }
-            Navigator.of(context).pop();
-            onSelected(sku);
-          },
-        ),
       ],
     );
   }

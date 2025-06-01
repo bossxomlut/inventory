@@ -61,12 +61,13 @@ class CategoryController extends LoadListController<Category> {
     }
   }
 
-  Future addCategory(Category category) async {
+  Future<Category?> addCategory(Category category) async {
     try {
       final repo = ref.read(categoryRepositoryProvider);
       final newCategory = await repo.create(category);
       state = state.copyWith(data: [newCategory, ...state.data]);
       showSuccess(message: 'Add new category successfully');
+      return newCategory;
     } catch (e) {
       // Handle error
       state = state.copyWith(error: e.toString());

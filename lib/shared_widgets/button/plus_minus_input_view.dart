@@ -1,13 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../provider/index.dart';
-import '../app_divider.dart';
-import '../bottom_sheet.dart';
+import '../index.dart';
 
 class PlusMinusInputView extends StatefulWidget {
   const PlusMinusInputView({
@@ -182,60 +180,62 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
     this.onChanged,
   });
 
+  List<int> get numbers => List.generate((maxValue - minValue) + 1, (index) => minValue + index);
+
   @override
   Widget build(BuildContext context) {
-    final TextEditingController controller = useTextEditingController();
+    final textController = useTextEditingController();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(
-                    labelText: 'Enter a number',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              IconButton(
-                  onPressed: () {
-                    final number = int.tryParse(controller.text) ?? minValue;
-                    if (onChanged != null) {
-                      onChanged!(number);
-                    }
-                  },
-                  icon: Icon(Icons.navigate_next))
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: (maxValue - minValue) + 1,
-            itemBuilder: (context, index) {
-              final number = minValue + index;
-              return ListTile(
-                title: Text('$number'),
-                onTap: () {
-                  controller.text = '$number';
-                  if (onChanged != null) {
-                    onChanged!(number);
-                  }
-                },
-              );
-            },
-            separatorBuilder: (BuildContext context, int index) => const AppDivider(),
-          ),
-        ),
-      ],
+    //create method get number from text input
+    void getNumberFromText() {
+      //value
+      final String value = textController.text.trim();
+      final int? number = int.tryParse(value);
+      //check if number is valid
+      if (number != null) {
+        if (onChanged != null) {
+          onChanged!(number);
+        }
+      }
+    }
+
+    return SearchItemWidget<int>(
+      keyboardType: TextInputType.number,
+      textEditingController: textController,
+      onSubmitted: (String value) {
+        getNumberFromText();
+      },
+      itemBuilder: (BuildContext item, int index, int p2) {
+        final number = minValue + index;
+        return ListTile(
+          title: Text('$number'),
+          onTap: () {
+            if (onChanged != null) {
+              onChanged!(number);
+            }
+          },
+        );
+      },
+      onAddItem: () {
+        //value
+        final String value = textController.text.trim();
+        final int? number = int.tryParse(value);
+        //check if number is valid
+        if (number != null) {
+          if (onChanged != null) {
+            onChanged!(number);
+          }
+        }
+      },
+      searchItems: (String keyword) async {
+        return numbers.where((number) => number.toString().contains(keyword)).toList();
+      },
+      title: 'Input a number',
+      addItemWidget: Icon(
+        Icons.navigate_next_sharp,
+        color: context.appTheme.colorIcon,
+      ),
+      itemBuilderWithIndex: (BuildContext context, int index) => const AppDivider(),
     );
   }
 }

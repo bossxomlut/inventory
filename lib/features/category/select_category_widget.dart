@@ -23,7 +23,13 @@ void showCategory(
       );
     },
     onAddItem: () {
-      AddCategory().show(context);
+      AddCategory().show(context).then(
+        (Category? value) {
+          if (value != null) {
+            onSelected?.call(value);
+          }
+        },
+      );
     },
     searchItems: (String keyword) async {
       return context.read(categoryRepositoryProvider).search(keyword, 0, 1000);

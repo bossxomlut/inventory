@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../provider/index.dart';
 import '../index.dart';
 
 class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
@@ -11,12 +12,26 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
 
   // Callback for handling new item addition
   final VoidCallback onAddItem;
+  final Widget? addItemWidget;
+
+  final String? title;
+
+  final IndexedWidgetBuilder? itemBuilderWithIndex;
+  final ValueChanged<String>? onSubmitted;
+  final TextEditingController? textEditingController;
+  final TextInputType? keyboardType;
 
   const SearchItemWidget({
     super.key,
     required this.itemBuilder,
     required this.searchItems,
     required this.onAddItem,
+    this.title,
+    this.addItemWidget,
+    this.itemBuilderWithIndex,
+    this.onSubmitted,
+    this.textEditingController,
+    this.keyboardType,
   });
 
   @override
@@ -24,7 +39,8 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
 }
 
 class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with SkeletonLoadingState<SearchItemWidget<T>> {
-  final TextEditingController _searchController = TextEditingController();
+  late final TextEditingController _searchController = widget.textEditingController ?? TextEditingController();
+
   List<T> items = <T>[];
 
   String get searchKeyword => _searchController.text;
@@ -55,12 +71,15 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
   @override
   void dispose() {
     _searchController.removeListener(onSearch);
-    _searchController.dispose();
+    if (widget.textEditingController == null) {
+      _searchController.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.appTheme;
     return Column(
       children: [
         ColoredBox(
@@ -75,14 +94,16 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
                 Expanded(
                   child: TextField(
                     controller: _searchController,
-                    textInputAction: TextInputAction.search,
+                    textInputAction: TextInputAction.done,
                     textAlignVertical: TextAlignVertical.center,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       // contentPadding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
-                      hintText: 'Search items...',
-                      hintStyle: TextStyle(fontSize: 16),
+                      hintText: widget.title ?? 'Search items...',
+                      hintStyle: theme.textMedium15Subtle,
                       border: InputBorder.none,
                     ),
+                    onSubmitted: widget.onSubmitted,
+                    keyboardType: widget.keyboardType ?? TextInputType.text,
                   ),
                 ),
                 // Add button
@@ -90,13 +111,12 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
                   onTap: widget.onAddItem,
                   child: CircleAvatar(
                     radius: 12,
-                    child: const Icon(
-                      Icons.add,
-                      size: 18,
-                    ),
                     backgroundColor: Colors.grey.shade300,
-                    // onPressed: widget.onAddItem,
-                    // tooltip: 'Add new item',
+                    child: widget.addItemWidget ??
+                        const Icon(
+                          Icons.add,
+                          size: 18,
+                        ),
                   ),
                 ),
                 SizedBox(width: 8),
@@ -112,12 +132,14 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
 
   @override
   Widget buildLoaded(BuildContext context) {
-    return ListView.builder(
+    return ListView.separated(
       shrinkWrap: true,
       itemCount: items.length,
       itemBuilder: (context, index) {
         return widget.itemBuilder(context, items[index], index);
       },
+      separatorBuilder: (BuildContext context, int index) =>
+          widget.itemBuilderWithIndex?.call(context, index) ?? const SizedBox(),
     );
   }
 }

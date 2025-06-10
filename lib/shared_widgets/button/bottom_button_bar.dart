@@ -8,12 +8,16 @@ class BottomButtonBar extends StatelessWidget {
   final VoidCallback onCancel;
   //padding for button
   final EdgeInsetsGeometry padding;
+  final String? saveButtonText;
+  final String? cancelButtonText;
 
   const BottomButtonBar({
     super.key,
     required this.onSave,
     required this.onCancel,
     this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    this.saveButtonText,
+    this.cancelButtonText,
   });
 
   @override
@@ -23,9 +27,9 @@ class BottomButtonBar extends StatelessWidget {
       child: SafeArea(
         child: Row(
           children: [
-            Expanded(child: AppButton.secondary(title: 'Cancel', onPressed: onCancel)),
+            Expanded(child: AppButton.secondary(title: cancelButtonText ?? 'Cancel', onPressed: onCancel)),
             const Gap(8),
-            Expanded(child: AppButton.primary(title: 'Save', onPressed: onSave)),
+            Expanded(child: AppButton.primary(title: saveButtonText ?? 'Save', onPressed: onSave)),
           ],
         ),
       ),

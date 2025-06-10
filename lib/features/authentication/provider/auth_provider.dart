@@ -2,7 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/index.dart';
 import '../../../domain/index.dart';
-import '../../../domain/repositories/pin_code_repository.dart';
+import '../../../domain/repositories/auth/pin_code_repository.dart';
 import '../../../routes/app_router.dart';
 
 part 'auth_provider.g.dart';

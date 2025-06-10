@@ -33,11 +33,13 @@ class AppRouter extends $AppRouter {
         AutoRoute(page: HomeRoute.page),
         AutoRoute(page: HomeRoute.page),
         AutoRoute(page: HomeRoute2.page),
-        AutoRoute(page: InventoryRoute.page),
 
         //product routes
         AutoRoute(page: ProductListRoute.page),
         AutoRoute(page: CategoryRoute.page),
+
+        //Check routes
+        AutoRoute(page: CheckSessionsRoute.page),
 
         //config admin route
         AutoRoute(
@@ -91,7 +93,11 @@ extension AppRouterX on AppRouter {
 
 extension InventoryRouterX on AppRouter {
   void goInventory() {
-    replaceAll([const InventoryRoute()]);
+    // replaceAll([const InventoryRoute()]);
+  }
+
+  void goToCheckSessions() {
+    push(CheckSessionsRoute());
   }
 }
 

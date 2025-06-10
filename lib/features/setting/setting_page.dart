@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-import '../../domain/repositories/pin_code_repository.dart';
+import '../../domain/repositories/auth/pin_code_repository.dart';
 import '../../provider/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';

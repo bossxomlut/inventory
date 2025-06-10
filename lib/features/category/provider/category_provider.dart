@@ -1,7 +1,7 @@
 import 'package:riverpod/riverpod.dart';
 
 import '../../../domain/index.dart';
-import '../../../domain/repositories/inventory_repository.dart';
+import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
 import '../../../shared_widgets/toast.dart';
@@ -94,4 +94,10 @@ class CategoryController extends LoadListController<Category> {
 final multiSelectCategoryProvider =
     AutoDisposeNotifierProvider<MultipleSelectController<Category>, MultipleSelectState<Category>>(() {
   return MultipleSelectController<Category>();
+});
+
+//create a provider get all categories
+final allCategoriesProvider = FutureProvider.autoDispose<List<Category>>((ref) async {
+  final repo = ref.watch(categoryRepositoryProvider);
+  return repo.getAll();
 });

@@ -1,8 +1,10 @@
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../../data/model/index.dart';
-import '../../data/model/inventory.dart';
+import '../../data/check/check_collection.dart';
+import '../../data/image/image.dart';
+import '../../data/product/inventory.dart';
+import '../../data/user/user.dart';
 
 class IsarDatabase {
   @override
@@ -16,6 +18,8 @@ class IsarDatabase {
               ProductCollectionSchema,
               CategoryCollectionSchema,
               ImageStorageCollectionSchema,
+              CheckSessionCollectionSchema,
+              CheckedProductCollectionSchema,
             ],
             directory: dir.path,
           );

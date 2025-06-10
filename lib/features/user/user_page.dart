@@ -37,13 +37,7 @@ class UserPage extends HookConsumerWidget {
     useEffect(() {
       Future(
         () {
-          ref.read(loadUserProvider.notifier).search(
-                query: LoadListQuery(
-                  page: 1,
-                  pageSize: 10,
-                  search: debouncedSearchText,
-                ),
-              );
+          ref.read(loadUserProvider.notifier).search(debouncedSearchText ?? '');
         },
       );
       return null; // No cleanup needed for search call

@@ -16,7 +16,7 @@ class CategoryPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     void initData() {
-      ref.read(categoryProvider.notifier).refresh(query: LoadListQuery(page: 0, pageSize: 2000));
+      ref.read(categoryProvider.notifier).refresh();
     }
 
     useEffect(() {

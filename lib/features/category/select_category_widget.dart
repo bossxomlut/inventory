@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/index.dart';
 import '../../domain/index.dart';
-import '../../domain/repositories/inventory_repository.dart';
+import '../../domain/repositories/product/inventory_repository.dart';
 import '../../provider/index.dart';
 import '../../shared_widgets/index.dart';
 import 'add_category.dart';

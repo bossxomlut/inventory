@@ -1,4 +1,4 @@
-import '../../data/repositories/image_storage_repository.dart';
+import '../../data/image/image_storage_repository.dart';
 import '../entities/image.dart';
 import 'crud_repository.dart';
 

@@ -5,7 +5,7 @@ import '../core/helpers/cancel_task_utils.dart';
 
 part 'load_list.freezed.dart';
 
-const int firstPage = 0;
+const int firstPage = 1;
 const int defaultPageSize = 20;
 
 abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T>> {
@@ -17,6 +17,8 @@ abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T
   LoadListState<T> build() {
     return LoadListState<T>.initial();
   }
+
+  LoadListQuery query = LoadListQueryX.defaultQuery;
 
   Future<void> loadData({required LoadListQuery query}) async {
     try {
@@ -51,16 +53,20 @@ abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T
     }
   }
 
-  Future<void> refresh({required LoadListQuery query}) async {
+  Future<void> init() async {
     await loadData(
-      query: query.copyWith(page: firstPage),
+      query: LoadListQueryX.defaultQuery,
     );
   }
 
-  Future<void> search({
-    required LoadListQuery query,
-  }) async {
-    await loadData(query: query.copyWith(page: firstPage));
+  Future<void> refresh() async {
+    await loadData(
+      query: LoadListQueryX.defaultQuery,
+    );
+  }
+
+  Future<void> search(String keyword) async {
+    await loadData(query: LoadListQueryX.defaultQuery.copyWith(search: keyword));
   }
 
   void loadMore({required LoadListQuery query}) {

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../../domain/entities/inventory.dart';
+import '../../../domain/entities/product/inventory.dart';
 import '../../../domain/index.dart';
 
 class ProductCard extends StatelessWidget {

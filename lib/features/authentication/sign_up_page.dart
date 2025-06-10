@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../domain/entities/index.dart';
-import '../../domain/repositories/pin_code_repository.dart';
+import '../../domain/repositories/auth/pin_code_repository.dart';
 import '../../provider/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';

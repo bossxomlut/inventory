@@ -198,7 +198,10 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet {
                     Navigator.of(context).pop();
                     onSelected(sku);
                   },
-                  child: const Icon(Icons.done),
+                  child: Text(
+                    'Lưu',
+                    style: theme.textMedium15Default.copyWith(color: theme.colorPrimary),
+                  ),
                 ),
                 const SizedBox(width: 8),
               ],

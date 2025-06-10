@@ -6,7 +6,7 @@ abstract class CrudRepository<T, Id> {
 }
 
 abstract class SearchRepositoryWithPagination<T> {
-  Future<List<T>> search(String keyword, int page, int limit);
+  Future<List<T>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter});
 }
 
 abstract class GetOneByNameRepository<T> {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/index.dart';
+import '../../provider/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
@@ -19,6 +20,13 @@ class MenuItem {
   });
 }
 
+// Group menu items by business category
+class MenuGroup {
+  final String title;
+  final List<MenuItem> items;
+  MenuGroup({required this.title, required this.items});
+}
+
 @RoutePage()
 class HomePage2 extends ConsumerWidget {
   const HomePage2({super.key});
@@ -28,137 +36,230 @@ class HomePage2 extends ConsumerWidget {
     final user = ref.watch(authControllerProvider);
     return user.when(
         authenticated: (User user, DateTime? lastLoginTime) {
-          List<MenuItem> menuItems = <MenuItem>[];
-          switch (user.role) {
-            case UserRole.admin:
-              menuItems = [
+          List<MenuGroup> menuGroups = [
+            MenuGroup(
+              title: 'Quản lý sản phẩm',
+              items: [
                 MenuItem(
-                  title: 'Products',
+                  title: 'Quản lý sản phẩm',
                   icon: Icons.inventory,
                   destinationCallback: () {
-                    // Chuyển đến trang sản phẩm
                     appRouter.goToProduct();
                   },
                 ),
                 MenuItem(
-                  title: 'Categories',
+                  title: 'Quản lý danh mục',
                   icon: Icons.category,
                   destinationCallback: () {
                     appRouter.goToCategory();
                   },
                 ),
                 MenuItem(
-                  title: 'Warehouses',
+                  title: 'Quản lý kho',
                   icon: Icons.warehouse,
                   destinationCallback: () {},
                 ),
                 MenuItem(
-                  title: 'Transactions',
-                  icon: Icons.receipt_long,
-                  destinationCallback: () {},
-                ),
-                MenuItem(
-                  title: 'Users',
-                  icon: Icons.person,
-                  destinationCallback: () {},
-                ),
-              ];
-            case UserRole.user:
-            case UserRole.guest:
-              menuItems = [
-                MenuItem(
-                  title: 'Products',
-                  icon: Icons.inventory,
-                  destinationCallback: () {},
-                ),
-                MenuItem(
-                  title: 'Categories',
-                  icon: Icons.category,
-                  destinationCallback: () {},
-                ),
-                MenuItem(
-                  title: 'Transactions',
-                  icon: Icons.receipt_long,
-                  destinationCallback: () {},
-                ),
-              ];
-          }
-
-          return Scaffold(
-            appBar: CustomAppBar(
-              title: 'Inventory App',
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings_outlined),
-                  onPressed: () {
-                    // Chuyển đến trang cài đặt
-                    appRouter.goToSetting();
-                    // Xử lý đăng xuất
-                    // ref.read(authControllerProvider.notifier).logout();
+                  title: 'Kiểm kê sản phẩm',
+                  icon: Icons.fact_check,
+                  destinationCallback: () {
+                    appRouter.goToCheckSessions();
                   },
                 ),
               ],
             ),
-            body: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Lời chào
-                  Text(
-                    'Welcome, ${user?.username ?? "Guest"}!',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+            MenuGroup(
+              title: 'Giá & Đơn hàng',
+              items: [
+                MenuItem(
+                  title: 'Quản lý giá bán',
+                  icon: Icons.price_change,
+                  destinationCallback: () {
+                    // TODO: Implement navigation to Price Management page
+                  },
+                ),
+                MenuItem(
+                  title: 'Tạo đơn hàng',
+                  icon: Icons.add_shopping_cart,
+                  destinationCallback: () {
+                    // TODO: Implement navigation to Order Creation page
+                  },
+                ),
+                MenuItem(
+                  title: 'Trạng thái đơn hàng',
+                  icon: Icons.assignment_turned_in,
+                  destinationCallback: () {
+                    // TODO: Implement navigation to Order Status Management page
+                  },
+                ),
+              ],
+            ),
+            MenuGroup(
+              title: 'Khác',
+              items: [
+                MenuItem(
+                  title: 'Giao dịch',
+                  icon: Icons.receipt_long,
+                  destinationCallback: () {},
+                ),
+                if (user.role == UserRole.admin)
+                  MenuItem(
+                    title: 'Người dùng',
+                    icon: Icons.person,
+                    destinationCallback: () {},
                   ),
-                  const SizedBox(height: 16),
+              ],
+            ),
+          ];
 
-                  // Menu dạng lưới
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, // 2 cột
-                        crossAxisSpacing: 16, mainAxisSpacing: 16, childAspectRatio: 1, // Tỷ lệ chiều cao/chiều rộng
-                      ),
-                      itemCount: menuItems.length,
-                      itemBuilder: (context, index) {
-                        final item = menuItems[index];
-                        return Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: InkWell(
-                            onTap: () {
-                              item.destinationCallback();
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  item.icon,
-                                  size: 48,
-                                  color: Colors.blue,
+          return Scaffold(
+            // appBar: CustomAppBar(
+            //   title: 'Inventory App',
+            //   actions: [
+            //     IconButton(
+            //       icon: const Icon(Icons.settings_outlined),
+            //       onPressed: () {
+            //         appRouter.goToSetting();
+            //       },
+            //     ),
+            //   ],
+            // ),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Greeting
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundColor: context.appTheme.colorSecondary,
+                          child: Icon(Icons.person, size: 32, color: context.appTheme.colorPrimary),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome back,',
+                                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                              ),
+                              Text(
+                                user.username,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  item.title,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+                    // Modern grid menu
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: menuGroups.length,
+                        separatorBuilder: (context, idx) => const SizedBox(height: 18),
+                        itemBuilder: (context, groupIdx) {
+                          final group = menuGroups[groupIdx];
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8, bottom: 8),
+                                child: Text(
+                                  group.title,
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: context.appTheme.colorPrimary,
+                                  ),
+                                ),
+                              ),
+                              GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 20,
+                                  mainAxisSpacing: 20,
+                                  childAspectRatio: 0.95,
+                                ),
+                                itemCount: group.items.length,
+                                itemBuilder: (context, index) {
+                                  final item = group.items[index];
+                                  return InkWell(
+                                    onTap: item.destinationCallback,
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: Ink(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(18),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            context.appTheme.colorSecondary.withOpacity(0.5),
+                                            context.appTheme.colorSecondary,
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: context.appTheme.colorPrimary.withOpacity(0.08),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(12),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: context.appTheme.colorPrimary.withOpacity(0.10),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 2),
+                                                ),
+                                              ],
+                                            ),
+                                            padding: const EdgeInsets.all(16),
+                                            child: Icon(
+                                              item.icon,
+                                              size: 36,
+                                              color: context.appTheme.colorPrimary,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 14),
+                                          Text(
+                                            item.title,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: context.appTheme.colorPrimary,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );

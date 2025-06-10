@@ -3,21 +3,37 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/helpers/app_image_manager.dart';
 import '../../../domain/entities/get_id.dart';
 import '../../../domain/entities/image.dart';
-import '../../../domain/entities/inventory.dart';
-import '../../../domain/repositories/inventory_repository.dart';
+import '../../../domain/entities/product/inventory.dart';
+import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
 import '../../../routes/app_router.dart';
+import 'product_filter_provider.dart';
 
 final loadProductProvider = AutoDisposeNotifierProvider<LoadProductController, LoadListState<Product>>(() {
   return LoadProductController.new();
 });
 
-class LoadProductController extends LoadListController<Product> with CommonProvider {
+class LoadProductController extends LoadListController<Product> with CommonProvider<LoadListState<Product>> {
+  //create a method to listen filter changes to call reload data
+
+  void listenFilterChanges() {
+    refresh();
+  }
+
   @override
   Future<List<Product>> fetchData(LoadListQuery query) {
     final productRepo = ref.read(productRepositoryProvider);
-    return productRepo.search(query.search ?? '', query.page, query.pageSize);
+
+    // Tạo filter từ các bộ lọc đã chọn
+    final filter = ref.read(productFilterProvider);
+
+    final search = filter['search'] as String? ?? '';
+
+    print('Search query: $search');
+
+    // Truyền filter xuống repository
+    return productRepo.search(search, query.page, query.pageSize, filter: filter);
   }
 
   //create a product

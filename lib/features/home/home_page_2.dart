@@ -44,7 +44,7 @@ class HomePage2 extends ConsumerWidget {
                   title: 'Quản lý sản phẩm',
                   icon: Icons.inventory,
                   destinationCallback: () {
-                    appRouter.goToProduct();
+                    appRouter.goToProductList();
                   },
                 ),
                 MenuItem(

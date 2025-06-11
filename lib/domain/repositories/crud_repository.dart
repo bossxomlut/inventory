@@ -1,3 +1,5 @@
+import '../../provider/load_list.dart';
+
 abstract class CrudRepository<T, Id> {
   Future<T> create(T item);
   Future<T> read(Id id);
@@ -6,7 +8,7 @@ abstract class CrudRepository<T, Id> {
 }
 
 abstract class SearchRepositoryWithPagination<T> {
-  Future<List<T>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter});
+  Future<LoadResult<T>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter});
 }
 
 abstract class GetOneByNameRepository<T> {

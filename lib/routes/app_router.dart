@@ -1,6 +1,5 @@
-import 'package:auto_route/auto_route.dart';
-
 import '../domain/index.dart';
+import '../shared_widgets/index.dart';
 import 'app_router.gr.dart';
 
 export 'package:sample_app/routes/app_router.gr.dart';
@@ -36,6 +35,7 @@ class AppRouter extends $AppRouter {
 
         //product routes
         AutoRoute(page: ProductListRoute.page),
+        AutoRoute(page: ProductDetailRoute.page),
         AutoRoute(page: CategoryRoute.page),
 
         //Check routes
@@ -49,6 +49,12 @@ class AppRouter extends $AppRouter {
           ],
         ),
       ];
+
+  @override
+  Future<T?> push<T extends Object?>(PageRouteInfo route, {OnNavigationFailure? onFailure}) {
+    navigatorKey.currentContext?.hideKeyboard();
+    return super.push(route, onFailure: onFailure);
+  }
 }
 
 extension AuthRouterX on AppRouter {
@@ -146,8 +152,12 @@ class AdminGuard extends AutoRouteGuard {
 }
 
 extension AppRouterInventoryX on AppRouter {
-  void goToProduct() {
+  void goToProductList() {
     push(ProductListRoute());
+  }
+
+  void goToProductDetail(Product product) {
+    push(ProductDetailRoute(product: product));
   }
 
   void goToCategory() {

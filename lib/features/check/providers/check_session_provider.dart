@@ -23,13 +23,24 @@ class LoadCheckSessionController extends LoadListController<CheckSession>
   final ActiveViewType viewType;
 
   @override
-  Future<List<CheckSession>> fetchData(LoadListQuery query) {
+  Future<LoadResult<CheckSession>> fetchData(LoadListQuery query) {
     final checkRepo = ref.read(checkRepositoryProvider);
     switch (viewType) {
       case ActiveViewType.active:
-        return checkRepo.getActiveSessions();
+        return checkRepo.getActiveSessions().then((value) {
+          return LoadResult<CheckSession>(
+            data: value,
+            totalCount: value.length,
+          );
+        });
       case ActiveViewType.done:
-        return checkRepo.getDoneSessions();
+        return checkRepo.getDoneSessions().then((value) {
+          ;
+          return LoadResult<CheckSession>(
+            data: value,
+            totalCount: value.length,
+          );
+        });
     }
   }
 

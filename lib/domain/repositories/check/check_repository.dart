@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/check/check_repository.dart';
+import '../../../provider/load_list.dart';
 import '../../entities/check/check.dart';
 import '../../index.dart';
 import '../index.dart';
@@ -35,7 +36,7 @@ abstract class CheckRepository {
 
   Future<Product?> findProductByBarcode(String barcode);
 
-  Future<List<Product>> searchProducts(String keyword, {int page = 1, int pageSize = 20});
+  Future<LoadResult<Product>> searchProducts(String keyword, {int page = 1, int pageSize = 20});
 
   Future<CheckedProduct> addProductToSession(int sessionId, Product product, int actualQuantity, String checkedBy,
       {String? note});

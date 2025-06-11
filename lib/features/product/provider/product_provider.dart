@@ -22,7 +22,7 @@ class LoadProductController extends LoadListController<Product> with CommonProvi
   }
 
   @override
-  Future<List<Product>> fetchData(LoadListQuery query) {
+  Future<LoadResult<Product>> fetchData(LoadListQuery query) {
     final productRepo = ref.read(productRepositoryProvider);
 
     // Tạo filter từ các bộ lọc đã chọn

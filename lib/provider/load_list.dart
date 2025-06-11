@@ -8,10 +8,20 @@ part 'load_list.freezed.dart';
 const int firstPage = 1;
 const int defaultPageSize = 20;
 
-abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T>> {
-  final CancelTask<List<T>> _cancelTask = CompleterCancelTask<List<T>>();
+class LoadResult<T> {
+  final List<T> data;
+  final int totalCount;
 
-  Future<List<T>> fetchData(LoadListQuery query);
+  LoadResult({
+    required this.data,
+    required this.totalCount,
+  });
+}
+
+abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T>> {
+  final CancelTask<LoadResult<T>> _cancelTask = CompleterCancelTask<LoadResult<T>>();
+
+  Future<LoadResult<T>> fetchData(LoadListQuery query);
 
   @override
   LoadListState<T> build() {
@@ -20,13 +30,18 @@ abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T
 
   LoadListQuery query = LoadListQueryX.defaultQuery;
 
+  void resetQuery() {
+    query = LoadListQueryX.defaultQuery;
+  }
+
   Future<void> loadData({required LoadListQuery query}) async {
     try {
       // Set loading state
       state = state.copyWith(
-        isLoading: query.page == firstPage,
-        isLoadingMore: query.page > firstPage,
         error: null,
+        isLoading: true,
+        isEndOfList: false,
+        isLoadingMore: query.page > firstPage,
       );
 
       final newData = await _cancelTask.addTask(
@@ -35,11 +50,18 @@ abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T
       );
 
       // Update state with new data
+      final newList = query.page == firstPage ? newData.data : [...state.data, ...newData.data];
+
+      print(
+          'total count: ${newData.totalCount}, new data length: ${newData.data.length}, current data length: ${state.data.length}');
+
       state = state.copyWith(
+        error: null,
         isLoading: false,
         isLoadingMore: false,
-        data: query.page == firstPage ? newData : [...state.data, ...newData],
-        error: null,
+        data: newList,
+        isEndOfList: newList.length >= newData.totalCount,
+        totalCount: newData.totalCount,
       );
     } catch (e, stackTrace) {
       // Handle error
@@ -54,120 +76,50 @@ abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T
   }
 
   Future<void> init() async {
-    await loadData(
-      query: LoadListQueryX.defaultQuery,
-    );
+    await loadData(query: query);
   }
 
   Future<void> refresh() async {
-    await loadData(
-      query: LoadListQueryX.defaultQuery,
-    );
+    resetQuery();
+    await loadData(query: query);
   }
 
   Future<void> search(String keyword) async {
-    await loadData(query: LoadListQueryX.defaultQuery.copyWith(search: keyword));
+    resetQuery();
+    await loadData(query: query.copyWith(search: keyword));
   }
 
-  void loadMore({required LoadListQuery query}) {
-    if (state.isLoading || state.isLoadingMore) {
+  Future loadMore() async {
+    if (state.isLoading || state.isLoadingMore || state.isEndOfList) {
       return;
     }
 
-    state = state.copyWith(isLoadingMore: true);
-
     // Increment the page number for loading more data
-    final newQuery = query.copyWith(page: query.page + 1);
+    query = query.copyWith(page: query.page + 1);
 
     // Load more data
-    loadData(query: newQuery);
+    await loadData(query: query);
   }
 }
-//
-// abstract class LoadListAsyncController<T> extends AsyncNotifier<LoadListState<T>> {
-//   final CancelTask<List<T>> _cancelTask = CompleterCancelTask<List<T>>();
-//
-//   Future<List<T>> fetchData(LoadListQuery query);
-//
-//   @override
-//   LoadListState<T> build() {
-//     return LoadListState<T>.initial();
-//   }
-//
-//   Future<void> loadData({required LoadListQuery query}) async {
-//     try {
-//       // Set loading state
-//       state = state.copyWith(
-//         isLoading: query.page == 1,
-//         isLoadingMore: query.page > 1,
-//         error: null,
-//       );
-//
-//       final newData = await _cancelTask.addTask(
-//         fetchData(query),
-//         onCancel: () {},
-//       );
-//
-//       // Update state with new data
-//       state = state.copyWith(
-//         isLoading: false,
-//         isLoadingMore: false,
-//         data: query.page == 1 ? newData : [...state.data, ...newData],
-//         error: null,
-//       );
-//     } catch (e, stackTrace) {
-//       // Handle error
-//       state = state.copyWith(
-//         isLoading: false,
-//         isLoadingMore: false,
-//         error: e.toString(),
-//       );
-//       // Optionally log stackTrace for debugging
-//       print('Error loading data: $e\n$stackTrace');
-//     }
-//   }
-//
-//   Future<void> refresh({required LoadListQuery query}) async {
-//     await loadData(
-//       query: query.copyWith(page: 1),
-//     );
-//   }
-//
-//   Future<void> search({
-//     required LoadListQuery query,
-//   }) async {
-//     await loadData(query: query.copyWith(page: 1));
-//   }
-//
-//   void loadMore({required LoadListQuery query}) {
-//     if (state.isLoading || state.isLoadingMore) {
-//       return;
-//     }
-//
-//     state = state.copyWith(isLoadingMore: true);
-//
-//     // Increment the page number for loading more data
-//     final newQuery = query.copyWith(page: query.page + 1);
-//
-//     // Load more data
-//     loadData(query: newQuery);
-//   }
-// }
 
 @freezed
 class LoadListState<T> with _$LoadListState<T> {
   const factory LoadListState({
     required bool isLoading,
     required bool isLoadingMore,
+    required bool isEndOfList,
     required List<T> data,
+    required int totalCount,
     String? error,
   }) = _LoadListState<T>;
 
   factory LoadListState.initial() => LoadListState<T>(
         isLoading: false,
         isLoadingMore: false,
+        isEndOfList: false,
         data: [],
         error: null,
+        totalCount: 0,
       );
 }
 

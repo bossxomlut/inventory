@@ -9,6 +9,7 @@ import '../../domain/entities/product/inventory.dart';
 import '../../provider/index.dart';
 import '../../provider/load_list.dart';
 import '../../provider/text_search.dart';
+import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../category/provider/category_provider.dart';
 import 'provider/product_filter_provider.dart';
@@ -28,7 +29,7 @@ class ProductListPage extends HookConsumerWidget {
       body: const Column(
         children: [
           ProductFilterDisplayWidget(),
-          Expanded(child: _ProductListView()),
+          Expanded(child: ProductListView()),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -238,16 +239,17 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
   }
 }
 
-// Implement a full-featured ProductDetailScreen to display product images, name, category, barcode, price, quantity, and description in a modern layout.
-class ProductDetailScreen extends StatefulWidget {
+@RoutePage()
+class ProductDetailPage extends StatefulWidget {
+  const ProductDetailPage({super.key, required this.product});
+
   final Product product;
-  const ProductDetailScreen({super.key, required this.product});
 
   @override
-  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+  State<ProductDetailPage> createState() => _ProductDetailPageState();
 }
 
-class _ProductDetailScreenState extends State<ProductDetailScreen> {
+class _ProductDetailPageState extends State<ProductDetailPage> {
   int selectedIndex = 0;
 
   @override
@@ -399,8 +401,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 }
 
-class _ProductListView extends HookConsumerWidget {
-  const _ProductListView({super.key});
+class ProductListView extends HookConsumerWidget {
+  const ProductListView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -425,31 +427,28 @@ class _ProductListView extends HookConsumerWidget {
     } else if (products.isEmpty) {
       return const EmptyItemWidget();
     } else {
-      final length = products.data.length;
-      return ListView.separated(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        itemCount: products.isLoadingMore ? length + 1 : length,
-        padding: const EdgeInsets.all(16),
+      return LoadMoreList<Product>(
+        items: products.data,
         itemBuilder: (context, index) {
-          if (products.isLoadingMore && index == length) {
-            return const SizedBox(height: 50, child: Center(child: CircularProgressIndicator()));
-          }
-
           final product = products.data[index];
           return ProductCard(
             product: product,
             onTap: () {
               // Navigate to product detail screen
-              Navigator.push(
-                context,
-                MaterialPageRoute<ProductDetailScreen>(
-                  builder: (context) => ProductDetailScreen(product: product),
-                ),
-              );
+              appRouter.goToProductDetail(product);
             },
           );
         },
-        separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 8),
+        separatorBuilder: (context, index) => const SizedBox(height: 8),
+        onLoadMore: () async {
+          print('Loading more products...');
+          return Future(
+            () {
+              return ref.read(loadProductProvider.notifier).loadMore();
+            },
+          );
+        },
+        isCanLoadMore: !products.isEndOfList,
       );
     }
   }

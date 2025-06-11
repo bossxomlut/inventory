@@ -12,7 +12,7 @@ final categoryProvider = AutoDisposeNotifierProvider<CategoryController, LoadLis
 
 class CategoryController extends LoadListController<Category> {
   @override
-  Future<List<Category>> fetchData(LoadListQuery query) {
+  Future<LoadResult<Category>> fetchData(LoadListQuery query) {
     final repo = ref.read(categoryRepositoryProvider);
     return repo.search(query.search ?? '', query.page, query.pageSize);
   }

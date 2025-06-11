@@ -3,6 +3,7 @@ import 'package:isar/isar.dart';
 import '../../domain/index.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
 import '../../features/product/provider/product_filter_provider.dart';
+import '../../provider/load_list.dart';
 import '../database/isar_repository.dart';
 import '../image/image.dart';
 import 'inventory.dart';
@@ -54,13 +55,13 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
   }
 
   @override
-  Future<List<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
+  Future<LoadResult<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
     final Iterable<int>? selectedCategoryIds = filter?['categoryIds'] as Iterable<int>?;
     final String sortType = filter?['sortType'] as String? ?? 'name';
     final ProductSortType productSortType =
         ProductSortType.values.firstWhere((e) => e.name == sortType, orElse: () => ProductSortType.none);
 
-    final results = await iCollection
+    final query = await iCollection
         .filter()
         .group(
           (QueryBuilder<ProductCollection, ProductCollection, QFilterCondition> q) {
@@ -90,12 +91,9 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
             case ProductSortType.none:
               return q.sortByName();
           }
-        })
-        .offset((page - 1) * limit)
-        .limit(limit)
-        .findAll();
+        });
 
-    return results.map((ProductCollection e) {
+    final results = (await query.offset((page - 1) * limit).limit(limit).findAll()).map((ProductCollection e) {
       return Product(
         id: e.id,
         name: e.name,
@@ -107,6 +105,11 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
         images: e.images.map((image) => ImageStorageModelMapping().from(image)).toList(),
       );
     }).toList();
+
+    return LoadResult<Product>(
+      data: results,
+      totalCount: await query.count(),
+    );
   }
 }
 
@@ -139,7 +142,7 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
   }
 
   @override
-  Future<List<Category>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
+  Future<LoadResult<Category>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
     final results = await iCollection
         .filter()
         .nameContains(keyword)
@@ -149,7 +152,7 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
         .limit(limit)
         .findAll();
 
-    return results.map(
+    final list = results.map(
       (CategoryCollection e) {
         return Category(
           id: e.id,
@@ -158,6 +161,10 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
         );
       },
     ).toList();
+    return LoadResult<Category>(
+      data: list,
+      totalCount: results.length,
+    );
   }
 
   @override
@@ -176,8 +183,11 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
 
 class SearchProductRepositoryImpl extends SearchProductRepository {
   @override
-  Future<List<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
-    return [];
+  Future<LoadResult<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
+    return LoadResult<Product>(
+      data: [],
+      totalCount: 0, // You might want to implement a way to get the total count
+    );
   }
 
   @override

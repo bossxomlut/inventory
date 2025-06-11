@@ -10,7 +10,7 @@ final loadUserProvider = AutoDisposeNotifierProvider<LoadUserController, LoadLis
 
 class LoadUserController extends LoadListController<User> {
   @override
-  Future<List<User>> fetchData(LoadListQuery query) async {
+  Future<LoadResult<User>> fetchData(LoadListQuery query) async {
     final userRepo = ref.watch(userRepositoryProvider);
 
     final roles = ref.watch(userRoleFilterProvider);
@@ -29,12 +29,19 @@ class LoadUserController extends LoadListController<User> {
         print('value: $value, search: ${query.search}');
         //search
         if (query.search != null && query.search!.isNotEmpty) {
-          return value.where((user) {
+          final list = value.where((user) {
             return user.username.toLowerCase().contains(query.search!.toLowerCase());
           }).toList();
+          return LoadResult<User>(
+            data: list,
+            totalCount: list.length,
+          );
         }
 
-        return value;
+        return LoadResult<User>(
+          data: value,
+          totalCount: value.length,
+        );
       },
     );
   }

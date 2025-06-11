@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../domain/entities/product/inventory.dart';
 import '../../provider/load_list.dart';
+import '../../provider/text_search.dart';
 import '../../shared_widgets/index.dart';
 import 'provider/product_filter_provider.dart';
 import 'provider/product_provider.dart';
@@ -12,35 +15,23 @@ import 'widget/add_product_widget.dart';
 import 'widget/index.dart';
 
 @RoutePage()
-class ProductListPage extends ConsumerStatefulWidget {
+class ProductListPage extends HookConsumerWidget {
   const ProductListPage({super.key});
 
   @override
-  ConsumerState<ProductListPage> createState() => _ProductListPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final searchFocusNode = useFocusNode();
 
-class _ProductListPageState extends ConsumerState<ProductListPage> {
-  final FocusNode _searchFocusNode = FocusNode();
-  final TextEditingController _searchController = TextEditingController();
+    final searchController = useTextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    // Listen to search controller changes
-    _searchController.addListener(() {
-      ref.watch(textSearchProvider.notifier).state = _searchController.text;
-    });
-  }
+    final debouncedSearchText = useDebouncedText(searchController);
 
-  @override
-  void dispose() {
-    _searchFocusNode.dispose();
-    _searchController.dispose();
-    super.dispose();
-  }
+    // Trigger search when debounced text changes
+    useEffect(() {
+      Future(() => ref.read(textSearchProvider.notifier).state = debouncedSearchText);
+      return null; // No cleanup needed for search call
+    }, [debouncedSearchText]);
 
-  @override
-  Widget build(BuildContext context) {
     final sortType = ref.watch(productSortTypeProvider);
     final categoryFilter = ref.watch(productCategoryFilterProvider);
     final isSearchVisible = ref.watch(isSearchVisibleProvider);
@@ -58,14 +49,14 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                 onTap: () {
                   ref.read(isSearchVisibleProvider.notifier).state = false;
                   ref.read(textSearchProvider.notifier).state = '';
-                  _searchController.clear();
+                  searchController.clear();
                 },
               ),
               titleSpacing: 0,
               centerTitle: false,
               title: TextField(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
+                controller: searchController,
+                focusNode: searchFocusNode,
                 style: const TextStyle(color: Colors.white),
                 cursorColor: Colors.white,
                 decoration: InputDecoration(
@@ -73,15 +64,15 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     hintStyle: const TextStyle(color: Colors.white70),
                     border: InputBorder.none,
                     suffix: AnimatedBuilder(
-                        animation: _searchController,
+                        animation: searchController,
                         builder: (context, _) {
-                          final isNotEmpty = _searchController.text.isNotEmpty;
+                          final isNotEmpty = searchController.text.isNotEmpty;
                           if (!isNotEmpty) {
                             return const SizedBox.shrink();
                           }
                           return InkWell(
                             onTap: () {
-                              _searchController.clear();
+                              searchController.clear();
                               ref.read(textSearchProvider.notifier).state = '';
                             },
                             child: Container(
@@ -127,7 +118,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     ref.read(isSearchVisibleProvider.notifier).state = true;
                     // Đảm bảo focus vào text field và mở bàn phím
                     Future.delayed(const Duration(milliseconds: 50), () {
-                      FocusScope.of(context).requestFocus(_searchFocusNode);
+                      FocusScope.of(context).requestFocus(searchFocusNode);
                     });
                   },
                   tooltip: 'Tìm kiếm',
@@ -337,7 +328,7 @@ class __ProductListViewState extends ConsumerState<_ProductListView> {
 
     // Load initial data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(loadProductProvider.notifier).loadData(query: LoadListQuery(page: 1, pageSize: 20));
+      ref.read(loadProductProvider.notifier).refresh();
     });
   }
 
@@ -360,30 +351,6 @@ class __ProductListViewState extends ConsumerState<_ProductListView> {
     } else if (products.hasError) {
       return Center(child: Text('Error: ${products.error}'));
     } else if (products.isEmpty) {
-      if (searchQuery.isNotEmpty || sortType != ProductSortType.none || categoryFilter != null) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.search_off, size: 48, color: Colors.grey),
-              const SizedBox(height: 16),
-              Text(
-                'Không tìm thấy sản phẩm nào',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () {
-                  ref.read(textSearchProvider.notifier).state = '';
-                  ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
-                  ref.read(productCategoryFilterProvider.notifier).state = null;
-                },
-                child: const Text('Xóa bộ lọc'),
-              ),
-            ],
-          ),
-        );
-      }
       return const EmptyItemWidget();
     } else {
       // Show active filters if any
@@ -485,6 +452,18 @@ class EmptyItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('No products found.'));
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.search_off, size: 48, color: Colors.grey),
+          const SizedBox(height: 16),
+          Text(
+            'Không tìm thấy sản phẩm nào',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ],
+      ),
+    );
   }
 }

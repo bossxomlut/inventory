@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/entities/product/inventory.dart';
+import '../../../provider/text_search.dart';
 
 enum ProductSortType { nameAsc, nameDesc, quantityAsc, quantityDesc, none }
 
@@ -39,11 +40,9 @@ extension ProductSortTypeExtension on ProductSortType {
 
 final productSortTypeProvider = StateProvider.autoDispose<ProductSortType>((ref) => ProductSortType.none);
 final productCategoryFilterProvider = StateProvider.autoDispose<Category?>((ref) => null);
-final textSearchProvider = StateProvider.autoDispose<String>((ref) => '');
-final isSearchVisibleProvider = StateProvider.autoDispose<bool>((ref) => false);
 
 final productFilterProvider = Provider.autoDispose<Map<String, dynamic>>((ref) {
-  final searchQuery = ref.watch(textSearchProvider);
+  final searchQuery = ref.watch(textSearchProvider).trim();
   final categoryFilter = ref.watch(productCategoryFilterProvider);
   final sortType = ref.watch(productSortTypeProvider);
 

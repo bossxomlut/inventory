@@ -13,6 +13,8 @@ export 'button/button.dart';
 export 'button/plus_minus_input_view.dart';
 export 'dialog.dart';
 export 'file_picker.dart';
+//Hooks
+export 'hook/index.dart';
 export 'icon/icon.dart';
 export 'image/image.dart';
 export 'image/image_place_holder.dart';

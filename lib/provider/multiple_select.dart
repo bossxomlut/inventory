@@ -12,6 +12,12 @@ class MultipleSelectState<T> with _$MultipleSelectState<T> {
   }) = _MultipleSelectState<T>;
 }
 
+extension MultipleSelectStateX<T> on MultipleSelectState<T> {
+  bool isSelected(T item) {
+    return data.contains(item);
+  }
+}
+
 class MultipleSelectController<T> extends AutoDisposeNotifier<MultipleSelectState<T>> {
   @override
   MultipleSelectState<T> build() {

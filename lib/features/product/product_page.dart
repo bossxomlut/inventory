@@ -6,9 +6,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../domain/entities/product/inventory.dart';
+import '../../provider/index.dart';
 import '../../provider/load_list.dart';
 import '../../provider/text_search.dart';
 import '../../shared_widgets/index.dart';
+import '../category/provider/category_provider.dart';
 import 'provider/product_filter_provider.dart';
 import 'provider/product_provider.dart';
 import 'widget/add_product_widget.dart';
@@ -20,6 +22,30 @@ class ProductListPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: ProductAppBar(),
+      endDrawer: const ProductFilterDrawer(),
+      body: const Column(
+        children: [
+          ProductFilterDisplayWidget(),
+          Expanded(child: _ProductListView()),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () {
+          const AddProductScreen().show(context);
+        },
+      ),
+    );
+  }
+}
+
+///create product appbar widget
+class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = context.appTheme;
     final searchFocusNode = useFocusNode();
 
     final searchController = useTextEditingController();
@@ -33,121 +59,180 @@ class ProductListPage extends HookConsumerWidget {
     }, [debouncedSearchText]);
 
     final sortType = ref.watch(productSortTypeProvider);
-    final categoryFilter = ref.watch(productCategoryFilterProvider);
+    final selectedCategories = ref.watch(multiSelectCategoryProvider).data;
     final isSearchVisible = ref.watch(isSearchVisibleProvider);
 
     // Check if any filters are active
-    final bool hasActiveFilters = sortType != ProductSortType.none || categoryFilter != null;
+    final bool hasActiveFilters = sortType != ProductSortType.none || selectedCategories.isNotEmpty;
 
-    return Scaffold(
-      appBar: isSearchVisible
-          ? AppBar(
-              // Custom search AppBar
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              leading: InkWell(
-                child: const Icon(Icons.close, color: Colors.white),
-                onTap: () {
-                  ref.read(isSearchVisibleProvider.notifier).state = false;
-                  ref.read(textSearchProvider.notifier).state = '';
-                  searchController.clear();
-                },
-              ),
-              titleSpacing: 0,
-              centerTitle: false,
-              title: TextField(
-                controller: searchController,
-                focusNode: searchFocusNode,
-                style: const TextStyle(color: Colors.white),
-                cursorColor: Colors.white,
-                decoration: InputDecoration(
-                    hintText: 'Tìm kiếm sản phẩm...',
-                    hintStyle: const TextStyle(color: Colors.white70),
-                    border: InputBorder.none,
-                    suffix: AnimatedBuilder(
-                        animation: searchController,
-                        builder: (context, _) {
-                          final isNotEmpty = searchController.text.isNotEmpty;
-                          if (!isNotEmpty) {
-                            return const SizedBox.shrink();
-                          }
-                          return InkWell(
-                            onTap: () {
-                              searchController.clear();
-                              ref.read(textSearchProvider.notifier).state = '';
-                            },
-                            child: Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.clear,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                          );
-                        })),
-                autofocus: true,
-                textInputAction: TextInputAction.search,
-                textAlignVertical: TextAlignVertical.center,
-              ),
-              actions: [
-                Builder(builder: (context) {
-                  return IconButton(
-                    icon: Badge(
-                      isLabelVisible: hasActiveFilters,
-                      child: const Icon(Icons.filter_list, color: Colors.white),
-                    ),
-                    onPressed: () {
-                      Scaffold.of(context).openEndDrawer();
-                    },
-                    tooltip: 'Lọc sản phẩm',
-                  );
-                }),
-              ],
-            )
-          : CustomAppBar(
-              title: 'Sản phẩm',
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.white),
-                  onPressed: () {
-                    ref.read(isSearchVisibleProvider.notifier).state = true;
-                    // Đảm bảo focus vào text field và mở bàn phím
-                    Future.delayed(const Duration(milliseconds: 50), () {
-                      FocusScope.of(context).requestFocus(searchFocusNode);
-                    });
-                  },
-                  tooltip: 'Tìm kiếm',
-                ),
-                Builder(builder: (context) {
-                  return IconButton(
-                    icon: Badge(
-                      isLabelVisible: hasActiveFilters,
-                      child: const Icon(Icons.filter_list, color: Colors.white),
-                    ),
-                    onPressed: () {
-                      Scaffold.of(context).openEndDrawer();
-                    },
-                    tooltip: 'Lọc sản phẩm',
-                  );
-                }),
-              ],
+    return isSearchVisible
+        ? AppBar(
+            // Custom search AppBar
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            leading: InkWell(
+              child: const Icon(Icons.close, color: Colors.white),
+              onTap: () {
+                ref.read(isSearchVisibleProvider.notifier).state = false;
+                ref.read(textSearchProvider.notifier).state = '';
+                searchController.clear();
+              },
             ),
-      endDrawer: const ProductFilterDrawer(),
-      body: Column(
-        children: [
-          Expanded(child: const _ProductListView()),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () {
-          const AddProductScreen().show(context);
-        },
+            titleSpacing: 0,
+            centerTitle: false,
+            title: TextField(
+              controller: searchController,
+              focusNode: searchFocusNode,
+              style: const TextStyle(color: Colors.white),
+              cursorColor: Colors.white,
+              decoration: InputDecoration(
+                  hintText: 'Tìm kiếm sản phẩm...',
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  border: InputBorder.none,
+                  suffix: AnimatedBuilder(
+                      animation: searchController,
+                      builder: (context, _) {
+                        final isNotEmpty = searchController.text.isNotEmpty;
+                        if (!isNotEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return InkWell(
+                          onTap: () {
+                            searchController.clear();
+                            ref.read(textSearchProvider.notifier).state = '';
+                          },
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.clear,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        );
+                      })),
+              autofocus: true,
+              textInputAction: TextInputAction.search,
+              textAlignVertical: TextAlignVertical.center,
+            ),
+            actions: [
+              Builder(builder: (context) {
+                return IconButton(
+                  icon: Badge(
+                    isLabelVisible: hasActiveFilters,
+                    child: const Icon(Icons.filter_list, color: Colors.white),
+                  ),
+                  onPressed: () {
+                    Scaffold.of(context).openEndDrawer();
+                  },
+                  tooltip: 'Lọc sản phẩm',
+                );
+              }),
+            ],
+          )
+        : CustomAppBar(
+            title: 'Sản phẩm',
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.search, color: Colors.white),
+                onPressed: () {
+                  ref.read(isSearchVisibleProvider.notifier).state = true;
+                  // Đảm bảo focus vào text field và mở bàn phím
+                  Future.delayed(const Duration(milliseconds: 50), () {
+                    FocusScope.of(context).requestFocus(searchFocusNode);
+                  });
+                },
+                tooltip: 'Tìm kiếm',
+              ),
+              Builder(builder: (context) {
+                return IconButton(
+                  icon: Badge(
+                    isLabelVisible: hasActiveFilters,
+                    child: const Icon(Icons.filter_list, color: Colors.white),
+                  ),
+                  onPressed: () {
+                    Scaffold.of(context).openEndDrawer();
+                  },
+                  tooltip: 'Lọc sản phẩm',
+                );
+              }),
+            ],
+          );
+  }
+
+  @override
+  Size get preferredSize => AppBar().preferredSize;
+}
+
+class ProductFilterDisplayWidget extends ConsumerWidget {
+  const ProductFilterDisplayWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sortType = ref.watch(productSortTypeProvider);
+    final selectedCategories = ref.watch(multiSelectCategoryProvider).data;
+    final isSearchVisible = ref.watch(isSearchVisibleProvider);
+
+    // Check if any filters are active
+    final bool hasActiveFilters = sortType != ProductSortType.none || selectedCategories.isNotEmpty;
+
+    if (!hasActiveFilters) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      child: SizedBox(
+        height: 56,
+        child: Row(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    if (sortType != ProductSortType.none)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Chip(
+                          label: Text('Sắp xếp: ${sortType.displayName}'),
+                          onDeleted: () {
+                            ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
+                          },
+                        ),
+                      ),
+                    if (selectedCategories.isNotEmpty) ...[
+                      for (final category in selectedCategories)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 4),
+                          child: Chip(
+                            label: Text(category.name),
+                            onDeleted: () {
+                              ref.read(multiSelectCategoryProvider.notifier).toggle(category);
+                            },
+                          ),
+                        ),
+                    ]
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: OutlinedButton(
+                onPressed: () {
+                  ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
+                  ref.read(multiSelectCategoryProvider.notifier).clear();
+                },
+                child: const Text('Xóa tất cả'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -314,132 +399,57 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 }
 
-class _ProductListView extends StatefulHookConsumerWidget {
+class _ProductListView extends HookConsumerWidget {
   const _ProductListView({super.key});
 
   @override
-  ConsumerState createState() => __ProductListViewState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    useEffect(() {
+      // Ensure the product list is refreshed when this widget is built
+      Future(() {
+        ref.read(loadProductProvider.notifier).refresh();
+      });
+      return null; // No cleanup needed
+    }, []);
 
-class __ProductListViewState extends ConsumerState<_ProductListView> {
-  @override
-  void initState() {
-    super.initState();
-
-    // Load initial data
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(loadProductProvider.notifier).refresh();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
     // Use loadProductProvider directly
     final products = ref.watch(loadProductProvider);
-    final sortType = ref.watch(productSortTypeProvider);
-    final categoryFilter = ref.watch(productCategoryFilterProvider);
-    final searchQuery = ref.watch(textSearchProvider);
-
     ref.listen(
       productFilterProvider,
       (previous, next) {
         ref.read(loadProductProvider.notifier).listenFilterChanges();
       },
     );
-    if (products.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    } else if (products.hasError) {
+    if (products.hasError) {
       return Center(child: Text('Error: ${products.error}'));
     } else if (products.isEmpty) {
       return const EmptyItemWidget();
     } else {
-      // Show active filters if any
-      final bool hasActiveFilters = sortType != ProductSortType.none || categoryFilter != null;
-
       final length = products.data.length;
-      return Column(
-        children: [
-          // Show active filters bar
-          if (hasActiveFilters)
-            Container(
-              child: SizedBox(
-                height: 56,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: Row(
-                          children: [
-                            if (sortType != ProductSortType.none)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 4),
-                                child: Chip(
-                                  label: Text('Sắp xếp: ${sortType.displayName}'),
-                                  onDeleted: () {
-                                    ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
-                                  },
-                                ),
-                              ),
-                            if (categoryFilter != null)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 4),
-                                child: Chip(
-                                  label: Text('Danh mục: ${categoryFilter.name}'),
-                                  onDeleted: () {
-                                    ref.read(productCategoryFilterProvider.notifier).state = null;
-                                  },
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: OutlinedButton(
-                        onPressed: () {
-                          ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
-                          ref.read(productCategoryFilterProvider.notifier).state = null;
-                        },
-                        child: const Text('Xóa tất cả'),
-                      ),
-                    ),
-                  ],
+      return ListView.separated(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        itemCount: products.isLoadingMore ? length + 1 : length,
+        padding: const EdgeInsets.all(16),
+        itemBuilder: (context, index) {
+          if (products.isLoadingMore && index == length) {
+            return const SizedBox(height: 50, child: Center(child: CircularProgressIndicator()));
+          }
+
+          final product = products.data[index];
+          return ProductCard(
+            product: product,
+            onTap: () {
+              // Navigate to product detail screen
+              Navigator.push(
+                context,
+                MaterialPageRoute<ProductDetailScreen>(
+                  builder: (context) => ProductDetailScreen(product: product),
                 ),
-              ),
-            ),
-
-          // Product list
-          Expanded(
-            child: ListView.separated(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              itemCount: products.isLoadingMore ? length + 1 : length,
-              padding: const EdgeInsets.all(16),
-              itemBuilder: (context, index) {
-                if (products.isLoadingMore && index == length) {
-                  return const SizedBox(height: 50, child: Center(child: CircularProgressIndicator()));
-                }
-
-                final product = products.data[index];
-                return ProductCard(
-                  product: product,
-                  onTap: () {
-                    // Navigate to product detail screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute<ProductDetailScreen>(
-                        builder: (context) => ProductDetailScreen(product: product),
-                      ),
-                    );
-                  },
-                );
-              },
-              separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 8),
-            ),
-          ),
-        ],
+              );
+            },
+          );
+        },
+        separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 8),
       );
     }
   }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../domain/entities/product/inventory.dart';
 import '../../../provider/text_search.dart';
+import '../../category/provider/category_provider.dart';
 
 enum ProductSortType { nameAsc, nameDesc, quantityAsc, quantityDesc, none }
 
@@ -39,11 +39,10 @@ extension ProductSortTypeExtension on ProductSortType {
 }
 
 final productSortTypeProvider = StateProvider.autoDispose<ProductSortType>((ref) => ProductSortType.none);
-final productCategoryFilterProvider = StateProvider.autoDispose<Category?>((ref) => null);
 
 final productFilterProvider = Provider.autoDispose<Map<String, dynamic>>((ref) {
   final searchQuery = ref.watch(textSearchProvider).trim();
-  final categoryFilter = ref.watch(productCategoryFilterProvider);
+  final selectedCategories = ref.watch(multiSelectCategoryProvider).data;
   final sortType = ref.watch(productSortTypeProvider);
 
   // Create filter map to pass to repository
@@ -55,8 +54,8 @@ final productFilterProvider = Provider.autoDispose<Map<String, dynamic>>((ref) {
   }
 
   // Add categoryId to filter if available
-  if (categoryFilter != null) {
-    filter['categoryId'] = categoryFilter.id;
+  if (selectedCategories.isNotEmpty) {
+    filter['categoryIds'] = selectedCategories.map((category) => category.id).toList();
   }
 
   // Add sortType to filter if available

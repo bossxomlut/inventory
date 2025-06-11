@@ -58,7 +58,13 @@ class CameraFilePicker extends AppFilePicker {
   }
 
   @override
-  Future<List<AppFile>?> pickMultiFiles() async {}
+  Future<List<AppFile>?> pickMultiFiles() async {
+    final file = await pickOne();
+    if (file != null) {
+      return [file];
+    }
+    return null;
+  }
 }
 
 //

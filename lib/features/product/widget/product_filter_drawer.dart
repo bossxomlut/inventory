@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../domain/entities/product/inventory.dart';
+import '../../../provider/index.dart';
 import '../../category/provider/category_provider.dart';
 import '../provider/product_filter_provider.dart';
 
@@ -11,7 +12,7 @@ class ProductFilterDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sortType = ref.watch(productSortTypeProvider);
-    final categoryFilter = ref.watch(productCategoryFilterProvider);
+    final selectedCategories = ref.watch(multiSelectCategoryProvider);
     final categories = ref.watch(allCategoriesProvider);
     final theme = Theme.of(context);
 
@@ -90,22 +91,22 @@ class ProductFilterDrawer extends ConsumerWidget {
                     }
                     return Wrap(spacing: 8, children: [
                       FilterChip(
-                        selected: categoryFilter == null,
+                        selected: selectedCategories.data.isEmpty,
                         label: const Text('Tất cả'),
                         onSelected: (_) {
-                          ref.read(productCategoryFilterProvider.notifier).state = null;
+                          ref.read(multiSelectCategoryProvider.notifier).clear();
                         },
                         backgroundColor: theme.colorScheme.surface,
                         selectedColor: theme.colorScheme.primaryContainer,
                         checkmarkColor: theme.colorScheme.primary,
                       ),
                       ...data.map((category) {
-                        final isSelected = categoryFilter?.id == category.id;
+                        final isSelected = selectedCategories.isSelected(category);
                         return FilterChip(
                           selected: isSelected,
                           label: Text(category.name),
                           onSelected: (_) {
-                            ref.read(productCategoryFilterProvider.notifier).state = isSelected ? null : category;
+                            ref.read(multiSelectCategoryProvider.notifier).toggle(category);
                           },
                           backgroundColor: theme.colorScheme.surface,
                           selectedColor: theme.colorScheme.primaryContainer,
@@ -122,39 +123,6 @@ class ProductFilterDrawer extends ConsumerWidget {
                   },
                   loading: () => CircularProgressIndicator()),
 
-              //
-              // if (categories.isEmpty)
-              //   const Text('Không có danh mục nào')
-              // else
-              //   Wrap(
-              //     spacing: 8,
-              //     children: [
-              //       FilterChip(
-              //         selected: categoryFilter == null,
-              //         label: const Text('Tất cả'),
-              //         onSelected: (_) {
-              //           ref.read(productCategoryFilterProvider.notifier).state = null;
-              //         },
-              //         backgroundColor: theme.colorScheme.surface,
-              //         selectedColor: theme.colorScheme.primaryContainer,
-              //         checkmarkColor: theme.colorScheme.primary,
-              //       ),
-              //       ...categories.map((category) {
-              //         final isSelected = categoryFilter?.id == category.id;
-              //         return FilterChip(
-              //           selected: isSelected,
-              //           label: Text(category.name),
-              //           onSelected: (_) {
-              //             ref.read(productCategoryFilterProvider.notifier).state = isSelected ? null : category;
-              //           },
-              //           backgroundColor: theme.colorScheme.surface,
-              //           selectedColor: theme.colorScheme.primaryContainer,
-              //           checkmarkColor: theme.colorScheme.primary,
-              //         );
-              //       }).toList(),
-              //     ],
-              //   ),
-
               const Spacer(),
 
               // Reset button
@@ -163,7 +131,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                 child: OutlinedButton(
                   onPressed: () {
                     ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
-                    ref.read(productCategoryFilterProvider.notifier).state = null;
+                    ref.read(multiSelectCategoryProvider.notifier).clear();
                   },
                   child: const Text('Đặt lại'),
                 ),

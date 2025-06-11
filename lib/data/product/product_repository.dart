@@ -55,7 +55,7 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
 
   @override
   Future<List<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
-    final int? selectedCategoryId = filter?['categoryId'] as int?;
+    final Iterable<int>? selectedCategoryIds = filter?['categoryIds'] as Iterable<int>?;
     final String sortType = filter?['sortType'] as String? ?? 'name';
     final ProductSortType productSortType =
         ProductSortType.values.firstWhere((e) => e.name == sortType, orElse: () => ProductSortType.none);
@@ -73,8 +73,9 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
           },
         )
         .optional<QAfterFilterCondition>(
-          selectedCategoryId != null,
-          (q) => q.category((q) => q.idEqualTo(selectedCategoryId!)),
+          selectedCategoryIds?.isNotEmpty ?? false,
+          (q) => q.category(
+              (q) => q.anyOf<int, ProductCollection>(selectedCategoryIds!, (q, element) => q.idEqualTo(element))),
         )
         .optional(true, (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) {
           switch (productSortType) {

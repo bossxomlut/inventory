@@ -10,6 +10,7 @@ import '../../../domain/entities/image.dart';
 import '../../../domain/entities/index.dart';
 import '../../../provider/index.dart';
 import '../../../resources/index.dart';
+import '../../../shared_widgets/camera/camera_view.dart';
 import '../../../shared_widgets/toast.dart';
 import '../../category/select_category_widget.dart';
 import '../provider/product_provider.dart';
@@ -396,11 +397,9 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<List<
                   icon: Icons.camera_alt,
                   label: 'Camera',
                   onTap: () {
-                    // Handle camera selection
-                    AppFilePicker.camera().pickMultiFiles().then((files) {
+                    CameraView.show(context).then((files) {
                       if (files != null && files.isNotEmpty) {
-                        Navigator.pop(context,
-                            files.map((AppFile e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
+                        Navigator.pop(context, files.map((e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
                       } else {
                         showError(message: 'No images selected from camera.');
                       }
@@ -418,8 +417,7 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<List<
                   onTap: () {
                     AppFilePicker.image().pickMultiFiles().then((files) {
                       if (files != null && files.isNotEmpty) {
-                        Navigator.pop(context,
-                            files.map((AppFile e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
+                        Navigator.pop(context, files.map((AppFile e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
                       } else {
                         showError(message: 'No images selected from gallery.');
                       }

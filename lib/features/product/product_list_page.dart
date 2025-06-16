@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../../domain/entities/product/inventory.dart';
 import '../../provider/index.dart';
@@ -24,7 +24,7 @@ class ProductListPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: ProductAppBar(),
+      appBar: const ProductAppBar(),
       endDrawer: const ProductFilterDrawer(),
       body: const Column(
         children: [
@@ -33,7 +33,7 @@ class ProductListPage extends HookConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+        child: const Icon(HugeIcons.strokeRoundedAdd01),
         onPressed: () {
           const AddProductScreen().show(context);
         },
@@ -44,9 +44,10 @@ class ProductListPage extends HookConsumerWidget {
 
 ///create product appbar widget
 class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
+  const ProductAppBar({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = context.appTheme;
     final searchFocusNode = useFocusNode();
 
     final searchController = useTextEditingController();
@@ -62,9 +63,11 @@ class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
     final sortType = ref.watch(productSortTypeProvider);
     final selectedCategories = ref.watch(multiSelectCategoryProvider).data;
     final isSearchVisible = ref.watch(isSearchVisibleProvider);
+    final createdTimeFilter = ref.watch(createdTimeFilterTypeProvider);
+    final updatedTimeFilter = ref.watch(updatedTimeFilterTypeProvider);
 
     // Check if any filters are active
-    final bool hasActiveFilters = sortType != ProductSortType.none || selectedCategories.isNotEmpty;
+    final bool hasActiveFilters = sortType != ProductSortType.none || selectedCategories.isNotEmpty || createdTimeFilter != TimeFilterType.none || updatedTimeFilter != TimeFilterType.none;
 
     return isSearchVisible
         ? AppBar(
@@ -121,18 +124,17 @@ class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
               textAlignVertical: TextAlignVertical.center,
             ),
             actions: [
-              Builder(builder: (context) {
-                return IconButton(
-                  icon: Badge(
-                    isLabelVisible: hasActiveFilters,
-                    child: const Icon(Icons.filter_list, color: Colors.white),
-                  ),
-                  onPressed: () {
-                    Scaffold.of(context).openEndDrawer();
-                  },
-                  tooltip: 'Lọc sản phẩm',
-                );
-              }),
+              IconButton(
+                icon: Badge(
+                  isLabelVisible: hasActiveFilters,
+                  child: const Icon(Icons.filter_list, color: Colors.white),
+                ),
+                onPressed: () {
+                  context.hideKeyboard();
+                  Scaffold.of(context).openEndDrawer();
+                },
+                tooltip: 'Lọc sản phẩm',
+              ),
             ],
           )
         : CustomAppBar(
@@ -176,13 +178,44 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sortType = ref.watch(productSortTypeProvider);
     final selectedCategories = ref.watch(multiSelectCategoryProvider).data;
-    final isSearchVisible = ref.watch(isSearchVisibleProvider);
+
+    // Watch time filters
+    final createdTimeFilter = ref.watch(createdTimeFilterTypeProvider);
+    final createdTimeCustomRange = ref.watch(createdTimeCustomRangeProvider);
+    final updatedTimeFilter = ref.watch(updatedTimeFilterTypeProvider);
+    final updatedTimeCustomRange = ref.watch(updatedTimeCustomRangeProvider);
 
     // Check if any filters are active
-    final bool hasActiveFilters = sortType != ProductSortType.none || selectedCategories.isNotEmpty;
+    final bool hasActiveFilters = sortType != ProductSortType.none || selectedCategories.isNotEmpty || createdTimeFilter != TimeFilterType.none || updatedTimeFilter != TimeFilterType.none;
 
     if (!hasActiveFilters) {
       return const SizedBox.shrink();
+    }
+
+    // Format a date range for display
+    String formatDateRange(DateTime? start, DateTime? end) {
+      if (start == null || end == null) return '';
+      return '${start.day}/${start.month}/${start.year} - ${end.day}/${end.month}/${end.year}';
+    }
+
+    // Get created time filter display text
+    String getCreatedTimeFilterText() {
+      if (createdTimeFilter == TimeFilterType.custom && createdTimeCustomRange != null) {
+        return 'Thêm: ${formatDateRange(createdTimeCustomRange.start, createdTimeCustomRange.end)}';
+      } else if (createdTimeFilter != TimeFilterType.none) {
+        return 'Thêm: ${createdTimeFilter.displayName}';
+      }
+      return '';
+    }
+
+    // Get updated time filter display text
+    String getUpdatedTimeFilterText() {
+      if (updatedTimeFilter == TimeFilterType.custom && updatedTimeCustomRange != null) {
+        return 'Thay đổi: ${formatDateRange(updatedTimeCustomRange.start, updatedTimeCustomRange.end)}';
+      } else if (updatedTimeFilter != TimeFilterType.none) {
+        return 'Thay đổi: ${updatedTimeFilter.displayName}';
+      }
+      return '';
     }
 
     return Container(
@@ -206,6 +239,38 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                           },
                         ),
                       ),
+
+                    // Created time filter chip
+                    if (createdTimeFilter != TimeFilterType.none)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Chip(
+                          label: Text(getCreatedTimeFilterText()),
+                          onDeleted: () {
+                            ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
+                            if (ref.read(activeTimeFilterTypeProvider) == 'created') {
+                              ref.read(activeTimeFilterTypeProvider.notifier).state = null;
+                            }
+                          },
+                        ),
+                      ),
+
+                    // Updated time filter chip
+                    if (updatedTimeFilter != TimeFilterType.none)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Chip(
+                          label: Text(getUpdatedTimeFilterText()),
+                          onDeleted: () {
+                            ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
+                            if (ref.read(activeTimeFilterTypeProvider) == 'updated') {
+                              ref.read(activeTimeFilterTypeProvider.notifier).state = null;
+                            }
+                          },
+                        ),
+                      ),
+
+                    // Category filters
                     if (selectedCategories.isNotEmpty) ...[
                       for (final category in selectedCategories)
                         Padding(
@@ -228,172 +293,13 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                 onPressed: () {
                   ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
                   ref.read(multiSelectCategoryProvider.notifier).clear();
+                  ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
+                  ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
+                  ref.read(activeTimeFilterTypeProvider.notifier).state = null;
                 },
                 child: const Text('Xóa tất cả'),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-@RoutePage()
-class ProductDetailPage extends StatefulWidget {
-  const ProductDetailPage({super.key, required this.product});
-
-  final Product product;
-
-  @override
-  State<ProductDetailPage> createState() => _ProductDetailPageState();
-}
-
-class _ProductDetailPageState extends State<ProductDetailPage> {
-  int selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final product = widget.product;
-    final theme = Theme.of(context);
-    final images = product.images ?? [];
-    final hasImages = images.isNotEmpty && images.first.path != null;
-    return Scaffold(
-      appBar: AppBar(title: Text(product.name)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Master image
-            if (hasImages)
-              Center(
-                child: Hero(
-                  tag: 'product-image-${product.id}',
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      File(images[selectedIndex].path!),
-                      width: 260,
-                      height: 260,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 260,
-                        height: 260,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.broken_image, size: 64),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            else
-              Container(
-                width: double.infinity,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.image_not_supported, size: 80, color: Colors.grey),
-              ),
-            if (hasImages && images.length > 1)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: SizedBox(
-                  height: 64,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: images.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      final imageUrl = images[index].path;
-                      return GestureDetector(
-                        onTap: () => setState(() => selectedIndex = index),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.ease,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: selectedIndex == index ? theme.colorScheme.primary : Colors.transparent,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              File(imageUrl!),
-                              width: 64,
-                              height: 64,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                width: 64,
-                                height: 64,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.broken_image, size: 24),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            const SizedBox(height: 24),
-            // Product name
-            Text(product.name, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            // Category
-            if (product.category != null)
-              Row(
-                children: [
-                  const Icon(Icons.category, size: 20),
-                  const SizedBox(width: 8),
-                  Text(product.category!.name, style: theme.textTheme.bodyLarge),
-                ],
-              ),
-            const SizedBox(height: 12),
-            // Barcode
-            if (product.barcode != null && product.barcode!.isNotEmpty)
-              Row(
-                children: [
-                  const Icon(Icons.qr_code, size: 20),
-                  const SizedBox(width: 8),
-                  Text(product.barcode!, style: theme.textTheme.bodyLarge),
-                ],
-              ),
-            const SizedBox(height: 12),
-            // Price
-            if (product.price != null)
-              Row(
-                children: [
-                  const Icon(Icons.attach_money, size: 20),
-                  const SizedBox(width: 8),
-                  Text('${product.price}', style: theme.textTheme.bodyLarge),
-                ],
-              ),
-            const SizedBox(height: 12),
-            // Quantity
-            Row(
-              children: [
-                const Icon(Icons.inventory_2, size: 20),
-                const SizedBox(width: 8),
-                Text('In stock: ${product.quantity}', style: theme.textTheme.bodyLarge),
-              ],
-            ),
-            const SizedBox(height: 24),
-            // Description
-            if (product.description != null && product.description!.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Description', style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  Text(product.description!, style: theme.textTheme.bodyMedium),
-                ],
-              ),
           ],
         ),
       ),
@@ -427,28 +333,39 @@ class ProductListView extends HookConsumerWidget {
     } else if (products.isEmpty) {
       return const EmptyItemWidget();
     } else {
-      return LoadMoreList<Product>(
-        items: products.data,
-        itemBuilder: (context, index) {
-          final product = products.data[index];
-          return ProductCard(
-            product: product,
-            onTap: () {
-              // Navigate to product detail screen
-              appRouter.goToProductDetail(product);
-            },
-          );
-        },
-        separatorBuilder: (context, index) => const SizedBox(height: 8),
-        onLoadMore: () async {
-          print('Loading more products...');
-          return Future(
-            () {
-              return ref.read(loadProductProvider.notifier).loadMore();
-            },
-          );
-        },
-        isCanLoadMore: !products.isEndOfList,
+      return Column(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            alignment: Alignment.centerLeft,
+            child: Text('Đã tải ${products.data.length}/${products.totalCount} sản phẩm'),
+          ),
+          Expanded(
+            child: LoadMoreList<Product>(
+              items: products.data,
+              itemBuilder: (context, index) {
+                final product = products.data[index];
+                return ProductCard(
+                  product: product,
+                  onTap: () {
+                    // Navigate to product detail screen
+                    appRouter.goToProductDetail(product);
+                  },
+                );
+              },
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              onLoadMore: () async {
+                print('Loading more products...');
+                return Future(
+                  () {
+                    return ref.read(loadProductProvider.notifier).loadMore();
+                  },
+                );
+              },
+              isCanLoadMore: !products.isEndOfList,
+            ),
+          ),
+        ],
       );
     }
   }

@@ -15,22 +15,32 @@ class BottomButtonBar extends StatelessWidget {
     super.key,
     required this.onSave,
     required this.onCancel,
-    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     this.saveButtonText,
     this.cancelButtonText,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: padding,
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(child: AppButton.secondary(title: cancelButtonText ?? 'Cancel', onPressed: onCancel)),
-            const Gap(8),
-            Expanded(child: AppButton.primary(title: saveButtonText ?? 'Save', onPressed: onSave)),
-          ],
+    return KeyboardVisibilityBuilder(
+      child: Padding(
+        padding: padding,
+        child: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                  child: AppButton.secondary(
+                title: cancelButtonText ?? 'Huỷ',
+                onPressed: onCancel,
+              )),
+              const Gap(8),
+              Expanded(
+                  child: AppButton.primary(
+                title: saveButtonText ?? 'Lưu',
+                onPressed: onSave,
+              )),
+            ],
+          ),
         ),
       ),
     );

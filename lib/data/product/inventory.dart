@@ -21,6 +21,8 @@ class ProductCollection {
   final IsarLink<CategoryCollection> category = IsarLink<CategoryCollection>();
   final IsarLinks<ImageStorageCollection> images = IsarLinks<ImageStorageCollection>();
   late String? description;
+  late DateTime createdAt;
+  late DateTime updatedAt;
 }
 
 @collection

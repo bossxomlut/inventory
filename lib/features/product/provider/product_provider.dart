@@ -7,7 +7,9 @@ import '../../../domain/entities/product/inventory.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
+import '../../../provider/text_search.dart';
 import '../../../routes/app_router.dart';
+import '../../category/provider/category_provider.dart';
 import 'product_filter_provider.dart';
 
 final loadProductProvider = AutoDisposeNotifierProvider<LoadProductController, LoadListState<Product>>(() {
@@ -57,6 +59,17 @@ class LoadProductController extends LoadListController<Product> with CommonProvi
       final newProduct = product.copyWith(images: savedImages);
       final created = await productRepo.create(newProduct);
       state = state.copyWith(data: [...state.data, created]);
+      
+      // Clear all filters and set "Created today" filter
+      ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
+      ref.read(multiSelectCategoryProvider.notifier).clear();
+      ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
+      // Set created time filter to "today"
+      ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.today;
+      ref.read(activeTimeFilterTypeProvider.notifier).state = 'created';
+      // Clear search text
+      ref.read(textSearchProvider.notifier).state = '';
+      
       showSuccess('Add new product successfully');
       appRouter.popForced();
     } catch (e) {

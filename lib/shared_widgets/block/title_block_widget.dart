@@ -31,8 +31,10 @@ class TitleBlockWidget extends StatelessWidget {
             ),
             if (isRequired)
               Text(
-                '*',
-                style: theme.textRegular12Subtle,
+                ' * ',
+                style: theme.textRegular12Subtle.copyWith(
+                  color: theme.colorTextSupportRed,
+                ),
               ),
           ],
         ),

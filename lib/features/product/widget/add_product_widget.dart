@@ -21,6 +21,14 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
   const AddProductScreen({super.key});
 
   @override
+  Future<void> show(BuildContext context, {bool isScafold = true}) {
+    return super.show(
+      context,
+      isScafold: isScafold,
+    );
+  }
+
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final _nameController = useTextEditingController();
     final _priceController = useTextEditingController();
@@ -30,121 +38,170 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
     final quantity = useState<int>(0);
     final images = useState<List<ImageStorageModel>>([]);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Flexible(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TitleBlockWidget(
-                    title: 'Product Name',
-                    isRequired: true,
-                    child: CustomTextField.multiLines(
-                      controller: _nameController,
-                      hint: 'Product Name',
-                      maxLines: 3,
-                    ),
-                  ),
-                  separateGap,
-                  // Quantity
-                  TitleBlockWidget(
-                    title: 'Quantity',
-                    isRequired: true,
-                    child: PlusMinusInputView(
-                      initialValue: 0,
-                      onChanged: (int p0) {
-                        quantity.value = p0;
-                      },
-                      minValue: 0,
-                    ),
-                  ),
-                  separateGap,
-                  TitleBlockWidget(
-                    title: 'Category',
-                    child: AddCategoryPlaceHolder(
-                      value: _category.value,
-                      onSelected: (Category? value) {
-                        _category.value = value;
-                      },
-                    ),
-                  ),
-                  separateGap,
-                  TitleBlockWidget(
-                    title: 'SKU',
-                    child: AddSKUPlaceHolder(
-                      value: _sku.value,
-                      onSelected: (String? value) {
-                        _sku.value = value;
-                      },
-                    ),
-                  ),
-                  separateGap,
-                  TitleBlockWidget(
-                    title: 'Note',
-                    child: CustomTextField.multiLines(
-                      // label: 'Product Name',
-                      hint: 'Note',
-                      maxLines: 3,
-                    ),
-                  ),
-                  separateGap,
-                  TitleBlockWidget(
-                    title: 'Image',
-                    child: UploadImagePlaceholder(
-                      title: 'Add Image',
-                      files: images.value,
-                      onAdd: (value) {
-                        images.value = [...images.value, ...value];
-                      },
-                      onRemove: (file) {
-                        images.value = images.value.where((e) => e != file).toList();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        BottomButtonBar(
-          onCancel: () {
+    bool isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
+
+    return Scaffold(
+      extendBody: true,
+      resizeToAvoidBottomInset: true,
+      appBar: CustomAppBar(
+        title: 'Thêm sản phẩm',
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () {
             Navigator.pop(context);
           },
-          onSave: () {
-            // Create a new product
-            final name = _nameController.text.trim();
-            final priceStr = _priceController.text.trim();
-            final note = _noteController.text.trim();
-            final sku = _sku.value;
-
-            // Validate inputs
-            if (name.isEmpty) {
-              showError(message: 'Please fill in all required fields.');
-              return;
-            }
-
-            final price = double.tryParse(priceStr) ?? 0.0;
-
-            final newProduct = Product(
-              id: undefinedId, // Generate unique ID
-              name: name,
-              description: note,
-              price: price,
-              images: [...images.value], // Add image IDs if needed
-              quantity: quantity.value,
-              category: _category.value,
-              barcode: sku,
-            );
-
-            // Add product to the provider
-            ref.read(loadProductProvider.notifier).createProduct(newProduct);
-          },
         ),
-      ],
+        actions: [
+          !isKeyboardVisible
+              ? const SizedBox()
+              : IconButton(
+                  icon: Text(
+                    'Lưu',
+                    style: context.appTheme.textMedium15Default.copyWith(color: Colors.white),
+                  ),
+                  onPressed: () {},
+                ),
+        ],
+        // centerTitle: true,
+      ),
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            TitleBlockWidget(
+                              isRequired: true,
+                              title: 'Tên sản phẩm ',
+                              child: CustomTextField.multiLines(
+                                hint: 'Nhập tên sản phẩm',
+                                controller: _nameController,
+                                minLines: 4,
+                                autofocus: true,
+                              ),
+                            ),
+
+                            separateGapItem,
+                            // Quantity
+                            TitleBlockWidget(
+                              title: 'Số lượng',
+                              isRequired: true,
+                              child: PlusMinusInputView(
+                                initialValue: 0,
+                                onChanged: (int p0) {
+                                  quantity.value = p0;
+                                },
+                                minValue: 0,
+                              ),
+                            ),
+                            separateGapItem,
+                            TitleBlockWidget(
+                              title: 'Mã sản phẩm ',
+                              child: AddSKUPlaceHolder(
+                                value: _sku.value,
+                                onSelected: (String? value) {
+                                  _sku.value = value;
+                                },
+                              ),
+                            ),
+                            separateGapItem,
+                            TitleBlockWidget(
+                              title: 'Danh mục',
+                              child: AddCategoryPlaceHolder(
+                                value: _category.value,
+                                onSelected: (Category? value) {
+                                  _category.value = value;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      separateGapBlock,
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: TitleBlockWidget(
+                          title: 'Ảnh sản phẩm',
+                          child: UploadImagePlaceholder(
+                            title: 'Thêm ảnh',
+                            files: images.value,
+                            onAdd: (value) {
+                              images.value = [...images.value, ...value];
+                            },
+                            onRemove: (file) {
+                              images.value = images.value.where((e) => e != file).toList();
+                            },
+                          ),
+                        ),
+                      ),
+                      separateGapBlock,
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: TitleBlockWidget(
+                          title: 'Ghi chú',
+                          child: CustomTextField.multiLines(
+                            hint: 'Nhập ghi chú',
+                            maxLines: 3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            BottomButtonBar(
+              onCancel: () {
+                Navigator.pop(context);
+              },
+              onSave: () {
+                // Create a new product
+                final name = _nameController.text.trim();
+                final priceStr = _priceController.text.trim();
+                final note = _noteController.text.trim();
+                final sku = _sku.value;
+
+                // Validate inputs
+                if (name.isEmpty) {
+                  showError(message: 'Please fill in all required fields.');
+                  return;
+                }
+
+                final price = double.tryParse(priceStr) ?? 0.0;
+
+                final newProduct = Product(
+                  id: undefinedId, // Generate unique ID
+                  name: name,
+                  description: note,
+                  price: price,
+                  images: [...images.value], // Add image IDs if needed
+                  quantity: quantity.value,
+                  category: _category.value,
+                  barcode: sku,
+                );
+
+                // Add product to the provider
+                ref.read(loadProductProvider.notifier).createProduct(newProduct);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -399,7 +456,8 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<List<
                   onTap: () {
                     CameraView.show(context).then((files) {
                       if (files != null && files.isNotEmpty) {
-                        Navigator.pop(context, files.map((e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
+                        Navigator.pop(
+                            context, files.map((e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
                       } else {
                         showError(message: 'No images selected from camera.');
                       }
@@ -417,7 +475,8 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<List<
                   onTap: () {
                     AppFilePicker.image().pickMultiFiles().then((files) {
                       if (files != null && files.isNotEmpty) {
-                        Navigator.pop(context, files.map((AppFile e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
+                        Navigator.pop(context,
+                            files.map((AppFile e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
                       } else {
                         showError(message: 'No images selected from gallery.');
                       }
@@ -513,7 +572,7 @@ class AddSKUPlaceHolder extends CommonAddPlaceHolder<String> {
           },
           value: value,
           getName: (String? value) => value ?? '',
-          title: 'Add SKU',
+          title: 'Thêm mã sản phẩm (SKU)',
         );
 }
 
@@ -535,7 +594,7 @@ class AddCategoryPlaceHolder extends CommonAddPlaceHolder<Category> {
           },
           value: value,
           getName: (Category? value) => value?.name ?? '',
-          title: 'Add Category',
+          title: 'Thêm danh mục',
         );
 }
 

@@ -36,7 +36,9 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       ..quantity = item.quantity
       ..category.value = CategoryCollectionMapping().from(item.category)
       ..barcode = item.barcode
-      ..images.addAll(item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? []);
+      ..images.addAll(item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? [])
+      ..createdAt = DateTime.now()
+      ..updatedAt = DateTime.now();
 
     return p;
   }
@@ -58,6 +60,13 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
   Future<LoadResult<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
     final Iterable<int>? selectedCategoryIds = filter?['categoryIds'] as Iterable<int>?;
     final String sortType = filter?['sortType'] as String? ?? 'name';
+
+    // Get time filters
+    final DateTime? createdStartDate = filter?['createdStartDate'] as DateTime?;
+    final DateTime? createdEndDate = filter?['createdEndDate'] as DateTime?;
+    final DateTime? updatedStartDate = filter?['updatedStartDate'] as DateTime?;
+    final DateTime? updatedEndDate = filter?['updatedEndDate'] as DateTime?;
+
     final ProductSortType productSortType =
         ProductSortType.values.firstWhere((e) => e.name == sortType, orElse: () => ProductSortType.none);
 
@@ -72,6 +81,16 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
                 .or()
                 .descriptionContains(keyword, caseSensitive: false);
           },
+        )
+        .optional<QAfterFilterCondition>(
+          createdStartDate != null && createdEndDate != null,
+          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) =>
+              q.createdAtBetween(createdStartDate!, createdEndDate!),
+        )
+        .optional<QAfterFilterCondition>(
+          updatedStartDate != null && updatedEndDate != null,
+          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) =>
+              q.updatedAtBetween(updatedStartDate!, updatedEndDate!),
         )
         .optional<QAfterFilterCondition>(
           selectedCategoryIds?.isNotEmpty ?? false,

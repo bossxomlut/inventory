@@ -54,7 +54,7 @@ class _AddCategoryState extends State<AddCategory> {
                         maxLines: 3,
                       ),
                     ),
-                    separateGap,
+                    separateGapItem,
                     TitleBlockWidget(
                       title: 'Note',
                       child: CustomTextField.multiLines(

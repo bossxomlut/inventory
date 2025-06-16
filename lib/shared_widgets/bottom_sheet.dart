@@ -4,7 +4,7 @@ import '../provider/index.dart';
 import 'index.dart';
 
 mixin ShowBottomSheet<T> on Widget {
-  Future<T?> show(BuildContext context) {
+  Future<T?> show(BuildContext context, {bool isScafold = false}) {
     context.hideKeyboard();
 
     return showModalBottomSheet(
@@ -15,6 +15,10 @@ mixin ShowBottomSheet<T> on Widget {
       backgroundColor: context.appTheme.colorBackgroundBottomSheet,
       builder: (BuildContext context) {
         final theme = context.appTheme;
+
+        if (isScafold) {
+          return this;
+        }
 
         return Padding(
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),

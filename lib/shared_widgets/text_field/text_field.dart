@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 
@@ -14,7 +12,8 @@ class CustomTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final bool isRequired;
   final VoidCallback? onTap;
-  final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onChanged;
+  final bool autofocus;
   final bool hideText;
   final FocusNode? focusNode;
   final Widget? prefixIcon;
@@ -35,9 +34,10 @@ class CustomTextField extends StatefulWidget {
     this.controller,
     this.keyboardType = TextInputType.text,
     this.isRequired = false,
+    this.autofocus = false,
     this.hideText = false,
     this.onTap,
-    required this.onChanged,
+    this.onChanged,
     this.focusNode,
     this.prefixIcon,
     this.suffixIcon,
@@ -54,7 +54,7 @@ class CustomTextField extends StatefulWidget {
     required String label,
     TextEditingController? controller,
     bool isRequired = false,
-    required ValueChanged<String> onChanged,
+    ValueChanged<String>? onChanged,
     FocusNode? focusNode,
     Key? key,
     TextInputAction? textInputAction,
@@ -108,15 +108,20 @@ class CustomTextField extends StatefulWidget {
     int minLines = 3,
     int? maxLines,
     int? maxLength,
+    bool isRequired = false,
+    bool autofocus = false,
   }) {
     return CustomTextField(
       key: key,
       hint: hint,
+      label: label,
+      isRequired: isRequired,
       controller: controller,
       focusNode: focusNode,
       onChanged: (String value) {},
       minLines: minLines,
       maxLines: maxLines,
+      autofocus: autofocus,
     );
   }
 
@@ -184,27 +189,26 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Container(
       constraints: const BoxConstraints(
         minHeight: 54.0,
-        // maxHeight: 120.0,
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4.0), // Bo góc
         border: Border.all(color: theme.colorBorderField),
         color: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
       ),
-      alignment: Alignment.center,
+      // alignment: Alignment.centerLeft,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4.0), // Bo góc
         child: TextFormField(
-          focusNode: _focusNode,
           controller: _controller,
+          focusNode: _focusNode,
+          autofocus: widget.autofocus,
           onTap: widget.onTap,
           onChanged: widget.onChanged,
           keyboardType: widget.keyboardType,
           style: theme.textMedium15Default, // Màu
           cursorColor: theme.colorPrimary,
           selectionControls: materialTextSelectionControls, // Dùng Selection Control mặc định
-          selectionHeightStyle: BoxHeightStyle.tight,
-          selectionWidthStyle: BoxWidthStyle.tight,
+
           obscureText: !showText,
           obscuringCharacter: '*',
           readOnly: widget.isReadOnly || widget.isDisable,
@@ -213,17 +217,29 @@ class _CustomTextFieldState extends State<CustomTextField> {
           minLines: widget.minLines,
           maxLines: widget.maxLines,
           maxLength: widget.maxLength,
-          textAlignVertical: TextAlignVertical.center,
+          // textAlignVertical: TextAlignVertical.top,
           decoration: InputDecoration(
-            labelText: widget.isRequired ? '${widget.label}*' : widget.label, // Hiển thị dấu * nếu bắt buộc
-            labelStyle: theme.textRegular15Sublest, // Màu label
+            label: widget.isRequired
+                ? RichText(
+                    text: TextSpan(
+                    text: widget.label ?? '',
+                    style: theme.textRegular15Sublest,
+                    children: [
+                      TextSpan(
+                        text: ' *',
+                        style: theme.textRegular15Sublest.copyWith(color: theme.colorError), // Màu đỏ cho dấu *
+                      ),
+                    ],
+                  ))
+                : Text(widget.label ?? '', style: theme.textRegular15Sublest),
             hintStyle: theme.textMedium15Sublest,
             hintText: widget.hint,
+            floatingLabelBehavior: FloatingLabelBehavior.always,
             // filled: true,
             // fillColor: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
             border: InputBorder.none,
             focusColor: theme.colorPrimary,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
             prefixIcon: widget.prefixIcon,
             prefixIconColor: theme.colorTextSublest,
             suffixIcon: widget.hideText

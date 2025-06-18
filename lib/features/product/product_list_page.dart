@@ -67,7 +67,10 @@ class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
     final updatedTimeFilter = ref.watch(updatedTimeFilterTypeProvider);
 
     // Check if any filters are active
-    final bool hasActiveFilters = sortType != ProductSortType.none || selectedCategories.isNotEmpty || createdTimeFilter != TimeFilterType.none || updatedTimeFilter != TimeFilterType.none;
+    final bool hasActiveFilters = sortType != ProductSortType.none ||
+        selectedCategories.isNotEmpty ||
+        createdTimeFilter != TimeFilterType.none ||
+        updatedTimeFilter != TimeFilterType.none;
 
     return isSearchVisible
         ? AppBar(
@@ -186,7 +189,10 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
     final updatedTimeCustomRange = ref.watch(updatedTimeCustomRangeProvider);
 
     // Check if any filters are active
-    final bool hasActiveFilters = sortType != ProductSortType.none || selectedCategories.isNotEmpty || createdTimeFilter != TimeFilterType.none || updatedTimeFilter != TimeFilterType.none;
+    final bool hasActiveFilters = sortType != ProductSortType.none ||
+        selectedCategories.isNotEmpty ||
+        createdTimeFilter != TimeFilterType.none ||
+        updatedTimeFilter != TimeFilterType.none;
 
     if (!hasActiveFilters) {
       return const SizedBox.shrink();
@@ -353,7 +359,7 @@ class ProductListView extends HookConsumerWidget {
                   },
                 );
               },
-              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              separatorBuilder: (context, index) => const AppDivider(),
               onLoadMore: () async {
                 print('Loading more products...');
                 return Future(

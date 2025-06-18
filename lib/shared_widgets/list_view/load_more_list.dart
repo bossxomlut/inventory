@@ -8,6 +8,7 @@ class LoadMoreList<T> extends HookWidget {
     required this.separatorBuilder,
     required this.onLoadMore,
     required this.isCanLoadMore,
+    this.padding,
   });
 
   final List<T> items;
@@ -15,6 +16,7 @@ class LoadMoreList<T> extends HookWidget {
   final Widget Function(BuildContext, int) separatorBuilder;
   final Future<void> Function() onLoadMore;
   final bool isCanLoadMore;
+  final EdgeInsets? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +47,7 @@ class LoadMoreList<T> extends HookWidget {
       },
       separatorBuilder: separatorBuilder,
       itemCount: items.length + 1,
-      padding: const EdgeInsets.all(16.0),
+      padding: padding,
     );
   }
 }

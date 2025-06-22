@@ -20,9 +20,7 @@ class ImageManagerPickerPage extends StatefulWidget {
     return Navigator.of(context).push<List<ImageStorageModel>>(
       MaterialPageRoute(
         builder: (context) => ImageManagerPickerPage(
-          onSelected: (List<ImageStorageModel> selectedImages) {
-            Navigator.of(context).pop(selectedImages);
-          },
+          onSelected: (List<ImageStorageModel> selectedImages) {},
         ),
       ),
     );
@@ -64,7 +62,7 @@ class _ImageManagerPickerPageState extends State<ImageManagerPickerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Images from Storage'),
+        title: const Text('Chọn ảnh từ bộ nhớ'),
         actions: [
           TextButton(
             onPressed: selectedIds.isEmpty
@@ -74,14 +72,14 @@ class _ImageManagerPickerPageState extends State<ImageManagerPickerPage> {
                     widget.onSelected(selected);
                     Navigator.of(context).pop(selected);
                   },
-            child: const Text('Done'),
+            child: const Text('Chọn'),
           ),
         ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : images.isEmpty
-              ? const Center(child: Text('No images in storage.'))
+              ? const Center(child: Text('Không có ảnh trong bộ nhớ.'))
               : GridView.builder(
                   padding: const EdgeInsets.all(16),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -104,6 +102,7 @@ class _ImageManagerPickerPageState extends State<ImageManagerPickerPage> {
                                 ? Image.file(
                                     File(img.path!),
                                     fit: BoxFit.cover,
+                                    cacheWidth: 300,
                                     errorBuilder: (context, error, stackTrace) => Container(
                                       color: Colors.grey[300],
                                       child: const Icon(Icons.broken_image),

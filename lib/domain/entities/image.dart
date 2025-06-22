@@ -1,14 +1,14 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ImageStorageModel extends Equatable {
-  const ImageStorageModel({
-    required this.id,
-    this.path,
-  });
+part 'image.freezed.dart';
+part 'image.g.dart';
 
-  final int id;
-  final String? path;
+@freezed
+class ImageStorageModel with _$ImageStorageModel {
+  const factory ImageStorageModel({
+    required int id,
+    String? path,
+  }) = _ImageStorageModel;
 
-  @override
-  List<Object?> get props => [id, path];
+  factory ImageStorageModel.fromJson(Map<String, dynamic> json) => _$ImageStorageModelFromJson(json);
 }

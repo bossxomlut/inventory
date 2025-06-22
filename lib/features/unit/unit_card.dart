@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sample_app/features/unit/provider/unit_filter_provider.dart';
 
 import '../../core/index.dart';
-import '../../domain/entities/unit/unit.dart';
+import '../../domain/index.dart';
 import '../../provider/index.dart';
 import 'add_unit.dart';
 import 'provider/unit_provider.dart';

@@ -1,6 +1,5 @@
 import 'package:isar/isar.dart';
 
-import '../../domain/entities/unit/unit.dart';
 import '../../domain/index.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
 import '../../features/product/provider/product_filter_provider.dart';
@@ -16,17 +15,6 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
 
   @override
   Future<Product> getItemFromCollection(ProductCollection collection) async {
-    Unit? unit = null;
-    if (collection.unit.value != null) {
-      unit = Unit(
-        id: collection.unit.value!.id,
-        name: collection.unit.value!.name,
-        description: collection.unit.value!.description,
-        createDate: collection.unit.value!.createDate,
-        updatedDate: collection.unit.value!.updatedDate,
-      );
-    }
-
     return Product(
       id: collection.id,
       name: collection.name,
@@ -34,7 +22,7 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       price: collection.price,
       quantity: collection.quantity,
       category: CategoryMapping().from(collection.category.value),
-      unit: unit,
+      unit: UnitMapping().from(collection.unit.value),
       barcode: collection.barcode,
       images: collection.images.map((image) => ImageStorageModelMapping().from(image)).toList(),
     );
@@ -48,6 +36,7 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       ..price = item.price
       ..quantity = item.quantity
       ..category.value = CategoryCollectionMapping().from(item.category)
+      ..unit.value = UnitCollectionMapping().from(item.unit)
       ..barcode = item.barcode
       ..images.addAll(item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? [])
       ..createdAt = DateTime.now()
@@ -62,17 +51,6 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
     final collection = createNewItem(item);
     final id = await isar.writeTxnSync(() => iCollection.putSync(collection));
 
-    // Set the unit if available
-    if (item.unit != null) {
-      final unitCollection = await isar.collection<UnitCollection>().get(item.unit!.id);
-      if (unitCollection != null) {
-        await isar.writeTxn(() async {
-          collection.unit.value = unitCollection;
-          await iCollection.put(collection);
-        });
-      }
-    }
-
     return read(id);
   }
 
@@ -84,43 +62,29 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       ..description = item.description
       ..price = item.price
       ..quantity = item.quantity
-      ..category.value = CategoryCollectionMapping().from(item.category)
       ..barcode = item.barcode
-      ..images.update(link: item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? [])
+      ..category.value = CategoryCollectionMapping().from(item.category)
+      ..unit.value = UnitCollectionMapping().from(item.unit)
+      ..images.addAll(item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? [])
       ..updatedAt = DateTime.now();
   }
 
   @override
   Future<Product> update(Product item) async {
-    final collection = updateNewItem(item);
+    //get product by id
+    final pCollection = await iCollection.get(item.id);
 
-    await isar.writeTxn(() async {
-      await iCollection.put(collection);
+    if (pCollection == null) {
+      throw Exception('Product not found');
+    }
 
-      // Set the unit if available
-      if (item.unit != null) {
-        final unitCollection = await isar.collection<UnitCollection>().get(item.unit!.id);
-        if (unitCollection != null) {
-          collection.unit.value = unitCollection;
-          await iCollection.put(collection);
-        }
-      } else {
-        // Clear the unit if it was removed
-        collection.unit.value = null;
-        await iCollection.put(collection);
-      }
+    final collection = updateNewItem(item)..createdAt = pCollection.createdAt;
 
-      // Update category if needed
-      if (item.category != null) {
-        final categoryCollection = await isar.collection<CategoryCollection>().get(item.category!.id);
-        if (categoryCollection != null) {
-          collection.category.value = categoryCollection;
-          await iCollection.put(collection);
-        }
-      }
+    final id = await isar.writeTxnSync(() {
+      return iCollection.putSync(collection);
     });
 
-    return read(collection.id);
+    return read(id);
   }
 
   @override

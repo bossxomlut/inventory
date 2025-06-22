@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../domain/entities/unit/unit.dart';
+import '../../../domain/index.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';

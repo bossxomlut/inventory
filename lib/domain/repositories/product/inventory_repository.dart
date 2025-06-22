@@ -1,7 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/product/product_repository.dart';
-import '../../entities/unit/unit.dart';
 import '../../index.dart';
 import '../crud_repository.dart';
 

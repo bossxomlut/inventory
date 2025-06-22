@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../domain/entities/product/inventory.dart';
-import '../../../domain/entities/unit/unit.dart';
 import '../../../provider/index.dart';
 import '../../category/provider/category_provider.dart';
 import '../../unit/provider/unit_filter_provider.dart';
@@ -262,7 +261,8 @@ class ProductFilterDrawer extends ConsumerWidget {
                                       ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                                       ref.read(activeTimeFilterTypeProvider.notifier).state = null;
                                     } else {
-                                      ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.last1Month;
+                                      ref.read(createdTimeFilterTypeProvider.notifier).state =
+                                          TimeFilterType.last1Month;
                                       ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                                       ref.read(activeTimeFilterTypeProvider.notifier).state = 'created';
                                     }
@@ -285,7 +285,8 @@ class ProductFilterDrawer extends ConsumerWidget {
                                       ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                                       ref.read(activeTimeFilterTypeProvider.notifier).state = null;
                                     } else {
-                                      ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.last3Months;
+                                      ref.read(createdTimeFilterTypeProvider.notifier).state =
+                                          TimeFilterType.last3Months;
                                       ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                                       ref.read(activeTimeFilterTypeProvider.notifier).state = 'created';
                                     }
@@ -442,7 +443,8 @@ class ProductFilterDrawer extends ConsumerWidget {
                                       ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                                       ref.read(activeTimeFilterTypeProvider.notifier).state = null;
                                     } else {
-                                      ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.last1Month;
+                                      ref.read(updatedTimeFilterTypeProvider.notifier).state =
+                                          TimeFilterType.last1Month;
                                       ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                                       ref.read(activeTimeFilterTypeProvider.notifier).state = 'updated';
                                     }
@@ -465,7 +467,8 @@ class ProductFilterDrawer extends ConsumerWidget {
                                       ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                                       ref.read(activeTimeFilterTypeProvider.notifier).state = null;
                                     } else {
-                                      ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.last3Months;
+                                      ref.read(updatedTimeFilterTypeProvider.notifier).state =
+                                          TimeFilterType.last3Months;
                                       ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                                       ref.read(activeTimeFilterTypeProvider.notifier).state = 'updated';
                                     }

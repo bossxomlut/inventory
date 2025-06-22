@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../domain/entities/unit/unit.dart';
+import '../../domain/index.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
 import '../../provider/index.dart';
 import '../../shared_widgets/index.dart';

@@ -10,7 +10,6 @@ import 'package:sample_app/shared_widgets/index.dart';
 
 import '../../../domain/entities/image.dart';
 import '../../../domain/entities/index.dart';
-import '../../../domain/entities/unit/unit.dart';
 import '../../../provider/index.dart';
 import '../../../resources/index.dart';
 import '../../../shared_widgets/toast.dart';
@@ -206,6 +205,220 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                           title: 'Ghi chú',
                           child: CustomTextField(
                             hint: 'Nhập ghi chú',
+                          ),
+                        ),
+                      ),
+                      separateGapBlock,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            BottomButtonBar(
+              isListenKeyboardVisibility: true,
+              onCancel: () {
+                Navigator.pop(context);
+              },
+              onSave: onSave,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
+  const EditProductScreen({super.key, required this.product});
+
+  final Product product;
+
+  @override
+  Future<void> show(BuildContext context, {bool isScafold = true}) {
+    return super.show(
+      context,
+      isScafold: isScafold,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize controllers with existing product data
+    final _nameController = useTextEditingController(text: product.name);
+    final _priceController = useTextEditingController(text: product.price?.toString() ?? '');
+    final _noteController = useTextEditingController(text: product.description ?? '');
+    final _category = useState<Category?>(product.category);
+    final _sku = useState<String?>(product.barcode);
+    final _unit = useState<Unit?>(product.unit);
+    final quantity = useState<int>(product.quantity ?? 0);
+    final images = useState<List<ImageStorageModel>>(product.images ?? []);
+
+    bool isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
+
+    void onSave() async {
+      context.hideKeyboard();
+
+      // Create updated product with same ID
+      final name = _nameController.text.trim();
+      final priceStr = _priceController.text.trim();
+      final note = _noteController.text.trim();
+      final sku = _sku.value;
+
+      // Validate inputs
+      if (name.isEmpty) {
+        showError(message: 'Vui lòng điền đầy đủ thông tin bắt buộc.');
+        return;
+      }
+
+      final price = double.tryParse(priceStr) ?? 0.0;
+
+      final updatedProduct = Product(
+        id: product.id, // Keep the same ID
+        name: name,
+        description: note,
+        price: price,
+        images: [...images.value],
+        quantity: quantity.value,
+        category: _category.value,
+        unit: _unit.value,
+        barcode: sku,
+      );
+
+      // Update product in the provider
+      await ref.read(loadProductProvider.notifier).updateProduct(updatedProduct);
+
+      // Close the form
+      Navigator.pop(context);
+    }
+
+    return Scaffold(
+      extendBody: true,
+      resizeToAvoidBottomInset: true,
+      appBar: CustomAppBar(
+        title: 'Chỉnh sửa sản phẩm',
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        actions: [
+          !isKeyboardVisible
+              ? const SizedBox()
+              : IconButton(
+                  icon: Text(
+                    'Lưu',
+                    style: context.appTheme.textMedium15Default.copyWith(color: Colors.white),
+                  ),
+                  onPressed: onSave,
+                ),
+        ],
+      ),
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            TitleBlockWidget(
+                              isRequired: true,
+                              title: 'Tên sản phẩm ',
+                              child: CustomTextField.multiLines(
+                                hint: 'Nhập tên sản phẩm',
+                                controller: _nameController,
+                                minLines: 3,
+                                autofocus: false,
+                              ),
+                            ),
+
+                            separateGapItem, // Quantity
+                            TitleBlockWidget(
+                              title: 'Số lượng',
+                              isRequired: true,
+                              child: PlusMinusInputView(
+                                initialValue: quantity.value,
+                                onChanged: (int p0) {
+                                  quantity.value = p0;
+                                },
+                                minValue: 0,
+                              ),
+                            ),
+                            separateGapItem,
+                            TitleBlockWidget(
+                              title: 'Mã sản phẩm ',
+                              child: AddSKUPlaceHolder(
+                                value: _sku.value,
+                                onSelected: (String? value) {
+                                  _sku.value = value;
+                                },
+                              ),
+                            ),
+                            separateGapItem,
+                            TitleBlockWidget(
+                              title: 'Danh mục',
+                              child: AddCategoryPlaceHolder(
+                                value: _category.value,
+                                onSelected: (Category? value) {
+                                  _category.value = value;
+                                },
+                              ),
+                            ),
+                            separateGapItem,
+                            TitleBlockWidget(
+                              title: 'Đơn vị',
+                              child: AddUnitPlaceHolder(
+                                value: _unit.value,
+                                onSelected: (Unit? value) {
+                                  _unit.value = value;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      separateGapBlock,
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: TitleBlockWidget(
+                          title: 'Ảnh sản phẩm',
+                          child: CommonImagePicker(
+                            title: 'Thêm ảnh',
+                            images: images.value,
+                            onImagesSelected: (List<ImageStorageModel> value) {
+                              images.value = [...images.value, ...value];
+                            },
+                            onImagesChanged: (List<ImageStorageModel> value) {
+                              images.value = value;
+                            },
+                            onImageRemoved: (ImageStorageModel file) {
+                              images.value = images.value.where((e) => e != file).toList();
+                            },
+                          ),
+                        ),
+                      ),
+                      separateGapBlock,
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: TitleBlockWidget(
+                          title: 'Ghi chú',
+                          child: CustomTextField(
+                            hint: 'Nhập ghi chú',
+                            controller: _noteController,
                           ),
                         ),
                       ),

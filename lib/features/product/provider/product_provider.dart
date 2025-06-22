@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/helpers/app_image_manager.dart';
@@ -7,7 +9,6 @@ import '../../../domain/entities/product/inventory.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
-import '../../../provider/text_search.dart';
 import '../../../routes/app_router.dart';
 import '../../category/provider/category_provider.dart';
 import '../../unit/provider/unit_filter_provider.dart';
@@ -40,7 +41,7 @@ class LoadProductController extends LoadListController<Product> with CommonProvi
   }
 
   //create a product
-  void createProduct(Product product) async {
+  Future createProduct(Product product) async {
     try {
       showLoading();
       final productRepo = ref.read(productRepositoryProvider);
@@ -86,15 +87,31 @@ class LoadProductController extends LoadListController<Product> with CommonProvi
   }
 
   //update a product
-  void updateProduct(Product product) async {
+  Future updateProduct(Product product) async {
     try {
       final productRepo = ref.read(productRepositoryProvider);
-      final updatedProduct = await productRepo.update(product);
+      List<ImageStorageModel> savedImages = [];
+      final AppImageManager appImageManager = AppImageManager();
+      if (product.images != null && product.images!.isNotEmpty) {
+        for (final img in product.images!) {
+          // If the image has a path, assume it's already saved
+          if (img.id == undefinedId) {
+            final nImg = await appImageManager.saveImageFromPath(img.path!);
+            savedImages.add(nImg);
+          } else {
+            savedImages.add(img);
+          }
+        }
+      }
+      final newProduct = product.copyWith(images: savedImages);
+
+      final updatedProduct = await productRepo.update(newProduct);
       state = state.copyWith(
         data: state.data.map((p) => p.id == updatedProduct.id ? updatedProduct : p).toList(),
       );
       showSuccess('Update product successfully');
-    } catch (e) {
+    } catch (e, st) {
+      log('An error occurred while updating product: $e', stackTrace: st);
       // Handle error
       state = state.copyWith(error: e.toString());
       showError('Update product failed');

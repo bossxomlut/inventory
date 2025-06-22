@@ -1,7 +1,6 @@
 //mapping from category to category collection
 
 import '../../domain/entities/index.dart';
-import '../../domain/entities/unit/unit.dart';
 import '../image/image.dart';
 import '../shared/mapping_data.dart';
 import 'inventory.dart';
@@ -31,6 +30,40 @@ class CategoryCollectionMapping extends Mapping<CategoryCollection?, Category?> 
     }
 
     return CategoryCollection()
+      ..id = input.id
+      ..name = input.name
+      ..description = input.description
+      ..createDate = input.createDate
+      ..updatedDate = input.updatedDate;
+  }
+}
+
+//unit mapping
+class UnitMapping extends Mapping<Unit?, UnitCollection?> {
+  @override
+  Unit? from(UnitCollection? input) {
+    if (input == null) {
+      return null;
+    }
+
+    return Unit(
+      id: input.id,
+      name: input.name,
+      description: input.description,
+      createDate: input.createDate,
+      updatedDate: input.updatedDate,
+    );
+  }
+}
+
+class UnitCollectionMapping extends Mapping<UnitCollection?, Unit?> {
+  @override
+  UnitCollection? from(Unit? input) {
+    if (input == null) {
+      return null;
+    }
+
+    return UnitCollection()
       ..id = input.id
       ..name = input.name
       ..description = input.description

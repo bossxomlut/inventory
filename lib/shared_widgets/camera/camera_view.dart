@@ -33,7 +33,7 @@ class CameraView extends StatefulWidget {
   }) async {
     // Hide keyboard before navigating to camera view
     FocusScope.of(context).unfocus();
-    
+
     return await Navigator.of(context).push<List<XFile>>(
       MaterialPageRoute(
         builder: (context) => CameraView(
@@ -357,18 +357,24 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
                               Positioned(
                                 right: 0,
                                 top: 0,
-                                child: GestureDetector(
+                                child: InkWell(
                                   onTap: () => _removeImage(index),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.only(
+                                      topRight: Radius.circular(7),
+                                      bottomLeft: Radius.circular(7),
                                     ),
-                                    padding: EdgeInsets.all(4),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 12,
-                                      color: Colors.white,
+                                    child: Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0x66000000),
+                                      ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        color: Color(0xFFEBEBEB),
+                                        size: 16,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -457,10 +463,11 @@ class ImagePreviewScreen extends StatelessWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: Icon(Icons.delete, color: Colors.white),
+          TextButton.icon(
+            icon: const Icon(Icons.delete_outline, color: Colors.white),
+            label: const Text('Xóa', style: TextStyle(color: Colors.white)),
             onPressed: onDelete,
           ),
         ],

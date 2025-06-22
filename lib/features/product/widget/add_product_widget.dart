@@ -43,6 +43,8 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
     bool isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
 
     void onSave() {
+      context.hideKeyboard();
+
       // Create a new product
       final name = _nameController.text.trim();
       final priceStr = _priceController.text.trim();
@@ -122,7 +124,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                               child: CustomTextField.multiLines(
                                 hint: 'Nhập tên sản phẩm',
                                 controller: _nameController,
-                                minLines: 4,
+                                minLines: 3,
                                 autofocus: true,
                               ),
                             ),
@@ -184,6 +186,9 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                             images: images.value,
                             onImagesSelected: (List<ImageStorageModel> value) {
                               images.value = [...images.value, ...value];
+                            },
+                            onImagesChanged: (List<ImageStorageModel> value) {
+                              images.value = value;
                             },
                             onImageRemoved: (ImageStorageModel file) {
                               images.value = images.value.where((e) => e != file).toList();

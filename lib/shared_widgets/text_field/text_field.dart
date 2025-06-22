@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:line_icons/line_icons.dart';
 
+import '../../core/index.dart';
 import '../../provider/theme.dart';
 
 // Custom TextField Widget for Reuse
@@ -208,7 +209,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
           style: theme.textMedium15Default, // Màu
           cursorColor: theme.colorPrimary,
           selectionControls: materialTextSelectionControls, // Dùng Selection Control mặc định
-
           obscureText: !showText,
           obscuringCharacter: '*',
           readOnly: widget.isReadOnly || widget.isDisable,
@@ -231,15 +231,17 @@ class _CustomTextFieldState extends State<CustomTextField> {
                       ),
                     ],
                   ))
-                : Text(widget.label ?? '', style: theme.textRegular15Sublest),
+                : widget.label.isNotNullOrEmpty
+                    ? Text(widget.label ?? '', style: theme.textRegular15Sublest)
+                    : null,
             hintStyle: theme.textMedium15Sublest,
             hintText: widget.hint,
             floatingLabelBehavior: FloatingLabelBehavior.always,
-            // filled: true,
-            // fillColor: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
+            filled: true,
+            fillColor: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
             border: InputBorder.none,
             focusColor: theme.colorPrimary,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             prefixIcon: widget.prefixIcon,
             prefixIconColor: theme.colorTextSublest,
             suffixIcon: widget.hideText

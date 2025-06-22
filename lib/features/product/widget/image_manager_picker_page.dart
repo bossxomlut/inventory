@@ -11,6 +11,22 @@ class ImageManagerPickerPage extends StatefulWidget {
 
   @override
   State<ImageManagerPickerPage> createState() => _ImageManagerPickerPageState();
+
+  /// Helper method to show the picker with keyboard dismissal
+  static Future<List<ImageStorageModel>?> showPicker(BuildContext context) {
+    // Ensure keyboard is dismissed
+    FocusScope.of(context).unfocus();
+
+    return Navigator.of(context).push<List<ImageStorageModel>>(
+      MaterialPageRoute(
+        builder: (context) => ImageManagerPickerPage(
+          onSelected: (List<ImageStorageModel> selectedImages) {
+            Navigator.of(context).pop(selectedImages);
+          },
+        ),
+      ),
+    );
+  }
 }
 
 class _ImageManagerPickerPageState extends State<ImageManagerPickerPage> {

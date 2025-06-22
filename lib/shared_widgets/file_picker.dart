@@ -27,7 +27,7 @@ class ImageFilePicker extends AppFilePicker {
   Future<AppFile?> pickOne() async {
     // Ensure that no keyboard is showing
     WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-    
+
     final ImagePicker picker = ImagePicker();
     final XFile? file = await picker.pickImage(source: ImageSource.gallery);
     if (file != null) {
@@ -40,7 +40,7 @@ class ImageFilePicker extends AppFilePicker {
   Future<List<AppFile>?> pickMultiFiles() async {
     // Ensure that no keyboard is showing
     WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
-    
+
     final ImagePicker picker = ImagePicker();
     final List<XFile>? files = await picker.pickMultiImage();
     if (files != null && files.isNotEmpty) {

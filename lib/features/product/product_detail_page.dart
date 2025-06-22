@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -38,8 +37,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
   /// Opens the image preview in full screen mode
   void _openImagePreview() {
-    final product = widget.product;
-    final images = product.images ?? [];
+    final product = ref.watch(productDetailProvider(productId));
+    final images = product?.images ?? [];
 
     if (images.isEmpty || images.first.path == null) return;
 
@@ -82,9 +81,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(product.name),
-        backgroundColor: theme.appBarTheme.backgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CustomAppBar(
+        title: product.name,
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(productDetailProvider(productId).notifier).loadProduct(),
@@ -100,7 +99,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     tag: 'product-image-${product.id}',
                     child: Container(
                       width: size.width,
-                      height: size.width * 0.75, // 4:3 aspect ratio
+                      height: size.width * 9 / 16, // 4:3 aspect ratio
                       decoration: const BoxDecoration(
                         color: Colors.black,
                       ),
@@ -118,7 +117,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               else
                 Container(
                   width: size.width,
-                  height: size.width * 0.75,
+                  height: size.width * 9 / 16, // 4:3 aspect ratio
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                   ),
@@ -155,6 +154,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             child: Image.file(
                               File(imageUrl),
                               fit: BoxFit.cover,
+                              cacheWidth: 200,
                               errorBuilder: (context, error, stackTrace) => Container(
                                 color: Colors.grey[300],
                                 child: const Icon(Icons.broken_image, size: 24),

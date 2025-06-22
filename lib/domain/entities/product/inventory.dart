@@ -1,8 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:json_annotation/json_annotation.dart';
 
 import '../image.dart';
-import '../get_id.dart';
 
 part 'inventory.freezed.dart';
 part 'inventory.g.dart';
@@ -20,13 +18,13 @@ class Category with _$Category {
     DateTime? createDate, // Ngày tạo
     DateTime? updatedDate, // Ngày cập nhật
   }) = _Category;
-  
+
   factory Category.fromJson(Map<String, dynamic> json) => _$CategoryFromJson(json);
 }
 
 // Model cho Đơn vị (Unit)
 @freezed
-class Unit with _$Unit implements GetIdX<int> {
+class Unit with _$Unit {
   const factory Unit({
     required int id,
     required String name,
@@ -34,13 +32,8 @@ class Unit with _$Unit implements GetIdX<int> {
     DateTime? createDate,
     DateTime? updatedDate,
   }) = _Unit;
-  
+
   factory Unit.fromJson(Map<String, dynamic> json) => _$UnitFromJson(json);
-  
-  const Unit._();
-  
-  @override
-  int get getId => id;
 }
 
 // Model cho Sản phẩm (Product)
@@ -57,7 +50,7 @@ class Product with _$Product {
     List<ImageStorageModel>? images, // URL ảnh (tùy chọn)
     String? description, // Mô tả (tùy chọn)
   }) = _Product;
-  
+
   factory Product.fromJson(Map<String, dynamic> json) => _$ProductFromJson(json);
 }
 
@@ -72,6 +65,6 @@ class Transaction with _$Transaction {
     required DateTime timestamp, // Thời gian giao dịch
     required String userId, // ID người thực hiện
   }) = _Transaction;
-  
+
   factory Transaction.fromJson(Map<String, dynamic> json) => _$TransactionFromJson(json);
 }

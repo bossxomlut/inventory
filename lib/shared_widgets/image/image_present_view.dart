@@ -103,8 +103,9 @@ class _ImagePresentViewState extends State<ImagePresentView> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: Image(
-                image: _getImageProvider(imageUrl),
+              child: Image.file(
+                File(imageUrl),
+                cacheWidth: 240,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => const Center(
                   child: Icon(Icons.error, color: Colors.red),

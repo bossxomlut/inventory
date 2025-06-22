@@ -2,9 +2,6 @@ import 'dart:developer';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../core/helpers/app_image_manager.dart';
-import '../../../domain/entities/get_id.dart';
-import '../../../domain/entities/image.dart';
 import '../../../domain/entities/product/inventory.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
@@ -41,25 +38,13 @@ class LoadProductController extends LoadListController<Product> with CommonProvi
   }
 
   //create a product
-  Future createProduct(Product product) async {
+  Future<void> createProduct(Product product) async {
     try {
       showLoading();
       final productRepo = ref.read(productRepositoryProvider);
-      List<ImageStorageModel> savedImages = [];
-      final AppImageManager appImageManager = AppImageManager();
-      if (product.images != null && product.images!.isNotEmpty) {
-        for (final img in product.images!) {
-          // If the image has a path, assume it's already saved
-          if (img.id == undefinedId) {
-            final nImg = await appImageManager.saveImageFromPath(img.path!);
-            savedImages.add(nImg);
-          } else {
-            savedImages.add(img);
-          }
-        }
-      }
-      final newProduct = product.copyWith(images: savedImages);
-      final created = await productRepo.create(newProduct);
+
+      // Gọi repository để tạo sản phẩm (bao gồm xử lý ảnh)
+      final created = await productRepo.create(product);
       state = state.copyWith(data: [...state.data, created]);
 
       // Clear all filters and set "Created today" filter
@@ -87,25 +72,12 @@ class LoadProductController extends LoadListController<Product> with CommonProvi
   }
 
   //update a product
-  Future updateProduct(Product product) async {
+  Future<void> updateProduct(Product product) async {
     try {
+      showLoading();
       final productRepo = ref.read(productRepositoryProvider);
-      List<ImageStorageModel> savedImages = [];
-      final AppImageManager appImageManager = AppImageManager();
-      if (product.images != null && product.images!.isNotEmpty) {
-        for (final img in product.images!) {
-          // If the image has a path, assume it's already saved
-          if (img.id == undefinedId) {
-            final nImg = await appImageManager.saveImageFromPath(img.path!);
-            savedImages.add(nImg);
-          } else {
-            savedImages.add(img);
-          }
-        }
-      }
-      final newProduct = product.copyWith(images: savedImages);
-
-      final updatedProduct = await productRepo.update(newProduct);
+      // Gọi repository để cập nhật sản phẩm (bao gồm xử lý ảnh)
+      final updatedProduct = await productRepo.update(product);
       state = state.copyWith(
         data: state.data.map((p) => p.id == updatedProduct.id ? updatedProduct : p).toList(),
       );
@@ -115,6 +87,8 @@ class LoadProductController extends LoadListController<Product> with CommonProvi
       // Handle error
       state = state.copyWith(error: e.toString());
       showError('Update product failed');
+    } finally {
+      hideLoading();
     }
   }
 }

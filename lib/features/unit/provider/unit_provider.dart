@@ -142,10 +142,8 @@ class LoadUnitController extends LoadListController<Unit> with CommonProvider<Lo
 }
 
 // Simple provider to get all units
-final allUnitsProvider = FutureProvider<List<Unit>>((ref) async {
-  final repository = ref.read(unitRepositoryProvider);
-  final result = await repository.getAll();
-  return result;
+final allUnitsProvider = FutureProvider.autoDispose<List<Unit>>((ref) async {
+  return ref.read(unitRepositoryProvider).getAll();
 });
 
 // Current unit provider for optimized cards

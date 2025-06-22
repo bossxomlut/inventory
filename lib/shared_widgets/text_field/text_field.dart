@@ -199,87 +199,98 @@ class _CustomTextFieldState extends State<CustomTextField> {
       // alignment: Alignment.centerLeft,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4.0), // Bo góc
-        child: TextFormField(
-          controller: _controller,
-          focusNode: _focusNode,
-          autofocus: widget.autofocus,
-          onTap: widget.onTap,
-          onChanged: widget.onChanged,
-          keyboardType: widget.keyboardType,
-          style: theme.textMedium15Default, // Màu
-          cursorColor: theme.colorPrimary,
-          selectionControls: materialTextSelectionControls, // Dùng Selection Control mặc định
-          obscureText: !showText,
-          obscuringCharacter: '*',
-          readOnly: widget.isReadOnly || widget.isDisable,
-          textInputAction: widget.textInputAction,
-          onFieldSubmitted: widget.onSubmitted,
-          minLines: widget.minLines,
-          maxLines: widget.maxLines,
-          maxLength: widget.maxLength,
-          // textAlignVertical: TextAlignVertical.top,
-          decoration: InputDecoration(
-            label: widget.isRequired
-                ? RichText(
-                    text: TextSpan(
-                    text: widget.label ?? '',
-                    style: theme.textRegular15Sublest,
-                    children: [
-                      TextSpan(
-                        text: ' *',
-                        style: theme.textRegular15Sublest.copyWith(color: theme.colorError), // Màu đỏ cho dấu *
-                      ),
-                    ],
-                  ))
-                : widget.label.isNotNullOrEmpty
-                    ? Text(widget.label ?? '', style: theme.textRegular15Sublest)
-                    : null,
-            hintStyle: theme.textMedium15Sublest,
-            hintText: widget.hint,
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            filled: true,
-            fillColor: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
-            border: InputBorder.none,
-            focusColor: theme.colorPrimary,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-            prefixIcon: widget.prefixIcon,
-            prefixIconColor: theme.colorTextSublest,
-            suffixIcon: widget.hideText
-                ? ExcludeFocus(
-                    child: Builder(builder: (context) {
-                      return showText
-                          ? IconButton(
-                              icon: Icon(
-                                LineIcons.eye,
-                                color: theme.colorIcon,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  showText = !showText;
-                                });
-                              },
-                            )
-                          : IconButton(
-                              icon: Icon(
-                                LineIcons.eyeSlash,
-                                color: theme.colorIcon,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  showText = !showText;
-                                });
-                              },
-                            );
-                    }),
-                  )
-                : widget.suffixIcon,
-          ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _controller,
+                focusNode: _focusNode,
+                autofocus: widget.autofocus,
+                onTap: widget.onTap,
+                onChanged: widget.onChanged,
+                keyboardType: widget.keyboardType,
+                style: theme.textMedium15Default, // Màu
+                cursorColor: theme.colorPrimary,
+                selectionControls: materialTextSelectionControls, // Dùng Selection Control mặc định
+                obscureText: !showText,
+                obscuringCharacter: '*',
+                readOnly: widget.isReadOnly || widget.isDisable,
+                textInputAction: widget.textInputAction,
+                onFieldSubmitted: widget.onSubmitted,
+                minLines: widget.minLines,
+                maxLines: widget.maxLines,
+                maxLength: widget.maxLength,
+                // textAlignVertical: TextAlignVertical.top,
+                decoration: InputDecoration(
+                  label: widget.isRequired
+                      ? RichText(
+                          text: TextSpan(
+                          text: widget.label ?? '',
+                          style: theme.textRegular15Sublest,
+                          children: [
+                            TextSpan(
+                              text: ' *',
+                              style: theme.textRegular15Sublest.copyWith(color: theme.colorError), // Màu đỏ cho dấu *
+                            ),
+                          ],
+                        ))
+                      : widget.label.isNotNullOrEmpty
+                          ? Text(widget.label ?? '', style: theme.textRegular15Sublest)
+                          : null,
+                  hintStyle: theme.textMedium15Sublest,
+                  hintText: widget.hint,
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                  filled: true,
+                  fillColor: widget.isDisable ? theme.colorBackgroundFieldDisable : theme.colorBackgroundField,
+                  border: InputBorder.none,
+                  focusColor: theme.colorPrimary,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                  prefixIcon: widget.prefixIcon,
+                  prefixIconColor: theme.colorTextSublest,
+                  suffixIcon: widget.hideText
+                      ? ExcludeFocus(
+                          child: Builder(builder: (context) {
+                            return showText
+                                ? IconButton(
+                                    icon: Icon(
+                                      LineIcons.eye,
+                                      color: theme.colorIcon,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        showText = !showText;
+                                      });
+                                    },
+                                  )
+                                : IconButton(
+                                    icon: Icon(
+                                      LineIcons.eyeSlash,
+                                      color: theme.colorIcon,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        showText = !showText;
+                                      });
+                                    },
+                                  );
+                          }),
+                        )
+                      : null,
+                ),
 
-          // enabled: !(widget.isReadOnly || widget.isDisable),
-          // inputFormatters: [
-          //   //prevent space
-          //   FilteringTextInputFormatter.deny(RegExp(r'\s')),
-          // ],
+                // enabled: !(widget.isReadOnly || widget.isDisable),
+                // inputFormatters: [
+                //   //prevent space
+                //   FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                // ],
+              ),
+            ),
+            if (widget.suffixIcon != null)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                child: widget.suffixIcon,
+              ),
+          ],
         ),
       ),
     );

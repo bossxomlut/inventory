@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:sample_app/shared_widgets/image/common_image_picker.dart';
 import 'package:sample_app/shared_widgets/index.dart';
 
@@ -53,18 +54,20 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
       // Validate inputs
       if (name.isEmpty) {
-        showError(message: 'Please fill in all required fields.');
+        showError(message: 'Vui lòng điền đầy đủ thông tin bắt buộc.');
         return;
       }
 
       final price = double.tryParse(priceStr) ?? 0.0;
 
       final newProduct = Product(
-        id: undefinedId, // Generate unique ID
+        id: undefinedId,
+        // Generate unique ID
         name: name,
         description: note,
         price: price,
-        images: [...images.value], // Add image IDs if needed
+        images: [...images.value],
+        // Add image IDs if needed
         quantity: quantity.value,
         category: _category.value,
         unit: _unit.value,
@@ -129,8 +132,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                               ),
                             ),
 
-                            separateGapItem,
-                            // Quantity
+                            separateGapItem, // Quantity
                             TitleBlockWidget(
                               title: 'Số lượng',
                               isRequired: true,
@@ -262,7 +264,7 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                     textInputAction: TextInputAction.search,
                     textAlignVertical: TextAlignVertical.center,
                     decoration: InputDecoration(
-                      hintText: 'Enter SKU Code',
+                      hintText: 'Nhập mã SKU',
                       hintStyle: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                       border: InputBorder.none,
                     ),
@@ -299,7 +301,7 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                     child: InkWell(
                       onTap: () async {
                         await InnerScannerPage(
-                          child: const Text('Scan Barcode'),
+                          child: const Text('Quét mã vạch'),
                           onBarcodeScanned: (value) {
                             final scannedValue = value.displayValue ?? '';
                             _skuController.text = scannedValue;
@@ -318,13 +320,12 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                           children: [
                             const Icon(Icons.camera_alt_outlined, size: 24),
                             const SizedBox(width: 10),
-                            Text('Scan Barcode', style: theme.textMedium15Subtle),
+                            Text('Quét mã', style: theme.textMedium15Subtle),
                           ],
                         ),
                       ),
                     ),
-                  ),
-                  //add random barcode button
+                  ), //add random barcode button
                   const SizedBox(width: 10),
                   Expanded(
                     child: InkWell(
@@ -345,7 +346,7 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                           children: [
                             const Icon(Icons.shuffle, size: 24),
                             const SizedBox(width: 10),
-                            Text('Random SKU', style: theme.textMedium15Subtle),
+                            Text('Tạo ngẫu nhiên', style: theme.textMedium15Subtle),
                           ],
                         ),
                       ),
@@ -374,7 +375,7 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                               alignment: Alignment.center,
                               color: Colors.grey.shade200,
                               child: const Text(
-                                'Please enter a SKU code to generate the QR code',
+                                'Vui lòng nhập mã SKU để tạo mã QR',
                                 style: TextStyle(color: Colors.grey),
                               ),
                             );
@@ -397,7 +398,7 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                               );
                             } catch (e) {
                               return const Text(
-                                'Error generating QR code',
+                                'Lỗi tạo mã QR',
                                 style: TextStyle(color: Colors.red),
                               );
                             }
@@ -427,7 +428,7 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                       onPressed: () {
                         final sku = _skuController.text.trim();
                         if (sku.isEmpty) {
-                          showError(message: 'Please enter a SKU code to download the QR code.');
+                          showError(message: 'Vui lòng nhập mã SKU để tải mã QR.');
                           return;
                         }
                         Barcode dm = Barcode.fromType(barcodeType.value);
@@ -435,10 +436,10 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                         dm.toSvg(sku, width: 200, height: 200);
                         // Save the SVG to a file or show a dialog to download
                         // For simplicity, we will just show a success message
-                        showSuccess(message: 'QR code downloaded successfully!');
+                        showSuccess(message: 'Tải mã QR thành công!');
                       },
                       icon: const Icon(Icons.download),
-                      label: const Text('Save to device'),
+                      label: const Text('Lưu vào thiết bị'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
@@ -559,7 +560,10 @@ class CommonAddPlaceHolder<T> extends StatelessWidget {
             // Clear the selected category
             onSelected?.call(null);
           },
-          child: const Icon(Icons.clear),
+          child: const Icon(
+            HugeIcons.strokeRoundedDelete03,
+            size: 20,
+          ),
         ),
       );
     }
@@ -577,9 +581,16 @@ class CommonAddPlaceHolder<T> extends StatelessWidget {
           child: Row(
             children: [
               const Gap(10),
-              const Icon(Icons.add_circle_outline_rounded),
+              Icon(
+                HugeIcons.strokeRoundedAddCircle,
+                size: 24,
+                color: theme.colorIcon,
+              ),
               const Gap(10),
-              Text(title),
+              Text(
+                title,
+                style: theme.textMedium13Subtle,
+              ),
             ],
           ),
         ),

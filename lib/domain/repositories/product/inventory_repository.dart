@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/product/product_repository.dart';
+import '../../entities/unit/unit.dart';
 import '../../index.dart';
 import '../crud_repository.dart';
 
@@ -23,4 +24,17 @@ abstract class SearchProductRepository implements SearchRepositoryWithPagination
 CategoryRepository categoryRepository(ref) => CategoryRepositoryImpl();
 
 abstract class CategoryRepository
-    implements CrudRepository<Category, int>, SearchRepositoryWithPagination<Category>, GetAllRepository<Category> {}
+    implements
+        CrudRepository<Category, int>,
+        SearchRepositoryWithPagination<Category>,
+        GetAllRepository<Category>,
+        SearchRepository<Category> {}
+
+final unitRepositoryProvider = Provider<UnitRepository>((ref) => UnitRepositoryImpl());
+
+abstract class UnitRepository
+    implements
+        CrudRepository<Unit, int>,
+        SearchRepositoryWithPagination<Unit>,
+        GetAllRepository<Unit>,
+        SearchRepository<Unit> {}

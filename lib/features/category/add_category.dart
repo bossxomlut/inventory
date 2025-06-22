@@ -46,20 +46,20 @@ class _AddCategoryState extends State<AddCategory> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TitleBlockWidget(
-                      title: 'Name',
+                      title: 'Tên',
                       isRequired: true,
                       child: CustomTextField.multiLines(
                         controller: nameController,
-                        hint: 'Category Name',
+                        hint: 'Tên danh mục',
                         maxLines: 3,
                       ),
                     ),
                     separateGapItem,
                     TitleBlockWidget(
-                      title: 'Note',
+                      title: 'Ghi chú',
                       child: CustomTextField.multiLines(
                         controller: descriptionController,
-                        hint: 'Note',
+                        hint: 'Ghi chú',
                         maxLines: 3,
                       ),
                     ),
@@ -76,7 +76,7 @@ class _AddCategoryState extends State<AddCategory> {
                   final description = descriptionController.text.trim();
 
                   if (name.isEmpty) {
-                    showError(message: 'Please enter a category name.');
+                    showError(message: 'Vui lòng nhập tên danh mục.');
                     return;
                   }
 
@@ -87,7 +87,7 @@ class _AddCategoryState extends State<AddCategory> {
                       await ref.read(categoryProvider.notifier).updateCategory(category);
                       Navigator.pop(context);
                     } catch (error) {
-                      showError(message: 'Failed to update category: $error');
+                      showError(message: 'Không thể cập nhật danh mục: $error');
                     }
                   } else {
                     final category = Category(id: undefinedId, name: name, description: description);

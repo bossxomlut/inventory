@@ -37,6 +37,7 @@ void main() async {
   await IsarDatabase().initialize();
 
   List<Locale> supportedLocales = <Locale>[
+    const Locale('vi', 'VN'),
     const Locale('en', 'US'),
   ];
 

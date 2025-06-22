@@ -80,58 +80,84 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
-    return Column(
-      children: [
-        ColoredBox(
-          color: Colors.grey.shade100,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Search bar
-                IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.arrow_back, size: 18)),
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    textInputAction: TextInputAction.done,
-                    textAlignVertical: TextAlignVertical.center,
-                    decoration: InputDecoration(
-                      // contentPadding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
-                      hintText: widget.title ?? 'Search items...',
-                      hintStyle: theme.textMedium15Subtle,
-                      border: InputBorder.none,
+    return ColoredBox(
+      color: Colors.white,
+      child: Column(
+        children: [
+          ColoredBox(
+            color: Colors.grey.shade100,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Search bar
+                  IconButton(
+                      onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.arrow_back, size: 18)),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      textInputAction: TextInputAction.done,
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                        // contentPadding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+                        hintText: widget.title ?? 'Tìm kiếm...',
+                        hintStyle: theme.textMedium15Subtle,
+                        border: InputBorder.none,
+                      ),
+                      onSubmitted: widget.onSubmitted,
+                      keyboardType: widget.keyboardType ?? TextInputType.text,
                     ),
-                    onSubmitted: widget.onSubmitted,
-                    keyboardType: widget.keyboardType ?? TextInputType.text,
                   ),
-                ),
-                // Add button
-                InkWell(
-                  onTap: widget.onAddItem,
-                  child: CircleAvatar(
-                    radius: 12,
-                    backgroundColor: Colors.grey.shade300,
-                    child: widget.addItemWidget ??
-                        const Icon(
-                          Icons.add,
-                          size: 18,
-                        ),
+                  // Add button
+                  InkWell(
+                    onTap: widget.onAddItem,
+                    child: CircleAvatar(
+                      radius: 12,
+                      backgroundColor: Colors.grey.shade300,
+                      child: widget.addItemWidget ??
+                          const Icon(
+                            Icons.add,
+                            size: 18,
+                          ),
+                    ),
                   ),
-                ),
-                SizedBox(width: 8),
-              ],
+                  SizedBox(width: 8),
+                ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 8), // Dynamic list with custom itemBuilder
-        Expanded(child: buildLoadView(context)),
-      ],
+          const SizedBox(height: 8), // Dynamic list with custom itemBuilder
+          Expanded(child: buildLoadView(context)),
+        ],
+      ),
     );
   }
 
   @override
   Widget buildLoaded(BuildContext context) {
+    if (items.isEmpty) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 40),
+          Text(
+            'Không có kết quả nào',
+            style: context.appTheme.textMedium15Subtle,
+          ),
+          const SizedBox(height: 16),
+          //add button
+          widget.addItemWidget ??
+              ElevatedButton.icon(
+                onPressed: widget.onAddItem,
+                icon: const Icon(Icons.add),
+                label: const Text('Thêm mới'),
+              ),
+          const SizedBox(height: 40),
+        ],
+      );
+    }
+
     return ListView.separated(
       shrinkWrap: true,
       itemCount: items.length,

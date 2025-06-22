@@ -47,20 +47,20 @@ class _AddUnitState extends State<AddUnit> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TitleBlockWidget(
-                      title: 'Name',
+                      title: 'Tên',
                       isRequired: true,
                       child: CustomTextField.multiLines(
                         controller: nameController,
-                        hint: 'Unit Name',
+                        hint: 'Tên đơn vị',
                         maxLines: 3,
                       ),
                     ),
                     separateGapItem,
                     TitleBlockWidget(
-                      title: 'Note',
+                      title: 'Ghi chú',
                       child: CustomTextField.multiLines(
                         controller: descriptionController,
-                        hint: 'Note',
+                        hint: 'Ghi chú',
                         maxLines: 3,
                       ),
                     ),
@@ -76,7 +76,7 @@ class _AddUnitState extends State<AddUnit> {
                   final description = descriptionController.text.trim();
 
                   if (name.isEmpty) {
-                    showError(message: 'Please enter a unit name.');
+                    showError(message: 'Vui lòng nhập tên đơn vị.');
                     return;
                   }
 
@@ -87,7 +87,7 @@ class _AddUnitState extends State<AddUnit> {
                       await ref.read(loadUnitProvider.notifier).updateUnit(unit);
                       Navigator.pop(context);
                     } catch (error) {
-                      showError(message: 'Failed to update unit: $error');
+                      showError(message: 'Không thể cập nhật đơn vị: $error');
                     }
                   } else {
                     final unit = Unit(id: undefinedId, name: name, description: description);

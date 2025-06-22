@@ -99,6 +99,10 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
                     topLeft: Radius.circular(4),
                     bottomLeft: Radius.circular(4),
                   ),
+                  border: Border.all(
+                    color: _canDecrement ? theme.colorBorderField : Colors.transparent,
+                    width: 1,
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Icon(
@@ -125,6 +129,10 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
               child: Container(
                 decoration: BoxDecoration(
                   color: theme.colorBackgroundField,
+                  border: Border.all(
+                    color: theme.colorBorderField,
+                    width: 1,
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -151,6 +159,10 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(4),
                     bottomRight: Radius.circular(4),
+                  ),
+                  border: Border.all(
+                    color: _canIncrement ? theme.colorBorderField : Colors.transparent,
+                    width: 1,
                   ),
                 ),
                 alignment: Alignment.center,

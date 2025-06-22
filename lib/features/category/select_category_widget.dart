@@ -32,7 +32,7 @@ void showCategory(
       );
     },
     searchItems: (String keyword) async {
-      return context.read(categoryRepositoryProvider).getAll();
+      return context.read(categoryRepositoryProvider).searchAll(keyword);
     },
   ).show(context);
 }

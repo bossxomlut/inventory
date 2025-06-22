@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../provider/index.dart';
 import '../../shared_widgets/index.dart';
 
 export 'package:auto_route/auto_route.dart';
@@ -116,7 +117,20 @@ mixin SkeletonLoadingState<T extends StatefulWidget> on State<T> {
   }
 
   Widget buildLoading(BuildContext context) {
-    return const LoadingWidget();
+    final theme = context.appTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(height: 40),
+        const CircularProgressIndicator(),
+        const SizedBox(height: 16),
+        Text(
+          'Đang tải...',
+          style: theme.textRegular15Subtle,
+        ),
+        const SizedBox(height: 40),
+      ],
+    );
   }
 }
 

@@ -37,7 +37,7 @@ class CategoryPage extends HookConsumerWidget {
             final isNotEmpty = multiState.data.isNotEmpty;
 
             return CustomAppBar(
-              title: 'Categories',
+              title: 'Danh mục',
               leading: enable
                   ? IconButton(
                       onPressed: () {
@@ -62,7 +62,7 @@ class CategoryPage extends HookConsumerWidget {
                 if (!enable)
                   IconButton(
                     icon: Text(
-                      'Choose',
+                      'Chọn',
                       style: theme.textMedium13Default.copyWith(
                         color: Colors.white,
                       ),
@@ -83,9 +83,9 @@ class CategoryPage extends HookConsumerWidget {
       body: Builder(
         builder: (BuildContext context) {
           if (categories.hasError) {
-            return Center(child: Text('Error: ${categories.error}'));
+            return Center(child: Text('Lỗi: ${categories.error}'));
           } else if (categories.data.isEmpty) {
-            return const Center(child: Text('No categories found.'));
+            return const Center(child: Text('Không tìm thấy danh mục nào.'));
           }
 
           return ListView.builder(

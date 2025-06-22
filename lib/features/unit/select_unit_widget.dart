@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../domain/entities/unit/unit.dart';
-import '../../domain/repositories/unit/unit_repository.dart';
+import '../../domain/repositories/product/inventory_repository.dart';
 import '../../provider/index.dart';
 import '../../shared_widgets/index.dart';
 import 'add_unit.dart';
@@ -83,7 +83,7 @@ class SelectUnitWidget extends HookConsumerWidget {
                 }
 
                 if (unitLoadProvider.error != null) {
-                  return Center(child: Text('Error: ${unitLoadProvider.error}'));
+                  return Center(child: Text('Lỗi: ${unitLoadProvider.error}'));
                 }
 
                 if (unitLoadProvider.data.isEmpty) {
@@ -134,9 +134,7 @@ void showUnit(
       );
     },
     searchItems: (String keyword) async {
-      final ref = ProviderScope.containerOf(context);
-      final units = await ref.read(loadUnitProvider.notifier).getAllUnits();
-      return units;
+      return context.read(unitRepositoryProvider).searchAll(keyword);
     },
   ).show(context);
 }

@@ -1,18 +1,8 @@
 import 'package:isar/isar.dart';
 
 import '../image/image.dart';
-import '../isar/schema/unit_collection.dart';
 
 part 'inventory.g.dart';
-
-@collection
-class CategoryCollection {
-  Id id = Isar.autoIncrement;
-  late String name;
-  late String? description;
-  DateTime? createDate;
-  DateTime? updatedDate;
-}
 
 @collection
 class ProductCollection {
@@ -27,6 +17,29 @@ class ProductCollection {
   late String? description;
   late DateTime createdAt;
   late DateTime updatedAt;
+}
+
+@collection
+class CategoryCollection {
+  Id id = Isar.autoIncrement;
+  late String name;
+  late String? description;
+  DateTime? createDate;
+  DateTime? updatedDate;
+}
+
+@collection
+class UnitCollection {
+  Id id = Isar.autoIncrement;
+
+  @Index(unique: true)
+  late String name;
+
+  String? description;
+
+  DateTime? createDate;
+
+  DateTime? updatedDate;
 }
 
 @collection

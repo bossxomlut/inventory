@@ -3,7 +3,6 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../data/check/check_collection.dart';
 import '../../data/image/image.dart';
-import '../../data/isar/schema/unit_collection.dart';
 import '../../data/product/inventory.dart';
 import '../../data/user/user.dart';
 

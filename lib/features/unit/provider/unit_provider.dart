@@ -1,11 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/entities/unit/unit.dart';
-import '../../../domain/repositories/unit/unit_repository.dart';
+import '../../../domain/repositories/product/inventory_repository.dart';
+import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
 import '../../../provider/mixin.dart';
-import '../../../provider/index.dart';
-import '../../../data/unit/unit_repository.dart';
 import '../../../shared_widgets/toast.dart';
 import 'unit_filter_provider.dart';
 

@@ -150,14 +150,16 @@ class _ImagePresentViewState extends State<ImagePresentView> {
     } else {
       return FileImage(File(imageUrl));
     }
-  }  /// Delete an image from the list
+  }
+
+  /// Delete an image from the list
   void _deleteImage(int index) {
     if (index < 0 || index >= _listImages.length) return;
 
     setState(() {
       _hasChanges = true;
       _listImages.removeAt(index);
-      
+
       // Adjust currentIndex if needed
       if (_listImages.isEmpty) {
         _currentIndex = 0;
@@ -216,23 +218,25 @@ class _ImagePresentViewState extends State<ImagePresentView> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          actions: widget.deleteMode ? [
-            TextButton.icon(
-              icon: const Icon(Icons.check, color: Colors.white),
-              label: const Text(
-                'Xong',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              onPressed: () {
-                _hasChanges = false;
-                widget.onSave?.call(_listImages);
-                Navigator.of(context).pop();
-              },
-            ),
-          ] : null,
+          actions: widget.deleteMode
+              ? [
+                  TextButton.icon(
+                    icon: const Icon(Icons.check, color: Colors.white),
+                    label: const Text(
+                      'Xong',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onPressed: () {
+                      _hasChanges = false;
+                      widget.onSave?.call(_listImages);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ]
+              : null,
         ),
         body: const Center(
           child: Text(

@@ -38,7 +38,7 @@ class UnitPage extends HookConsumerWidget {
             final isNotEmpty = multiState.data.isNotEmpty;
 
             return CustomAppBar(
-              title: 'Units',
+              title: 'Đơn vị',
               leading: enable
                   ? IconButton(
                       onPressed: () {
@@ -63,7 +63,7 @@ class UnitPage extends HookConsumerWidget {
                 if (!enable)
                   IconButton(
                     icon: Text(
-                      'Choose',
+                      'Chọn',
                       style: theme.textMedium13Default.copyWith(
                         color: Colors.white,
                       ),
@@ -84,9 +84,9 @@ class UnitPage extends HookConsumerWidget {
       body: Builder(
         builder: (BuildContext context) {
           if (units.hasError) {
-            return Center(child: Text('Error: ${units.error}'));
+            return Center(child: Text('Lỗi: ${units.error}'));
           } else if (units.data.isEmpty) {
-            return const Center(child: Text('No units found.'));
+            return const Center(child: Text('Không tìm thấy đơn vị nào.'));
           }
 
           return ListView.builder(

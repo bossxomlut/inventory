@@ -34,6 +34,7 @@ class HomePage2 extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider);
+    final theme = context.appTheme;
     return user.when(
         authenticated: (User user, DateTime? lastLoginTime) {
           List<MenuGroup> menuGroups = [
@@ -120,17 +121,6 @@ class HomePage2 extends ConsumerWidget {
           ];
 
           return Scaffold(
-            // appBar: CustomAppBar(
-            //   title: 'Inventory App',
-            //   actions: [
-            //     IconButton(
-            //       icon: const Icon(Icons.settings_outlined),
-            //       onPressed: () {
-            //         appRouter.goToSetting();
-            //       },
-            //     ),
-            //   ],
-            // ),
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -151,7 +141,7 @@ class HomePage2 extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Welcome back,',
+                                'Xin chào,',
                                 style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                               ),
                               Text(
@@ -163,6 +153,15 @@ class HomePage2 extends ConsumerWidget {
                               ),
                             ],
                           ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.settings_outlined,
+                            color: theme.colorIcon,
+                          ),
+                          onPressed: () {
+                            appRouter.goToSetting();
+                          },
                         ),
                       ],
                     ),
@@ -273,18 +272,19 @@ class HomePage2 extends ConsumerWidget {
         },
         unauthenticated: () => Scaffold(
               appBar: AppBar(
-                title: const Text('Inventory App'),
+                title: const Text('Quản lý kho'),
               ),
               body: Center(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Please log in to access the app.'),
+                    Text('Vui lòng đăng nhập để sử dụng ứng dụng.'),
                     SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         appRouter.goToLogin();
                       },
-                      child: Text('Log In'),
+                      child: Text('Đăng nhập'),
                     ),
                   ],
                 ),

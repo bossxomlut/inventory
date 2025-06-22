@@ -7,7 +7,6 @@ import '../../features/product/provider/product_filter_provider.dart';
 import '../../provider/load_list.dart';
 import '../database/isar_repository.dart';
 import '../image/image.dart';
-import '../isar/schema/unit_collection.dart';
 import 'inventory.dart';
 import 'inventory_mapping.dart';
 
@@ -136,26 +135,35 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
     final DateTime? updatedStartDate = filter?['updatedStartDate'] as DateTime?;
     final DateTime? updatedEndDate = filter?['updatedEndDate'] as DateTime?;
 
-    final ProductSortType productSortType = ProductSortType.values.firstWhere((e) => e.name == sortType, orElse: () => ProductSortType.none);
+    final ProductSortType productSortType =
+        ProductSortType.values.firstWhere((e) => e.name == sortType, orElse: () => ProductSortType.none);
 
     final query = await iCollection
         .filter()
         .group(
           (QueryBuilder<ProductCollection, ProductCollection, QFilterCondition> q) {
-            return q.nameContains(keyword, caseSensitive: false).or().barcodeContains(keyword, caseSensitive: false).or().descriptionContains(keyword, caseSensitive: false);
+            return q
+                .nameContains(keyword, caseSensitive: false)
+                .or()
+                .barcodeContains(keyword, caseSensitive: false)
+                .or()
+                .descriptionContains(keyword, caseSensitive: false);
           },
         )
         .optional<QAfterFilterCondition>(
           createdStartDate != null && createdEndDate != null,
-          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) => q.createdAtBetween(createdStartDate!, createdEndDate!),
+          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) =>
+              q.createdAtBetween(createdStartDate!, createdEndDate!),
         )
         .optional<QAfterFilterCondition>(
           updatedStartDate != null && updatedEndDate != null,
-          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) => q.updatedAtBetween(updatedStartDate!, updatedEndDate!),
+          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) =>
+              q.updatedAtBetween(updatedStartDate!, updatedEndDate!),
         )
         .optional<QAfterFilterCondition>(
           selectedCategoryIds?.isNotEmpty ?? false,
-          (q) => q.category((q) => q.anyOf<int, ProductCollection>(selectedCategoryIds!, (q, element) => q.idEqualTo(element))),
+          (q) => q.category(
+              (q) => q.anyOf<int, ProductCollection>(selectedCategoryIds!, (q, element) => q.idEqualTo(element))),
         )
         .optional<QAfterFilterCondition>(
           selectedUnitIds?.isNotEmpty ?? false,
@@ -213,6 +221,22 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
   }
 }
 
+class SearchProductRepositoryImpl extends SearchProductRepository {
+  @override
+  Future<LoadResult<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
+    return LoadResult<Product>(
+      data: [],
+      totalCount: 0, // You might want to implement a way to get the total count
+    );
+  }
+
+  @override
+  Future<Product> searchByBarcode(String barcode) {
+    // TODO: implement searchByBarcode
+    throw UnimplementedError();
+  }
+}
+
 class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<Category, CategoryCollection> {
   @override
   int? getId(Category item) => item.id;
@@ -250,7 +274,14 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
 
   @override
   Future<LoadResult<Category>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
-    final results = await iCollection.filter().nameContains(keyword).or().descriptionContains(keyword).offset(page).limit(limit).findAll();
+    final results = await iCollection
+        .filter()
+        .nameContains(keyword)
+        .or()
+        .descriptionContains(keyword)
+        .offset(page)
+        .limit(limit)
+        .findAll();
 
     final list = results.map(
       (CategoryCollection e) {
@@ -283,21 +314,182 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
       }).toList();
     });
   }
+
+  @override
+  Future<List<Category>> searchAll(String keyword) {
+    return iCollection
+        .filter()
+        .group(
+          (QueryBuilder<CategoryCollection, CategoryCollection, QFilterCondition> q) {
+            return q
+                .nameContains(keyword, caseSensitive: false)
+                .or()
+                .descriptionContains(keyword, caseSensitive: false);
+          },
+        )
+        .findAll()
+        .then((value) {
+          return value.map((e) {
+            return Category(
+              id: e.id,
+              name: e.name,
+              description: e.description,
+              createDate: e.createDate,
+              updatedDate: e.updatedDate,
+            );
+          }).toList();
+        });
+  }
 }
 
-class SearchProductRepositoryImpl extends SearchProductRepository {
+class UnitRepositoryImpl implements UnitRepository {
+  final Isar _isar = Isar.getInstance()!;
+
+  IsarCollection<UnitCollection> get iCollection => _isar.collection<UnitCollection>();
+
   @override
-  Future<LoadResult<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
-    return LoadResult<Product>(
-      data: [],
-      totalCount: 0, // You might want to implement a way to get the total count
+  Future<Unit> create(Unit unit) async {
+    final now = DateTime.now();
+    final unitWithDates = unit.copyWith(createDate: now, updatedDate: now);
+
+    final collection = UnitCollection()
+      ..name = unitWithDates.name
+      ..description = unitWithDates.description
+      ..createDate = unitWithDates.createDate
+      ..updatedDate = unitWithDates.updatedDate;
+
+    final id = await _isar.writeTxn(() => iCollection.put(collection));
+    return unitWithDates.copyWith(id: id);
+  }
+
+  @override
+  Future<bool> delete(Unit unit) async {
+    return await _isar.writeTxn(() => iCollection.delete(unit.id));
+  }
+
+  @override
+  Future<Unit> read(int id) async {
+    final collection = await iCollection.get(id);
+    if (collection == null) {
+      throw Exception('Unit not found');
+    }
+
+    return Unit(
+      id: collection.id,
+      name: collection.name,
+      description: collection.description,
+      createDate: collection.createDate,
+      updatedDate: collection.updatedDate,
     );
   }
 
   @override
-  Future<Product> searchByBarcode(String barcode) {
-    // TODO: implement searchByBarcode
-    throw UnimplementedError();
+  Future<Unit> update(Unit unit) async {
+    final unitWithDate = unit.copyWith(updatedDate: DateTime.now());
+
+    final collection = UnitCollection()
+      ..id = unitWithDate.id
+      ..name = unitWithDate.name
+      ..description = unitWithDate.description
+      ..createDate = unitWithDate.createDate
+      ..updatedDate = unitWithDate.updatedDate;
+
+    await _isar.writeTxn(() => iCollection.put(collection));
+    return unitWithDate;
+  }
+
+  @override
+  Future<List<Unit>> getAll() async {
+    final collections = await iCollection.where().findAll();
+    return collections
+        .map((collection) => Unit(
+              id: collection.id,
+              name: collection.name,
+              description: collection.description,
+              createDate: collection.createDate,
+              updatedDate: collection.updatedDate,
+            ))
+        .toList();
+  }
+
+  @override
+  Future<Unit> getById(int id) async {
+    final collection = await iCollection.get(id);
+    if (collection == null) {
+      throw Exception('Unit not found');
+    }
+
+    return Unit(
+      id: collection.id,
+      name: collection.name,
+      description: collection.description,
+      createDate: collection.createDate,
+      updatedDate: collection.updatedDate,
+    );
+  }
+
+  @override
+  Future<LoadResult<Unit>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
+    final allCollections = await iCollection.where().findAll();
+
+    final filteredCollections = keyword.isEmpty
+        ? allCollections
+        : allCollections
+            .where((c) =>
+                c.name.toLowerCase().contains(keyword.toLowerCase()) ||
+                (c.description?.toLowerCase().contains(keyword.toLowerCase()) ?? false))
+            .toList();
+
+    // Sort by name
+    filteredCollections.sort((a, b) => a.name.compareTo(b.name));
+
+    // Implement simple pagination in memory
+    final start = (page - 1) * limit;
+    final end = start + limit < filteredCollections.length ? start + limit : filteredCollections.length;
+
+    final List<UnitCollection> paginatedCollections =
+        start < filteredCollections.length ? filteredCollections.sublist(start, end) : <UnitCollection>[];
+
+    final units = paginatedCollections
+        .map((collection) => Unit(
+              id: collection.id as int,
+              name: collection.name as String,
+              description: collection.description as String?,
+              createDate: collection.createDate,
+              updatedDate: collection.updatedDate,
+            ))
+        .toList();
+
+    return LoadResult<Unit>(
+      data: units,
+      totalCount: filteredCollections.length,
+    );
+  }
+
+  @override
+  Future<List<Unit>> searchAll(String keyword) {
+    return iCollection
+        .filter()
+        .group(
+          (QueryBuilder<UnitCollection, UnitCollection, QFilterCondition> q) {
+            return q
+                .nameContains(keyword, caseSensitive: false)
+                .or()
+                .descriptionContains(keyword, caseSensitive: false);
+          },
+        )
+        .findAll()
+        .then((value) {
+          return value.map((e) {
+            return Unit(
+              id: e.id,
+              name: e.name,
+              description: e.description,
+              createDate: e.createDate,
+              updatedDate: e.updatedDate,
+            );
+          }).toList();
+        });
   }
 }
 

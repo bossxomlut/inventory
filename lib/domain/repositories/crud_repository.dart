@@ -11,6 +11,10 @@ abstract class SearchRepositoryWithPagination<T> {
   Future<LoadResult<T>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter});
 }
 
+abstract class SearchRepository<T> {
+  Future<List<T>> searchAll(String keyword);
+}
+
 abstract class GetOneByNameRepository<T> {
   Future<T?> getOneByName(String name);
 }

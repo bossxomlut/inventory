@@ -110,14 +110,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             const SizedBox(height: 24),
             // Product name
             Text(product.name, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            // Category
+            const SizedBox(height: 12), // Category
             if (product.category != null)
               Row(
                 children: [
                   const Icon(Icons.category, size: 20),
                   const SizedBox(width: 8),
                   Text(product.category!.name, style: theme.textTheme.bodyLarge),
+                ],
+              ),
+            const SizedBox(height: 12),
+            // Unit
+            if (product.unit != null)
+              Row(
+                children: [
+                  const Icon(Icons.straighten, size: 20),
+                  const SizedBox(width: 8),
+                  Text(product.unit!.name, style: theme.textTheme.bodyLarge),
                 ],
               ),
             const SizedBox(height: 12),

@@ -1,11 +1,13 @@
 import 'package:isar/isar.dart';
 
+import '../../domain/entities/unit/unit.dart';
 import '../../domain/index.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
 import '../../features/product/provider/product_filter_provider.dart';
 import '../../provider/load_list.dart';
 import '../database/isar_repository.dart';
 import '../image/image.dart';
+import '../isar/schema/unit_collection.dart';
 import 'inventory.dart';
 import 'inventory_mapping.dart';
 
@@ -15,6 +17,17 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
 
   @override
   Future<Product> getItemFromCollection(ProductCollection collection) async {
+    Unit? unit = null;
+    if (collection.unit.value != null) {
+      unit = Unit(
+        id: collection.unit.value!.id,
+        name: collection.unit.value!.name,
+        description: collection.unit.value!.description,
+        createDate: collection.unit.value!.createDate,
+        updatedDate: collection.unit.value!.updatedDate,
+      );
+    }
+
     return Product(
       id: collection.id,
       name: collection.name,
@@ -22,6 +35,7 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       price: collection.price,
       quantity: collection.quantity,
       category: CategoryMapping().from(collection.category.value),
+      unit: unit,
       barcode: collection.barcode,
       images: collection.images.map((image) => ImageStorageModelMapping().from(image)).toList(),
     );
@@ -40,7 +54,27 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       ..createdAt = DateTime.now()
       ..updatedAt = DateTime.now();
 
+    // We will set the unit link after creating the product
     return p;
+  }
+
+  @override
+  Future<Product> create(Product item) async {
+    final collection = createNewItem(item);
+    final id = await isar.writeTxnSync(() => iCollection.putSync(collection));
+
+    // Set the unit if available
+    if (item.unit != null) {
+      final unitCollection = await isar.collection<UnitCollection>().get(item.unit!.id);
+      if (unitCollection != null) {
+        await isar.writeTxn(() async {
+          collection.unit.value = unitCollection;
+          await iCollection.put(collection);
+        });
+      }
+    }
+
+    return read(id);
   }
 
   @override
@@ -53,12 +87,47 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       ..quantity = item.quantity
       ..category.value = CategoryCollectionMapping().from(item.category)
       ..barcode = item.barcode
-      ..images.update(link: item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? []);
+      ..images.update(link: item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? [])
+      ..updatedAt = DateTime.now();
+  }
+
+  @override
+  Future<Product> update(Product item) async {
+    final collection = updateNewItem(item);
+
+    await isar.writeTxn(() async {
+      await iCollection.put(collection);
+
+      // Set the unit if available
+      if (item.unit != null) {
+        final unitCollection = await isar.collection<UnitCollection>().get(item.unit!.id);
+        if (unitCollection != null) {
+          collection.unit.value = unitCollection;
+          await iCollection.put(collection);
+        }
+      } else {
+        // Clear the unit if it was removed
+        collection.unit.value = null;
+        await iCollection.put(collection);
+      }
+
+      // Update category if needed
+      if (item.category != null) {
+        final categoryCollection = await isar.collection<CategoryCollection>().get(item.category!.id);
+        if (categoryCollection != null) {
+          collection.category.value = categoryCollection;
+          await iCollection.put(collection);
+        }
+      }
+    });
+
+    return read(collection.id);
   }
 
   @override
   Future<LoadResult<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
     final Iterable<int>? selectedCategoryIds = filter?['categoryIds'] as Iterable<int>?;
+    final Iterable<int>? selectedUnitIds = filter?['unitIds'] as Iterable<int>?;
     final String sortType = filter?['sortType'] as String? ?? 'name';
 
     // Get time filters
@@ -67,35 +136,30 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
     final DateTime? updatedStartDate = filter?['updatedStartDate'] as DateTime?;
     final DateTime? updatedEndDate = filter?['updatedEndDate'] as DateTime?;
 
-    final ProductSortType productSortType =
-        ProductSortType.values.firstWhere((e) => e.name == sortType, orElse: () => ProductSortType.none);
+    final ProductSortType productSortType = ProductSortType.values.firstWhere((e) => e.name == sortType, orElse: () => ProductSortType.none);
 
     final query = await iCollection
         .filter()
         .group(
           (QueryBuilder<ProductCollection, ProductCollection, QFilterCondition> q) {
-            return q
-                .nameContains(keyword, caseSensitive: false)
-                .or()
-                .barcodeContains(keyword, caseSensitive: false)
-                .or()
-                .descriptionContains(keyword, caseSensitive: false);
+            return q.nameContains(keyword, caseSensitive: false).or().barcodeContains(keyword, caseSensitive: false).or().descriptionContains(keyword, caseSensitive: false);
           },
         )
         .optional<QAfterFilterCondition>(
           createdStartDate != null && createdEndDate != null,
-          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) =>
-              q.createdAtBetween(createdStartDate!, createdEndDate!),
+          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) => q.createdAtBetween(createdStartDate!, createdEndDate!),
         )
         .optional<QAfterFilterCondition>(
           updatedStartDate != null && updatedEndDate != null,
-          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) =>
-              q.updatedAtBetween(updatedStartDate!, updatedEndDate!),
+          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) => q.updatedAtBetween(updatedStartDate!, updatedEndDate!),
         )
         .optional<QAfterFilterCondition>(
           selectedCategoryIds?.isNotEmpty ?? false,
-          (q) => q.category(
-              (q) => q.anyOf<int, ProductCollection>(selectedCategoryIds!, (q, element) => q.idEqualTo(element))),
+          (q) => q.category((q) => q.anyOf<int, ProductCollection>(selectedCategoryIds!, (q, element) => q.idEqualTo(element))),
+        )
+        .optional<QAfterFilterCondition>(
+          selectedUnitIds?.isNotEmpty ?? false,
+          (q) => q.unit((q) => q.anyOf<int, ProductCollection>(selectedUnitIds!, (q, element) => q.idEqualTo(element))),
         )
         .optional(true, (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) {
           switch (productSortType) {
@@ -112,7 +176,17 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
           }
         });
 
-    final results = (await query.offset((page - 1) * limit).limit(limit).findAll()).map((ProductCollection e) {
+    final List<ProductCollection> queryResults = await query.offset((page - 1) * limit).limit(limit).findAll();
+
+    // Filter results based on units
+    List<ProductCollection> filteredResults = queryResults;
+    if (selectedUnitIds?.isNotEmpty ?? false) {
+      filteredResults = queryResults.where((product) {
+        return product.unit.value != null && selectedUnitIds!.contains(product.unit.value!.id);
+      }).toList();
+    }
+
+    final results = filteredResults.map((ProductCollection e) {
       return Product(
         id: e.id,
         name: e.name,
@@ -120,6 +194,13 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
         price: e.price,
         quantity: e.quantity,
         category: CategoryMapping().from(e.category.value),
+        unit: e.unit.value != null
+            ? Unit(
+                id: e.unit.value!.id,
+                name: e.unit.value!.name,
+                description: e.unit.value!.description,
+              )
+            : null,
         barcode: e.barcode,
         images: e.images.map((image) => ImageStorageModelMapping().from(image)).toList(),
       );
@@ -142,14 +223,19 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
       id: collection.id,
       name: collection.name,
       description: collection.description,
+      createDate: collection.createDate,
+      updatedDate: collection.updatedDate,
     );
   }
 
   @override
   CategoryCollection createNewItem(Category item) {
+    final now = DateTime.now();
     return CategoryCollection()
       ..name = item.name
-      ..description = item.description;
+      ..description = item.description
+      ..createDate = now
+      ..updatedDate = now;
   }
 
   @override
@@ -157,19 +243,14 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
     return CategoryCollection()
       ..id = item.id // Assuming id is set for update
       ..name = item.name
-      ..description = item.description;
+      ..description = item.description
+      ..createDate = item.createDate
+      ..updatedDate = DateTime.now();
   }
 
   @override
   Future<LoadResult<Category>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
-    final results = await iCollection
-        .filter()
-        .nameContains(keyword)
-        .or()
-        .descriptionContains(keyword)
-        .offset(page)
-        .limit(limit)
-        .findAll();
+    final results = await iCollection.filter().nameContains(keyword).or().descriptionContains(keyword).offset(page).limit(limit).findAll();
 
     final list = results.map(
       (CategoryCollection e) {
@@ -177,6 +258,8 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
           id: e.id,
           name: e.name,
           description: e.description,
+          createDate: e.createDate,
+          updatedDate: e.updatedDate,
         );
       },
     ).toList();
@@ -194,6 +277,8 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
           id: e.id,
           name: e.name,
           description: e.description,
+          createDate: e.createDate,
+          updatedDate: e.updatedDate,
         );
       }).toList();
     });

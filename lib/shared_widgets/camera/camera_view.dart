@@ -31,6 +31,9 @@ class CameraView extends StatefulWidget {
     bool allowSwitchCamera = false,
     bool useBackCamera = true,
   }) async {
+    // Hide keyboard before navigating to camera view
+    FocusScope.of(context).unfocus();
+    
     return await Navigator.of(context).push<List<XFile>>(
       MaterialPageRoute(
         builder: (context) => CameraView(

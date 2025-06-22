@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../provider/text_search.dart';
 import '../../category/provider/category_provider.dart';
+import '../../unit/provider/unit_filter_provider.dart';
 
 enum ProductSortType { nameAsc, nameDesc, quantityAsc, quantityDesc, none }
 
@@ -121,6 +122,7 @@ final activeTimeFilterTypeProvider = StateProvider.autoDispose<String?>((ref) =>
 final productFilterProvider = Provider.autoDispose<Map<String, dynamic>>((ref) {
   final searchQuery = ref.watch(textSearchProvider).trim();
   final selectedCategories = ref.watch(multiSelectCategoryProvider).data;
+  final selectedUnits = ref.watch(multiSelectUnitProvider).data;
   final sortType = ref.watch(productSortTypeProvider);
 
   // Create filter map to pass to repository
@@ -164,6 +166,11 @@ final productFilterProvider = Provider.autoDispose<Map<String, dynamic>>((ref) {
   // Add categoryId to filter if available
   if (selectedCategories.isNotEmpty) {
     filter['categoryIds'] = selectedCategories.map((category) => category.id).toList();
+  }
+
+  // Add unitId to filter if available
+  if (selectedUnits.isNotEmpty) {
+    filter['unitIds'] = selectedUnits.map((unit) => unit.id).toList();
   }
 
   // Add sortType to filter if available

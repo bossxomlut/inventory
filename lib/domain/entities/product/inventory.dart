@@ -1,5 +1,6 @@
 import '../image.dart';
 import '../index.dart';
+import '../unit/unit.dart';
 
 part 'inventory.freezed.dart';
 
@@ -24,22 +25,58 @@ class Category with _$Category {
     required int id, // Mã danh mục
     required String name, // Tên danh mục
     String? description, // Mô tả (tùy chọn)
+    DateTime? createDate, // Ngày tạo
+    DateTime? updatedDate, // Ngày cập nhật
   }) = _Category;
 }
 
 // Model cho Sản phẩm (Product)
-@freezed
-class Product with _$Product {
-  const factory Product({
-    required int id, // Mã sản phẩm
-    required String name, // Tên sản phẩm
-    required int quantity, // Số lượng tồn kho
-    double? price, // Giá sản phẩm
-    String? barcode, // Mã vạch (tùy chọn)
-    Category? category, // ID danh mục
-    List<ImageStorageModel>? images, // URL ảnh (tùy chọn)
-    String? description, // Mô tả (tùy chọn)
-  }) = _Product;
+class Product {
+  final int id; // Mã sản phẩm
+  final String name; // Tên sản phẩm
+  final int quantity; // Số lượng tồn kho
+  final double? price; // Giá sản phẩm
+  final String? barcode; // Mã vạch (tùy chọn)
+  final Category? category; // ID danh mục
+  final Unit? unit; // Đơn vị
+  final List<ImageStorageModel>? images; // URL ảnh (tùy chọn)
+  final String? description; // Mô tả (tùy chọn)
+
+  const Product({
+    required this.id,
+    required this.name,
+    required this.quantity,
+    this.price,
+    this.barcode,
+    this.category,
+    this.unit,
+    this.images,
+    this.description,
+  });
+
+  Product copyWith({
+    int? id,
+    String? name,
+    int? quantity,
+    double? price,
+    String? barcode,
+    Category? category,
+    Unit? unit,
+    List<ImageStorageModel>? images,
+    String? description,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      quantity: quantity ?? this.quantity,
+      price: price ?? this.price,
+      barcode: barcode ?? this.barcode,
+      category: category ?? this.category,
+      unit: unit ?? this.unit,
+      images: images ?? this.images,
+      description: description ?? this.description,
+    );
+  }
 }
 
 // Model cho Giao dịch (Transaction)

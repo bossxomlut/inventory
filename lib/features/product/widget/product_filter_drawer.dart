@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../domain/entities/product/inventory.dart';
+import '../../../domain/entities/unit/unit.dart';
 import '../../../provider/index.dart';
 import '../../category/provider/category_provider.dart';
+import '../../unit/provider/unit_filter_provider.dart';
+import '../../unit/provider/unit_provider.dart';
 import '../provider/product_filter_provider.dart';
 
 class ProductFilterDrawer extends ConsumerWidget {
@@ -116,7 +119,9 @@ class ProductFilterDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sortType = ref.watch(productSortTypeProvider);
     final selectedCategories = ref.watch(multiSelectCategoryProvider);
+    final selectedUnits = ref.watch(multiSelectUnitProvider);
     final categories = ref.watch(allCategoriesProvider);
+    final units = ref.watch(allUnitsProvider);
     final theme = Theme.of(context);
 
     return Drawer(
@@ -586,6 +591,54 @@ class ProductFilterDrawer extends ConsumerWidget {
                         );
                       },
                       loading: () => CircularProgressIndicator()),
+
+                  // Unit filter section
+                  const SizedBox(height: 24),
+                  Text(
+                    'Lọc theo đơn vị',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  units.when(
+                      data: (List<Unit> data) {
+                        if (data.isEmpty) {
+                          return const Text('Không có đơn vị nào');
+                        }
+                        return Wrap(spacing: 8, children: [
+                          FilterChip(
+                            selected: selectedUnits.data.isEmpty,
+                            label: const Text('Tất cả'),
+                            onSelected: (_) {
+                              ref.read(multiSelectUnitProvider.notifier).clear();
+                            },
+                            backgroundColor: theme.colorScheme.surface,
+                            selectedColor: theme.colorScheme.primaryContainer,
+                            checkmarkColor: theme.colorScheme.primary,
+                          ),
+                          ...data.map((unit) {
+                            final isSelected = selectedUnits.isSelected(unit);
+                            return FilterChip(
+                              selected: isSelected,
+                              label: Text(unit.name),
+                              onSelected: (_) {
+                                ref.read(multiSelectUnitProvider.notifier).toggle(unit);
+                              },
+                              backgroundColor: theme.colorScheme.surface,
+                              selectedColor: theme.colorScheme.primaryContainer,
+                              checkmarkColor: theme.colorScheme.primary,
+                            );
+                          }).toList(),
+                        ]);
+                      },
+                      error: (Object error, StackTrace stackTrace) {
+                        return Text(
+                          'Lỗi tải đơn vị: $error',
+                          style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
+                        );
+                      },
+                      loading: () => CircularProgressIndicator()),
                 ],
               )),
 
@@ -599,6 +652,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                     ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                     ref.read(activeTimeFilterTypeProvider.notifier).state = null;
                     ref.read(multiSelectCategoryProvider.notifier).clear();
+                    ref.read(multiSelectUnitProvider.notifier).clear();
                   },
                   child: const Text('Đặt lại'),
                 ),

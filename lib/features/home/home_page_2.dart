@@ -55,6 +55,13 @@ class HomePage2 extends ConsumerWidget {
                   },
                 ),
                 MenuItem(
+                  title: 'Quản lý đơn vị',
+                  icon: Icons.straighten,
+                  destinationCallback: () {
+                    appRouter.goToUnit();
+                  },
+                ),
+                MenuItem(
                   title: 'Quản lý kho',
                   icon: Icons.warehouse,
                   destinationCallback: () {},

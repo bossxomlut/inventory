@@ -4,17 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sample_app/shared_widgets/image/common_image_picker.dart';
 import 'package:sample_app/shared_widgets/index.dart';
 
 import '../../../domain/entities/image.dart';
 import '../../../domain/entities/index.dart';
+import '../../../domain/entities/unit/unit.dart';
 import '../../../provider/index.dart';
 import '../../../resources/index.dart';
-import '../../../shared_widgets/camera/camera_view.dart';
 import '../../../shared_widgets/toast.dart';
 import '../../category/select_category_widget.dart';
+import '../../unit/add_unit_placeholder.dart';
 import '../provider/product_provider.dart';
-import 'image_manager_picker_page.dart';
 
 // Add product bottom sheet
 class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
@@ -35,10 +36,42 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
     final _noteController = useTextEditingController();
     final _category = useState<Category?>(null);
     final _sku = useState<String?>(null);
+    final _unit = useState<Unit?>(null);
     final quantity = useState<int>(0);
     final images = useState<List<ImageStorageModel>>([]);
 
     bool isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
+
+    void onSave() {
+      // Create a new product
+      final name = _nameController.text.trim();
+      final priceStr = _priceController.text.trim();
+      final note = _noteController.text.trim();
+      final sku = _sku.value;
+
+      // Validate inputs
+      if (name.isEmpty) {
+        showError(message: 'Please fill in all required fields.');
+        return;
+      }
+
+      final price = double.tryParse(priceStr) ?? 0.0;
+
+      final newProduct = Product(
+        id: undefinedId, // Generate unique ID
+        name: name,
+        description: note,
+        price: price,
+        images: [...images.value], // Add image IDs if needed
+        quantity: quantity.value,
+        category: _category.value,
+        unit: _unit.value,
+        barcode: sku,
+      );
+
+      // Add product to the provider
+      ref.read(loadProductProvider.notifier).createProduct(newProduct);
+    }
 
     return Scaffold(
       extendBody: true,
@@ -59,7 +92,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                     'Lưu',
                     style: context.appTheme.textMedium15Default.copyWith(color: Colors.white),
                   ),
-                  onPressed: () {},
+                  onPressed: onSave,
                 ),
         ],
         // centerTitle: true,
@@ -127,6 +160,16 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                                 },
                               ),
                             ),
+                            separateGapItem,
+                            TitleBlockWidget(
+                              title: 'Đơn vị',
+                              child: AddUnitPlaceHolder(
+                                value: _unit.value,
+                                onSelected: (Unit? value) {
+                                  _unit.value = value;
+                                },
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -136,13 +179,13 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                         padding: const EdgeInsets.all(16),
                         child: TitleBlockWidget(
                           title: 'Ảnh sản phẩm',
-                          child: UploadImagePlaceholder(
+                          child: CommonImagePicker(
                             title: 'Thêm ảnh',
-                            files: images.value,
-                            onAdd: (value) {
+                            images: images.value,
+                            onImagesSelected: (List<ImageStorageModel> value) {
                               images.value = [...images.value, ...value];
                             },
-                            onRemove: (file) {
+                            onImageRemoved: (ImageStorageModel file) {
                               images.value = images.value.where((e) => e != file).toList();
                             },
                           ),
@@ -154,50 +197,23 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                         padding: const EdgeInsets.all(16),
                         child: TitleBlockWidget(
                           title: 'Ghi chú',
-                          child: CustomTextField.multiLines(
+                          child: CustomTextField(
                             hint: 'Nhập ghi chú',
-                            maxLines: 3,
                           ),
                         ),
                       ),
+                      separateGapBlock,
                     ],
                   ),
                 ),
               ),
             ),
             BottomButtonBar(
+              isListenKeyboardVisibility: true,
               onCancel: () {
                 Navigator.pop(context);
               },
-              onSave: () {
-                // Create a new product
-                final name = _nameController.text.trim();
-                final priceStr = _priceController.text.trim();
-                final note = _noteController.text.trim();
-                final sku = _sku.value;
-
-                // Validate inputs
-                if (name.isEmpty) {
-                  showError(message: 'Please fill in all required fields.');
-                  return;
-                }
-
-                final price = double.tryParse(priceStr) ?? 0.0;
-
-                final newProduct = Product(
-                  id: undefinedId, // Generate unique ID
-                  name: name,
-                  description: note,
-                  price: price,
-                  images: [...images.value], // Add image IDs if needed
-                  quantity: quantity.value,
-                  category: _category.value,
-                  barcode: sku,
-                );
-
-                // Add product to the provider
-                ref.read(loadProductProvider.notifier).createProduct(newProduct);
-              },
+              onSave: onSave,
             ),
           ],
         ),
@@ -206,7 +222,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
   }
 }
 
-class AddSKUWidget extends HookWidget with ShowBottomSheet {
+class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
   const AddSKUWidget(this.onSelected, {super.key});
 
   final ValueChanged<String> onSelected;
@@ -410,7 +426,8 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet {
                           return;
                         }
                         Barcode dm = Barcode.fromType(barcodeType.value);
-                        final svg = dm.toSvg(sku, width: 200, height: 200);
+                        // Generate SVG (not using it directly here but would be used in a real implementation)
+                        dm.toSvg(sku, width: 200, height: 200);
                         // Save the SVG to a file or show a dialog to download
                         // For simplicity, we will just show a success message
                         showSuccess(message: 'QR code downloaded successfully!');
@@ -438,119 +455,27 @@ class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<List<
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.appTheme;
-
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Gap(20),
+          const Gap(20),
           Row(
             children: [
-              const Gap(10),
               Expanded(
-                child: _buildOption(
-                  context: context,
-                  icon: Icons.camera_alt,
-                  label: 'Camera',
-                  onTap: () {
-                    CameraView.show(context).then((files) {
-                      if (files != null && files.isNotEmpty) {
-                        Navigator.pop(
-                            context, files.map((e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
-                      } else {
-                        showError(message: 'No images selected from camera.');
-                      }
-                    });
+                child: CommonImagePicker(
+                  title: 'Chọn ảnh',
+                  onImagesSelected: (List<ImageStorageModel> images) {
+                    Navigator.pop(context, images);
                   },
-                  theme: theme,
+                  showOptions: true,
+                  layout: ImagePickerLayout.horizontal,
                 ),
               ),
-              const Gap(10),
-              Expanded(
-                child: _buildOption(
-                  context: context,
-                  icon: Icons.photo,
-                  label: 'Photos',
-                  onTap: () {
-                    AppFilePicker.image().pickMultiFiles().then((files) {
-                      if (files != null && files.isNotEmpty) {
-                        Navigator.pop(context,
-                            files.map((AppFile e) => ImageStorageModel(id: undefinedId, path: e.path)).toList());
-                      } else {
-                        showError(message: 'No images selected from gallery.');
-                      }
-                    });
-                  },
-                  theme: theme,
-                ),
-              ),
-              const Gap(10),
-              Expanded(
-                child: _buildOption(
-                  context: context,
-                  icon: Icons.inventory,
-                  label: 'Storage',
-                  onTap: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute<List<ImageStorageModel>>(
-                        builder: (context) => ImageManagerPickerPage(
-                          onSelected: (List<ImageStorageModel> selectedImages) {},
-                        ),
-                      ),
-                    ).then(
-                      (files) {
-                        if (files != null) {
-                          Navigator.pop(context, files);
-                        }
-                      },
-                    );
-                  },
-                  theme: theme,
-                ),
-              ),
-              const Gap(10),
             ],
           ),
           const Gap(10),
         ],
-      ),
-    );
-  }
-
-  Widget _buildOption({
-    required BuildContext context,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required AppThemeData theme,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        height: 140,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: theme.colorBackgroundField,
-        ),
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: theme.colorIconSubtle,
-            ),
-            const Gap(10),
-            Text(
-              label,
-              style: theme.textMedium15Subtle,
-            ),
-          ],
-        ),
       ),
     );
   }

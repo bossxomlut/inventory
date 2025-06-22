@@ -36,6 +36,7 @@ class AppRouter extends $AppRouter {
         AutoRoute(page: ProductListRoute.page),
         AutoRoute(page: ProductDetailRoute.page),
         AutoRoute(page: CategoryRoute.page),
+        AutoRoute(page: UnitRoute.page),
 
         //Check routes
         AutoRoute(page: CheckSessionsRoute.page),
@@ -65,7 +66,7 @@ extension AuthRouterX on AppRouter {
     replaceAll([PinCodeRoute()]);
   }
 
-  Future goToPinCode() {
+  Future<void> goToPinCode() {
     return push(PinCodeRoute());
   }
 
@@ -161,5 +162,9 @@ extension AppRouterInventoryX on AppRouter {
 
   void goToCategory() {
     push(CategoryRoute());
+  }
+
+  void goToUnit() {
+    push(UnitRoute());
   }
 }

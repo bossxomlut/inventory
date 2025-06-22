@@ -22,9 +22,7 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
-    final firstImage = (product.images != null && product.images!.isNotEmpty && product.images!.first.path != null)
-        ? product.images!.first.path
-        : null;
+    final firstImage = (product.images != null && product.images!.isNotEmpty && product.images!.first.path != null) ? product.images!.first.path : null;
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -113,10 +111,29 @@ class ProductCard extends StatelessWidget {
                     children: [
                       Expanded(
                           child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Hiển thị loại sản phẩm
                           const SizedBox(height: 4),
                           BarcodeInfoWidget(barcode: product.barcode),
+                          if (product.unit != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.straighten,
+                                    size: 16,
+                                    color: context.appTheme.colorIcon,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    product.unit!.name,
+                                    style: context.appTheme.textRegular14Default,
+                                  ),
+                                ],
+                              ),
+                            ),
                         ],
                       )),
                       // Hiển thị số lượng tồn kho

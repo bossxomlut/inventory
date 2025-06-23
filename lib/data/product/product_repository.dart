@@ -45,8 +45,8 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       description: collection.description,
       price: collection.price,
       quantity: collection.quantity,
-      category: CategoryMapping().from(collection.category.value),
-      unit: UnitMapping().from(collection.unit.value),
+      category: collection.category.value != null ? CategoryMapping().from(collection.category.value) : null,
+      unit: collection.unit.value != null ? UnitMapping().from(collection.unit.value) : null,
       barcode: collection.barcode,
       images: collection.images.map((image) => ImageStorageModelMapping().from(image)).toList(),
     );
@@ -59,14 +59,25 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       ..description = item.description
       ..price = item.price
       ..quantity = item.quantity
-      ..category.value = CategoryCollectionMapping().from(item.category)
-      ..unit.value = UnitCollectionMapping().from(item.unit)
       ..barcode = item.barcode
-      ..images.addAll(item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? [])
       ..createdAt = DateTime.now()
       ..updatedAt = DateTime.now();
 
-    // We will set the unit link after creating the product
+    // Handle null category
+    if (item.category != null) {
+      p.category.value = CategoryCollectionMapping().from(item.category);
+    }
+
+    // Handle null unit
+    if (item.unit != null) {
+      p.unit.value = UnitCollectionMapping().from(item.unit);
+    }
+
+    // Add images if available
+    if (item.images != null && item.images!.isNotEmpty) {
+      p.images.addAll(item.images!.map((e) => ImageStorageCollectionMapping().from(e)));
+    }
+
     return p;
   }
 
@@ -84,17 +95,15 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
 
   @override
   ProductCollection updateNewItem(Product item) {
-    return ProductCollection()
+    final collection = ProductCollection()
       ..id = item.id // Assuming id is set for update
       ..name = item.name
       ..description = item.description
       ..price = item.price
       ..quantity = item.quantity
       ..barcode = item.barcode
-      ..category.value = CategoryCollectionMapping().from(item.category)
-      ..unit.value = UnitCollectionMapping().from(item.unit)
-      ..images.addAll(item.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? [])
       ..updatedAt = DateTime.now();
+    return collection;
   }
 
   @override
@@ -110,10 +119,41 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       throw Exception('Product not found');
     }
 
-    final collection = updateNewItem(productWithProcessedImages)..createdAt = pCollection.createdAt;
+    // Create a new collection with updated values
+    final collection = updateNewItem(productWithProcessedImages);
+
+    // Preserve creation date from existing product
+    collection.createdAt = pCollection.createdAt;
 
     final id = await isar.writeTxnSync(() {
-      return iCollection.putSync(collection);
+      final id = iCollection.putSync(collection);
+
+      //update link here
+      if (productWithProcessedImages.unit != null) {
+        collection.unit.value = UnitCollectionMapping().from(productWithProcessedImages.unit);
+        collection.unit.saveSync();
+      } else {
+        collection.unit.resetSync();
+      }
+
+      if (productWithProcessedImages.category != null) {
+        collection.category.value = CategoryCollectionMapping().from(productWithProcessedImages.category);
+        collection.category.saveSync();
+      } else {
+        collection.category.resetSync();
+      }
+
+      // Update images
+      if (processedImages.isNotEmpty) {
+        collection.images.resetSync();
+        collection.images.addAll(processedImages.map((e) => ImageStorageCollectionMapping().from(e)));
+        collection.images.saveSync();
+      } else {
+        collection.images.clear(); // Clear images if none provided
+        collection.images.saveSync();
+      }
+
+      return id;
     });
 
     return read(id);
@@ -131,26 +171,35 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
     final DateTime? updatedStartDate = filter?['updatedStartDate'] as DateTime?;
     final DateTime? updatedEndDate = filter?['updatedEndDate'] as DateTime?;
 
-    final ProductSortType productSortType = ProductSortType.values.firstWhere((e) => e.name == sortType, orElse: () => ProductSortType.none);
+    final ProductSortType productSortType =
+        ProductSortType.values.firstWhere((e) => e.name == sortType, orElse: () => ProductSortType.none);
 
     final query = await iCollection
         .filter()
         .group(
           (QueryBuilder<ProductCollection, ProductCollection, QFilterCondition> q) {
-            return q.nameContains(keyword, caseSensitive: false).or().barcodeContains(keyword, caseSensitive: false).or().descriptionContains(keyword, caseSensitive: false);
+            return q
+                .nameContains(keyword, caseSensitive: false)
+                .or()
+                .barcodeContains(keyword, caseSensitive: false)
+                .or()
+                .descriptionContains(keyword, caseSensitive: false);
           },
         )
         .optional<QAfterFilterCondition>(
           createdStartDate != null && createdEndDate != null,
-          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) => q.createdAtBetween(createdStartDate!, createdEndDate!),
+          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) =>
+              q.createdAtBetween(createdStartDate!, createdEndDate!),
         )
         .optional<QAfterFilterCondition>(
           updatedStartDate != null && updatedEndDate != null,
-          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) => q.updatedAtBetween(updatedStartDate!, updatedEndDate!),
+          (QueryBuilder<ProductCollection, ProductCollection, QAfterFilterCondition> q) =>
+              q.updatedAtBetween(updatedStartDate!, updatedEndDate!),
         )
         .optional<QAfterFilterCondition>(
           selectedCategoryIds?.isNotEmpty ?? false,
-          (q) => q.category((q) => q.anyOf<int, ProductCollection>(selectedCategoryIds!, (q, element) => q.idEqualTo(element))),
+          (q) => q.category(
+              (q) => q.anyOf<int, ProductCollection>(selectedCategoryIds!, (q, element) => q.idEqualTo(element))),
         )
         .optional<QAfterFilterCondition>(
           selectedUnitIds?.isNotEmpty ?? false,
@@ -261,7 +310,14 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
 
   @override
   Future<LoadResult<Category>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
-    final results = await iCollection.filter().nameContains(keyword).or().descriptionContains(keyword).offset(page).limit(limit).findAll();
+    final results = await iCollection
+        .filter()
+        .nameContains(keyword)
+        .or()
+        .descriptionContains(keyword)
+        .offset(page)
+        .limit(limit)
+        .findAll();
 
     final list = results.map(
       (CategoryCollection e) {
@@ -301,7 +357,10 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
         .filter()
         .group(
           (QueryBuilder<CategoryCollection, CategoryCollection, QFilterCondition> q) {
-            return q.nameContains(keyword, caseSensitive: false).or().descriptionContains(keyword, caseSensitive: false);
+            return q
+                .nameContains(keyword, caseSensitive: false)
+                .or()
+                .descriptionContains(keyword, caseSensitive: false);
           },
         )
         .findAll()
@@ -409,7 +468,13 @@ class UnitRepositoryImpl implements UnitRepository {
   Future<LoadResult<Unit>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
     final allCollections = await iCollection.where().findAll();
 
-    final filteredCollections = keyword.isEmpty ? allCollections : allCollections.where((c) => c.name.toLowerCase().contains(keyword.toLowerCase()) || (c.description?.toLowerCase().contains(keyword.toLowerCase()) ?? false)).toList();
+    final filteredCollections = keyword.isEmpty
+        ? allCollections
+        : allCollections
+            .where((c) =>
+                c.name.toLowerCase().contains(keyword.toLowerCase()) ||
+                (c.description?.toLowerCase().contains(keyword.toLowerCase()) ?? false))
+            .toList();
 
     // Sort by name
     filteredCollections.sort((a, b) => a.name.compareTo(b.name));
@@ -418,7 +483,8 @@ class UnitRepositoryImpl implements UnitRepository {
     final start = (page - 1) * limit;
     final end = start + limit < filteredCollections.length ? start + limit : filteredCollections.length;
 
-    final List<UnitCollection> paginatedCollections = start < filteredCollections.length ? filteredCollections.sublist(start, end) : <UnitCollection>[];
+    final List<UnitCollection> paginatedCollections =
+        start < filteredCollections.length ? filteredCollections.sublist(start, end) : <UnitCollection>[];
 
     final units = paginatedCollections
         .map((collection) => Unit(
@@ -442,7 +508,10 @@ class UnitRepositoryImpl implements UnitRepository {
         .filter()
         .group(
           (QueryBuilder<UnitCollection, UnitCollection, QFilterCondition> q) {
-            return q.nameContains(keyword, caseSensitive: false).or().descriptionContains(keyword, caseSensitive: false);
+            return q
+                .nameContains(keyword, caseSensitive: false)
+                .or()
+                .descriptionContains(keyword, caseSensitive: false);
           },
         )
         .findAll()

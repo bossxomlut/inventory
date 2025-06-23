@@ -12,6 +12,7 @@ import '../../provider/text_search.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../category/provider/category_provider.dart';
+import '../unit/provider/unit_filter_provider.dart';
 import 'provider/product_filter_provider.dart';
 import 'provider/product_provider.dart';
 import 'widget/add_product_widget.dart';
@@ -181,6 +182,7 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sortType = ref.watch(productSortTypeProvider);
     final selectedCategories = ref.watch(multiSelectCategoryProvider).data;
+    final selectedUnits = ref.watch(multiSelectUnitProvider).data;
 
     // Watch time filters
     final createdTimeFilter = ref.watch(createdTimeFilterTypeProvider);
@@ -191,6 +193,7 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
     // Check if any filters are active
     final bool hasActiveFilters = sortType != ProductSortType.none ||
         selectedCategories.isNotEmpty ||
+        selectedUnits.isNotEmpty ||
         createdTimeFilter != TimeFilterType.none ||
         updatedTimeFilter != TimeFilterType.none;
 
@@ -282,9 +285,33 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                         Padding(
                           padding: const EdgeInsets.only(right: 4),
                           child: Chip(
+                            avatar: Icon(
+                              Icons.category, 
+                              size: 16, 
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                             label: Text(category.name),
                             onDeleted: () {
                               ref.read(multiSelectCategoryProvider.notifier).toggle(category);
+                            },
+                          ),
+                        ),
+                    ],
+
+                    // Unit filters
+                    if (selectedUnits.isNotEmpty) ...[
+                      for (final unit in selectedUnits)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 4),
+                          child: Chip(
+                            avatar: Icon(
+                              Icons.straighten, 
+                              size: 16, 
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            label: Text(unit.name),
+                            onDeleted: () {
+                              ref.read(multiSelectUnitProvider.notifier).toggle(unit);
                             },
                           ),
                         ),
@@ -299,6 +326,7 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                 onPressed: () {
                   ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
                   ref.read(multiSelectCategoryProvider.notifier).clear();
+                  ref.read(multiSelectUnitProvider.notifier).clear();
                   ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                   ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                   ref.read(activeTimeFilterTypeProvider.notifier).state = null;

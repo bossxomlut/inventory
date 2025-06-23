@@ -250,7 +250,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
     final _category = useState<Category?>(product.category);
     final _sku = useState<String?>(product.barcode);
     final _unit = useState<Unit?>(product.unit);
-    final quantity = useState<int>(product.quantity ?? 0);
+    final quantity = useState<int>(product.quantity);
     final images = useState<List<ImageStorageModel>>(product.images ?? []);
 
     bool isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
@@ -279,8 +279,8 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
         price: price,
         images: [...images.value],
         quantity: quantity.value,
-        category: _category.value,
-        unit: _unit.value,
+        category: _category.value, // Can be null, we'll handle it in the repository
+        unit: _unit.value, // Can be null, we'll handle it in the repository
         barcode: sku,
       );
 

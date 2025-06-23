@@ -546,5 +546,24 @@ ThemeData dTheme(BuildContext context, AppThemeData theme) {
       foregroundColor: theme.colorTextWhite,
       shape: const CircleBorder(),
     ),
+    chipTheme: baseTheme.chipTheme.copyWith(
+      backgroundColor: theme.colorBackgroundSurface,
+      selectedColor: theme.colorSecondary,
+      secondarySelectedColor: theme.colorPrimary,
+      disabledColor: theme.colorBackgroundFieldDisable,
+      labelStyle: theme.textRegular14Default.copyWith(color: theme.colorTextDefault),
+      secondaryLabelStyle: theme.textRegular14Default.copyWith(color: theme.colorTextDefault),
+      color: WidgetStateProperty.resolveWith<Color>(
+        (Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
+            return theme.colorSecondary;
+          }
+          if (states.contains(WidgetState.disabled)) {
+            return theme.colorBackgroundFieldDisable;
+          }
+          return theme.colorBackgroundSurface;
+        },
+      ),
+    ),
   );
 }

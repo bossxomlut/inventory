@@ -184,21 +184,19 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               foregroundColor: colorScheme.onPrimary,
               leading: Container(
                 margin: const EdgeInsets.all(8),
-                padding: const EdgeInsets.all(0),
                 decoration: BoxDecoration(
                   color: hasImages ? Colors.white.withOpacity(0.3) : colorScheme.primaryContainer.withOpacity(0.3),
                   shape: BoxShape.circle,
                 ),
-                width: 32,
-                height: 32,
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back, size: 18),
+                  icon: const Icon(Icons.arrow_back, size: 20),
                   onPressed: () => Navigator.of(context).pop(),
                   color: hasImages ? Colors.white : colorScheme.onPrimaryContainer,
                   padding: EdgeInsets.zero,
+                  tooltip: 'Quay lại',
                   constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
+                    minWidth: 36,
+                    minHeight: 36,
                   ),
                 ),
               ),
@@ -373,30 +371,28 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                 titlePadding: EdgeInsets.zero,
               ),
               actions: [
+                // Edit button
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  padding: const EdgeInsets.all(0),
+                  margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: hasImages ? Colors.white.withOpacity(0.3) : colorScheme.primaryContainer.withOpacity(0.3),
                     shape: BoxShape.circle,
                   ),
-                  width: 32,
-                  height: 32,
                   child: IconButton(
-                    icon: const Icon(Icons.edit, size: 18),
+                    icon: const Icon(Icons.edit_outlined, size: 20),
                     onPressed: _openEditProductScreen,
-                    tooltip: 'Chỉnh sửa',
+                    tooltip: 'Chỉnh sửa sản phẩm',
                     color: hasImages ? Colors.white : colorScheme.onPrimaryContainer,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
+                      minWidth: 36,
+                      minHeight: 36,
                     ),
                   ),
                 ),
+                // More options button
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  padding: const EdgeInsets.all(0),
+                  margin: const EdgeInsets.only(right: 8, left: 4),
                   decoration: BoxDecoration(
                     color: hasImages ? Colors.white.withOpacity(0.3) : colorScheme.primaryContainer.withOpacity(0.3),
                     shape: BoxShape.circle,
@@ -478,7 +474,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   children: [
                     // Inventory status card with price and quantity
                     Container(
-                      color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -538,6 +543,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                               color: product.quantity > 0 ? Colors.green : Colors.orange,
                                             ),
                                           ),
+                                          if (product.unit != null)
+                                            Text(
+                                              ' ${product.unit!.name}',
+                                              style: theme.textTheme.titleMedium?.copyWith(
+                                                fontWeight: FontWeight.normal,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ],
@@ -547,7 +560,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             ),
                             if (product.unit != null || product.category != null)
                               Container(
-                                margin: const EdgeInsets.only(top: 16),
                                 padding: const EdgeInsets.only(top: 16),
                                 decoration: BoxDecoration(
                                   border: Border(
@@ -559,68 +571,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 ),
                                 child: Row(
                                   children: [
-                                    if (product.unit != null) ...[
-                                      Expanded(
-                                        child: Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: colorScheme.primaryContainer.withOpacity(0.3),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.all(8),
-                                                decoration: BoxDecoration(
-                                                  color: colorScheme.primaryContainer,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Icon(
-                                                  Icons.straighten,
-                                                  size: 18,
-                                                  color: colorScheme.primary,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'Đơn vị',
-                                                      style: theme.textTheme.bodySmall?.copyWith(
-                                                        color: Colors.grey[600],
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      product.unit!.name,
-                                                      style: theme.textTheme.titleSmall?.copyWith(
-                                                        fontWeight: FontWeight.w600,
-                                                        color: colorScheme.primary,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    
-                                    if (product.unit != null && product.category != null)
-                                      const SizedBox(width: 12),
-                                      
                                     if (product.category != null) ...[
                                       Expanded(
                                         child: Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: colorScheme.secondaryContainer.withOpacity(0.3),
-                                            borderRadius: BorderRadius.circular(8),
+                                            color: colorScheme.secondaryContainer.withOpacity(0.15),
+                                            border: Border.all(
+                                              color: colorScheme.secondaryContainer.withOpacity(0.5),
+                                              width: 1,
+                                            ),
                                           ),
                                           child: Row(
                                             children: [
@@ -631,7 +591,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Icon(
-                                                  Icons.category,
+                                                  Icons.category_outlined,
                                                   size: 18,
                                                   color: colorScheme.secondary,
                                                 ),
@@ -665,6 +625,64 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         ),
                                       ),
                                     ],
+                                    
+                                    if (product.unit != null && product.category != null)
+                                      const SizedBox(width: 12),
+                                      
+                                    if (product.unit != null) ...[
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: colorScheme.primaryContainer.withOpacity(0.15),
+                                            border: Border.all(
+                                              color: colorScheme.primaryContainer.withOpacity(0.5),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(8),
+                                                decoration: BoxDecoration(
+                                                  color: colorScheme.primaryContainer,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Icon(
+                                                  Icons.straighten_outlined,
+                                                  size: 18,
+                                                  color: colorScheme.primary,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'Đơn vị',
+                                                      style: theme.textTheme.bodySmall?.copyWith(
+                                                        color: Colors.grey[600],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      product.unit!.name,
+                                                      style: theme.textTheme.titleSmall?.copyWith(
+                                                        fontWeight: FontWeight.w600,
+                                                        color: colorScheme.primary,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -677,13 +695,37 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
                     // Description section if available
                     if (product.description != null && product.description!.isNotEmpty) ...[
-                      Text(
-                        'Mô tả',
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24, bottom: 8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.description_outlined,
+                              size: 20,
+                              color: colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Mô tả',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onBackground,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 8),
                       Container(
-                        color: Colors.white,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Text(
@@ -695,7 +737,26 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ],
                     
                     // Inventory action buttons
-                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.add_business_outlined,
+                            size: 20,
+                            color: colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Quản lý tồn kho',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onBackground,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     Row(
                       children: [
                         Expanded(
@@ -723,40 +784,92 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ),
                     
                     // Transaction history placeholder
-                    const SizedBox(height: 24),                      Text(
-                        'Lịch sử giao dịch',
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.history,
+                            size: 20,
+                            color: colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Lịch sử giao dịch',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onBackground,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Container(
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
                         color: Colors.white,
-                        child: ListView.separated(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: 3, // Placeholder transaction count
-                          separatorBuilder: (context, index) => const Divider(),
-                          itemBuilder: (context, index) {
-                            // This is just a placeholder for transaction history
-                            // In a real app, you would fetch actual transaction data
-                            final isStockIn = index % 2 == 0;
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: isStockIn ? Colors.green[100] : Colors.orange[100],
-                                child: Icon(
-                                  isStockIn ? Icons.arrow_downward : Icons.arrow_upward,
-                                  color: isStockIn ? Colors.green : Colors.orange,
-                                ),
-                              ),
-                              title: Text(isStockIn ? 'Nhập kho' : 'Xuất kho'),
-                              subtitle: Text('Số lượng: ${(index + 1) * 5}'),
-                              trailing: Text(
-                                '${DateTime.now().subtract(Duration(days: index)).day}/${DateTime.now().subtract(Duration(days: index)).month}/${DateTime.now().subtract(Duration(days: index)).year}',
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            );
-                          },
-                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
+                      child: ListView.separated(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: 3, // Placeholder transaction count
+                        separatorBuilder: (context, index) => Divider(
+                          height: 1,
+                          color: Colors.grey[200],
+                        ),
+                        itemBuilder: (context, index) {
+                          // This is just a placeholder for transaction history
+                          // In a real app, you would fetch actual transaction data
+                          final isStockIn = index % 2 == 0;
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: isStockIn ? Colors.green[100] : Colors.orange[100],
+                              child: Icon(
+                                isStockIn ? Icons.arrow_downward : Icons.arrow_upward,
+                                color: isStockIn ? Colors.green : Colors.orange,
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(
+                              isStockIn ? 'Nhập kho' : 'Xuất kho',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Số lượng: ${(index + 1) * 5}${product.unit != null ? ' ' + product.unit!.name : ''}',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${DateTime.now().subtract(Duration(days: index)).day}/${DateTime.now().subtract(Duration(days: index)).month}/${DateTime.now().subtract(Duration(days: index)).year}',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  isStockIn ? '+' : '-',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: isStockIn ? Colors.green : Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                     
                     const SizedBox(height: 24),
                   ],
@@ -781,13 +894,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        shape: const RoundedRectangleBorder(),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        elevation: 0,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon),
+          Icon(icon, size: 20),
           const SizedBox(width: 8),
           Text(
             label,

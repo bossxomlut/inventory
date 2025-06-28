@@ -22,7 +22,9 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
-    final firstImage = (product.images != null && product.images!.isNotEmpty && product.images!.first.path != null) ? product.images!.first.path : null;
+    final firstImage = (product.images != null && product.images!.isNotEmpty && product.images!.first.path != null)
+        ? product.images!.first.path
+        : null;
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -159,6 +161,102 @@ class ProductCard extends StatelessWidget {
         Icons.image_not_supported,
         color: Colors.grey,
         size: 40,
+      ),
+    );
+  }
+}
+
+//// Vertical product card with image on top
+class VerticalProductCard extends StatelessWidget {
+  final Product product;
+  final VoidCallback? onTap;
+
+  const VerticalProductCard({
+    super.key,
+    required this.product,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    final firstImage = (product.images != null && product.images!.isNotEmpty && product.images!.first.path != null)
+        ? product.images!.first.path
+        : null;
+
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Hero(
+              tag: 'vertical-product-image-${product.id}',
+              child: firstImage != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.file(
+                        File(firstImage),
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                            color: theme.colorBackground,
+                            border: Border.all(color: theme.colorBorderField),
+                          ),
+                          child: Icon(
+                            HugeIcons.strokeRoundedImageNotFound02,
+                            color: theme.colorIcon,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        color: theme.colorBackground,
+                        border: Border.all(color: theme.colorBorderField),
+                      ),
+                      child: Icon(
+                        HugeIcons.strokeRoundedImageNotFound01,
+                        color: theme.colorIcon,
+                        size: 32,
+                      ),
+                    ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              product.name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            BarcodeInfoWidget(barcode: product.barcode),
+            if (product.unit != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  product.unit!.name,
+                  style: theme.textRegular14Default,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            const SizedBox(height: 8),
+            QuantityWidget(quantity: product.quantity),
+          ],
+        ),
       ),
     );
   }

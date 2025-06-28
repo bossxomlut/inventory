@@ -3,12 +3,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-import '../../../domain/entities/check/check.dart';
+import '../../../domain/entities/check/check_session.dart';
 import '../../../domain/entities/get_id.dart';
 import '../../../provider/load_list.dart';
+import '../../../routes/app_router.dart';
 import '../../../shared_widgets/index.dart';
-import '../providers/check_session_provider.dart';
-import '../widgets/create_session_bottom_sheet.dart';
+import 'provider/check_session_provider.dart';
+import 'widget/create_session_bottom_sheet.dart';
 
 @RoutePage()
 class CheckSessionsPage extends HookConsumerWidget {
@@ -31,18 +32,12 @@ class CheckSessionsPage extends HookConsumerWidget {
               name: result['name']!,
               startDate: DateTime.now(),
               createdBy: result['createdBy']!,
-              status: CheckSessionStatus.completed,
+              checkedBy: result['checkedBy']!, // Thêm người kiểm kê
+              status: CheckSessionStatus.inProgress, // Sửa thành "Đang thực hiện" thay vì "Hoàn thành"
               checks: [],
+              note: result['notes']!.isNotEmpty ? result['notes'] : null,
             ),
           );
-
-          // // Navigate to inventory check page
-          // if (isMounted()) {
-          //   Navigator.push(
-          //     context,
-          //     MaterialPageRoute<void>(builder: (context) => const InventoryCheckPage()),
-          //   );
-          // }
         } catch (e) {
           if (isMounted()) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -121,6 +116,7 @@ Widget buildSessionCard(CheckSession session) {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Tạo bởi: ${session.createdBy}'),
+          Text('Kiểm kê bởi: ${session.checkedBy}'),
           Text('Ngày: ${session.startDate.toString()}'),
           Text(
             'Trạng thái: ${session.status.name}',
@@ -164,7 +160,15 @@ Widget buildSessionCard(CheckSession session) {
             ),
           ),
         ],
-        onSelected: (action) {},
+        onSelected: (action) {
+          if (action == 'continue') {
+            appRouter.push(CheckRoute(session: session));
+          } else if (action == 'view') {
+            // TODO: Implement view details
+          } else if (action == 'delete') {
+            // TODO: Implement delete session
+          }
+        },
       ),
     ),
   );
@@ -182,6 +186,7 @@ class ActiveSessionPage extends HookConsumerWidget {
         // Load initial data
         ref.read(activeCheckSessionProvider.notifier).init();
       });
+      return null;
     }, []);
 
     if (activeSession.isLoading) {
@@ -209,12 +214,20 @@ class ActiveSessionPage extends HookConsumerWidget {
   }
 }
 
-class DoneSessionPage extends ConsumerWidget {
+class DoneSessionPage extends HookConsumerWidget {
   const DoneSessionPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeSession = ref.watch(doneCheckSessionProvider);
+
+    useEffect(() {
+      Future.microtask(() {
+        // Load initial data
+        ref.read(doneCheckSessionProvider.notifier).init();
+      });
+      return null;
+    }, []);
 
     if (activeSession.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -231,6 +244,7 @@ class DoneSessionPage extends ConsumerWidget {
     }
 
     return ListView.separated(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemBuilder: (BuildContext context, int index) {
         return buildSessionCard(activeSession.data[index]);
       },

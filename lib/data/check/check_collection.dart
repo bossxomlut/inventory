@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
 
-import '../../domain/entities/check/check.dart';
+import '../../domain/entities/check/check_session.dart';
 import '../product/inventory.dart';
 
 part 'check_collection.g.dart';
@@ -12,6 +12,7 @@ class CheckSessionCollection {
   late DateTime startDate;
   DateTime? endDate;
   late String createdBy;
+  late String checkedBy; // Thêm trường người kiểm kê
   @enumerated
   late CheckSessionStatus status;
   String? note;
@@ -22,9 +23,8 @@ class CheckedProductCollection {
   Id id = Isar.autoIncrement;
   late int expectedQuantity;
   late int actualQuantity;
-  String? note;
-  late String checkedBy;
   late DateTime checkDate;
+  String? note;
 
   final IsarLink<CheckSessionCollection> session = IsarLink<CheckSessionCollection>();
   final IsarLink<ProductCollection> product = IsarLink<ProductCollection>();

@@ -260,16 +260,19 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
 class SearchProductRepositoryImpl extends SearchProductRepository {
   @override
   Future<LoadResult<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
-    return LoadResult<Product>(
-      data: [],
-      totalCount: 0, // You might want to implement a way to get the total count
-    );
+    final productRepo = ProductRepositoryImpl();
+    return productRepo.search(keyword, page, limit, filter: filter);
   }
 
   @override
   Future<Product> searchByBarcode(String barcode) {
-    // TODO: implement searchByBarcode
-    throw UnimplementedError();
+    final productRepo = ProductRepositoryImpl();
+    return productRepo.iCollection.filter().barcodeEqualTo(barcode).findFirst().then((collection) {
+      if (collection == null) {
+        throw Exception('Product not found with barcode: $barcode');
+      }
+      return productRepo.getItemFromCollection(collection);
+    });
   }
 }
 

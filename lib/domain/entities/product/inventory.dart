@@ -6,7 +6,17 @@ part 'inventory.freezed.dart';
 part 'inventory.g.dart';
 
 // Enum cho loại giao dịch
-enum TransactionType { import, export }
+enum TransactionType { import, export, check }
+
+// Enum cho trạng thái phiếu kiểm kê
+enum InventoryCheckStatus { inProgress, completed }
+
+// Enum cho trạng thái kiểm kê sản phẩm
+enum CheckStatus {
+  match, // Actual quantity matches expected
+  surplus, // Actual quantity is higher than expected
+  shortage, // Actual quantity is lower than expected
+}
 
 // Model cho Danh mục (Category)
 @freezed
@@ -64,7 +74,41 @@ class Transaction with _$Transaction {
     required TransactionType type, // Loại giao dịch
     required DateTime timestamp, // Thời gian giao dịch
     required String userId, // ID người thực hiện
+    String? checkId, // ID phiếu kiểm kê (nếu là giao dịch kiểm kê)
+    String? notes, // Ghi chú
   }) = _Transaction;
 
   factory Transaction.fromJson(Map<String, dynamic> json) => _$TransactionFromJson(json);
+}
+
+// Model cho Phiếu kiểm kê (InventoryCheck)
+@freezed
+class InventoryCheck with _$InventoryCheck {
+  const factory InventoryCheck({
+    required String id, // ID phiếu kiểm kê
+    required DateTime checkDate, // Ngày kiểm kê
+    required String createdBy, // Người tạo phiếu kiểm
+    required String checkedBy, // Người kiểm kê
+    @Default(InventoryCheckStatus.inProgress) InventoryCheckStatus status, // Trạng thái
+    String? notes, // Ghi chú
+  }) = _InventoryCheck;
+
+  factory InventoryCheck.fromJson(Map<String, dynamic> json) => _$InventoryCheckFromJson(json);
+}
+
+// Model cho từng mục trong phiếu kiểm kê
+@freezed
+class InventoryCheckItem with _$InventoryCheckItem {
+  const factory InventoryCheckItem({
+    required String id, // ID mục kiểm kê
+    required String checkId, // ID phiếu kiểm kê
+    required String productId, // ID sản phẩm
+    required int currentQuantity, // Số lượng hiện tại
+    required int newQuantity, // Số lượng mới
+    String? notes, // Ghi chú
+    DateTime? checkedAt, // Thời điểm kiểm kê
+    String? transactionId, // ID giao dịch nếu đã cập nhật
+  }) = _InventoryCheckItem;
+
+  factory InventoryCheckItem.fromJson(Map<String, dynamic> json) => _$InventoryCheckItemFromJson(json);
 }

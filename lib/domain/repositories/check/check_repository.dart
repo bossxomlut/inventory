@@ -2,11 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/check/check_repository.dart';
-import '../../../provider/load_list.dart';
-import '../../entities/check/check.dart';
 import '../../index.dart';
 import '../index.dart';
-import '../product/inventory_repository.dart';
 
 part 'check_repository.g.dart';
 
@@ -14,7 +11,6 @@ part 'check_repository.g.dart';
 CheckRepository checkRepository(Ref ref) => CheckRepositoryImpl(
       checkSessionRepository: ref.watch(checkSessionRepositoryProvider),
       checkedProductRepository: ref.watch(checkedProductRepositoryProvider),
-      searchProductRepository: ref.watch(searchProductRepositoryProvider),
     );
 
 @riverpod
@@ -24,7 +20,7 @@ CheckSessionRepository checkSessionRepository(_) => CheckSessionRepositoryImpl()
 CheckedProductRepository checkedProductRepository(_) => CheckedProductRepositoryImpl();
 
 abstract class CheckRepository {
-  Future<CheckSession> createSession(String name, String createdBy, {String? note});
+  Future<CheckSession> createSession(String name, String createdBy, {String? note, String? checkedBy});
 
   Future<CheckSession> updateSession(CheckSession session);
 
@@ -34,12 +30,7 @@ abstract class CheckRepository {
 
   Future<List<CheckSession>> getDoneSessions();
 
-  Future<Product?> findProductByBarcode(String barcode);
-
-  Future<LoadResult<Product>> searchProducts(String keyword, {int page = 1, int pageSize = 20});
-
-  Future<CheckedProduct> addProductToSession(int sessionId, Product product, int actualQuantity, String checkedBy,
-      {String? note});
+  Future<CheckedProduct> addProductToSession(CheckSession session, Product product, int actualQuantity, {String? note});
 
   Future<List<CheckedProduct>> getChecksBySession(int sessionId);
 
@@ -56,5 +47,5 @@ abstract class CheckSessionRepository implements CrudRepository<CheckSession, in
 
 abstract class CheckedProductRepository
     implements CrudRepository<CheckedProduct, int>, SearchRepositoryWithPagination<CheckedProduct> {
-  Future<List<CheckedProduct>> getChecksBySession(int sessionId);
+  Future<List<CheckedProduct>> getCheckedListBySession(int sessionId);
 }

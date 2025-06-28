@@ -1,47 +1,46 @@
 import 'package:isar/isar.dart';
 
-import '../../domain/entities/check/check.dart';
 import '../../domain/index.dart';
 import '../../domain/repositories/index.dart';
-import '../../domain/repositories/product/inventory_repository.dart';
 import '../../provider/load_list.dart';
 import '../database/isar_repository.dart';
 import '../product/inventory_mapping.dart';
 import 'check_collection.dart';
+import 'check_mapping.dart';
 
 class CheckRepositoryImpl extends CheckRepository {
   final CheckSessionRepository checkSessionRepository;
   final CheckedProductRepository checkedProductRepository;
-  final SearchProductRepository searchProductRepository;
 
   CheckRepositoryImpl({
     required this.checkSessionRepository,
     required this.checkedProductRepository,
-    required this.searchProductRepository,
   });
 
   @override
-  Future<CheckedProduct> addProductToSession(int sessionId, Product product, int actualQuantity, String checkedBy,
+  Future<CheckedProduct> addProductToSession(CheckSession session, Product product, int actualQuantity,
       {String? note}) {
     return checkedProductRepository.create(
       CheckedProduct(
         id: undefinedId,
         product: product,
         expectedQuantity: product.quantity,
+        session: session,
         actualQuantity: actualQuantity,
+        note: note,
         checkDate: DateTime.now(),
-        checkedBy: checkedBy,
       ),
     );
   }
 
   @override
-  Future<CheckSession> createSession(String name, String createdBy, {String? note}) {
+  Future<CheckSession> createSession(String name, String createdBy, {String? note, String? checkedBy}) {
     return checkSessionRepository.create(
       CheckSession(
         id: undefinedId,
         name: name,
         createdBy: createdBy,
+        checkedBy: checkedBy ?? createdBy, // Nếu không có người kiểm kê, mặc định là người tạo
         status: CheckSessionStatus.inProgress,
         startDate: DateTime.now(),
         endDate: null,
@@ -67,23 +66,8 @@ class CheckRepositoryImpl extends CheckRepository {
   }
 
   @override
-  Future<Product?> findProductByBarcode(String barcode) async {
-    try {
-      final product = await searchProductRepository.searchByBarcode(barcode);
-      return product;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  @override
-  Future<LoadResult<Product>> searchProducts(String keyword, {int page = 1, int pageSize = 20}) {
-    return searchProductRepository.search(keyword, page, pageSize);
-  }
-
-  @override
   Future<List<CheckedProduct>> getChecksBySession(int sessionId) {
-    return checkedProductRepository.getChecksBySession(sessionId);
+    return checkedProductRepository.getCheckedListBySession(sessionId);
   }
 
   @override
@@ -113,6 +97,7 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
       id: collection.id,
       name: collection.name,
       createdBy: collection.createdBy,
+      checkedBy: collection.checkedBy,
       status: collection.status,
       startDate: collection.startDate,
       endDate: collection.endDate,
@@ -126,6 +111,7 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
     final collection = CheckSessionCollection()
       ..name = item.name
       ..createdBy = item.createdBy
+      ..checkedBy = item.checkedBy
       ..status = item.status
       ..startDate = item.startDate
       ..endDate = item.endDate
@@ -140,6 +126,7 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
       ..id = item.id
       ..name = item.name
       ..createdBy = item.createdBy
+      ..checkedBy = item.checkedBy
       ..status = item.status
       ..startDate = item.startDate
       ..endDate = item.endDate
@@ -185,10 +172,10 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
     return CheckedProduct(
       id: collection.id,
       product: ProductMapping().from(collection.product.value!),
+      session: SessionMapping().from(collection.session.value!),
       expectedQuantity: collection.expectedQuantity,
       actualQuantity: collection.actualQuantity,
       checkDate: collection.checkDate,
-      checkedBy: collection.checkedBy,
       note: collection.note,
     );
   }
@@ -197,10 +184,10 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
   CheckedProductCollection createNewItem(CheckedProduct item) {
     return CheckedProductCollection()
       ..product.value = ProductCollectionMapping().from(item.product)
+      ..session.value = SessionCollectionMapping().from(item.session)
       ..expectedQuantity = item.expectedQuantity
       ..actualQuantity = item.actualQuantity
       ..checkDate = item.checkDate
-      ..checkedBy = item.checkedBy
       ..note = item.note;
   }
 
@@ -212,7 +199,6 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
       ..expectedQuantity = item.expectedQuantity
       ..actualQuantity = item.actualQuantity
       ..checkDate = item.checkDate
-      ..checkedBy = item.checkedBy
       ..note = item.note;
   }
 
@@ -225,9 +211,7 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
       // Apply keyword search if needed (e.g., by product name or checked by)
       if (keyword.isNotEmpty) {
         collections = collections
-            .where((c) =>
-                c.product.value?.name.toLowerCase().contains(keyword.toLowerCase()) == true ||
-                c.checkedBy.toLowerCase().contains(keyword.toLowerCase()))
+            .where((c) => c.product.value?.name.toLowerCase().contains(keyword.toLowerCase()) ?? false)
             .toList();
       }
 
@@ -278,7 +262,7 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
   }
 
   @override
-  Future<List<CheckedProduct>> getChecksBySession(int sessionId) {
+  Future<List<CheckedProduct>> getCheckedListBySession(int sessionId) {
     return isar.txnSync(() async {
       // Using Sync API as in original code
       final collections = isar.checkedProductCollections

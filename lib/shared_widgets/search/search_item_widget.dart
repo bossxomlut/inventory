@@ -11,7 +11,7 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
   final Future<List<T>> Function(String keyword) searchItems;
 
   // Callback for handling new item addition
-  final VoidCallback onAddItem;
+  final VoidCallback? onAddItem;
   final Widget? addItemWidget;
 
   final String? title;
@@ -25,7 +25,7 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
     super.key,
     required this.itemBuilder,
     required this.searchItems,
-    required this.onAddItem,
+    this.onAddItem,
     this.title,
     this.addItemWidget,
     this.itemBuilderWithIndex,
@@ -110,18 +110,19 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
                     ),
                   ),
                   // Add button
-                  InkWell(
-                    onTap: widget.onAddItem,
-                    child: CircleAvatar(
-                      radius: 12,
-                      backgroundColor: Colors.grey.shade300,
-                      child: widget.addItemWidget ??
-                          const Icon(
-                            Icons.add,
-                            size: 18,
-                          ),
+                  if (widget.onAddItem != null)
+                    InkWell(
+                      onTap: widget.onAddItem,
+                      child: CircleAvatar(
+                        radius: 12,
+                        backgroundColor: Colors.grey.shade300,
+                        child: widget.addItemWidget ??
+                            const Icon(
+                              Icons.add,
+                              size: 18,
+                            ),
+                      ),
                     ),
-                  ),
                   SizedBox(width: 8),
                 ],
               ),
@@ -147,12 +148,13 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
           ),
           const SizedBox(height: 16),
           //add button
-          widget.addItemWidget ??
-              ElevatedButton.icon(
-                onPressed: widget.onAddItem,
-                icon: const Icon(Icons.add),
-                label: const Text('Thêm mới'),
-              ),
+          if (widget.onAddItem != null)
+            widget.addItemWidget ??
+                ElevatedButton.icon(
+                  onPressed: widget.onAddItem,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Thêm mới'),
+                ),
           const SizedBox(height: 40),
         ],
       );

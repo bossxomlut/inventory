@@ -40,6 +40,7 @@ class AppRouter extends $AppRouter {
 
         //Check routes
         AutoRoute(page: CheckSessionsRoute.page),
+        AutoRoute(page: CheckRoute.page),
 
         //config admin route
         AutoRoute(

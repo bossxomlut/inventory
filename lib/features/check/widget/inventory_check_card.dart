@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../domain/entities/check/check.dart';
+import '../../../domain/entities/check/checked_product.dart';
+import '../../../domain/entities/product/inventory.dart';
 
 class InventoryCheckCard extends StatelessWidget {
   final CheckedProduct check;

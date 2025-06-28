@@ -16,6 +16,7 @@ class CreateSessionBottomSheet extends ConsumerStatefulWidget with ShowBottomShe
 class _CreateSessionBottomSheetState extends ConsumerState<CreateSessionBottomSheet> {
   late final TextEditingController nameController;
   late final TextEditingController createdByController;
+  late final TextEditingController checkedByController; // Thêm controller cho người kiểm kê
   final notesController = TextEditingController();
 
   @override
@@ -25,19 +26,21 @@ class _CreateSessionBottomSheetState extends ConsumerState<CreateSessionBottomSh
 
     final user = ref.read(authControllerProvider);
 
-    final createdBy = user.maybeWhen(
+    final userName = user.maybeWhen(
       authenticated: (user, _) => user.role.name,
       orElse: () => 'Người dùng',
     );
 
     nameController = TextEditingController(text: sessionName);
-    createdByController = TextEditingController(text: createdBy);
+    createdByController = TextEditingController(text: userName);
+    checkedByController = TextEditingController(text: userName); // Mặc định người kiểm kê là người tạo
   }
 
   @override
   void dispose() {
     nameController.dispose();
     createdByController.dispose();
+    checkedByController.dispose();
     notesController.dispose();
     super.dispose();
   }
@@ -97,6 +100,16 @@ class _CreateSessionBottomSheetState extends ConsumerState<CreateSessionBottomSh
           ),
           const SizedBox(height: 16),
           TextField(
+            controller: checkedByController,
+            decoration: const InputDecoration(
+              labelText: 'Người kiểm kê *',
+              hintText: 'VD: Nguyễn Văn A',
+              border: OutlineInputBorder(),
+            ),
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 16),
+          TextField(
             controller: notesController,
             decoration: const InputDecoration(
               labelText: 'Ghi chú',
@@ -112,17 +125,18 @@ class _CreateSessionBottomSheetState extends ConsumerState<CreateSessionBottomSh
             saveButtonText: 'Tạo phiên',
             onCancel: () => Navigator.pop(context),
             onSave: () {
-              if (nameController.text.isNotEmpty && createdByController.text.isNotEmpty) {
+              if (nameController.text.isNotEmpty && createdByController.text.isNotEmpty && checkedByController.text.isNotEmpty) {
                 Navigator.pop(context, {
                   'name': nameController.text,
                   'createdBy': createdByController.text,
+                  'checkedBy': checkedByController.text,
                   'notes': notesController.text,
                 });
               } else {
                 // Show validation message
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Vui lòng nhập tên phiên và người tạo'),
+                    content: Text('Vui lòng nhập đầy đủ thông tin bắt buộc'),
                     duration: Duration(seconds: 2),
                   ),
                 );

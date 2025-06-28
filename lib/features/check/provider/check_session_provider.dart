@@ -2,6 +2,7 @@ import 'package:riverpod/riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/entities/check/check.dart';
+import '../../../domain/entities/check/check_session.dart';
 import '../../../domain/repositories/check/check_repository.dart';
 import '../../../provider/load_list.dart';
 import '../../../provider/mixin.dart';
@@ -53,6 +54,7 @@ class LoadCheckSessionController extends LoadListController<CheckSession>
         session.name,
         session.createdBy,
         note: session.note,
+        checkedBy: session.checkedBy,
       );
       state = state.copyWith(data: [...state.data, createdSession]);
       showSuccess('Add new check session successfully');

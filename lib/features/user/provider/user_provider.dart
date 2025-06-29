@@ -1,14 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/entities/user/user.dart';
 import '../../../domain/repositories/index.dart';
 import '../../../provider/load_list.dart';
 
-final loadUserProvider = AutoDisposeNotifierProvider<LoadUserController, LoadListState<User>>(() {
-  return LoadUserController.new();
-});
+part 'user_provider.g.dart';
 
-class LoadUserController extends LoadListController<User> {
+// final loadUserProvider = AutoDisposeNotifierProvider<LoadUserController, LoadListState<User>>(() {
+//   return LoadUserController.new();
+// });
+
+@riverpod
+class LoadUser extends _$LoadUser with LoadListController<User> {
+  @override
+  LoadListState<User> build() {
+    return LoadListState<User>.initial();
+  }
+
   @override
   Future<LoadResult<User>> fetchData(LoadListQuery query) async {
     final userRepo = ref.watch(userRepositoryProvider);

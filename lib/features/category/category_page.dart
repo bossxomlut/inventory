@@ -16,14 +16,14 @@ class CategoryPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     void initData() {
-      ref.read(categoryProvider.notifier).refresh();
+      ref.read(loadCategoryProvider.notifier).refresh();
     }
 
     useEffect(() {
       Future(initData);
     }, const []);
 
-    final categories = ref.watch(categoryProvider);
+    final categories = ref.watch(loadCategoryProvider);
 
     final theme = context.appTheme;
 
@@ -55,7 +55,7 @@ class CategoryPage extends HookConsumerWidget {
                     color: Colors.white,
                     onPressed: isNotEmpty
                         ? () {
-                            ref.read(categoryProvider.notifier).removeMultipleCategories();
+                            ref.read(loadCategoryProvider.notifier).removeMultipleCategories();
                           }
                         : null,
                   ),

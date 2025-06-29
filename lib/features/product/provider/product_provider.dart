@@ -11,15 +11,22 @@ import '../../category/provider/category_provider.dart';
 import '../../unit/provider/unit_filter_provider.dart';
 import 'product_filter_provider.dart';
 
-final loadProductProvider = AutoDisposeNotifierProvider<LoadProductController, LoadListState<Product>>(() {
-  return LoadProductController.new();
-});
+part 'product_provider.g.dart';
 
-class LoadProductController extends LoadListController<Product> with CommonProvider<LoadListState<Product>> {
+@riverpod
+class LoadProduct extends _$LoadProduct with LoadListController<Product>, CommonProvider<LoadListState<Product>> {
   //create a method to listen filter changes to call reload data
 
-  void listenFilterChanges() {
-    refresh();
+  @override
+  LoadListState<Product> build() {
+    ref.listen(
+      productFilterProvider,
+      (previous, next) {
+        refresh();
+      },
+    );
+    Future(refresh);
+    return LoadListState<Product>.initial();
   }
 
   @override

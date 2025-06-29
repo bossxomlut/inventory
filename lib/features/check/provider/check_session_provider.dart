@@ -1,27 +1,20 @@
-import 'package:riverpod/riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/entities/check/check.dart';
 import '../../../domain/entities/check/check_session.dart';
 import '../../../domain/repositories/check/check_repository.dart';
+import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
-import '../../../provider/mixin.dart';
 
-final activeCheckSessionProvider =
-    AutoDisposeNotifierProvider<LoadCheckSessionController, LoadListState<CheckSession>>(() {
-  return LoadCheckSessionController(ActiveViewType.active);
-});
+part 'check_session_provider.g.dart';
 
-final doneCheckSessionProvider =
-    AutoDisposeNotifierProvider<LoadCheckSessionController, LoadListState<CheckSession>>(() {
-  return LoadCheckSessionController(ActiveViewType.done);
-});
-
-class LoadCheckSessionController extends LoadListController<CheckSession>
-    with CommonProvider<LoadListState<CheckSession>> {
-  LoadCheckSessionController(this.viewType);
-
-  final ActiveViewType viewType;
+@riverpod
+class LoadCheckSession extends _$LoadCheckSession
+    with LoadListController<CheckSession>, CommonProvider<LoadListState<CheckSession>> {
+  @override
+  LoadListState<CheckSession> build(ActiveViewType viewType) {
+    return LoadListState<CheckSession>.initial();
+  }
 
   @override
   Future<LoadResult<CheckSession>> fetchData(LoadListQuery query) {
@@ -36,7 +29,6 @@ class LoadCheckSessionController extends LoadListController<CheckSession>
         });
       case ActiveViewType.done:
         return checkRepo.getDoneSessions().then((value) {
-          ;
           return LoadResult<CheckSession>(
             data: value,
             totalCount: value.length,
@@ -45,8 +37,7 @@ class LoadCheckSessionController extends LoadListController<CheckSession>
     }
   }
 
-  // Create a new check session
-  void createCheckSession(CheckSession session) async {
+  Future<void> createCheckSession(CheckSession session) async {
     try {
       showLoading();
       final checkRepo = ref.read(checkRepositoryProvider);
@@ -67,13 +58,11 @@ class LoadCheckSessionController extends LoadListController<CheckSession>
   }
 
   // Update an existing check session
-  void updateStatus(CheckSession session, CheckSessionStatus status) async {
+  Future<void> updateStatus(CheckSession session, CheckSessionStatus status) async {
     try {
       final checkRepo = ref.read(checkRepositoryProvider);
-      final updatedSession = await checkRepo.updateSession(session.copyWith(status: status));
-      state = state.copyWith(
-        data: state.data.map((s) => s.id == updatedSession.id ? updatedSession : s).toList(),
-      );
+      await checkRepo.updateSession(session.copyWith(status: status));
+      refresh();
       showSuccess('Check session updated successfully');
     } catch (e) {
       state = state.copyWith(error: e.toString());

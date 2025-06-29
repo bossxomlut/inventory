@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/index.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
@@ -8,15 +8,15 @@ import '../../../provider/mixin.dart';
 import '../../../shared_widgets/toast.dart';
 import 'unit_filter_provider.dart';
 
-// Provider for unit operations in the app
-final loadUnitProvider = AutoDisposeNotifierProvider<LoadUnitController, LoadListState<Unit>>(
-  () => LoadUnitController(),
-);
+part 'unit_provider.g.dart';
 
-// Provider for unit page
-final unitProvider = loadUnitProvider;
+@riverpod
+class LoadUnit extends _$LoadUnit with LoadListController<Unit>, CommonProvider<LoadListState<Unit>> {
+  @override
+  LoadListState<Unit> build() {
+    return LoadListState<Unit>.initial();
+  }
 
-class LoadUnitController extends LoadListController<Unit> with CommonProvider<LoadListState<Unit>> {
   @override
   Future<LoadResult<Unit>> fetchData(LoadListQuery query) async {
     final repository = ref.read(unitRepositoryProvider);

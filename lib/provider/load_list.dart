@@ -18,15 +18,99 @@ class LoadResult<T> {
   });
 }
 
-abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T>> {
+// abstract class LoadListController<T> extends AutoDisposeNotifier<LoadListState<T>> {
+//   final CancelTask<LoadResult<T>> _cancelTask = CompleterCancelTask<LoadResult<T>>();
+//
+//   Future<LoadResult<T>> fetchData(LoadListQuery query);
+//
+//   @override
+//   LoadListState<T> build() {
+//     return LoadListState<T>.initial();
+//   }
+//
+//   LoadListQuery query = LoadListQueryX.defaultQuery;
+//
+//   void resetQuery() {
+//     query = LoadListQueryX.defaultQuery;
+//   }
+//
+//   Future<void> loadData({required LoadListQuery query}) async {
+//     try {
+//       // Set loading state
+//       state = state.copyWith(
+//         error: null,
+//         isLoading: true,
+//         isEndOfList: false,
+//         isLoadingMore: query.page > firstPage,
+//       );
+//
+//       final newData = await _cancelTask.addTask(
+//         fetchData(query),
+//         onCancel: () {},
+//       );
+//
+//       // Update state with new data
+//       final newList = query.page == firstPage ? newData.data : [...state.data, ...newData.data];
+//
+//       print(
+//           'total count: ${newData.totalCount}, new data length: ${newData.data.length}, current data length: ${state.data.length}');
+//
+//       state = state.copyWith(
+//         error: null,
+//         isLoading: false,
+//         isLoadingMore: false,
+//         data: newList,
+//         isEndOfList: newList.length >= newData.totalCount,
+//         totalCount: newData.totalCount,
+//       );
+//     } catch (e, stackTrace) {
+//       // Handle error
+//       state = state.copyWith(
+//         isLoading: false,
+//         isLoadingMore: false,
+//         error: e.toString(),
+//       );
+//       // Optionally log stackTrace for debugging
+//       print('Error loading data: $e\n$stackTrace');
+//     }
+//   }
+//
+//   Future<void> init() async {
+//     await loadData(query: query);
+//   }
+//
+//   Future<void> refresh() async {
+//     resetQuery();
+//     await loadData(query: query);
+//   }
+//
+//   Future<void> search(String keyword) async {
+//     resetQuery();
+//     await loadData(query: query.copyWith(search: keyword));
+//   }
+//
+//   Future loadMore() async {
+//     if (state.isLoading || state.isLoadingMore || state.isEndOfList) {
+//       return;
+//     }
+//
+//     // Increment the page number for loading more data
+//     query = query.copyWith(page: query.page + 1);
+//
+//     // Load more data
+//     await loadData(query: query);
+//   }
+// }
+
+mixin LoadListController<T> on BuildlessAutoDisposeNotifier<LoadListState<T>> {
   final CancelTask<LoadResult<T>> _cancelTask = CompleterCancelTask<LoadResult<T>>();
 
   Future<LoadResult<T>> fetchData(LoadListQuery query);
-
-  @override
-  LoadListState<T> build() {
-    return LoadListState<T>.initial();
-  }
+  //
+  // @override
+  // LoadListState<T> build() {
+  //   return LoadListState<T>.initial();
+  // }
 
   LoadListQuery query = LoadListQueryX.defaultQuery;
 

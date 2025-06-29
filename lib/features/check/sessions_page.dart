@@ -8,6 +8,7 @@ import '../../../domain/entities/get_id.dart';
 import '../../../provider/load_list.dart';
 import '../../../routes/app_router.dart';
 import '../../../shared_widgets/index.dart';
+import '../../domain/entities/check/check.dart';
 import 'provider/check_session_provider.dart';
 import 'widget/create_session_bottom_sheet.dart';
 
@@ -25,7 +26,7 @@ class CheckSessionsPage extends HookConsumerWidget {
       //
       if (result != null) {
         try {
-          final sessionNotifier = ref.read(activeCheckSessionProvider.notifier);
+          final sessionNotifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
           sessionNotifier.createCheckSession(
             CheckSession(
               id: undefinedId,
@@ -179,12 +180,12 @@ class ActiveSessionPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeSession = ref.watch(activeCheckSessionProvider);
+    final activeSession = ref.watch(loadCheckSessionProvider(ActiveViewType.active));
 
     useEffect(() {
       Future.microtask(() {
         // Load initial data
-        ref.read(activeCheckSessionProvider.notifier).init();
+        ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier).init();
       });
       return null;
     }, []);
@@ -219,12 +220,12 @@ class DoneSessionPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeSession = ref.watch(doneCheckSessionProvider);
+    final activeSession = ref.watch(loadCheckSessionProvider(ActiveViewType.done));
 
     useEffect(() {
       Future.microtask(() {
         // Load initial data
-        ref.read(doneCheckSessionProvider.notifier).init();
+        ref.read(loadCheckSessionProvider(ActiveViewType.done).notifier).init();
       });
       return null;
     }, []);

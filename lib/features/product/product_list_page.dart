@@ -360,8 +360,8 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                           padding: const EdgeInsets.only(right: 8),
                           child: Chip(
                             avatar: Icon(
-                              Icons.category_outlined, 
-                              size: 16, 
+                              Icons.category_outlined,
+                              size: 16,
                               color: theme.colorScheme.secondary,
                             ),
                             label: Text(
@@ -395,8 +395,8 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                           padding: const EdgeInsets.only(right: 8),
                           child: Chip(
                             avatar: Icon(
-                              Icons.straighten_outlined, 
-                              size: 16, 
+                              Icons.straighten_outlined,
+                              size: 16,
                               color: theme.colorScheme.primary,
                             ),
                             label: Text(
@@ -468,22 +468,9 @@ class ProductListView extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    useEffect(() {
-      // Ensure the product list is refreshed when this widget is built
-      Future(() {
-        ref.read(loadProductProvider.notifier).refresh();
-      });
-      return null; // No cleanup needed
-    }, []);
-
     // Use loadProductProvider directly
     final products = ref.watch(loadProductProvider);
-    ref.listen(
-      productFilterProvider,
-      (previous, next) {
-        ref.read(loadProductProvider.notifier).listenFilterChanges();
-      },
-    );
+
     if (products.hasError) {
       return Center(child: Text('Error: ${products.error}'));
     } else if (products.isEmpty) {

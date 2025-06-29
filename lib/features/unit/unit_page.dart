@@ -6,9 +6,9 @@ import '../../provider/index.dart';
 import '../../provider/load_list.dart';
 import '../../shared_widgets/index.dart';
 import 'add_unit.dart';
-import 'unit_card.dart';
-import 'provider/unit_provider.dart';
 import 'provider/unit_filter_provider.dart';
+import 'provider/unit_provider.dart';
+import 'unit_card.dart';
 
 @RoutePage()
 class UnitPage extends HookConsumerWidget {
@@ -17,14 +17,14 @@ class UnitPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     void initData() {
-      ref.read(unitProvider.notifier).refresh();
+      ref.read(loadUnitProvider.notifier).refresh();
     }
 
     useEffect(() {
       Future(initData);
     }, const []);
 
-    final units = ref.watch(unitProvider);
+    final units = ref.watch(loadUnitProvider);
 
     final theme = context.appTheme;
 
@@ -56,7 +56,7 @@ class UnitPage extends HookConsumerWidget {
                     color: Colors.white,
                     onPressed: isNotEmpty
                         ? () {
-                            ref.read(unitProvider.notifier).removeMultipleUnits();
+                            ref.read(loadUnitProvider.notifier).removeMultipleUnits();
                           }
                         : null,
                   ),

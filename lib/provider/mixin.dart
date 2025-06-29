@@ -2,7 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'index.dart';
 
-mixin CommonProvider<T> on AutoDisposeNotifier<T> {
+mixin CommonProvider<T> on BuildlessAutoDisposeNotifier<T> {
   ///Provider used to manage loading state
   void showLoading() {
     ref.read(isLoadingProvider.notifier).state = true;

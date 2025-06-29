@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../core/index.dart';
-import '../../domain/entities/check/check_session.dart';
-import '../../domain/entities/product/inventory.dart';
+import '../../domain/index.dart';
 import '../../domain/repositories/check/check_repository.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
+import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
-import '../../shared_widgets/toast.dart';
 import '../product/widget/product_card.dart';
 import 'provider/check_product_provider.dart';
+import 'provider/check_session_provider.dart';
 import 'widget/inventory_adjust_bottom_sheet.dart';
 
 @RoutePage()
@@ -283,9 +283,9 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     try {
-                      final notifier = ref.read(checkRepositoryProvider);
-                      notifier.updateSession(widget.session.copyWith(status: CheckSessionStatus.completed));
-                      showSuccess(message: 'Phiên kiểm kê đã hoàn thành');
+                      final notifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
+                      notifier.updateStatus(widget.session, CheckSessionStatus.completed);
+                      appRouter.popForced();
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Lỗi: $e')),

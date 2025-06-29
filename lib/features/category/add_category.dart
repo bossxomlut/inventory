@@ -84,7 +84,7 @@ class _AddCategoryState extends State<AddCategory> {
                   if (isEditMode) {
                     try {
                       final category = widget.category!.copyWith(name: name, description: description);
-                      await ref.read(categoryProvider.notifier).updateCategory(category);
+                      await ref.read(loadCategoryProvider.notifier).updateCategory(category);
                       Navigator.pop(context);
                     } catch (error) {
                       showError(message: 'Không thể cập nhật danh mục: $error');
@@ -92,7 +92,7 @@ class _AddCategoryState extends State<AddCategory> {
                   } else {
                     final category = Category(id: undefinedId, name: name, description: description);
 
-                    final cate = await ref.read(categoryProvider.notifier).addCategory(category);
+                    final cate = await ref.read(loadCategoryProvider.notifier).addCategory(category);
                     Navigator.pop(context, cate);
                   }
                 },

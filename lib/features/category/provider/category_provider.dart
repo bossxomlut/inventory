@@ -1,4 +1,4 @@
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/index.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
@@ -6,11 +6,15 @@ import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
 import '../../../shared_widgets/toast.dart';
 
-final categoryProvider = AutoDisposeNotifierProvider<CategoryController, LoadListState<Category>>(() {
-  return CategoryController();
-});
+part 'category_provider.g.dart';
 
-class CategoryController extends LoadListController<Category> {
+@riverpod
+class LoadCategory extends _$LoadCategory with LoadListController<Category> {
+  @override
+  LoadListState<Category> build() {
+    return LoadListState<Category>.initial();
+  }
+
   @override
   Future<LoadResult<Category>> fetchData(LoadListQuery query) {
     final repo = ref.read(categoryRepositoryProvider);

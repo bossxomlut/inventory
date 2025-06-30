@@ -18,8 +18,6 @@ class OrderCollection {
   String? note; // Optional note for the order
   @enumerated
   late OrderStatus status;
-
-  final IsarLinks<OrderItemCollection> items = IsarLinks<OrderItemCollection>();
 }
 
 @collection

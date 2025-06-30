@@ -43,6 +43,7 @@ class AppRouter extends $AppRouter {
 
         //
         AutoRoute(page: ConfigProductPriceRoute.page),
+        AutoRoute(page: CreateOrderRoute.page),
 
         //config admin route
         AutoRoute(
@@ -131,6 +132,10 @@ extension HomeByRoleRouterX on AppRouter {
 extension PriceAndOrderRouterX on AppRouter {
   void goToConfigProductPrice() {
     push(ConfigProductPriceRoute());
+  }
+
+  void goToCreateOrder() {
+    push(CreateOrderRoute());
   }
 }
 

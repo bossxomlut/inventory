@@ -85,7 +85,7 @@ class HomePage2 extends ConsumerWidget {
                   title: 'Tạo đơn hàng',
                   icon: Icons.add_shopping_cart,
                   destinationCallback: () {
-                    // TODO: Implement navigation to Order Creation page
+                    appRouter.goToCreateOrder();
                   },
                 ),
                 MenuItem(

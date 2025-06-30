@@ -1,5 +1,4 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:isar/isar.dart';
+import '../index.dart';
 
 part 'order.freezed.dart';
 
@@ -31,7 +30,6 @@ class Order with _$Order {
   const factory Order({
     required int id,
     required String orderNumber,
-    required List<OrderItem> items,
     required OrderStatus status,
     required DateTime createdAt,
     required String createdBy,
@@ -45,8 +43,7 @@ class Order with _$Order {
 @freezed
 class OrderItem with _$OrderItem {
   const factory OrderItem({
-    required int productId, // Unique identifier for the product
-    required String productName, // Name of the product
+    required Product product,
     required int quantity, // Quantity of the product ordered
     required double price, // Price of the product at the time of order
   }) = _OrderItem;

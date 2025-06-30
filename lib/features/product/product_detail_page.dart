@@ -3,11 +3,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/index.dart';
 import '../../domain/index.dart';
+import '../../domain/repositories/product/transaction_reposiroty.dart';
 import '../../shared_widgets/image/image_present_view.dart';
 import '../../shared_widgets/index.dart';
 import 'provider/product_detail_provider.dart';
 import 'widget/add_product_widget.dart';
+import 'widget/index.dart';
 
 @RoutePage()
 class ProductDetailPage extends ConsumerStatefulWidget {
@@ -72,7 +75,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   void _showBarcodeBottomSheet(Product product) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -625,10 +628,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         ),
                                       ),
                                     ],
-                                    
-                                    if (product.unit != null && product.category != null)
-                                      const SizedBox(width: 12),
-                                      
+                                    if (product.unit != null && product.category != null) const SizedBox(width: 12),
                                     if (product.unit != null) ...[
                                       Expanded(
                                         child: Container(
@@ -735,54 +735,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         ),
                       ),
                     ],
-                    
-                    // Inventory action buttons
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.add_business_outlined,
-                            size: 20,
-                            color: colorScheme.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Quản lý tồn kho',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onBackground,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildActionButton(
-                            icon: Icons.add_shopping_cart,
-                            label: 'Nhập kho',
-                            color: Colors.green,
-                            onTap: () {
-                              // TODO: Implement stock-in functionality
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildActionButton(
-                            icon: Icons.remove_shopping_cart,
-                            label: 'Xuất kho',
-                            color: Colors.orange,
-                            onTap: () {
-                              // TODO: Implement stock-out functionality
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    
                     // Transaction history placeholder
                     Padding(
                       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -804,73 +756,58 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         ],
                       ),
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: ListView.separated(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: 3, // Placeholder transaction count
-                        separatorBuilder: (context, index) => Divider(
-                          height: 1,
-                          color: Colors.grey[200],
-                        ),
-                        itemBuilder: (context, index) {
-                          // This is just a placeholder for transaction history
-                          // In a real app, you would fetch actual transaction data
-                          final isStockIn = index % 2 == 0;
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: isStockIn ? Colors.green[100] : Colors.orange[100],
-                              child: Icon(
-                                isStockIn ? Icons.arrow_downward : Icons.arrow_upward,
-                                color: isStockIn ? Colors.green : Colors.orange,
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              isStockIn ? 'Nhập kho' : 'Xuất kho',
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            subtitle: Text(
-                              'Số lượng: ${(index + 1) * 5}${product.unit != null ? ' ' + product.unit!.name : ''}',
-                              style: theme.textTheme.bodySmall,
-                            ),
-                            trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  '${DateTime.now().subtract(Duration(days: index)).day}/${DateTime.now().subtract(Duration(days: index)).month}/${DateTime.now().subtract(Duration(days: index)).year}',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  isStockIn ? '+' : '-',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: isStockIn ? Colors.green : Colors.red,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                    Consumer(
+                      builder: (BuildContext context, WidgetRef ref, Widget? child) {
+                        final transactionRepo = ref.watch(getTransactionsByProductIdProvider(productId));
+                        return transactionRepo.map(
+                            data: (AsyncData<List<Transaction>> data) {
+                              if (data.value.isEmpty) {
+                                return const Center(child: Text('Chưa có giao dịch nào'));
+                              }
+
+                              final transactions = data.value!;
+                              return ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: transactions.length,
+                                padding: const EdgeInsets.symmetric(horizontal: 0),
+                                itemBuilder: (context, index) {
+                                  final transaction = transactions[index];
+                                  return ColoredBox(
+                                    color: Colors.white,
+                                    child: ListTile(
+                                      leading: Icon(
+                                        transaction.type == TransactionType.import
+                                            ? Icons.add_circle_outline
+                                            : Icons.remove_circle_outline,
+                                        color:
+                                            transaction.type == TransactionType.import ? Colors.green : Colors.orange,
+                                      ),
+                                      title: Text('${transaction.category.displayName}'),
+                                      subtitle: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text('${transaction.timestamp.timeAgo}'),
+                                        ],
+                                      ),
+                                      trailing: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxWidth: 100,
+                                        ),
+                                        child: QuantityWidget(quantity: transaction.quantity),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                separatorBuilder: (BuildContext context, int index) => AppDivider(),
+                              );
+                            },
+                            error: (AsyncError<List<Transaction>> error) => Center(child: Text('Lỗi: ${error.error}')),
+                            loading: (AsyncLoading<List<Transaction>> loading) =>
+                                const Center(child: CircularProgressIndicator()));
+                      },
                     ),
-                    
+
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -878,35 +815,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // Helper method to build action buttons
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        elevation: 0,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ],
       ),
     );
   }

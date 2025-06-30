@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 
+import '../../domain/entities/product/inventory.dart';
 import '../image/image.dart';
 
 part 'inventory.g.dart';
@@ -45,10 +46,23 @@ class UnitCollection {
 @collection
 class TransactionCollection {
   Id id = Isar.autoIncrement;
+
+  // Liên kết với sản phẩm
+  @Index()
   late int productId;
+
+  // Số lượng giao dịch
   late int quantity;
-  late int type; // 0 for import, 1 for export
+
+  // Loại giao dịch: sử dụng enum để rõ ràng hơn
+  @enumerated
+  late TransactionType type;
+
+  // Thời gian giao dịch
+  @Index(type: IndexType.value)
   late DateTime timestamp;
-  late String userId;
-  late int transactionType;
+
+  // Loại giao dịch bổ sung (nếu cần phân loại chi tiết hơn)
+  @enumerated
+  late TransactionCategory category;
 }

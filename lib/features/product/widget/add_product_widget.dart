@@ -73,7 +73,6 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
         barcode: sku,
       );
 
-      // Add product to the provider
       ref.read(loadProductProvider.notifier).createProduct(newProduct);
     }
 
@@ -285,7 +284,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
       );
 
       // Update product in the provider
-      await ref.read(loadProductProvider.notifier).updateProduct(updatedProduct);
+      await ref.read(loadProductProvider.notifier).updateProduct(updatedProduct, product.quantity);
 
       // Close the form
       Navigator.pop(context);

@@ -296,7 +296,7 @@ class QuantityWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: context.appTheme.colorBorderField),
       ),
-      alignment: Alignment.center,
+      // alignment: Alignment.center,
       child: Text(
         'SL: ${quantity}',
         style: context.appTheme.textRegular14Default,

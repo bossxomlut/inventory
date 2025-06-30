@@ -258,20 +258,46 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
 }
 
 class SearchProductRepositoryImpl extends SearchProductRepository {
+  final Isar _isar = Isar.getInstance()!;
+
+  Isar get isar => _isar;
+
+  IsarCollection<ProductCollection> get iCollection => isar.collection<ProductCollection>();
+
   @override
   Future<LoadResult<Product>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
-    final productRepo = ProductRepositoryImpl();
-    return productRepo.search(keyword, page, limit, filter: filter);
+    return iCollection
+        .filter()
+        .group(
+          (QueryBuilder<ProductCollection, ProductCollection, QFilterCondition> q) {
+            return q
+                .nameContains(keyword, caseSensitive: false)
+                .or()
+                .barcodeContains(keyword, caseSensitive: false)
+                .or()
+                .descriptionContains(keyword, caseSensitive: false);
+          },
+        )
+        .sortByName()
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .findAll()
+        .then((collections) {
+          final products = collections.map((e) => ProductMapping().from(e)).toList();
+          return LoadResult<Product>(
+            data: products,
+            totalCount: collections.length,
+          );
+        });
   }
 
   @override
   Future<Product> searchByBarcode(String barcode) {
-    final productRepo = ProductRepositoryImpl();
-    return productRepo.iCollection.filter().barcodeEqualTo(barcode).findFirst().then((collection) {
+    return iCollection.filter().barcodeEqualTo(barcode).findFirst().then((collection) {
       if (collection == null) {
         throw Exception('Product not found with barcode: $barcode');
       }
-      return productRepo.getItemFromCollection(collection);
+      return ProductMapping().from(collection);
     });
   }
 }

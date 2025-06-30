@@ -21,6 +21,7 @@ class IsarDatabase {
               CheckSessionCollectionSchema,
               CheckedProductCollectionSchema,
               UnitCollectionSchema,
+              TransactionCollectionSchema,
             ],
             directory: dir.path,
           );

@@ -5,9 +5,6 @@ import '../image.dart';
 part 'inventory.freezed.dart';
 part 'inventory.g.dart';
 
-// Enum cho loại giao dịch
-enum TransactionType { import, export, check }
-
 // Enum cho trạng thái phiếu kiểm kê
 enum InventoryCheckStatus { inProgress, completed }
 
@@ -68,17 +65,50 @@ class Product with _$Product {
 @freezed
 class Transaction with _$Transaction {
   const factory Transaction({
-    required String id, // Mã giao dịch
-    required String productId, // ID sản phẩm
+    required int id, // Mã giao dịch
+    required int productId, // ID sản phẩm
     required int quantity, // Số lượng
     required TransactionType type, // Loại giao dịch
+    required TransactionCategory category, // Loại giao dịch
     required DateTime timestamp, // Thời gian giao dịch
-    required String userId, // ID người thực hiện
-    String? checkId, // ID phiếu kiểm kê (nếu là giao dịch kiểm kê)
-    String? notes, // Ghi chú
   }) = _Transaction;
 
   factory Transaction.fromJson(Map<String, dynamic> json) => _$TransactionFromJson(json);
+}
+
+// Enum cho loại giao dịch
+enum TransactionType {
+  import,
+  export;
+}
+
+// Enum cho danh mục giao dịch
+enum TransactionCategory {
+  create, // Tạo mới
+  update, // Cập nhật
+  stockIn, // Nhập kho
+  stockOut, // Xuất kho
+  check, // Kiểm kê
+  transfer; // Chuyển kho
+}
+
+extension TransactionCategoryX on TransactionCategory {
+  String get displayName {
+    switch (this) {
+      case TransactionCategory.create:
+        return 'Tạo mới';
+      case TransactionCategory.update:
+        return 'Cập nhật';
+      case TransactionCategory.stockIn:
+        return 'Nhập kho';
+      case TransactionCategory.stockOut:
+        return 'Xuất kho';
+      case TransactionCategory.check:
+        return 'Kiểm kê';
+      case TransactionCategory.transfer:
+        return 'Chuyển kho';
+    }
+  }
 }
 
 // Model cho Phiếu kiểm kê (InventoryCheck)

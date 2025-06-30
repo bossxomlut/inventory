@@ -41,6 +41,9 @@ class AppRouter extends $AppRouter {
         AutoRoute(page: CheckSessionsRoute.page),
         AutoRoute(page: CheckRoute.page),
 
+        //
+        AutoRoute(page: ConfigProductPriceRoute.page),
+
         //config admin route
         AutoRoute(
           page: UserRoute.page,
@@ -122,6 +125,12 @@ extension HomeByRoleRouterX on AppRouter {
 
   void goToUserHome() {
     replaceAll([const HomeRoute2()]);
+  }
+}
+
+extension PriceAndOrderRouterX on AppRouter {
+  void goToConfigProductPrice() {
+    push(ConfigProductPriceRoute());
   }
 }
 

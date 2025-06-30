@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
 
 import '../../domain/entities/index.dart';
-import '../../domain/repositories/product/transaction_reposiroty.dart';
+import '../../domain/repositories/product/transaction_repository.dart';
 import '../database/isar_repository.dart';
 import 'inventory.dart';
 

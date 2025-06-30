@@ -5,7 +5,7 @@ import '../../../data/product/transaction_repository.dart';
 import '../../entities/index.dart';
 import '../index.dart';
 
-part 'transaction_reposiroty.g.dart';
+part 'transaction_repository.g.dart';
 
 @riverpod
 TransactionRepository transactionRepository(ref) => TransactionRepositoryImpl();

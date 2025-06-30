@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/index.dart';
 import '../../domain/index.dart';
-import '../../domain/repositories/product/transaction_reposiroty.dart';
+import '../../domain/repositories/product/transaction_repository.dart';
 import '../../shared_widgets/image/image_present_view.dart';
 import '../../shared_widgets/index.dart';
 import 'provider/product_detail_provider.dart';

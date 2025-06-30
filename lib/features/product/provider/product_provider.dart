@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../domain/entities/get_id.dart';
 import '../../../domain/entities/product/inventory.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
-import '../../../domain/repositories/product/transaction_reposiroty.dart';
+import '../../../domain/repositories/product/transaction_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
 import '../../../routes/app_router.dart';

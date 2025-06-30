@@ -5,7 +5,7 @@ import '../../../data/check/check_repository.dart';
 import '../../index.dart';
 import '../index.dart';
 import '../product/inventory_repository.dart';
-import '../product/transaction_reposiroty.dart';
+import '../product/transaction_repository.dart';
 
 part 'check_repository.g.dart';
 

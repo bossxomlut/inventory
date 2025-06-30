@@ -3,7 +3,7 @@ import 'package:isar/isar.dart';
 import '../../domain/index.dart';
 import '../../domain/repositories/index.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
-import '../../domain/repositories/product/transaction_reposiroty.dart';
+import '../../domain/repositories/product/transaction_repository.dart';
 import '../../provider/load_list.dart';
 import '../database/isar_repository.dart';
 import '../product/inventory_mapping.dart';

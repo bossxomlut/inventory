@@ -49,6 +49,13 @@ class HomePage2 extends ConsumerWidget {
                   },
                 ),
                 MenuItem(
+                  title: 'Kiểm kê sản phẩm',
+                  icon: Icons.fact_check,
+                  destinationCallback: () {
+                    appRouter.goToCheckSessions();
+                  },
+                ),
+                MenuItem(
                   title: 'Quản lý danh mục',
                   icon: Icons.category,
                   destinationCallback: () {
@@ -62,18 +69,6 @@ class HomePage2 extends ConsumerWidget {
                     appRouter.goToUnit();
                   },
                 ),
-                MenuItem(
-                  title: 'Quản lý kho',
-                  icon: Icons.warehouse,
-                  destinationCallback: () {},
-                ),
-                MenuItem(
-                  title: 'Kiểm kê sản phẩm',
-                  icon: Icons.fact_check,
-                  destinationCallback: () {
-                    appRouter.goToCheckSessions();
-                  },
-                ),
               ],
             ),
             MenuGroup(
@@ -83,7 +78,7 @@ class HomePage2 extends ConsumerWidget {
                   title: 'Quản lý giá bán',
                   icon: Icons.price_change,
                   destinationCallback: () {
-                    // TODO: Implement navigation to Price Management page
+                    appRouter.goToConfigProductPrice();
                   },
                 ),
                 MenuItem(
@@ -102,22 +97,22 @@ class HomePage2 extends ConsumerWidget {
                 ),
               ],
             ),
-            MenuGroup(
-              title: 'Khác',
-              items: [
-                MenuItem(
-                  title: 'Giao dịch',
-                  icon: Icons.receipt_long,
-                  destinationCallback: () {},
-                ),
-                if (user.role == UserRole.admin)
-                  MenuItem(
-                    title: 'Người dùng',
-                    icon: Icons.person,
-                    destinationCallback: () {},
-                  ),
-              ],
-            ),
+            // MenuGroup(
+            //   title: 'Khác',
+            //   items: [
+            //     MenuItem(
+            //       title: 'Giao dịch',
+            //       icon: Icons.receipt_long,
+            //       destinationCallback: () {},
+            //     ),
+            //     if (user.role == UserRole.admin)
+            //       MenuItem(
+            //         title: 'Người dùng',
+            //         icon: Icons.person,
+            //         destinationCallback: () {},
+            //       ),
+            //   ],
+            // ),
           ];
 
           return Scaffold(

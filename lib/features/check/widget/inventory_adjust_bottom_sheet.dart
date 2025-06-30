@@ -1,41 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../../../domain/index.dart';
 import '../../../shared_widgets/index.dart';
 import '../../product/widget/index.dart';
 
-class InventoryAdjustBottomSheet extends StatefulWidget with ShowBottomSheet {
-  const InventoryAdjustBottomSheet({super.key, required this.product, required this.onSave});
+class InventoryAdjustBottomSheet extends HookWidget with ShowBottomSheet {
+  const InventoryAdjustBottomSheet({
+    super.key,
+    required this.product,
+    required this.onSave,
+    this.currentQuantity,
+    this.note,
+  });
   final Product product;
+  final int? currentQuantity;
+  final String? note;
   final void Function(int quantity, [String? note]) onSave;
 
   @override
-  State<InventoryAdjustBottomSheet> createState() => _InventoryAdjustBottomSheetState();
-}
-
-class _InventoryAdjustBottomSheetState extends State<InventoryAdjustBottomSheet> {
-  late int quantity;
-  final TextEditingController noteController = TextEditingController();
-
-  Product get product => widget.product;
-
-  @override
-  void initState() {
-    super.initState();
-    quantity = widget.product.quantity;
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final noteController = useTextEditingController(text: note);
+    final quantity = useState(currentQuantity ?? product.quantity);
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ProductCard(product: product),
+          CustomProductCard(product: product),
           const SizedBox(height: 12),
-          Text('Số lượng trong kho: ${widget.product.quantity}', style: const TextStyle(fontSize: 16)),
+          const AppDivider(),
+          const SizedBox(height: 12),
+          Text('Số lượng hệ thống: ${product.quantity}', style: const TextStyle(fontSize: 16)),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -43,9 +40,9 @@ class _InventoryAdjustBottomSheetState extends State<InventoryAdjustBottomSheet>
               const SizedBox(width: 12),
               Expanded(
                 child: PlusMinusInputView(
-                  initialValue: quantity,
+                  initialValue: quantity.value,
                   minValue: 0,
-                  onChanged: (val) => setState(() => quantity = val),
+                  onChanged: (val) => quantity.value = val,
                 ),
               ),
             ],
@@ -71,7 +68,7 @@ class _InventoryAdjustBottomSheetState extends State<InventoryAdjustBottomSheet>
               const SizedBox(width: 12),
               ElevatedButton(
                 onPressed: () {
-                  widget.onSave(quantity, noteController.text);
+                  onSave(quantity.value, noteController.text);
                 },
                 child: const Text('Lưu'),
               ),

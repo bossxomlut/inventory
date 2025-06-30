@@ -7,10 +7,8 @@ part 'check_session.g.dart';
 
 // Enum for inventory check session status
 enum CheckSessionStatus {
-  draft,
   inProgress,
   completed,
-  cancelled,
 }
 
 // Inventory Check Session entity
@@ -22,7 +20,6 @@ class CheckSession with _$CheckSession {
     required DateTime startDate,
     DateTime? endDate,
     required String createdBy,
-    required String checkedBy, // Người kiểm kê
     required CheckSessionStatus status,
     @Default([]) List<CheckedProduct> checks,
     String? note,

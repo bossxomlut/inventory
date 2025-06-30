@@ -11,7 +11,6 @@ class SessionMapping extends Mapping<CheckSession, CheckSessionCollection> {
       id: input.id,
       name: input.name,
       createdBy: input.createdBy,
-      checkedBy: input.checkedBy,
       status: input.status,
       startDate: input.startDate,
       endDate: input.endDate,
@@ -28,7 +27,6 @@ class SessionCollectionMapping extends Mapping<CheckSessionCollection, CheckSess
       ..id = input.id
       ..name = input.name
       ..createdBy = input.createdBy
-      ..checkedBy = input.checkedBy
       ..status = input.status
       ..startDate = input.startDate
       ..endDate = input.endDate

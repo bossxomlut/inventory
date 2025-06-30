@@ -40,7 +40,6 @@ class CheckRepositoryImpl extends CheckRepository {
         id: undefinedId,
         name: name,
         createdBy: createdBy,
-        checkedBy: checkedBy ?? createdBy, // Nếu không có người kiểm kê, mặc định là người tạo
         status: CheckSessionStatus.inProgress,
         startDate: DateTime.now(),
         endDate: null,
@@ -97,7 +96,6 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
       id: collection.id,
       name: collection.name,
       createdBy: collection.createdBy,
-      checkedBy: collection.checkedBy,
       status: collection.status,
       startDate: collection.startDate,
       endDate: collection.endDate,
@@ -111,7 +109,6 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
     final collection = CheckSessionCollection()
       ..name = item.name
       ..createdBy = item.createdBy
-      ..checkedBy = item.checkedBy
       ..status = item.status
       ..startDate = item.startDate
       ..endDate = item.endDate
@@ -126,7 +123,6 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
       ..id = item.id
       ..name = item.name
       ..createdBy = item.createdBy
-      ..checkedBy = item.checkedBy
       ..status = item.status
       ..startDate = item.startDate
       ..endDate = item.endDate
@@ -136,12 +132,8 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
   @override
   Future<List<CheckSession>> getActiveSessions() {
     return isar.txnSync(() async {
-      final collections = isar.checkSessionCollections
-          .filter()
-          .statusEqualTo(CheckSessionStatus.draft)
-          .or()
-          .statusEqualTo(CheckSessionStatus.inProgress)
-          .findAllSync();
+      final collections =
+          isar.checkSessionCollections.filter().statusEqualTo(CheckSessionStatus.inProgress).findAllSync();
 
       return Future.wait(collections.map(getItemFromCollection));
     });
@@ -150,12 +142,8 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
   @override
   Future<List<CheckSession>> getDoneSessions() {
     return isar.txnSync(() async {
-      final collections = isar.checkSessionCollections
-          .filter()
-          .statusEqualTo(CheckSessionStatus.cancelled)
-          .or()
-          .statusEqualTo(CheckSessionStatus.completed)
-          .findAllSync();
+      final collections =
+          isar.checkSessionCollections.filter().statusEqualTo(CheckSessionStatus.completed).findAllSync();
 
       return Future.wait(collections.map(getItemFromCollection));
     });
@@ -196,6 +184,7 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
     return CheckedProductCollection()
       ..id = item.id // Assuming id is set for update
       ..product.value = ProductCollectionMapping().from(item.product)
+      ..session.value = SessionCollectionMapping().from(item.session)
       ..expectedQuantity = item.expectedQuantity
       ..actualQuantity = item.actualQuantity
       ..checkDate = item.checkDate

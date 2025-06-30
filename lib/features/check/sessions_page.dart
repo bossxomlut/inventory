@@ -4,11 +4,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../../domain/entities/check/check_session.dart';
-import '../../../domain/entities/get_id.dart';
 import '../../../provider/load_list.dart';
-import '../../../routes/app_router.dart';
 import '../../../shared_widgets/index.dart';
+import '../../core/index.dart';
 import '../../domain/entities/check/check.dart';
+import '../../provider/index.dart';
+import '../../routes/app_router.dart';
 import 'provider/check_session_provider.dart';
 import 'widget/create_session_bottom_sheet.dart';
 
@@ -21,24 +22,17 @@ class CheckSessionsPage extends HookConsumerWidget {
     final tabController = useTabController(initialLength: 2);
     final isMounted = useIsMounted();
 
-    void createNewSession() async {
+    Future<void> createNewSession() async {
       final result = await CreateSessionBottomSheet().show(context);
       //
       if (result != null) {
         try {
           final sessionNotifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
-          sessionNotifier.createCheckSession(
-            CheckSession(
-              id: undefinedId,
-              name: result['name']!,
-              startDate: DateTime.now(),
-              createdBy: result['createdBy']!,
-              checkedBy: result['checkedBy']!, // Thêm người kiểm kê
-              status: CheckSessionStatus.inProgress, // Sửa thành "Đang thực hiện" thay vì "Hoàn thành"
-              checks: [],
-              note: result['notes']!.isNotEmpty ? result['notes'] : null,
-            ),
-          );
+          final createdSession = await sessionNotifier.createCheckSession(result);
+
+          if (createdSession != null && isMounted()) {
+            appRouter.push(CheckRoute(session: createdSession));
+          }
         } catch (e) {
           if (isMounted()) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -79,100 +73,128 @@ class CheckSessionsPage extends HookConsumerWidget {
   }
 }
 
-Widget buildSessionCard(CheckSession session) {
-  return Container(
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.1),
-          spreadRadius: 1,
-          blurRadius: 3,
-          offset: const Offset(0, 2), // changes position of shadow
-        ),
-      ],
-      gradient: LinearGradient(
-        colors: [
-          Colors.green[500]!,
-          Colors.green[400]!,
-          Colors.green[300]!,
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    child: ListTile(
-      leading: CircleAvatar(
-        backgroundColor: Colors.green[100],
-        child: Icon(
-          HugeIcons.strokeRoundedProductLoading,
-          color: Colors.green[600],
-        ),
-      ),
-      title: Text(
-        session.name,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Tạo bởi: ${session.createdBy}'),
-          Text('Kiểm kê bởi: ${session.checkedBy}'),
-          Text('Ngày: ${session.startDate.toString()}'),
-          Text(
-            'Trạng thái: ${session.status.name}',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
+class SessionCard extends ConsumerWidget {
+  final CheckSession session;
+
+  const SessionCard(
+    this.session, {
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = context.appTheme;
+    return InkWell(
+      onTap: () {
+        appRouter.push(CheckRoute(session: session));
+      },
+      child: Container(
+        decoration: getCardDecoration(context),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.green[100],
+            child: Icon(
+              HugeIcons.strokeRoundedProductLoading,
+              color: Colors.green[600],
             ),
           ),
-        ],
-      ),
-      trailing: PopupMenuButton(
-        itemBuilder: (context) => [
-          if (session.status != CheckSessionStatus.completed)
-            PopupMenuItem(
-              value: 'continue',
-              child: const Row(
-                children: [
-                  Icon(Icons.play_arrow),
-                  SizedBox(width: 8),
-                  Text('Tiếp tục'),
-                ],
+          title: Text(
+            session.name,
+            style: theme.textMedium16Default,
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              Text(
+                'Kiểm kê bởi: ${session.createdBy}',
+                style: theme.textRegular13Default,
               ),
-            ),
-          PopupMenuItem(
-            value: 'view',
-            child: const Row(
-              children: [
-                Icon(Icons.visibility),
-                SizedBox(width: 8),
-                Text('Xem chi tiết'),
-              ],
-            ),
+              const SizedBox(height: 2),
+              Text(
+                'Ngày: ${session.startDate.timeAgo}',
+                style: theme.textRegular13Default,
+              ),
+            ],
           ),
-          PopupMenuItem(
-            value: 'delete',
-            child: Row(
-              children: [
-                Icon(Icons.delete, color: Colors.red[300]),
-                const SizedBox(width: 8),
-                Text('Xóa', style: TextStyle(color: Colors.red[300])),
-              ],
-            ),
-          ),
-        ],
-        onSelected: (action) {
-          if (action == 'continue') {
-            appRouter.push(CheckRoute(session: session));
-          } else if (action == 'view') {
-            // TODO: Implement view details
-          } else if (action == 'delete') {
-            // TODO: Implement delete session
-          }
-        },
+          trailing: session.status != CheckSessionStatus.inProgress
+              ? null
+              : PopupMenuButton(
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, color: Colors.red[300]),
+                          const SizedBox(width: 8),
+                          Text('Xóa', style: TextStyle(color: Colors.red[300])),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (action) {
+                    if (action == 'delete') {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Xác nhận xóa'),
+                            content: const Text('Bạn có chắc chắn muốn xóa phiên kiểm kê này?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Hủy'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  final notifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
+                                  notifier.deleteCheckSession(session);
+                                },
+                                child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
+        ),
       ),
-    ),
-  );
+    );
+  }
+
+  Decoration getCardDecoration(BuildContext context) {
+    switch (session.status) {
+      case CheckSessionStatus.inProgress:
+        return BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          gradient: LinearGradient(
+            colors: [
+              Colors.green[500]!,
+              Colors.green[400]!,
+              Colors.green[300]!,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        );
+      case CheckSessionStatus.completed:
+        return BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        );
+    }
+  }
 }
 
 class ActiveSessionPage extends HookConsumerWidget {
@@ -207,7 +229,7 @@ class ActiveSessionPage extends HookConsumerWidget {
     return ListView.separated(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemBuilder: (BuildContext context, int index) {
-        return buildSessionCard(activeSession.data[index]);
+        return SessionCard(activeSession.data[index]);
       },
       separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 10),
       itemCount: activeSession.length,
@@ -247,7 +269,7 @@ class DoneSessionPage extends HookConsumerWidget {
     return ListView.separated(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemBuilder: (BuildContext context, int index) {
-        return buildSessionCard(activeSession.data[index]);
+        return SessionCard(activeSession.data[index]);
       },
       separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 12),
       itemCount: activeSession.length,

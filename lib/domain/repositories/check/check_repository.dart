@@ -20,7 +20,7 @@ CheckSessionRepository checkSessionRepository(_) => CheckSessionRepositoryImpl()
 CheckedProductRepository checkedProductRepository(_) => CheckedProductRepositoryImpl();
 
 abstract class CheckRepository {
-  Future<CheckSession> createSession(String name, String createdBy, {String? note, String? checkedBy});
+  Future<CheckSession> createSession(String name, String createdBy, {String? note});
 
   Future<CheckSession> updateSession(CheckSession session);
 

@@ -1,63 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../shared_widgets/index.dart';
 import '../../authentication/provider/auth_provider.dart';
 
-class CreateSessionBottomSheet extends ConsumerStatefulWidget with ShowBottomSheet<Map<String, String>> {
-  const CreateSessionBottomSheet({
-    super.key,
-  });
+class CreateSessionState {
+  final String name;
+  final String createdBy;
+  final String? note;
 
-  @override
-  ConsumerState<CreateSessionBottomSheet> createState() => _CreateSessionBottomSheetState();
+  CreateSessionState({
+    required this.name,
+    required this.createdBy,
+    required this.note,
+  });
 }
 
-class _CreateSessionBottomSheetState extends ConsumerState<CreateSessionBottomSheet> {
-  late final TextEditingController nameController;
-  late final TextEditingController createdByController;
-  late final TextEditingController checkedByController; // Thêm controller cho người kiểm kê
-  final notesController = TextEditingController();
+class CreateSessionBottomSheet extends HookConsumerWidget with ShowBottomSheet<CreateSessionState> {
+  const CreateSessionBottomSheet({super.key});
 
   @override
-  void initState() {
-    super.initState();
-    final sessionName = 'Phiên kiểm kê ${DateTime.now().toString().substring(0, 16)}';
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nameController = useTextEditingController();
+    final createdByController = useTextEditingController();
+    final noteController = useTextEditingController();
 
-    final user = ref.read(authControllerProvider);
+    useEffect(() {
+      final sessionName = 'Phiên kiểm kê ${DateTime.now().toString().substring(0, 16)}';
 
-    final userName = user.maybeWhen(
-      authenticated: (user, _) => user.role.name,
-      orElse: () => 'Người dùng',
-    );
+      final user = ref.read(authControllerProvider);
 
-    nameController = TextEditingController(text: sessionName);
-    createdByController = TextEditingController(text: userName);
-    checkedByController = TextEditingController(text: userName); // Mặc định người kiểm kê là người tạo
-  }
+      final userName = user.maybeWhen(
+        authenticated: (user, _) => user.role.name,
+        orElse: () => 'Người dùng',
+      );
 
-  @override
-  void dispose() {
-    nameController.dispose();
-    createdByController.dispose();
-    checkedByController.dispose();
-    notesController.dispose();
-    super.dispose();
-  }
+      nameController.text = sessionName;
 
-  @override
-  Widget build(BuildContext context) {
-    // Calculate the height to make sure the bottom sheet isn't too large
-    final viewInsets = MediaQuery.of(context).viewInsets;
-    final safeAreaBottom = MediaQuery.of(context).padding.bottom;
+      createdByController.text = userName; // Mặc định người tạo là người đăng nhập
+    }, []);
 
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16.0,
-        right: 16.0,
-        top: 16.0,
-        bottom: viewInsets.bottom + safeAreaBottom + 16.0,
-      ),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -100,17 +85,7 @@ class _CreateSessionBottomSheetState extends ConsumerState<CreateSessionBottomSh
           ),
           const SizedBox(height: 16),
           TextField(
-            controller: checkedByController,
-            decoration: const InputDecoration(
-              labelText: 'Người kiểm kê *',
-              hintText: 'VD: Nguyễn Văn A',
-              border: OutlineInputBorder(),
-            ),
-            textInputAction: TextInputAction.next,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: notesController,
+            controller: noteController,
             decoration: const InputDecoration(
               labelText: 'Ghi chú',
               hintText: 'Mô tả ngắn về phiên kiểm kê',
@@ -125,13 +100,14 @@ class _CreateSessionBottomSheetState extends ConsumerState<CreateSessionBottomSh
             saveButtonText: 'Tạo phiên',
             onCancel: () => Navigator.pop(context),
             onSave: () {
-              if (nameController.text.isNotEmpty && createdByController.text.isNotEmpty && checkedByController.text.isNotEmpty) {
-                Navigator.pop(context, {
-                  'name': nameController.text,
-                  'createdBy': createdByController.text,
-                  'checkedBy': checkedByController.text,
-                  'notes': notesController.text,
-                });
+              if (nameController.text.isNotEmpty && createdByController.text.isNotEmpty) {
+                Navigator.pop(
+                    context,
+                    CreateSessionState(
+                      name: nameController.text.trim(),
+                      createdBy: createdByController.text.trim(),
+                      note: noteController.text.isNotEmpty ? noteController.text.trim() : null,
+                    ));
               } else {
                 // Show validation message
                 ScaffoldMessenger.of(context).showSnackBar(

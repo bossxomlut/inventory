@@ -15,13 +15,13 @@ extension DateTimeUtils on DateTime? {
     final now = DateTime.now().toUtc();
     final difference = now.difference(this!);
     if (difference.inMinutes < 1) {
-      return 'Just now';
+      return 'Bây giờ';
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} minutes ago';
+      return '${difference.inMinutes} phút trước';
     } else if (difference.inDays < 1) {
-      return '${difference.inHours} hours ago';
+      return '${difference.inHours} giờ trước';
     } else if (difference.inDays < 3) {
-      return '${difference.inDays} days ago';
+      return '${difference.inDays} ngày trước';
     } else {
       return DateFormat('dd/MM/yyyy').format(this!);
     }

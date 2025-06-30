@@ -12,7 +12,6 @@ class CheckSessionCollection {
   late DateTime startDate;
   DateTime? endDate;
   late String createdBy;
-  late String checkedBy; // Thêm trường người kiểm kê
   @enumerated
   late CheckSessionStatus status;
   String? note;

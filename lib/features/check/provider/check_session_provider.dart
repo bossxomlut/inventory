@@ -5,6 +5,7 @@ import '../../../domain/entities/check/check_session.dart';
 import '../../../domain/repositories/check/check_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
+import '../widget/create_session_bottom_sheet.dart';
 
 part 'check_session_provider.g.dart';
 
@@ -37,7 +38,7 @@ class LoadCheckSession extends _$LoadCheckSession
     }
   }
 
-  Future<void> createCheckSession(CheckSession session) async {
+  Future<CheckSession?> createCheckSession(CreateSessionState session) async {
     try {
       showLoading();
       final checkRepo = ref.read(checkRepositoryProvider);
@@ -45,16 +46,19 @@ class LoadCheckSession extends _$LoadCheckSession
         session.name,
         session.createdBy,
         note: session.note,
-        checkedBy: session.checkedBy,
       );
-      state = state.copyWith(data: [...state.data, createdSession]);
-      showSuccess('Add new check session successfully');
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-      showError('Add new check session failed');
-    } finally {
+
       hideLoading();
+
+      state = state.copyWith(data: [...state.data, createdSession]);
+
+      return createdSession;
+    } catch (e) {
+      hideLoading();
+
+      state = state.copyWith(error: e.toString());
     }
+    return null;
   }
 
   // Update an existing check session
@@ -67,6 +71,20 @@ class LoadCheckSession extends _$LoadCheckSession
     } catch (e) {
       state = state.copyWith(error: e.toString());
       showError('Update check session failed');
+    }
+  }
+
+  void deleteCheckSession(CheckSession session) async {
+    try {
+      final checkRepo = ref.read(checkRepositoryProvider);
+      await checkRepo.deleteSession(session);
+      final newList = state.data.toList();
+      newList.removeWhere((e) => e.id == session.id);
+      state = state.copyWith(data: newList);
+      showSuccess('Check session deleted successfully');
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      showError('Delete check session failed');
     }
   }
 }

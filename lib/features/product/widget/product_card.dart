@@ -44,54 +44,7 @@ class ProductCard extends StatelessWidget {
           children: [
             Hero(
               tag: 'product-image-${product.id}',
-              child: firstImage != null
-                  ? Container(
-                      width: productImageSize,
-                      height: productImageSize,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: theme.colorBackground,
-                        border: Border.all(color: theme.colorBorderField),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Image.file(
-                          File(firstImage),
-                          width: productImageSize,
-                          height: productImageSize,
-                          cacheHeight: 280,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            width: productImageSize,
-                            height: productImageSize,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4),
-                              color: theme.colorBackground,
-                              border: Border.all(color: theme.colorBorderField),
-                            ),
-                            child: Icon(
-                              HugeIcons.strokeRoundedImageNotFound02,
-                              color: theme.colorIcon,
-                              size: 28,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  : Container(
-                      width: productImageSize,
-                      height: productImageSize,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: theme.colorBackground,
-                        border: Border.all(color: theme.colorBorderField),
-                      ),
-                      child: Icon(
-                        HugeIcons.strokeRoundedImageNotFound01,
-                        color: theme.colorIcon,
-                        size: 28,
-                      ),
-                    ),
+              child: _ProductImage(imagePath: firstImage),
             ),
             const SizedBox(width: 12),
             // Thông tin sản phẩm
@@ -150,17 +103,90 @@ class ProductCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  // Placeholder khi không có ảnh
-  Widget _buildPlaceholder() {
-    return Container(
-      width: 80,
-      height: 80,
-      color: Colors.grey[300],
-      child: const Icon(
-        Icons.image_not_supported,
-        color: Colors.grey,
-        size: 40,
+class CustomProductCard extends StatelessWidget {
+  const CustomProductCard({
+    super.key,
+    required this.product,
+    this.onTap,
+    this.bottomWidget,
+  });
+
+  final Product product;
+  final VoidCallback? onTap;
+  final Widget? bottomWidget;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    final firstImage = (product.images != null && product.images!.isNotEmpty && product.images!.first.path != null)
+        ? product.images!.first.path
+        : null;
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ProductImage(imagePath: firstImage),
+
+              const SizedBox(width: 12),
+              // Thông tin sản phẩm
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tên sản phẩm
+                    Text(
+                      product.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Hiển thị loại sản phẩm
+                            const SizedBox(height: 4),
+                            BarcodeInfoWidget(barcode: product.barcode),
+                            if (product.unit != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.straighten,
+                                      size: 16,
+                                      color: context.appTheme.colorIcon,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      product.unit!.name,
+                                      style: context.appTheme.textRegular14Default,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        )),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (bottomWidget != null) const SizedBox(height: 8),
+          if (bottomWidget != null) bottomWidget!,
+        ],
       ),
     );
   }
@@ -190,47 +216,7 @@ class VerticalProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Hero(
-              tag: 'vertical-product-image-${product.id}',
-              child: firstImage != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: Image.file(
-                        File(firstImage),
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            color: theme.colorBackground,
-                            border: Border.all(color: theme.colorBorderField),
-                          ),
-                          child: Icon(
-                            HugeIcons.strokeRoundedImageNotFound02,
-                            color: theme.colorIcon,
-                            size: 32,
-                          ),
-                        ),
-                      ),
-                    )
-                  : Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
-                        color: theme.colorBackground,
-                        border: Border.all(color: theme.colorBorderField),
-                      ),
-                      child: Icon(
-                        HugeIcons.strokeRoundedImageNotFound01,
-                        color: theme.colorIcon,
-                        size: 32,
-                      ),
-                    ),
-            ),
+            _ProductImage(imagePath: firstImage),
             const SizedBox(height: 10),
             Text(
               product.name,
@@ -316,5 +302,64 @@ class QuantityWidget extends StatelessWidget {
         style: context.appTheme.textRegular14Default,
       ),
     );
+  }
+}
+
+class _ProductImage extends StatelessWidget {
+  const _ProductImage({super.key, this.imagePath});
+
+  final String? imagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    return imagePath != null
+        ? Container(
+            width: productImageSize,
+            height: productImageSize,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: theme.colorBackground,
+              border: Border.all(color: theme.colorBorderField),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.file(
+                File(imagePath!),
+                width: productImageSize,
+                height: productImageSize,
+                cacheHeight: 280,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  width: productImageSize,
+                  height: productImageSize,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: theme.colorBackground,
+                    border: Border.all(color: theme.colorBorderField),
+                  ),
+                  child: Icon(
+                    HugeIcons.strokeRoundedImageNotFound02,
+                    color: theme.colorIcon,
+                    size: 28,
+                  ),
+                ),
+              ),
+            ),
+          )
+        : Container(
+            width: productImageSize,
+            height: productImageSize,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: theme.colorBackground,
+              border: Border.all(color: theme.colorBorderField),
+            ),
+            child: Icon(
+              HugeIcons.strokeRoundedImageNotFound01,
+              color: theme.colorIcon,
+              size: 28,
+            ),
+          );
   }
 }

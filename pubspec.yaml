@@ -138,4 +138,4 @@ flutter:
     - assets/config/
     - assets/translations/
     - assets/translations/en-US.json
-    - assets/data/mock.json
+    - assets/data/mock.jsonl

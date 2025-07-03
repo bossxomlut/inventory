@@ -27,7 +27,8 @@ abstract class CategoryRepository
         CrudRepository<Category, int>,
         SearchRepositoryWithPagination<Category>,
         GetAllRepository<Category>,
-        SearchRepository<Category> {}
+        SearchRepository<Category>,
+        SearchByName<Category> {}
 
 final unitRepositoryProvider = Provider<UnitRepository>((ref) => UnitRepositoryImpl());
 
@@ -36,4 +37,5 @@ abstract class UnitRepository
         CrudRepository<Unit, int>,
         SearchRepositoryWithPagination<Unit>,
         GetAllRepository<Unit>,
-        SearchRepository<Unit> {}
+        SearchRepository<Unit>,
+        SearchByName<Unit> {}

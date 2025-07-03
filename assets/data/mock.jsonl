@@ -1,0 +1,205 @@
+{"id": 1, "name": "iPhone 14", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 25000000, "quantity": 10, "description": "Điện thoại iPhone 14 Pro Max", "barcode": "8936061234567"}
+{"id": 2, "name": "Nồi chiên không dầu Philips", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 1500000, "quantity": 25, "description": null, "barcode": "8936067890123"}
+{"id": 3, "name": "Gạo ST25", "categoryName": "Thực phẩm", "unitName": "Kg", "price": 30000, "quantity": 100, "description": "Gạo thơm chất lượng cao", "barcode": "8936063456789"}
+{"id": 4, "name": "Bút bi Thiên Long", "categoryName": null, "unitName": "Cái", "price": 5000, "quantity": 200, "description": "Bút bi thông dụng", "barcode": null}
+{"id": 5, "name": "Nước rửa chén Sunlight", "categoryName": "Đồ gia dụng", "unitName": null, "price": 45000, "quantity": 50, "description": null, "barcode": "8936069012345"}
+{"id": 6, "name": "Máy giặt LG 8kg", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 8500000, "quantity": 15, "description": "Máy giặt cửa trước hiện đại", "barcode": "8936065432109"}
+{"id": 7, "name": "Bánh quy Oreo", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 35000, "quantity": 80, "description": "Bánh quy nhân sữa thơm ngon", "barcode": "8936069876543"}
+{"id": 8, "name": "Bàn chải đánh răng Colgate", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 20000, "quantity": 120, "description": null, "barcode": "8936061122334"}
+{"id": 9, "name": "Sổ tay A5", "categoryName": "Văn phòng phẩm", "unitName": null, "price": 15000, "quantity": 300, "description": "Sổ tay tiện dụng cho ghi chú", "barcode": null}
+{"id": 10, "name": "Nước ngọt Coca-Cola 1.5L", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 18000, "quantity": 60, "description": "Nước ngọt có gas", "barcode": "8936064455667"}
+{"id": 11, "name": "Tivi Samsung 55 inch", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 12000000, "quantity": 8, "description": "Tivi LED 4K", "barcode": "8936062233445"}
+{"id": 12, "name": "Nồi cơm điện Toshiba", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 900000, "quantity": 30, "description": null, "barcode": "8936063344556"}
+{"id": 13, "name": "Mì gói Hảo Hảo", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 120000, "quantity": 150, "description": "Mì tôm chua cay", "barcode": "8936065566778"}
+{"id": 14, "name": "Bút chì Faber-Castell", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 3000, "quantity": 500, "description": "Bút chì 2B", "barcode": null}
+{"id": 15, "name": "Dầu gội Head & Shoulders", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 150000, "quantity": 40, "description": null, "barcode": "8936066677889"}
+{"id": 16, "name": "Laptop Dell XPS 13", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 30000000, "quantity": 5, "description": "Laptop cao cấp siêu mỏng", "barcode": "8936067788990"}
+{"id": 17, "name": "Bánh mì pate", "categoryName": "Thực phẩm", "unitName": null, "price": 15000, "quantity": 200, "description": "Bánh mì nhân pate", "barcode": "8936068899001"}
+{"id": 18, "name": "Máy xay sinh tố Panasonic", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 1200000, "quantity": 20, "description": "Máy xay đa năng", "barcode": "8936069900112"}
+{"id": 19, "name": "Tập vở Hồng Hà", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 10000, "quantity": 400, "description": null, "barcode": null}
+{"id": 20, "name": "Sữa tươi Vinamilk", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 35000, "quantity": 90, "description": "Sữa tươi nguyên chất", "barcode": "8936060011223"}
+{"id": 21, "name": "Tai nghe Sony WH-1000XM5", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 8000000, "quantity": 12, "description": "Tai nghe không dây chống ồn", "barcode": "8936061122335"}
+{"id": 22, "name": "Chảo chống dính Lock&Lock", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 350000, "quantity": 35, "description": null, "barcode": "8936062233446"}
+{"id": 23, "name": "Cà phê hòa tan Nescafé", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 60000, "quantity": 100, "description": "Cà phê hòa tan thơm ngon", "barcode": "8936063344557"}
+{"id": 24, "name": "Kem đánh răng P/S", "categoryName": "Đồ gia dụng", "unitName": null, "price": 25000, "quantity": 150, "description": "Kem đánh răng bảo vệ men răng", "barcode": "8936064455668"}
+{"id": 25, "name": "Bút mực Pilot", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 20000, "quantity": 250, "description": null, "barcode": null}
+{"id": 26, "name": "Máy in HP LaserJet", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 4500000, "quantity": 10, "description": "Máy in laser tốc độ cao", "barcode": "8936065566779"}
+{"id": 27, "name": "Nước mắm Nam Ngư", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 80000, "quantity": 60, "description": "Nước mắm cao cấp", "barcode": "8936066677880"}
+{"id": 28, "name": "Quạt điện Senko", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 300000, "quantity": 40, "description": null, "barcode": "8936067788991"}
+{"id": 29, "name": "Kẹp giấy Deli", "categoryName": "Văn phòng phẩm", "unitName": "Hộp", "price": 15000, "quantity": 300, "description": "Kẹp giấy đa kích cỡ", "barcode": null}
+{"id": 30, "name": "Trà xanh C2", "categoryName": "Thực phẩm", "unitName": null, "price": 10000, "quantity": 200, "description": "Trà xanh đóng chai", "barcode": "8936068899002"}
+{"id": 31, "name": "Loa Bluetooth JBL", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 2500000, "quantity": 20, "description": "Loa không dây chất lượng cao", "barcode": "8936069900113"}
+{"id": 32, "name": "Bình nước nóng Ariston", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 3500000, "quantity": 15, "description": null, "barcode": "8936060011224"}
+{"id": 33, "name": "Snack Lay’s", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 20000, "quantity": 100, "description": "Snack khoai tây chiên giòn", "barcode": "8936061122336"}
+{"id": 34, "name": "Băng keo trong 3M", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 25000, "quantity": 150, "description": null, "barcode": null}
+{"id": 35, "name": "Sữa rửa mặt Cetaphil", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 300000, "quantity": 30, "description": "Sữa rửa mặt dịu nhẹ", "barcode": "8936062233447"}
+{"id": 36, "name": "Máy ảnh Canon EOS", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 20000000, "quantity": 5, "description": "Máy ảnh chuyên nghiệp", "barcode": "8936063344558"}
+{"id": 37, "name": "Dầu ăn Tường An", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 45000, "quantity": 80, "description": "Dầu ăn tinh luyện", "barcode": "8936064455669"}
+{"id": 38, "name": "Máy sấy tóc Philips", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 500000, "quantity": 25, "description": null, "barcode": "8936065566780"}
+{"id": 39, "name": "Thước kẻ Deli", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 10000, "quantity": 400, "description": "Thước kẻ nhựa bền", "barcode": null}
+{"id": 40, "name": "Nước tăng lực Red Bull", "categoryName": "Thực phẩm", "unitName": null, "price": 15000, "quantity": 200, "description": "Nước tăng lực nguyên bản", "barcode": "8936066677891"}
+{"id": 41, "name": "Đồng hồ thông minh Apple Watch", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 10000000, "quantity": 10, "description": "Đồng hồ thông minh cao cấp", "barcode": "8936067788992"}
+{"id": 42, "name": "Bếp từ Sunhouse", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 2000000, "quantity": 20, "description": null, "barcode": "8936068899003"}
+{"id": 43, "name": "Bánh Choco Pie", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 50000, "quantity": 100, "description": "Bánh ngọt nhân socola", "barcode": "8936069900114"}
+{"id": 44, "name": "Hồ dán Glue Stick", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 12000, "quantity": 300, "description": null, "barcode": null}
+{"id": 45, "name": "Xà phòng Lifebuoy", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 15000, "quantity": 150, "description": "Xà phòng diệt khuẩn", "barcode": "8936060011225"}
+{"id": 46, "name": "Máy chiếu Epson", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 15000000, "quantity": 5, "description": "Máy chiếu Full HD", "barcode": "8936061122337"}
+{"id": 47, "name": "Mứt dâu Dalat", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 80000, "quantity": 50, "description": null, "barcode": "8936062233448"}
+{"id": 48, "name": "Máy hút bụi Xiaomi", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 3000000, "quantity": 15, "description": "Máy hút bụi không dây", "barcode": "8936063344559"}
+{"id": 49, "name": "Bút xóa Uni", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 25000, "quantity": 200, "description": "Bút xóa mực tiện lợi", "barcode": null}
+{"id": 50, "name": "Sữa chua Vinamilk", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 10000, "quantity": 300, "description": "Sữa chua vị dâu", "barcode": "8936064455670"}
+{"id": 51, "name": "Máy tính Casio fx-570", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 350000, "quantity": 50, "description": "Máy tính khoa học", "barcode": "8936065566781"}
+{"id": 52, "name": "Nồi áp suất Tefal", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 2500000, "quantity": 20, "description": null, "barcode": "8936066677892"}
+{"id": 53, "name": "Kẹo dẻo Haribo", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 40000, "quantity": 100, "description": "Kẹo dẻo trái cây", "barcode": "8936067788993"}
+{"id": 54, "name": "Băng keo hai mặt 3M", "categoryName": "Văn phòng phẩm", "unitName": null, "price": 30000, "quantity": 150, "description": "Băng keo siêu dính", "barcode": null}
+{"id": 55, "name": "Kem dưỡng da Nivea", "categoryName": "Đồ gia dụng", "unitName": "Hộp", "price": 120000, "quantity": 40, "description": null, "barcode": "8936068899004"}
+{"id": 56, "name": "Ổ cứng SSD Samsung 1TB", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 3000000, "quantity": 10, "description": "Ổ cứng SSD tốc độ cao", "barcode": "8936069900115"}
+{"id": 57, "name": "Nước tương Chinsu", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 35000, "quantity": 80, "description": "Nước tương đậm đà", "barcode": "8936060011226"}
+{"id": 58, "name": "Máy lọc không khí Sharp", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 4000000, "quantity": 15, "description": null, "barcode": "8936061122338"}
+{"id": 59, "name": "Bìa hồ sơ A4", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 5000, "quantity": 500, "description": "Bìa hồ sơ nhựa bền", "barcode": null}
+{"id": 60, "name": "Nước trái cây TH True Juice", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 30000, "quantity": 100, "description": "Nước ép trái cây tự nhiên", "barcode": "8936062233449"}
+{"id": 61, "name": "Chuột không dây Logitech", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 300000, "quantity": 50, "description": "Chuột không dây tiện lợi", "barcode": "8936063344560"}
+{"id": 62, "name": "Lò vi sóng Samsung", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 2000000, "quantity": 20, "description": null, "barcode": "8936064455671"}
+{"id": 63, "name": "Bánh snack Oishi", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 15000, "quantity": 200, "description": "Snack tôm cay", "barcode": "8936065566782"}
+{"id": 64, "name": "Bút lông Artline", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 20000, "quantity": 300, "description": null, "barcode": null}
+{"id": 65, "name": "Sữa tắm Dove", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 180000, "quantity": 40, "description": "Sữa tắm dưỡng ẩm", "barcode": "8936066677893"}
+{"id": 66, "name": "Bàn phím cơ Razer", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 2500000, "quantity": 15, "description": "Bàn phím cơ chơi game", "barcode": "8936067788994"}
+{"id": 67, "name": "Mật ong rừng", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 200000, "quantity": 30, "description": "Mật ong nguyên chất", "barcode": "8936068899005"}
+{"id": 68, "name": "Máy khoan Bosch", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 1500000, "quantity": 10, "description": null, "barcode": "8936069900116"}
+{"id": 69, "name": "Giấy in A4 Double A", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 60000, "quantity": 100, "description": "Giấy in chất lượng cao", "barcode": null}
+{"id": 70, "name": "Nước giặt Omo", "categoryName": "Đồ gia dụng", "unitName": null, "price": 120000, "quantity": 50, "description": "Nước giặt đậm đặc", "barcode": "8936060011227"}
+{"id": 71, "name": "Router Wi-Fi TP-Link", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 800000, "quantity": 25, "description": "Router Wi-Fi tốc độ cao", "barcode": "8936061122339"}
+{"id": 72, "name": "Tủ lạnh Panasonic 300L", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 10000000, "quantity": 10, "description": null, "barcode": "8936062233450"}
+{"id": 73, "name": "Bánh trung thu Kinh Đô", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 200000, "quantity": 50, "description": "Bánh trung thu thập cẩm", "barcode": "8936063344561"}
+{"id": 74, "name": "Máy cắt giấy Deli", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 150000, "quantity": 20, "description": null, "barcode": null}
+{"id": 75, "name": "Nước xả Comfort", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 100000, "quantity": 60, "description": "Nước xả làm mềm vải", "barcode": "8936064455672"}
+{"id": 76, "name": "Máy quay GoPro Hero", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 8000000, "quantity": 5, "description": "Máy quay hành trình", "barcode": "8936065566783"}
+{"id": 77, "name": "Hạt điều rang muối", "categoryName": "Thực phẩm", "unitName": "Kg", "price": 200000, "quantity": 40, "description": "Hạt điều thơm ngon", "barcode": "8936066677894"}
+{"id": 78, "name": "Máy lọc nước RO Kangaroo", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 6000000, "quantity": 10, "description": null, "barcode": "8936067788995"}
+{"id": 79, "name": "Bút màu Crayola", "categoryName": "Văn phòng phẩm", "unitName": "Hộp", "price": 50000, "quantity": 100, "description": "Bút màu an toàn cho trẻ", "barcode": null}
+{"id": 80, "name": "Sữa đặc Ông Thọ", "categoryName": "Thực phẩm", "unitName": null, "price": 30000, "quantity": 150, "description": "Sữa đặc có đường", "barcode": "8936068899006"}
+{"id": 81, "name": "Máy nghe nhạc Sony Walkman", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 5000000, "quantity": 10, "description": "Máy nghe nhạc cao cấp", "barcode": "8936069900117"}
+{"id": 82, "name": "Bình giữ nhiệt Lock&Lock", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 250000, "quantity": 50, "description": null, "barcode": "8936060011228"}
+{"id": 83, "name": "Bánh gạo One One", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 20000, "quantity": 200, "description": "Bánh gạo giòn tan", "barcode": "8936061122340"}
+{"id": 84, "name": "Dụng cụ gọt bút chì", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 10000, "quantity": 300, "description": null, "barcode": null}
+{"id": 85, "name": "Khăn giấy lụa Bless You", "categoryName": "Đồ gia dụng", "unitName": "Hộp", "price": 25000, "quantity": 100, "description": "Khăn giấy mềm mại", "barcode": "8936062233451"}
+{"id": 86, "name": "Ổ cắm điện Xiaomi", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 200000, "quantity": 40, "description": "Ổ cắm thông minh", "barcode": "8936063344562"}
+{"id": 87, "name": "Mì Omachi", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 150000, "quantity": 80, "description": "Mì bò hầm", "barcode": "8936064455673"}
+{"id": 88, "name": "Máy ép chậm Hurom", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 5000000, "quantity": 10, "description": null, "barcode": "8936065566784"}
+{"id": 89, "name": "Bút bi gel Muji", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 15000, "quantity": 250, "description": "Bút gel mực đen", "barcode": null}
+{"id": 90, "name": "Trà sữa trân châu", "categoryName": "Thực phẩm", "unitName": null, "price": 25000, "quantity": 100, "description": "Trà sữa thơm ngon", "barcode": "8936066677895"}
+{"id": 91, "name": "Camera an ninh Xiaomi", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 1000000, "quantity": 20, "description": "Camera Full HD", "barcode": "8936067788996"}
+{"id": 92, "name": "Chổi quét nhà", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 50000, "quantity": 50, "description": null, "barcode": "8936068899007"}
+{"id": 93, "name": "Kem Walls", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 60000, "quantity": 80, "description": "Kem vani thơm ngon", "barcode": "8936069900118"}
+{"id": 94, "name": "Tập giấy ghi chú Post-it", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 20000, "quantity": 200, "description": null, "barcode": null}
+{"id": 95, "name": "Nước tẩy rửa Cif", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 70000, "quantity": 60, "description": "Nước tẩy rửa đa năng", "barcode": "8936060011229"}
+{"id": 96, "name": "Máy tính bảng Samsung Galaxy Tab", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 8000000, "quantity": 10, "description": "Máy tính bảng cao cấp", "barcode": "8936061122341"}
+{"id": 97, "name": "Phở khô Vifon", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 100000, "quantity": 100, "description": "Phở khô thơm ngon", "barcode": "8936062233452"}
+{"id": 98, "name": "Máy hút mùi Electrolux", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 4000000, "quantity": 15, "description": null, "barcode": "8936063344563"}
+{"id": 99, "name": "Băng dính văn phòng Scotch", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 15000, "quantity": 300, "description": "Băng dính trong suốt", "barcode": null}
+{"id": 100, "name": "Nước ép cam Minute Maid", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 30000, "quantity": 100, "description": "Nước ép cam nguyên chất", "barcode": "8936064455674"}
+{"id": 101, "name": "Máy xay thịt Philips", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 1500000, "quantity": 20, "description": "Máy xay thịt đa năng", "barcode": "8936065566785"}
+{"id": 102, "name": "Bánh quy bơ Danisa", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 120000, "quantity": 50, "description": null, "barcode": "8936066677896"}
+{"id": 103, "name": "Bút bi Parker", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 500000, "quantity": 30, "description": "Bút bi cao cấp", "barcode": null}
+{"id": 104, "name": "Nồi lẩu điện Kangaroo", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 800000, "quantity": 25, "description": "Nồi lẩu tiện lợi", "barcode": "8936067788997"}
+{"id": 105, "name": "Sạc dự phòng Anker", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 600000, "quantity": 40, "description": "Sạc dự phòng 10000mAh", "barcode": "8936068899008"}
+{"id": 106, "name": "Sữa bột Ensure", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 350000, "quantity": 20, "description": "Sữa bột dinh dưỡng", "barcode": "8936069900119"}
+{"id": 107, "name": "Máy pha cà phê Delonghi", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 5000000, "quantity": 10, "description": null, "barcode": "8936060011230"}
+{"id": 108, "name": "Bút dạ quang Stabilo", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 20000, "quantity": 200, "description": "Bút dạ quang màu vàng", "barcode": null}
+{"id": 109, "name": "Nước ngọt Pepsi 1.5L", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 18000, "quantity": 100, "description": "Nước ngọt có gas", "barcode": "8936061122342"}
+{"id": 110, "name": "Máy cạo râu Philips", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 1200000, "quantity": 20, "description": null, "barcode": "8936062233453"}
+{"id": 111, "name": "Bánh mì sandwich", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 25000, "quantity": 150, "description": "Bánh mì sandwich mềm", "barcode": "8936063344564"}
+{"id": 112, "name": "Máy tính HP Pavilion", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 15000000, "quantity": 5, "description": "Laptop văn phòng", "barcode": "8936064455675"}
+{"id": 113, "name": "Dầu gội Sunsilk", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 100000, "quantity": 50, "description": "Dầu gội dưỡng tóc", "barcode": "8936065566786"}
+{"id": 114, "name": "Bút bi 4 màu Bic", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 15000, "quantity": 300, "description": null, "barcode": null}
+{"id": 115, "name": "Trà Lipton", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 50000, "quantity": 100, "description": "Trà túi lọc hương chanh", "barcode": "8936066677897"}
+{"id": 116, "name": "Máy lạnh Daikin 1HP", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 8000000, "quantity": 10, "description": null, "barcode": "8936067788998"}
+{"id": 117, "name": "Kẹo mút Chupa Chups", "categoryName": "Thực phẩm", "unitName": null, "price": 5000, "quantity": 500, "description": "Kẹo mút nhiều vị", "barcode": "8936068899009"}
+{"id": 118, "name": "Máy ảnh Fujifilm Instax", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 2500000, "quantity": 15, "description": "Máy ảnh chụp lấy liền", "barcode": "8936069900120"}
+{"id": 119, "name": "Tập học sinh 200 trang", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 25000, "quantity": 200, "description": null, "barcode": null}
+{"id": 120, "name": "Sữa tươi Dutch Lady", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 35000, "quantity": 80, "description": "Sữa tươi nguyên chất", "barcode": "8936060011231"}
+{"id": 121, "name": "Ổ cắm thông minh Tuya", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 300000, "quantity": 30, "description": "Ổ cắm điều khiển qua Wi-Fi", "barcode": "8936061122343"}
+{"id": 122, "name": "Máy nướng bánh mì Electrolux", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 600000, "quantity": 25, "description": null, "barcode": "8936062233454"}
+{"id": 123, "name": "Bánh xốp AFC", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 40000, "quantity": 100, "description": "Bánh xốp nhân kem", "barcode": "8936063344565"}
+{"id": 124, "name": "Bút chì màu Colorex", "categoryName": "Văn phòng phẩm", "unitName": "Hộp", "price": 50000, "quantity": 150, "description": null, "barcode": null}
+{"id": 125, "name": "Nước tẩy trang L’Oreal", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 200000, "quantity": 40, "description": "Nước tẩy trang dịu nhẹ", "barcode": "8936064455676"}
+{"id": 126, "name": "Máy chơi game Sony PS5", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 15000000, "quantity": 5, "description": "Máy chơi game thế hệ mới", "barcode": "8936065566787"}
+{"id": 127, "name": "Hạt tiêu đen", "categoryName": "Thực phẩm", "unitName": "Kg", "price": 100000, "quantity": 50, "description": "Hạt tiêu đen nguyên chất", "barcode": "8936066677898"}
+{"id": 128, "name": "Bình nước thể thao Nike", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 150000, "quantity": 60, "description": null, "barcode": "8936067788999"}
+{"id": 129, "name": "Máy in ảnh Canon", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 3000000, "quantity": 10, "description": "Máy in ảnh di động", "barcode": "8936068899010"}
+{"id": 130, "name": "Bánh quy Cosy", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 30000, "quantity": 100, "description": "Bánh quy bơ thơm", "barcode": "8936069900121"}
+{"id": 131, "name": "Máy xay sinh tố Toshiba", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 800000, "quantity": 20, "description": null, "barcode": "8936060011232"}
+{"id": 132, "name": "Bút mực nước Pentel", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 20000, "quantity": 200, "description": "Bút mực nước mịn", "barcode": null}
+{"id": 133, "name": "Nước uống Lavie", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 10000, "quantity": 300, "description": "Nước uống tinh khiết", "barcode": "8936061122344"}
+{"id": 134, "name": "Máy sấy quần áo LG", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 12000000, "quantity": 5, "description": "Máy sấy quần áo hiện đại", "barcode": "8936062233455"}
+{"id": 135, "name": "Sữa đặc Ngôi Sao", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 25000, "quantity": 150, "description": null, "barcode": "8936063344566"}
+{"id": 136, "name": "Bút chì cơ Uni", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 30000, "quantity": 100, "description": "Bút chì cơ cao cấp", "barcode": null}
+{"id": 137, "name": "Nồi chiên hơi nước Tefal", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 3000000, "quantity": 15, "description": "Nồi chiên đa năng", "barcode": "8936064455677"}
+{"id": 138, "name": "Kem đánh răng Close-Up", "categoryName": "Đồ gia dụng", "unitName": null, "price": 30000, "quantity": 100, "description": "Kem đánh răng làm trắng", "barcode": "8936065566788"}
+{"id": 139, "name": "Bánh mì ngọt BreadTalk", "categoryName": "Thực phẩm", "unitName": "Cái", "price": 15000, "quantity": 200, "description": "Bánh mì ngọt thơm ngon", "barcode": "8936066677899"}
+{"id": 140, "name": "Máy chiếu ViewSonic", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 10000000, "quantity": 5, "description": null, "barcode": "8936067789000"}
+{"id": 141, "name": "Hộp đựng cơm Lock&Lock", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 80000, "quantity": 50, "description": "Hộp cơm giữ nhiệt", "barcode": "8936068899011"}
+{"id": 142, "name": "Snack Poca", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 15000, "quantity": 150, "description": "Snack khoai tây chiên", "barcode": "8936069900122"}
+{"id": 143, "name": "Bút bi màu Deli", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 10000, "quantity": 300, "description": null, "barcode": null}
+{"id": 144, "name": "Nước rửa chén thiên nhiên", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 60000, "quantity": 60, "description": "Nước rửa chén thân thiện môi trường", "barcode": "8936060011233"}
+{"id": 145, "name": "Tai nghe AirPods Pro", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 6000000, "quantity": 10, "description": "Tai nghe không dây Apple", "barcode": "8936061122345"}
+{"id": 146, "name": "Bột giặt Tide", "categoryName": "Đồ gia dụng", "unitName": "Kg", "price": 150000, "quantity": 40, "description": null, "barcode": "8936062233456"}
+{"id": 147, "name": "Bánh phồng tôm Sa Giang", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 30000, "quantity": 100, "description": "Bánh phồng tôm giòn", "barcode": "8936063344567"}
+{"id": 148, "name": "Máy tính Casio fx-991", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 500000, "quantity": 30, "description": "Máy tính khoa học cao cấp", "barcode": null}
+{"id": 149, "name": "Nước ngọt Sprite 1.5L", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 18000, "quantity": 100, "description": "Nước ngọt chanh tươi", "barcode": "8936064455678"}
+{"id": 150, "name": "Máy xay sinh tố Sunhouse", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 600000, "quantity": 25, "description": null, "barcode": "8936065566789"}
+{"id": 151, "name": "Sữa tươi Mộc Châu", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 30000, "quantity": 80, "description": "Sữa tươi nguyên chất", "barcode": "8936066677900"}
+{"id": 152, "name": "Máy khoan Makita", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 2000000, "quantity": 15, "description": "Máy khoan đa năng", "barcode": "8936067789001"}
+{"id": 153, "name": "Bút bi Thiên Long 027", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 5000, "quantity": 500, "description": null, "barcode": null}
+{"id": 154, "name": "Nước mắm Phú Quốc", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 100000, "quantity": 50, "description": "Nước mắm truyền thống", "barcode": "8936068899012"}
+{"id": 155, "name": "Máy in Brother", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 3500000, "quantity": 10, "description": "Máy in laser đa năng", "barcode": "8936069900123"}
+{"id": 156, "name": "Bánh quy LU", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 60000, "quantity": 100, "description": "Bánh quy bơ thơm ngon", "barcode": "8936060011234"}
+{"id": 157, "name": "Máy sấy tóc Panasonic", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 400000, "quantity": 30, "description": null, "barcode": "8936061122346"}
+{"id": 158, "name": "Bút lông bảng Artline", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 20000, "quantity": 200, "description": "Bút lông bảng dễ xóa", "barcode": null}
+{"id": 159, "name": "Nước ép táo Tropicana", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 40000, "quantity": 80, "description": "Nước ép táo nguyên chất", "barcode": "8936062233457"}
+{"id": 160, "name": "Bàn là Philips", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 600000, "quantity": 20, "description": null, "barcode": "8936063344568"}
+{"id": 161, "name": "Bánh snack Orion", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 20000, "quantity": 150, "description": "Snack khoai tây giòn", "barcode": "8936064455679"}
+{"id": 162, "name": "Máy tính Casio fx-580", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 400000, "quantity": 50, "description": "Máy tính khoa học", "barcode": null}
+{"id": 163, "name": "Dầu gội Clear", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 120000, "quantity": 40, "description": "Dầu gội chống gàu", "barcode": "8936065566790"}
+{"id": 164, "name": "Loa Bluetooth Bose", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 4000000, "quantity": 10, "description": "Loa không dây cao cấp", "barcode": "8936066677901"}
+{"id": 165, "name": "Nước mắm cá cơm", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 80000, "quantity": 60, "description": null, "barcode": "8936067789002"}
+{"id": 166, "name": "Máy xay cà phê Delonghi", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 2000000, "quantity": 15, "description": "Máy xay cà phê chuyên nghiệp", "barcode": "8936068899013"}
+{"id": 167, "name": "Bút chì 2B Faber-Castell", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 5000, "quantity": 400, "description": null, "barcode": null}
+{"id": 168, "name": "Sữa chua uống Yakult", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 10000, "quantity": 200, "description": "Sữa chua uống tốt cho tiêu hóa", "barcode": "8936069900124"}
+{"id": 169, "name": "Máy hút bụi Dyson", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 10000000, "quantity": 5, "description": "Máy hút bụi không dây", "barcode": "8936060011235"}
+{"id": 170, "name": "Bánh quy Kinh Đô", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 40000, "quantity": 100, "description": "Bánh quy bơ thơm ngon", "barcode": "8936061122347"}
+{"id": 171, "name": "Bút bi màu Pilot", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 15000, "quantity": 250, "description": null, "barcode": null}
+{"id": 172, "name": "Nước rửa chén thiên nhiên Ecocare", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 70000, "quantity": 50, "description": "Nước rửa chén an toàn", "barcode": "8936062233458"}
+{"id": 173, "name": "Máy tính bảng iPad Air", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 12000000, "quantity": 10, "description": "Máy tính bảng cao cấp", "barcode": "8936063344569"}
+{"id": 174, "name": "Bánh mì que", "categoryName": "Thực phẩm", "unitName": "Cái", "price": 10000, "quantity": 200, "description": "Bánh mì que giòn", "barcode": "8936064455680"}
+{"id": 175, "name": "Máy sấy quần áo Electrolux", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 8000000, "quantity": 10, "description": null, "barcode": "8936065566791"}
+{"id": 176, "name": "Bút lông màu Carioca", "categoryName": "Văn phòng phẩm", "unitName": "Hộp", "price": 50000, "quantity": 100, "description": "Bút lông màu cho trẻ", "barcode": null}
+{"id": 177, "name": "Nước ép dứa", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 30000, "quantity": 80, "description": "Nước ép dứa tự nhiên", "barcode": "8936066677902"}
+{"id": 178, "name": "Máy xay sinh tố Philips", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 1000000, "quantity": 20, "description": null, "barcode": "8936067789003"}
+{"id": 179, "name": "Sữa đặc có đường Ngôi Sao", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 25000, "quantity": 150, "description": "Sữa đặc chất lượng cao", "barcode": "8936068899014"}
+{"id": 180, "name": "Máy in 3D Creality", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 8000000, "quantity": 5, "description": "Máy in 3D chuyên nghiệp", "barcode": "8936069900125"}
+{"id": 181, "name": "Bánh snack tôm", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 15000, "quantity": 200, "description": null, "barcode": "8936060011236"}
+{"id": 182, "name": "Bút bi Thiên Long 050", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 5000, "quantity": 400, "description": "Bút bi giá rẻ", "barcode": null}
+{"id": 183, "name": "Nước giặt Ariel", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 150000, "quantity": 40, "description": "Nước giặt thơm lâu", "barcode": "8936061122348"}
+{"id": 184, "name": "Loa JBL Flip 5", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 2500000, "quantity": 15, "description": "Loa Bluetooth chống nước", "barcode": "8936062233459"}
+{"id": 185, "name": "Bánh trung thu thập cẩm", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 200000, "quantity": 50, "description": "Bánh trung thu truyền thống", "barcode": "8936063344570"}
+{"id": 186, "name": "Máy lọc nước RO A.O.Smith", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 7000000, "quantity": 10, "description": null, "barcode": "8936064455681"}
+{"id": 187, "name": "Bút chì màu 12 màu", "categoryName": "Văn phòng phẩm", "unitName": "Hộp", "price": 30000, "quantity": 100, "description": "Bút chì màu chất lượng", "barcode": null}
+{"id": 188, "name": "Nước ép nho", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 40000, "quantity": 80, "description": "Nước ép nho nguyên chất", "barcode": "8936065566792"}
+{"id": 189, "name": "Máy cạo râu Braun", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 1500000, "quantity": 20, "description": null, "barcode": "8936066677903"}
+{"id": 190, "name": "Bánh quy bơ LU", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 50000, "quantity": 100, "description": "Bánh quy bơ cao cấp", "barcode": "8936067789004"}
+{"id": 191, "name": "Bút bi gel Zebra", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 10000, "quantity": 300, "description": null, "barcode": null}
+{"id": 192, "name": "Nồi chiên không dầu Xiaomi", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 2000000, "quantity": 15, "description": "Nồi chiên không dầu thông minh", "barcode": "8936068899015"}
+{"id": 193, "name": "Sữa tươi không đường TH", "categoryName": "Thực phẩm", "unitName": "Lít", "price": 35000, "quantity": 80, "description": "Sữa tươi tự nhiên", "barcode": "8936069900126"}
+{"id": 194, "name": "Máy tính Casio fx-500", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 300000, "quantity": 50, "description": null, "barcode": null}
+{"id": 195, "name": "Máy chiếu mini Anker", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 5000000, "quantity": 10, "description": "Máy chiếu di động", "barcode": "8936060011237"}
+{"id": 196, "name": "Bánh mì nguyên cám", "categoryName": "Thực phẩm", "unitName": "Cái", "price": 15000, "quantity": 200, "description": "Bánh mì tốt cho sức khỏe", "barcode": "8936061122349"}
+{"id": 197, "name": "Bột giặt Omo Matic", "categoryName": "Đồ gia dụng", "unitName": "Kg", "price": 120000, "quantity": 40, "description": null, "barcode": "8936062233460"}
+{"id": 198, "name": "Snack khoai tây Pringles", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 40000, "quantity": 100, "description": "Snack khoai tây giòn", "barcode": "8936063344571"}
+{"id": 199, "name": "Bút mực Parker", "categoryName": "Văn phòng phẩm", "unitName": "Cái", "price": 600000, "quantity": 20, "description": "Bút mực cao cấp", "barcode": null}
+{"id": 200, "name": "Nước xả vải Downy", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 100000, "quantity": 50, "description": "Nước xả vải thơm lâu", "barcode": "8936064455682"}
+{"id": 201, "name": "Tai nghe JBL Quantum", "categoryName": "Đồ điện tử", "unitName": "Cái", "price": 2000000, "quantity": 15, "description": "Tai nghe chơi game", "barcode": "8936065566793"}
+{"id": 202, "name": "Nồi lẩu điện Supor", "categoryName": "Đồ gia dụng", "unitName": "Cái", "price": 900000, "quantity": 20, "description": null, "barcode": "8936066677904"}
+{"id": 203, "name": "Bánh quy bơ Orion", "categoryName": "Thực phẩm", "unitName": "Hộp", "price": 35000, "quantity": 100, "description": "Bánh quy bơ thơm ngon", "barcode": "8936067789005"}
+{"id": 204, "name": "Bút chì màu 24 màu", "categoryName": "Văn phòng phẩm", "unitName": "Hộp", "price": 60000, "quantity": 80, "description": null, "barcode": null}
+{"id": 205, "name": "Nước tẩy rửa Vim", "categoryName": "Đồ gia dụng", "unitName": "Lít", "price": 50000, "quantity": 60, "description": "Nước tẩy rửa nhà vệ sinh", "barcode": "8936068899016"}

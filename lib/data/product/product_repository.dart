@@ -401,6 +401,22 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
           }).toList();
         });
   }
+
+  @override
+  Future<Category?> searchByName(String name) {
+    return iCollection.filter().nameEqualTo(name, caseSensitive: false).findFirst().then((collection) {
+      if (collection == null) {
+        return null;
+      }
+      return Category(
+        id: collection.id,
+        name: collection.name,
+        description: collection.description,
+        createDate: collection.createDate,
+        updatedDate: collection.updatedDate,
+      );
+    });
+  }
 }
 
 class UnitRepositoryImpl implements UnitRepository {
@@ -551,6 +567,22 @@ class UnitRepositoryImpl implements UnitRepository {
             );
           }).toList();
         });
+  }
+
+  @override
+  Future<Unit?> searchByName(String name) {
+    return iCollection.filter().nameEqualTo(name, caseSensitive: false).findFirst().then((collection) {
+      if (collection == null) {
+        return null;
+      }
+      return Unit(
+        id: collection.id,
+        name: collection.name,
+        description: collection.description,
+        createDate: collection.createDate,
+        updatedDate: collection.updatedDate,
+      );
+    });
   }
 }
 

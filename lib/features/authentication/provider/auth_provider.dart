@@ -1,10 +1,17 @@
+import 'dart:convert';
+
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:isar/isar.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/index.dart';
+import '../../../core/persistence/simple_key_value_storage.dart';
+import '../../../domain/entities/order/price.dart';
 import '../../../domain/index.dart';
 import '../../../domain/repositories/auth/pin_code_repository.dart';
+import '../../../domain/repositories/order/price_repository.dart';
+import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../routes/app_router.dart';
 
 part 'auth_provider.g.dart';
@@ -12,6 +19,7 @@ part 'auth_provider.g.dart';
 @Riverpod(keepAlive: true)
 class AuthController extends _$AuthController {
   static const String _authStateKey = 'auth_state';
+  static const String _isCreatedGuestData = 'is_created_guest_data';
 
   @override
   AuthState build() => const AuthState.initial();
@@ -28,8 +36,80 @@ class AuthController extends _$AuthController {
         orElse: () {
           appRouter.goToLogin();
         },
-        authenticated: (user, DateTime? lastLoginTime) {
+        authenticated: (user, DateTime? lastLoginTime) async {
           final pinCodeRepository = ref.read(pinCodeRepositoryProvider);
+
+          if (user.role == UserRole.guest) {
+            //check load database for guest mode use _isCreatedGuestData
+            final prefs = SimpleStorage();
+            await prefs.init();
+            final isCreatedGuestData = false;
+            if (isCreatedGuestData != true) {
+              //load assets
+              try {
+                final stringData = await rootBundle.loadString('assets/data/mock.jsonl');
+
+                final categoryRepository = ref.read(categoryRepositoryProvider);
+                final unitRepository = ref.read(unitRepositoryProvider);
+                final productRepository = ref.read(productRepositoryProvider);
+                final priceRepository = ref.read(priceRepositoryProvider);
+                final lines = stringData.split('\n');
+                for (final line in lines) {
+                  try {
+                    final jsonData = jsonDecode(line) as Map<String, dynamic>;
+                    String? categoryName = jsonData['categoryName'] as String?;
+                    String? unitName = jsonData['unitName'] as String?;
+                    //find or create category
+                    Category? category;
+                    if (categoryName != null) {
+                      category = await categoryRepository.searchByName(categoryName);
+                      if (category == null) {
+                        category = await categoryRepository.create(Category(id: undefinedId, name: categoryName));
+                      }
+                    }
+
+                    Unit? unit;
+                    //find or create unit
+                    if (unitName != null) {
+                      unit = await unitRepository.searchByName(unitName);
+                      if (unit == null) {
+                        unit = await unitRepository.create(Unit(id: undefinedId, name: unitName));
+                      }
+                    }
+
+                    //create product
+                    final product = Product.fromJson(jsonData);
+
+                    await productRepository.create(product.copyWith(
+                      category: category,
+                      unit: unit,
+                    ));
+
+                    final double? price = jsonData.parseDouble('price');
+                    if (price != null) {
+                      //create price
+                      await priceRepository.create(
+                        ProductPrice(
+                          id: undefinedId,
+                          productId: product.id,
+                          productName: product.name,
+                          sellingPrice: price,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    // Handle parsing error or invalid JSON line
+                    print('Error parsing line: $line, Error: $e');
+                  }
+                }
+
+                //set is created guest data
+              } catch (e) {}
+
+              await prefs.saveBool(_isCreatedGuestData, true);
+            }
+          }
+
           pinCodeRepository.isSetPinCode.then(
             (bool value) {
               if (value) {

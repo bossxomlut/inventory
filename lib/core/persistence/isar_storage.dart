@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -25,6 +27,11 @@ class IsarDatabase {
           authenticated: (User user, DateTime? lastLoginTime) {
             if (user.role == UserRole.guest) {
               directory = '${dir.path}/guest';
+              //create directory if not exists
+              final guestDir = Directory(directory);
+              if (!guestDir.existsSync()) {
+                guestDir.createSync(recursive: true);
+              }
             }
           },
         );

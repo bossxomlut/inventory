@@ -22,3 +22,7 @@ abstract class GetOneByNameRepository<T> {
 abstract class GetAllRepository<T> {
   Future<List<T>> getAll();
 }
+
+abstract class SearchByName<T> {
+  Future<T?> searchByName(String name);
+}

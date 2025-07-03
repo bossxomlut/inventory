@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 
-class LoadMoreList<T> extends HookWidget {
+class LoadMoreList<T> extends StatelessWidget {
   LoadMoreList({
     required this.items,
     required this.itemBuilder,

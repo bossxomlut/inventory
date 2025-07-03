@@ -133,8 +133,8 @@ void showUnit(
         },
       );
     },
-    searchItems: (String keyword) async {
-      return context.read(unitRepositoryProvider).searchAll(keyword);
+    searchItems: (String keyword, page, size) async {
+      return context.read(unitRepositoryProvider).search(keyword, page, size).then((result) => result.data);
     },
   ).show(context);
 }

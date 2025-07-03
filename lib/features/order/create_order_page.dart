@@ -7,6 +7,7 @@ import '../../domain/index.dart';
 import '../../domain/repositories/order/price_repository.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
 import '../../provider/index.dart';
+import '../../shared_widgets/app_bar.dart';
 import '../../shared_widgets/app_divider.dart';
 import '../../shared_widgets/search/search_item_widget.dart';
 import '../product/widget/index.dart';
@@ -21,9 +22,7 @@ class CreateOrderPage extends HookConsumerWidget {
     final orderStaste = ref.watch(orderCreationProvider);
     final theme = context.appTheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Order'),
-      ),
+      appBar: CustomAppBar(title: 'Tạo đơn'),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,9 +61,9 @@ class CreateOrderPage extends HookConsumerWidget {
             itemBuilder: (context, product, index) {
               return OrderItemSelectionWidget(product: product);
             },
-            searchItems: (keyword) async {
+            searchItems: (keyword, page, size) async {
               final searchProductRepo = ref.read(searchProductRepositoryProvider);
-              final products = await searchProductRepo.search(keyword, 1, 20);
+              final products = await searchProductRepo.search(keyword, page, size);
               return products.data;
             },
             itemBuilderWithIndex: (BuildContext context, int index) => const AppDivider(),

@@ -31,8 +31,9 @@ void showCategory(
         },
       );
     },
-    searchItems: (String keyword) async {
-      return context.read(categoryRepositoryProvider).searchAll(keyword);
+    searchItems: (String keyword, page, size) async {
+      return context.read(categoryRepositoryProvider).search(keyword, page, size).then((result) => result.data);
     },
+    enableLoadMore: false,
   ).show(context);
 }

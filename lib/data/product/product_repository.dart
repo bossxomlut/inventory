@@ -340,7 +340,7 @@ class CategoryRepositoryImpl extends CategoryRepository with IsarCrudRepository<
         .nameContains(keyword)
         .or()
         .descriptionContains(keyword)
-        .offset(page)
+        .offset((page - 1) * limit)
         .limit(limit)
         .findAll();
 

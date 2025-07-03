@@ -239,7 +239,7 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
           }
         }
       },
-      searchItems: (String keyword) async {
+      searchItems: (keyword, page, size) async {
         return numbers.where((number) => number.toString().contains(keyword)).toList();
       },
       title: 'Input a number',

@@ -82,9 +82,9 @@ class _CheckPageState extends ConsumerState<CheckPage> {
           onTap: () => Navigator.pop(context, product),
         );
       },
-      searchItems: (keyword) async {
+      searchItems: (keyword, page, size) async {
         final searchProductRepo = ref.read(searchProductRepositoryProvider);
-        final products = await searchProductRepo.search(keyword, 1, 20);
+        final products = await searchProductRepo.search(keyword, page, size);
         return products.data;
       },
     ).show(context);

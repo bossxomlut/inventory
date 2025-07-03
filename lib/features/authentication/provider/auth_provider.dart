@@ -43,7 +43,7 @@ class AuthController extends _$AuthController {
             //check load database for guest mode use _isCreatedGuestData
             final prefs = SimpleStorage();
             await prefs.init();
-            final isCreatedGuestData = false;
+            final isCreatedGuestData = await prefs.getBool(_isCreatedGuestData);
             if (isCreatedGuestData != true) {
               //load assets
               try {

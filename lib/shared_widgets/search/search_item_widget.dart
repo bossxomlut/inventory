@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../provider/index.dart';
+import '../../provider/load_list.dart';
 import '../index.dart';
 
 class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
@@ -8,7 +9,7 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
   final Widget Function(BuildContext context, T, int) itemBuilder;
 
   // Callback for filtering items based on search query
-  final Future<List<T>> Function(String keyword) searchItems;
+  final Future<List<T>> Function(String keyword, int page, int size) searchItems;
 
   // Callback for handling new item addition
   final VoidCallback? onAddItem;
@@ -20,6 +21,7 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
   final ValueChanged<String>? onSubmitted;
   final TextEditingController? textEditingController;
   final TextInputType? keyboardType;
+  final bool enableLoadMore;
 
   const SearchItemWidget({
     super.key,
@@ -32,6 +34,7 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
     this.onSubmitted,
     this.textEditingController,
     this.keyboardType,
+    this.enableLoadMore = true,
   });
 
   @override
@@ -45,6 +48,12 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
 
   String get searchKeyword => _searchController.text;
 
+  String currentSearchKeyword = 'default';
+
+  int page = firstPage;
+  int size = defaultPageSize;
+  bool _endOfList = false;
+
   @override
   void initState() {
     super.initState();
@@ -53,10 +62,20 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
   }
 
   void onSearch() async {
+    if (currentSearchKeyword == searchKeyword) {
+      // No change in search keyword, no need to reload
+      return;
+    }
+
+    currentSearchKeyword = searchKeyword;
+
     try {
       loading();
 
-      final rs = await widget.searchItems(searchKeyword);
+      page = firstPage;
+      _endOfList = false;
+
+      final rs = await widget.searchItems(searchKeyword, page, size);
 
       items = rs;
     } catch (e) {
@@ -156,14 +175,24 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
       );
     }
 
-    return ListView.separated(
-      shrinkWrap: true,
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        return widget.itemBuilder(context, items[index], index);
+    return LoadMoreList<T>(
+      items: items,
+      itemBuilder: (context, index) => widget.itemBuilder(context, items[index], index),
+      separatorBuilder: (context, index) => widget.itemBuilderWithIndex?.call(context, index) ?? const SizedBox(),
+      onLoadMore: () async {
+        // Implement load more logic if needed
+        page = page + 1;
+        final newItems = await widget.searchItems(searchKeyword, page, size);
+        if (newItems.isNotEmpty) {
+          items.addAll(newItems);
+        } else {
+          _endOfList = true; // No more items to load
+        }
+        setState(() {});
       },
-      separatorBuilder: (BuildContext context, int index) =>
-          widget.itemBuilderWithIndex?.call(context, index) ?? const SizedBox(),
+      isCanLoadMore:
+          widget.enableLoadMore && !_endOfList, // Set to true if you want to implement load more functionality
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
     );
   }
 }

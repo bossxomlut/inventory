@@ -9,44 +9,32 @@ part 'order_provider.g.dart';
 class OrderCreation extends _$OrderCreation {
   @override
   OrderState build() {
-    return OrderState(orders: []);
+    return const OrderState(orderItems: {});
   }
 
-  void addOrderItem(OrderItem orderItem) {
-    state = state.copyWith(orders: [
-      orderItem,
-      ...state.orders,
-    ]);
+  void addOrderItem(Product product, OrderItem orderItem) {
+    state = OrderState(
+      order: state.order,
+      orderItems: {
+        ...state.orderItems,
+        product: orderItem,
+      },
+    );
   }
 
-  void updateOrderItem(int index, OrderItem orderItem) {
-    if (index < 0 || index >= state.orders.length) {
-      throw RangeError('Index out of range');
-    }
-    final updatedOrders = List<OrderItem>.from(state.orders);
-    updatedOrders[index] = orderItem;
-    state = state.copyWith(orders: updatedOrders);
+  void updateOrderItem(Product product, OrderItem orderItem) {
+    state = state.copyWith(
+      orderItems: {
+        ...state.orderItems,
+        product: orderItem,
+      },
+    );
   }
 
-  void updateOrderItem2(OrderItem orderItem) {
-    final index = state.orders.indexWhere((item) => item.product.id == orderItem.product.id);
-    if (index != -1) {
-      updateOrderItem(index, orderItem);
-    } else {
-      addOrderItem(orderItem);
-    }
-  }
-
-  void removeOrderItem(int index) {
-    if (index < 0 || index >= state.orders.length) {
-      throw RangeError('Index out of range');
-    }
-  }
-
-  void remove(OrderItem orderItem) {
-    final updatedOrders = List<OrderItem>.from(state.orders);
-    updatedOrders.removeWhere((item) => item.product.id == orderItem.product.id);
-    state = state.copyWith(orders: updatedOrders);
+  void remove(Product product) {
+    final updatedOrderItems = Map<Product, OrderItem>.from(state.orderItems);
+    updatedOrderItems.remove(product);
+    state = state.copyWith(orderItems: updatedOrderItems);
   }
 }
 
@@ -54,6 +42,6 @@ class OrderCreation extends _$OrderCreation {
 class OrderState with _$OrderState {
   const factory OrderState({
     Order? order,
-    required List<OrderItem> orders,
+    required Map<Product, OrderItem> orderItems,
   }) = _OrderState;
 }

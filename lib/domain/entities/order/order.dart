@@ -43,8 +43,7 @@ class Order with _$Order {
 @freezed
 class OrderItem with _$OrderItem {
   const factory OrderItem({
-    required Product product,
     required int quantity, // Quantity of the product ordered
-    required double price, // Price of the product at the time of order
+    required double temporaryPrice, // Price of the product at the time of order
   }) = _OrderItem;
 }

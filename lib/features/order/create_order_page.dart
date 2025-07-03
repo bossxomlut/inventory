@@ -6,7 +6,8 @@ import '../../core/helpers/scaffold_utils.dart';
 import '../../domain/index.dart';
 import '../../domain/repositories/order/price_repository.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
-import '../../shared_widgets/block/title_block_widget.dart';
+import '../../provider/index.dart';
+import '../../shared_widgets/app_divider.dart';
 import '../../shared_widgets/search/search_item_widget.dart';
 import '../product/widget/index.dart';
 import 'provider/order_provider.dart';
@@ -18,24 +19,35 @@ class CreateOrderPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderStaste = ref.watch(orderCreationProvider);
+    final theme = context.appTheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Order'),
       ),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             //danh sách sản phẩm
-            TitleBlockWidget(title: 'Sản phẩm', child: Column()),
-            Column(
-              children: [
-                ...orderStaste.orders.map(
-                  (orderItem) => OrderItemWidget(
-                    product: orderItem.product,
-                    orderItem: orderItem,
-                  ),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              child: Text(
+                'Sản phẩm',
+                style: theme.textMedium16Default,
+              ),
+            ),
+            ColoredBox(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  ...orderStaste.orderItems.entries.map(
+                    (entry) => OrderItemWidget(
+                      product: entry.key,
+                      orderItem: entry.value,
+                    ),
+                  )
+                ],
+              ),
             ),
             const SizedBox(height: 20),
             //Khách hàng
@@ -48,60 +60,14 @@ class CreateOrderPage extends HookConsumerWidget {
         onPressed: () async {
           SearchItemWidget<Product>(
             itemBuilder: (context, product, index) {
-              return Consumer(builder: (context, ref, child) {
-                final productPrice = ref.watch(productPriceByIdProvider(product.id));
-
-                final OrderItem? orderItem = ref.watch(orderCreationProvider.select(
-                  (OrderState value) => value.orders.firstWhereOrNull(
-                    (item) => item.product.id == product.id,
-                  ),
-                ));
-
-                final isSelected = orderItem != null;
-
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      //Check Box để chọn sản phẩm
-                      Checkbox(
-                        value: isSelected, // This should be managed by state
-                        onChanged: (value) {
-                          print('Checkbox changed: $value for product ${product.name}');
-                          // Handle checkbox state change
-                          if (value == true) {
-                            // Thêm sản phẩm vào đơn hàng
-                            ref.read(orderCreationProvider.notifier).addOrderItem(
-                                  OrderItem(
-                                    quantity: 1, // Mặc định số lượng là 1
-                                    price: productPrice.value!.sellingPrice!, // Sử dụng giá của sản phẩm
-                                    product: product,
-                                  ),
-                                );
-                          } else {
-                            //remove sản phẩm khỏi đơn hàng
-                            final index = orderItem!.product.id;
-                            ref.read(orderCreationProvider.notifier).remove(orderItem);
-                          }
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OrderItemWidget(
-                          product: product,
-                          orderItem: orderItem,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              });
+              return OrderItemSelectionWidget(product: product);
             },
             searchItems: (keyword) async {
               final searchProductRepo = ref.read(searchProductRepositoryProvider);
               final products = await searchProductRepo.search(keyword, 1, 20);
               return products.data;
             },
+            itemBuilderWithIndex: (BuildContext context, int index) => const AppDivider(),
           ).show(context);
         },
         child: const Icon(Icons.search),
@@ -157,31 +123,83 @@ class OrderItemWidget extends HookConsumerWidget {
     final isSelected = orderItem != null;
     final productPrice = ref.watch(productPriceByIdProvider(product.id));
 
-    return Row(
-      children: [
-        Expanded(
-          child: CustomProductCard(
-            product: product,
-            subtitleWidget: productPrice.when(
-              data: (price) => Text(
-                'Giá bán: ${price.sellingPrice?.priceFormat()}',
-                style: Theme.of(context).textTheme.bodySmall,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: CustomProductCard(
+              product: product,
+              subtitleWidget: productPrice.when(
+                data: (price) => Text(
+                  'Giá bán: ${price.sellingPrice?.priceFormat()}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                loading: () => SizedBox(),
+                error: (error, stack) => SizedBox(),
               ),
-              loading: () => SizedBox(),
-              error: (error, stack) => SizedBox(),
             ),
           ),
-        ),
-        if (isSelected)
-          PlusMinusButton(
-            value: orderItem!.quantity,
-            onChanged: (int value) {
-              ref.read(orderCreationProvider.notifier).updateOrderItem2(
-                    orderItem!.copyWith(quantity: value),
-                  );
-            },
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              //check box here
+              Checkbox(
+                value: isSelected,
+                onChanged: (value) {
+                  // Xử lý thay đổi trạng thái checkbox
+                  if (value == false) {
+                    // Nếu bỏ chọn, xóa sản phẩm khỏi đơn hàng
+                    ref.read(orderCreationProvider.notifier).remove(product);
+                  } else {
+                    // Nếu chọn, thêm sản phẩm vào đơn hàng
+                    ref.read(orderCreationProvider.notifier).addOrderItem(
+                          product,
+                          OrderItem(
+                            quantity: 1, // Mặc định số lượng là 1
+                            temporaryPrice: productPrice.valueOrNull?.sellingPrice ?? 0,
+                          ),
+                        );
+                  }
+                },
+              ),
+
+              if (isSelected)
+                // Hiển thị số lượng và nút cộng trừ
+                PlusMinusButton(
+                  value: orderItem!.quantity,
+                  onChanged: (int value) {
+                    ref.read(orderCreationProvider.notifier).updateOrderItem(
+                          product,
+                          orderItem!.copyWith(quantity: value),
+                        );
+                  },
+                ),
+            ],
           ),
-      ],
+        ],
+      ),
+    );
+  }
+}
+
+class OrderItemSelectionWidget extends HookConsumerWidget {
+  const OrderItemSelectionWidget({super.key, required this.product});
+
+  final Product product;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final OrderItem? orderItem = ref.watch(orderCreationProvider.select(
+      (OrderState value) => value.orderItems[product],
+    ));
+
+    final theme = context.appTheme;
+
+    return OrderItemWidget(
+      product: product,
+      orderItem: orderItem,
     );
   }
 }

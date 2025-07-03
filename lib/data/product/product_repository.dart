@@ -43,7 +43,6 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       id: collection.id,
       name: collection.name,
       description: collection.description,
-      price: collection.price,
       quantity: collection.quantity,
       category: collection.category.value != null ? CategoryMapping().from(collection.category.value) : null,
       unit: collection.unit.value != null ? UnitMapping().from(collection.unit.value) : null,
@@ -57,7 +56,6 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
     final p = ProductCollection()
       ..name = item.name
       ..description = item.description
-      ..price = item.price
       ..quantity = item.quantity
       ..barcode = item.barcode
       ..createdAt = DateTime.now()
@@ -99,7 +97,6 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
       ..id = item.id // Assuming id is set for update
       ..name = item.name
       ..description = item.description
-      ..price = item.price
       ..quantity = item.quantity
       ..barcode = item.barcode
       ..updatedAt = DateTime.now();
@@ -235,7 +232,6 @@ class ProductRepositoryImpl extends ProductRepository with IsarCrudRepository<Pr
         id: e.id,
         name: e.name,
         description: e.description,
-        price: e.price,
         quantity: e.quantity,
         category: CategoryMapping().from(e.category.value),
         unit: e.unit.value != null

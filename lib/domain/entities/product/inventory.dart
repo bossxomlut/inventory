@@ -50,7 +50,6 @@ class Product with _$Product {
     required int id, // Mã sản phẩm
     required String name, // Tên sản phẩm
     required int quantity, // Số lượng tồn kho
-    double? price, // Giá sản phẩm
     String? barcode, // Mã vạch (tùy chọn)
     Category? category, // ID danh mục
     Unit? unit, // Đơn vị

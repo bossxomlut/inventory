@@ -1,13 +1,11 @@
 import 'package:device_preview/device_preview.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sample_app/provider/index.dart';
 import 'package:toastification/toastification.dart';
 
-import 'core/persistence/isar_storage.dart';
 import 'resources/index.dart';
 import 'routes/app_router.dart';
 import 'shared_widgets/toast.dart';
@@ -36,7 +34,6 @@ void main() async {
   // await getIt.get<EnvLoader>().load(env);
 
   // ThemeUtils.initThemeMode();
-  await IsarDatabase().initialize();
 
   List<Locale> supportedLocales = <Locale>[
     const Locale('vi', 'VN'),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../core/persistence/isar_storage.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 
@@ -13,7 +14,10 @@ class SplashPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     useEffect(() {
       // Simulate a delay for splash screen
-      ref.read(authControllerProvider.notifier).checkLogin();
+      IsarDatabase().initialize().then((_) {
+        // After initialization, check authentication state
+        ref.read(authControllerProvider.notifier).checkLogin();
+      });
 
       return null; // No cleanup needed
     }, []);

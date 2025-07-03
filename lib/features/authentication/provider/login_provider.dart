@@ -25,8 +25,6 @@ class LoginController extends _$LoginController with CommonProvider<LoginState> 
     final userName = state.userName;
     final password = state.password;
 
-    print('userName: $userName, password: $password');
-
     showLoading();
 
     final authRepository = ref.read(authRepositoryProvider);
@@ -50,8 +48,12 @@ class LoginController extends _$LoginController with CommonProvider<LoginState> 
     );
   }
 
+  void guestLogin() async {
+    final authProvider = ref.watch(authControllerProvider.notifier);
+    await authProvider.guestLogin();
+  }
+
   void updateUserName(String userName) {
-    print('userName: $userName');
     state = state.copyWith(userName: userName);
   }
 

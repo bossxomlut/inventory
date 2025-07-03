@@ -6,7 +6,7 @@ part 'user.g.dart';
 @freezed
 class User with _$User {
   const factory User({
-    required String id, // Mã người dùng
+    required int id, // Mã người dùng
     required String username, // Tên đăng nhập
     required UserRole role, // Vai trò (admin/user/guest)
   }) = _User;

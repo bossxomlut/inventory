@@ -104,7 +104,8 @@ class SignUpPage extends WidgetByDeviceTemplate {
                                 case UserRole.user:
                                   pageController.nextPage(duration: Duration(milliseconds: 400), curve: Curves.linear);
                                 case UserRole.guest:
-                                //todo:
+                                  final loginController = ref.read(loginControllerProvider.notifier);
+                                  loginController.guestLogin();
                               }
                             },
                           ),

@@ -505,7 +505,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        product.price != null ? '${product.price} đ' : 'Chưa có giá',
+                                        'Chưa có giá',
                                         style: theme.textTheme.titleLarge?.copyWith(
                                           fontWeight: FontWeight.bold,
                                           color: colorScheme.primary,

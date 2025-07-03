@@ -113,10 +113,14 @@ extension InventoryRouterX on AppRouter {
 
 extension HomeByRoleRouterX on AppRouter {
   void goHomeByRole(UserRole role) {
-    if (role == UserRole.admin) {
-      goToAdminHome();
-    } else if (role == UserRole.user) {
-      goToUserHome();
+    switch (role) {
+      case UserRole.admin:
+        goToAdminHome();
+      case UserRole.user:
+        goToUserHome();
+      case UserRole.guest:
+        goToAdminHome();
+        break;
     }
   }
 

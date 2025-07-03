@@ -98,6 +98,7 @@ dependencies:
   # https://medium.com/mindful-engineering/retrofit-the-easiest-way-to-call-rest-apis-is-flutter-fe55d1e7c5c2
   riverpod: ^2.6.1
   riverpod_annotation: any
+  restart_app: ^1.3.2
 
   # T
   toastification: ^2.3.0
@@ -137,3 +138,4 @@ flutter:
     - assets/config/
     - assets/translations/
     - assets/translations/en-US.json
+    - assets/data/mock.json

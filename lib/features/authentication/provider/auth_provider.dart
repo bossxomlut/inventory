@@ -1,3 +1,5 @@
+import 'package:isar/isar.dart';
+import 'package:restart_app/restart_app.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/index.dart';
@@ -68,7 +70,7 @@ class AuthController extends _$AuthController {
 
   // Login method
   Future<void> login({
-    required String id,
+    required int id,
     required String username,
     required UserRole role,
   }) async {
@@ -84,11 +86,60 @@ class AuthController extends _$AuthController {
     await _saveAuthState(newState);
   }
 
+  //guest login method
+  Future<void> guestLogin() async {
+    final newState = AuthState.authenticated(
+      user: User(
+        id: -1,
+        username: 'Guest',
+        role: UserRole.guest,
+      ),
+      lastLoginTime: DateTime.now(),
+    );
+    state = newState;
+    await _saveAuthState(newState);
+
+    await Isar.getInstance()!.close();
+
+    //kill and restart the app to apply guest mode
+    Restart.restartApp(
+      /// In Web Platform, Fill webOrigin only when your new origin is different than the app's origin
+      // webOrigin: 'http://example.com',
+
+      // Customizing the notification message only on iOS
+      notificationTitle: 'Restarting App',
+      notificationBody: 'Please tap here to open the app again.',
+    );
+  }
+
   // Logout method
   Future<void> logout() async {
-    state = const AuthState.unauthenticated();
-    final prefs = ref.read(securityStorageProvider);
-    prefs.removeObject(_authStateKey);
-    appRouter.goToLogin();
+    //check if use is guest
+    final isGuest = state.maybeWhen(
+      authenticated: (user, lastLoginTime) => user.role == UserRole.guest,
+      orElse: () => false,
+    );
+    if (isGuest) {
+      state = const AuthState.unauthenticated();
+      final prefs = ref.read(securityStorageProvider);
+      prefs.removeObject(_authStateKey);
+
+      await Isar.getInstance()!.close();
+
+      //kill and restart the app to apply guest mode
+      Restart.restartApp(
+        /// In Web Platform, Fill webOrigin only when your new origin is different than the app's origin
+        // webOrigin: 'http://example.com',
+
+        // Customizing the notification message only on iOS
+        notificationTitle: 'Restarting App',
+        notificationBody: 'Please tap here to open the app again.',
+      );
+    } else {
+      state = const AuthState.unauthenticated();
+      final prefs = ref.read(securityStorageProvider);
+      await prefs.removeObject(_authStateKey);
+      appRouter.goToLogin();
+    }
   }
 }

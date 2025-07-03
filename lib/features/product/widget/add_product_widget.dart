@@ -32,7 +32,6 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final _nameController = useTextEditingController();
-    final _priceController = useTextEditingController();
     final _noteController = useTextEditingController();
     final _category = useState<Category?>(null);
     final _sku = useState<String?>(null);
@@ -47,7 +46,6 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
       // Create a new product
       final name = _nameController.text.trim();
-      final priceStr = _priceController.text.trim();
       final note = _noteController.text.trim();
       final sku = _sku.value;
 
@@ -57,14 +55,11 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
         return;
       }
 
-      final price = double.tryParse(priceStr) ?? 0.0;
-
       final newProduct = Product(
         id: undefinedId,
         // Generate unique ID
         name: name,
         description: note,
-        price: price,
         images: [...images.value],
         // Add image IDs if needed
         quantity: quantity.value,
@@ -244,7 +239,6 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
   Widget build(BuildContext context, WidgetRef ref) {
     // Initialize controllers with existing product data
     final _nameController = useTextEditingController(text: product.name);
-    final _priceController = useTextEditingController(text: product.price?.toString() ?? '');
     final _noteController = useTextEditingController(text: product.description ?? '');
     final _category = useState<Category?>(product.category);
     final _sku = useState<String?>(product.barcode);
@@ -259,7 +253,6 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
       // Create updated product with same ID
       final name = _nameController.text.trim();
-      final priceStr = _priceController.text.trim();
       final note = _noteController.text.trim();
       final sku = _sku.value;
 
@@ -269,13 +262,10 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
         return;
       }
 
-      final price = double.tryParse(priceStr) ?? 0.0;
-
       final updatedProduct = Product(
         id: product.id, // Keep the same ID
         name: name,
         description: note,
-        price: price,
         images: [...images.value],
         quantity: quantity.value,
         category: _category.value, // Can be null, we'll handle it in the repository

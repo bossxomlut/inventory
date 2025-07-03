@@ -10,7 +10,6 @@ class ProductCollection {
   Id id = Isar.autoIncrement;
   late String name;
   late String? barcode;
-  late double? price;
   late int quantity;
   final IsarLink<CategoryCollection> category = IsarLink<CategoryCollection>();
   final IsarLink<UnitCollection> unit = IsarLink<UnitCollection>();

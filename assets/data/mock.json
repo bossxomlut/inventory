@@ -1,0 +1,88 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "Đồ điện tử",
+      "description": "Các sản phẩm điện tử như điện thoại, máy tính"
+    },
+    {
+      "id": 2,
+      "name": "Đồ gia dụng",
+      "description": "Các thiết bị gia dụng trong gia đình"
+    },
+    {
+      "id": 3,
+      "name": "Thực phẩm",
+      "description": null
+    }
+  ],
+  "units": [
+    {
+      "id": 1,
+      "name": "Cái",
+      "description": "Đơn vị tính từng cái"
+    },
+    {
+      "id": 2,
+      "name": "Kg",
+      "description": "Đơn vị tính theo kilogram"
+    },
+    {
+      "id": 3,
+      "name": "Hộp",
+      "description": null
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "iPhone 14",
+      "categoryId": 1,
+      "unitId": 1,
+      "price": 25000000,
+      "quantity": 10,
+      "description": "Điện thoại iPhone 14 Pro Max",
+      "barcode": "8936061234567"
+    },
+    {
+      "id": 2,
+      "name": "Nồi chiên không dầu",
+      "categoryId": 2,
+      "unitId": 1,
+      "price": 1500000,
+      "quantity": 25,
+      "description": null,
+      "barcode": "8936067890123"
+    },
+    {
+      "id": 3,
+      "name": "Gạo ST25",
+      "categoryId": 3,
+      "unitId": 2,
+      "price": 30000,
+      "quantity": 100,
+      "description": "Gạo thơm chất lượng cao",
+      "barcode": "8936063456789"
+    },
+    {
+      "id": 4,
+      "name": "Bút bi",
+      "categoryId": null,
+      "unitId": 1,
+      "price": 5000,
+      "quantity": 200,
+      "description": "Bút bi thông dụng",
+      "barcode": null
+    },
+    {
+      "id": 5,
+      "name": "Nước rửa chén",
+      "categoryId": 2,
+      "unitId": null,
+      "price": 45000,
+      "quantity": 50,
+      "description": null,
+      "barcode": "8936069012345"
+    }
+  ]
+}

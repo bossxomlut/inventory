@@ -20,7 +20,7 @@ class AuthRepositoryImpl implements AuthRepository {
         }
 
         return User(
-          id: foundUser.id.toString(),
+          id: foundUser.id,
           username: foundUser.account,
           role: UserRole.values[foundUser.role],
         );
@@ -59,7 +59,7 @@ class AuthRepositoryImpl implements AuthRepository {
       _collection.putSync(newUser);
 
       return User(
-        id: newUser.id.toString(),
+        id: newUser.id,
         username: newUser.account,
         role: role,
       );

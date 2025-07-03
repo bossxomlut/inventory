@@ -28,7 +28,7 @@ class UserRepositoryImpl extends UserRepository {
         return _collection.where().findAll().then((List<UserCollection> value) {
           return value.map((e) {
             return User(
-              id: e.id.toString(),
+              id: e.id,
               username: e.account,
               role: UserRole.values[e.role],
             );

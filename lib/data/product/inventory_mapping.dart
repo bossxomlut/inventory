@@ -90,7 +90,6 @@ class ProductMapping extends Mapping<Product, ProductCollection> {
       id: input.id,
       name: input.name,
       description: input.description,
-      price: input.price,
       quantity: input.quantity,
       category: CategoryMapping().from(input.category.value),
       unit: unit,
@@ -107,7 +106,6 @@ class ProductCollectionMapping extends Mapping<ProductCollection, Product> {
       ..id = input.id
       ..name = input.name
       ..description = input.description
-      ..price = input.price
       ..quantity = input.quantity
       ..category.value = CategoryCollectionMapping().from(input.category)
       ..barcode = input.barcode

@@ -132,7 +132,10 @@ class CustomProductCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _ProductImage(imagePath: firstImage),
+              _ProductImage(
+                imagePath: firstImage,
+                size: 40,
+              ),
 
               const SizedBox(width: 12),
               // Thông tin sản phẩm
@@ -143,10 +146,7 @@ class CustomProductCard extends StatelessWidget {
                     // Tên sản phẩm
                     Text(
                       product.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: theme.textMedium16Default,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -167,12 +167,12 @@ class CustomProductCard extends StatelessWidget {
                                     Icon(
                                       Icons.straighten,
                                       size: 16,
-                                      color: context.appTheme.colorIcon,
+                                      color: theme.colorIcon,
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
                                       product.unit!.name,
-                                      style: context.appTheme.textRegular14Default,
+                                      style: theme.textRegular14Default,
                                     ),
                                   ],
                                 ),
@@ -314,17 +314,18 @@ class QuantityWidget extends StatelessWidget {
 }
 
 class _ProductImage extends StatelessWidget {
-  const _ProductImage({super.key, this.imagePath});
+  const _ProductImage({super.key, this.imagePath, this.size = productImageSize});
 
   final String? imagePath;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
     return imagePath != null
         ? Container(
-            width: productImageSize,
-            height: productImageSize,
+            width: size,
+            height: size,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
               color: theme.colorBackground,
@@ -334,13 +335,13 @@ class _ProductImage extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: Image.file(
                 File(imagePath!),
-                width: productImageSize,
-                height: productImageSize,
+                width: size,
+                height: size,
                 cacheHeight: 280,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
-                  width: productImageSize,
-                  height: productImageSize,
+                  width: size,
+                  height: size,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
                     color: theme.colorBackground,
@@ -356,8 +357,8 @@ class _ProductImage extends StatelessWidget {
             ),
           )
         : Container(
-            width: productImageSize,
-            height: productImageSize,
+            width: size,
+            height: size,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
               color: theme.colorBackground,

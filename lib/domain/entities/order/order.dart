@@ -29,12 +29,15 @@ extension OrderStatusExtension on OrderStatus {
 class Order with _$Order {
   const factory Order({
     required int id,
-    required String orderNumber,
     required OrderStatus status,
+    required DateTime orderDate,
     required DateTime createdAt,
     required String createdBy,
+    required int totalAmount,
+    required double totalPrice,
     DateTime? updatedAt,
-    String? customer, // Ignored for now as it wasn't defined
+    String? customer,
+    String? customerContact,
     String? note,
     double? discount,
   }) = _Order;
@@ -43,7 +46,11 @@ class Order with _$Order {
 @freezed
 class OrderItem with _$OrderItem {
   const factory OrderItem({
+    required int id,
+    required int orderId, // Unique identifier for the product
+    required int productId, // Unique identifier for the product
+    required String productName, // Name of the product
     required int quantity, // Quantity of the product ordered
-    required double temporaryPrice, // Price of the product at the time of order
+    required double price, // Price of the product at the time of order
   }) = _OrderItem;
 }

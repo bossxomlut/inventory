@@ -4,8 +4,8 @@ import '../index.dart';
 
 //create a bottom button bar with 2 buttons
 class BottomButtonBar extends StatelessWidget {
-  final VoidCallback onSave;
-  final VoidCallback onCancel;
+  final VoidCallback? onSave;
+  final VoidCallback? onCancel;
   //padding for button
   final EdgeInsetsGeometry padding;
   final String? saveButtonText;

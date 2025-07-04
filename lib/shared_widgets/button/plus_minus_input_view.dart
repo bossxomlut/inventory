@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hugeicons/hugeicons.dart';
 
+import '../../core/index.dart';
 import '../../provider/index.dart';
 import '../index.dart';
 
@@ -13,7 +14,7 @@ class PlusMinusInputView extends StatefulWidget {
     this.initialValue,
     this.onChanged,
     this.minValue = 0,
-    this.maxValue = 100,
+    this.maxValue,
   });
 
   final int? initialValue;
@@ -180,6 +181,86 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
   }
 }
 
+//create a plus/minus button widget
+class PlusMinusButton extends StatelessWidget {
+  final int value;
+  final ValueChanged<int> onChanged;
+  final int minValue;
+
+  const PlusMinusButton({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.minValue = 1,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircleAvatar(
+          backgroundColor: theme.colorBackground,
+          radius: 16,
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            iconSize: 20,
+            icon: const Icon(Icons.remove),
+            onPressed: value > minValue
+                ? () {
+                    onChanged(value - 1);
+                  }
+                : null,
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            NumberInputWithList(
+              onChanged: (int value) {
+                Navigator.pop(context);
+                onChanged(value);
+              },
+            ).show(context);
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            constraints: BoxConstraints(
+              minWidth: 30,
+            ),
+            decoration: BoxDecoration(
+              //border in bottom
+              border: Border(
+                bottom: BorderSide(
+                  color: theme.colorBorderField,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Text(
+              value.displayFormat(),
+              style: theme.textMedium15Default,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        CircleAvatar(
+          backgroundColor: theme.colorBackground,
+          radius: 16,
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            iconSize: 20,
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              onChanged(value + 1);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
   final int minValue;
   final int maxValue;
@@ -242,12 +323,13 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
       searchItems: (keyword, page, size) async {
         return numbers.where((number) => number.toString().contains(keyword)).toList();
       },
-      title: 'Input a number',
+      title: 'Nhập số lượng',
       addItemWidget: Icon(
         Icons.navigate_next_sharp,
         color: context.appTheme.colorIcon,
       ),
       itemBuilderWithIndex: (BuildContext context, int index) => const AppDivider(),
+      enableLoadMore: false,
     );
   }
 }

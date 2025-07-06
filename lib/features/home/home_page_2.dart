@@ -42,28 +42,28 @@ class HomePage2 extends ConsumerWidget {
               title: 'Quản lý sản phẩm',
               items: [
                 MenuItem(
-                  title: 'Quản lý sản phẩm',
+                  title: 'Sản phẩm',
                   icon: Icons.inventory,
                   destinationCallback: () {
                     appRouter.goToProductList();
                   },
                 ),
                 MenuItem(
-                  title: 'Kiểm kê sản phẩm',
+                  title: 'Kiểm kê',
                   icon: Icons.fact_check,
                   destinationCallback: () {
                     appRouter.goToCheckSessions();
                   },
                 ),
                 MenuItem(
-                  title: 'Quản lý danh mục',
+                  title: 'Danh mục',
                   icon: Icons.category,
                   destinationCallback: () {
                     appRouter.goToCategory();
                   },
                 ),
                 MenuItem(
-                  title: 'Quản lý đơn vị',
+                  title: 'Đơn vị/Quy cách',
                   icon: Icons.straighten,
                   destinationCallback: () {
                     appRouter.goToUnit();
@@ -75,7 +75,7 @@ class HomePage2 extends ConsumerWidget {
               title: 'Giá & Đơn hàng',
               items: [
                 MenuItem(
-                  title: 'Quản lý giá bán',
+                  title: 'Giá bán',
                   icon: Icons.price_change,
                   destinationCallback: () {
                     appRouter.goToConfigProductPrice();
@@ -89,7 +89,7 @@ class HomePage2 extends ConsumerWidget {
                   },
                 ),
                 MenuItem(
-                  title: 'Trạng thái đơn hàng',
+                  title: 'Danh sách đơn hàng',
                   icon: Icons.assignment_turned_in,
                   destinationCallback: () {
                     appRouter.goToOrderStatusList();
@@ -187,9 +187,9 @@ class HomePage2 extends ConsumerWidget {
                                 physics: const NeverScrollableScrollPhysics(),
                                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
-                                  crossAxisSpacing: 20,
-                                  mainAxisSpacing: 20,
-                                  childAspectRatio: 0.95,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                  childAspectRatio: 8 / 7,
                                 ),
                                 itemCount: group.items.length,
                                 itemBuilder: (context, index) {
@@ -234,7 +234,7 @@ class HomePage2 extends ConsumerWidget {
                                             padding: const EdgeInsets.all(16),
                                             child: Icon(
                                               item.icon,
-                                              size: 36,
+                                              size: 28,
                                               color: context.appTheme.colorPrimary,
                                             ),
                                           ),

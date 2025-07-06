@@ -22,6 +22,7 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
   final TextEditingController? textEditingController;
   final TextInputType? keyboardType;
   final bool enableLoadMore;
+  final bool showAddButtonWhenEmpty;
 
   const SearchItemWidget({
     super.key,
@@ -35,6 +36,7 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
     this.textEditingController,
     this.keyboardType,
     this.enableLoadMore = true,
+    this.showAddButtonWhenEmpty = true,
   });
 
   @override
@@ -163,7 +165,7 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
           ),
           const SizedBox(height: 16),
           //add button
-          if (widget.onAddItem != null)
+          if (widget.onAddItem != null && widget.showAddButtonWhenEmpty)
             widget.addItemWidget ??
                 ElevatedButton.icon(
                   onPressed: widget.onAddItem,

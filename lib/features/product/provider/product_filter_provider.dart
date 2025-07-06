@@ -5,9 +5,9 @@ import '../../../provider/text_search.dart';
 import '../../category/provider/category_provider.dart';
 import '../../unit/provider/unit_filter_provider.dart';
 
-enum ProductSortType { nameAsc, nameDesc, quantityAsc, quantityDesc, none }
+enum ProductSortType { none, nameAsc, nameDesc, quantityAsc, quantityDesc }
 
-enum TimeFilterType { today, last7Days, last1Month, last3Months, custom, none }
+enum TimeFilterType { none, today, last7Days, last1Month, last3Months, custom }
 
 extension ProductSortTypeExtension on ProductSortType {
   String get displayName {

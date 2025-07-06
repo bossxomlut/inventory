@@ -352,6 +352,15 @@ void showSelectOrderItem(BuildContext context, WidgetRef ref) {
       return products.data;
     },
     itemBuilderWithIndex: (BuildContext context, int index) => const AppDivider(),
+    addItemWidget: Icon(
+      Icons.close,
+      size: 20,
+      color: context.appTheme.colorIcon,
+    ),
+    onAddItem: () {
+      Navigator.pop(context);
+    },
+    showAddButtonWhenEmpty: false,
   ).show(context);
 }
 

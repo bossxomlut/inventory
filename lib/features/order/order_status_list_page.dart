@@ -112,6 +112,12 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          appRouter.goToCreateOrder();
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
@@ -195,7 +201,6 @@ class OrderCard extends StatelessWidget {
                     ],
                   ),
                   Gap(8),
-
                   Row(
                     children: [
                       //Tên khách hàng
@@ -213,59 +218,63 @@ class OrderCard extends StatelessWidget {
                   ),
 
                   Gap(8),
-                  Row(
-                    children: [
-                      Row(
-                        children: [
-                          //Sản phẩm
-                          //Số sản phẩm
-                          Text(
-                            'Sản phẩm:',
-                            style: theme.textRegular13Subtle,
-                          ),
-                          Gap(4),
-                          Text(
-                            '${order.productCount}',
-                            style: theme.textRegular15Default,
-                          ),
-                          //Tổng tiền
-                        ],
-                      ),
-                      Gap(20),
-                      Row(
-                        children: [
-                          //Sản phẩm
-                          //Số sản phẩm
-                          Text(
-                            'Số lượng:',
-                            style: theme.textRegular13Subtle,
-                          ),
-                          Gap(4),
-                          Text(
-                            '${order.totalAmount}',
-                            style: theme.textRegular15Default,
-                          ),
-                          //Tổng tiền
-                        ],
-                      ),
-                      Gap(20),
-                      Row(
-                        children: [
-                          //Sản phẩm
-                          //Số sản phẩm
-                          Text(
-                            'Tổng tiền: ',
-                            style: theme.textRegular13Subtle,
-                          ),
-                          Gap(4),
-                          Text(
-                            '${order.totalPrice.priceFormat()}',
-                            style: theme.textRegular15Default,
-                          ),
-                          //Tổng tiền
-                        ],
-                      ),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    child: Row(
+                      children: [
+                        Row(
+                          children: [
+                            //Sản phẩm
+                            //Số sản phẩm
+                            Text(
+                              'Sản phẩm:',
+                              style: theme.textRegular13Subtle,
+                            ),
+                            Gap(4),
+                            Text(
+                              '${order.productCount}',
+                              style: theme.textRegular15Default,
+                            ),
+                            //Tổng tiền
+                          ],
+                        ),
+                        Gap(20),
+                        Row(
+                          children: [
+                            //Sản phẩm
+                            //Số sản phẩm
+                            Text(
+                              'Số lượng:',
+                              style: theme.textRegular13Subtle,
+                            ),
+                            Gap(4),
+                            Text(
+                              '${order.totalAmount}',
+                              style: theme.textRegular15Default,
+                            ),
+                            //Tổng tiền
+                          ],
+                        ),
+                        Gap(20),
+                        Row(
+                          children: [
+                            //Sản phẩm
+                            //Số sản phẩm
+                            Text(
+                              'Tổng tiền: ',
+                              style: theme.textRegular13Subtle,
+                            ),
+                            Gap(4),
+                            Text(
+                              '${order.totalPrice.priceFormat()}',
+                              style: theme.textRegular15Default,
+                            ),
+                            //Tổng tiền
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
 
                   if (order.note != null)

@@ -8,8 +8,8 @@ import 'package:hugeicons/hugeicons.dart';
 import '../../domain/entities/product/inventory.dart';
 import '../../provider/index.dart';
 import '../../provider/load_list.dart';
-import '../../provider/text_search.dart';
 import '../../routes/app_router.dart';
+import '../../shared_widgets/app_filter_chip.dart';
 import '../../shared_widgets/index.dart';
 import '../category/provider/category_provider.dart';
 import '../unit/provider/unit_filter_provider.dart';
@@ -180,7 +180,6 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final sortType = ref.watch(productSortTypeProvider);
     final selectedCategories = ref.watch(multiSelectCategoryProvider).data;
     final selectedUnits = ref.watch(multiSelectUnitProvider).data;
@@ -228,9 +227,11 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
       return '';
     }
 
+    final theme = context.appTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: theme.colorBackgroundSurface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -252,62 +253,38 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                     if (sortType != ProductSortType.none)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: Chip(
+                        child: AppFilterChip(
                           label: Text(
                             'Sắp xếp: ${sortType.displayName}',
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontSize: 13,
-                            ),
+                            style: theme.textRegular13Subtle,
                           ),
                           avatar: Icon(
                             sortType.icon,
                             size: 16,
-                            color: theme.colorScheme.primary,
+                            color: theme.colorPrimary,
                           ),
-                          backgroundColor: theme.colorScheme.surfaceVariant,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              color: theme.colorScheme.outline.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          visualDensity: VisualDensity.compact,
-                          deleteIcon: const Icon(Icons.close, size: 16),
+                          backgroundColor: theme.colorBackground,
+                          borderColor: colorScheme.outline.withOpacity(0.3),
                           onDeleted: () {
                             ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
                           },
                         ),
                       ),
-
-                    // Created time filter chip
                     if (createdTimeFilter != TimeFilterType.none)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: Chip(
+                        child: AppFilterChip(
                           label: Text(
                             getCreatedTimeFilterText(),
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontSize: 13,
-                            ),
+                            style: theme.textRegular13Subtle,
                           ),
                           avatar: Icon(
                             Icons.calendar_today_outlined,
                             size: 16,
-                            color: theme.colorScheme.primary,
+                            color: theme.colorPrimary,
                           ),
-                          backgroundColor: theme.colorScheme.surfaceVariant,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              color: theme.colorScheme.outline.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          visualDensity: VisualDensity.compact,
-                          deleteIcon: const Icon(Icons.close, size: 16),
+                          backgroundColor: theme.colorBackground,
+                          borderColor: colorScheme.outline.withOpacity(0.3),
                           onDeleted: () {
                             ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                             if (ref.read(activeTimeFilterTypeProvider) == 'created') {
@@ -316,34 +293,24 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                           },
                         ),
                       ),
-
-                    // Updated time filter chip
                     if (updatedTimeFilter != TimeFilterType.none)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: Chip(
+                        child: AppFilterChip(
                           label: Text(
                             getUpdatedTimeFilterText(),
                             style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                               fontSize: 13,
                             ),
                           ),
                           avatar: Icon(
                             Icons.update_outlined,
                             size: 16,
-                            color: theme.colorScheme.primary,
+                            color: colorScheme.primary,
                           ),
-                          backgroundColor: theme.colorScheme.surfaceVariant,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              color: theme.colorScheme.outline.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          visualDensity: VisualDensity.compact,
-                          deleteIcon: const Icon(Icons.close, size: 16),
+                          backgroundColor: colorScheme.surfaceVariant,
+                          borderColor: colorScheme.outline.withOpacity(0.3),
                           onDeleted: () {
                             ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
                             if (ref.read(activeTimeFilterTypeProvider) == 'updated') {
@@ -352,70 +319,50 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                           },
                         ),
                       ),
-
-                    // Category filters
                     if (selectedCategories.isNotEmpty) ...[
                       for (final category in selectedCategories)
                         Padding(
                           padding: const EdgeInsets.only(right: 8),
-                          child: Chip(
+                          child: AppFilterChip(
                             avatar: Icon(
                               Icons.category_outlined,
                               size: 16,
-                              color: theme.colorScheme.secondary,
+                              color: colorScheme.secondary,
                             ),
                             label: Text(
                               category.name,
                               style: TextStyle(
-                                color: theme.colorScheme.onSurfaceVariant,
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 13,
                               ),
                             ),
-                            backgroundColor: theme.colorScheme.secondaryContainer.withOpacity(0.3),
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                color: theme.colorScheme.secondaryContainer,
-                                width: 1,
-                              ),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            visualDensity: VisualDensity.compact,
-                            deleteIcon: const Icon(Icons.close, size: 16),
+                            backgroundColor: colorScheme.secondaryContainer.withOpacity(0.3),
+                            borderColor: colorScheme.secondaryContainer,
                             onDeleted: () {
                               ref.read(multiSelectCategoryProvider.notifier).toggle(category);
                             },
                           ),
                         ),
                     ],
-
-                    // Unit filters
                     if (selectedUnits.isNotEmpty) ...[
                       for (final unit in selectedUnits)
                         Padding(
                           padding: const EdgeInsets.only(right: 8),
-                          child: Chip(
+                          child: AppFilterChip(
                             avatar: Icon(
                               Icons.straighten_outlined,
                               size: 16,
-                              color: theme.colorScheme.primary,
+                              color: colorScheme.primary,
                             ),
                             label: Text(
                               unit.name,
                               style: TextStyle(
-                                color: theme.colorScheme.onSurfaceVariant,
+                                color: colorScheme.onSurfaceVariant,
                                 fontSize: 13,
                               ),
                             ),
-                            backgroundColor: theme.colorScheme.primaryContainer.withOpacity(0.3),
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                color: theme.colorScheme.primaryContainer,
-                                width: 1,
-                              ),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            visualDensity: VisualDensity.compact,
-                            deleteIcon: const Icon(Icons.close, size: 16),
+                            backgroundColor: colorScheme.primaryContainer.withOpacity(0.3),
+                            borderColor: colorScheme.primaryContainer,
                             onDeleted: () {
                               ref.read(multiSelectUnitProvider.notifier).toggle(unit);
                             },
@@ -440,13 +387,13 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                 icon: Icon(
                   Icons.filter_list_off,
                   size: 18,
-                  color: theme.colorScheme.primary,
+                  color: colorScheme.primary,
                 ),
                 label: Text(
                   'Xóa tất cả',
                   style: TextStyle(
                     fontSize: 13,
-                    color: theme.colorScheme.primary,
+                    color: colorScheme.primary,
                   ),
                 ),
                 style: TextButton.styleFrom(

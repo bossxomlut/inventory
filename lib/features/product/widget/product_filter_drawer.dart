@@ -90,9 +90,9 @@ class ProductFilterDrawer extends ConsumerWidget {
           }
         },
         elevation: 0,
-        side: BorderSide(
-          width: 1,
-        ),
+        side: BorderSide(width: 1),
+        padding: EdgeInsets.zero,
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       );
     }
 
@@ -119,9 +119,9 @@ class ProductFilterDrawer extends ConsumerWidget {
         }
       },
       elevation: 0,
-      side: BorderSide(
-        width: 1,
-      ),
+      side: BorderSide(width: 1),
+      padding: EdgeInsets.zero,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 
@@ -131,100 +131,64 @@ class ProductFilterDrawer extends ConsumerWidget {
     required WidgetRef ref,
     required bool isCreatedFilter,
   }) {
-    final theme = Theme.of(context); // For theme properties during transition
+    final appTheme = context.appTheme;
     final customRangeProvider = isCreatedFilter ? createdTimeCustomRangeProvider : updatedTimeCustomRangeProvider;
-
     final customRange = ref.watch(customRangeProvider);
     if (customRange == null) return const SizedBox.shrink();
 
-    // Format the date in a more user-friendly way
-    final startDay = customRange.start.day.toString().padLeft(2, '0');
-    final startMonth = customRange.start.month.toString().padLeft(2, '0');
-    final startYear = customRange.start.year;
-
-    final endDay = customRange.end.day.toString().padLeft(2, '0');
-    final endMonth = customRange.end.month.toString().padLeft(2, '0');
-    final endYear = customRange.end.year;
+    final start = customRange.start;
+    final end = customRange.end;
+    final label = RichText(
+      text: TextSpan(
+        style: appTheme.textRegular13Subtle,
+        children: [
+          const TextSpan(text: 'Từ: '),
+          TextSpan(
+            text: '${start.day.toString().padLeft(2, '0')}/${start.month.toString().padLeft(2, '0')}/${start.year}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const TextSpan(text: '  đến: '),
+          TextSpan(
+            text: '${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
 
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
-      child: InkWell(
-        onTap: () async {
-          // Allow editing the custom range by tapping on it
-          final DateTimeRange? picked = await _showCustomDateRangePicker(
-            context: context,
-            initialDateRange: customRange,
-          );
-
-          if (picked != null) {
-            ref.read(customRangeProvider.notifier).state = picked;
-          }
-        },
-        borderRadius: BorderRadius.zero,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.7),
-            borderRadius: BorderRadius.zero,
-            border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () async {
+            final DateTimeRange? picked = await _showCustomDateRangePicker(
+              context: context,
+              initialDateRange: customRange,
+            );
+            if (picked != null) {
+              ref.read(customRangeProvider.notifier).state = picked;
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            decoration: BoxDecoration(
+              color: appTheme.colorBackgroundSurface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: appTheme.colorBorderField,
+                width: 1,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.date_range,
-                size: 18,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Khoảng thời gian đã chọn:',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          '$startDay/$startMonth/$startYear',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Icon(
-                            Icons.arrow_forward,
-                            size: 16,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        Text(
-                          '$endDay/$endMonth/$endYear',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.edit,
-                size: 16,
-                color: theme.colorScheme.primary,
-              ),
-            ],
+            child: Row(
+              children: [
+                Icon(Icons.date_range, size: 18, color: appTheme.colorPrimary),
+                const SizedBox(width: 10),
+                Expanded(child: label),
+                Icon(Icons.edit, size: 16, color: appTheme.colorPrimary),
+              ],
+            ),
           ),
         ),
       ),
@@ -382,24 +346,21 @@ class ProductFilterDrawer extends ConsumerWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Wrap(
                     spacing: 8,
+                    runSpacing: 6,
                     children: ProductSortType.values.map((type) {
                       final isSelected = sortType == type;
                       return FilterChip(
                         selected: isSelected,
                         showCheckmark: false,
-                        avatar: Icon(
-                          type.icon,
-                          size: 16,
-                        ),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        avatar: Icon(type.icon, size: 16),
                         label: Text(type.displayName),
+                        elevation: 0,
+                        padding: EdgeInsets.zero,
+                        side: BorderSide(width: 1),
                         onSelected: (_) {
                           ref.read(productSortTypeProvider.notifier).state = isSelected ? ProductSortType.none : type;
                         },
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        side: BorderSide(
-                          width: 1,
-                        ),
                       );
                     }).toList(),
                   ),
@@ -490,6 +451,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Wrap(
+                                runSpacing: 6,
                                 spacing: 8,
                                 children: [
                                   for (final type in TimeFilterType.values)
@@ -565,6 +527,7 @@ class ProductFilterDrawer extends ConsumerWidget {
 
                           // Category filter chips
                           Wrap(
+                            runSpacing: 6,
                             spacing: 8,
                             children: data.map((category) {
                               final isSelected = selectedCategories.isSelected(category);
@@ -661,6 +624,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                           // Unit filter chips
                           Wrap(
                             spacing: 8,
+                            runSpacing: 6,
                             children: data.map((unit) {
                               final isSelected = selectedUnits.isSelected(unit);
                               return InkWell(

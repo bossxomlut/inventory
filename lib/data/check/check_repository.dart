@@ -2,8 +2,7 @@ import 'package:isar/isar.dart';
 
 import '../../domain/index.dart';
 import '../../domain/repositories/index.dart';
-import '../../domain/repositories/product/inventory_repository.dart';
-import '../../domain/repositories/product/transaction_repository.dart';
+import '../../domain/repositories/product/update_product_repository.dart';
 import '../../provider/load_list.dart';
 import '../database/isar_repository.dart';
 import '../product/inventory_mapping.dart';
@@ -13,14 +12,12 @@ import 'check_mapping.dart';
 class CheckRepositoryImpl extends CheckRepository {
   final CheckSessionRepository checkSessionRepository;
   final CheckedProductRepository checkedProductRepository;
-  final ProductRepository productRepository;
-  final TransactionRepository transactionRepository;
+  final UpdateProductRepository updateProductRepository;
 
   CheckRepositoryImpl({
     required this.checkSessionRepository,
     required this.checkedProductRepository,
-    required this.productRepository,
-    required this.transactionRepository,
+    required this.updateProductRepository,
   });
 
   @override
@@ -66,20 +63,7 @@ class CheckRepositoryImpl extends CheckRepository {
     //add to transaction
 
     for (var check in checkedProducts) {
-      await productRepository.update(check.product.copyWith(
-        quantity: check.actualQuantity,
-      ));
-
-      await transactionRepository.create(
-        Transaction(
-          id: undefinedId,
-          productId: check.product.id,
-          quantity: check.difference.abs(),
-          type: check.difference > 0 ? TransactionType.import : TransactionType.export,
-          category: TransactionCategory.check,
-          timestamp: DateTime.now(),
-        ),
-      );
+      await updateProductRepository.updateProduct(check.product, TransactionCategory.check);
     }
 
     return checkSessionRepository.update(session);

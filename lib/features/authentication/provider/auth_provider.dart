@@ -12,6 +12,7 @@ import '../../../domain/index.dart';
 import '../../../domain/repositories/auth/pin_code_repository.dart';
 import '../../../domain/repositories/order/price_repository.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
+import '../../../domain/repositories/product/update_product_repository.dart';
 import '../../../routes/app_router.dart';
 
 part 'auth_provider.g.dart';
@@ -51,7 +52,7 @@ class AuthController extends _$AuthController {
 
                 final categoryRepository = ref.read(categoryRepositoryProvider);
                 final unitRepository = ref.read(unitRepositoryProvider);
-                final productRepository = ref.read(productRepositoryProvider);
+                final updateProductRepo = ref.read(updateProductRepositoryProvider);
                 final priceRepository = ref.read(priceRepositoryProvider);
                 final lines = stringData.split('\n');
                 for (final line in lines) {
@@ -80,7 +81,7 @@ class AuthController extends _$AuthController {
                     //create product
                     final product = Product.fromJson(jsonData);
 
-                    await productRepository.create(product.copyWith(
+                    await updateProductRepo.createProduct(product.copyWith(
                       category: category,
                       unit: unit,
                     ));

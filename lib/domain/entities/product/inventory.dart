@@ -77,8 +77,19 @@ class Transaction with _$Transaction {
 
 // Enum cho loại giao dịch
 enum TransactionType {
-  import,
-  export;
+  increase,
+  decrease,
+  balance;
+
+  static TransactionType fromDifference(int difference) {
+    if (difference > 0) {
+      return TransactionType.increase;
+    } else if (difference < 0) {
+      return TransactionType.decrease;
+    } else {
+      return TransactionType.balance;
+    }
+  }
 }
 
 // Enum cho danh mục giao dịch
@@ -88,7 +99,9 @@ enum TransactionCategory {
   stockIn, // Nhập kho
   stockOut, // Xuất kho
   check, // Kiểm kê
-  transfer; // Chuyển kho
+  transfer,
+  cancelOrder,
+  createOrder; // Chuyển kho
 }
 
 extension TransactionCategoryX on TransactionCategory {
@@ -106,6 +119,10 @@ extension TransactionCategoryX on TransactionCategory {
         return 'Kiểm kê';
       case TransactionCategory.transfer:
         return 'Chuyển kho';
+      case TransactionCategory.cancelOrder:
+        return 'Hủy đơn hàng';
+      case TransactionCategory.createOrder:
+        return 'Tạo đơn hàng';
     }
   }
 }

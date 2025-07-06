@@ -92,7 +92,7 @@ class HomePage2 extends ConsumerWidget {
                   title: 'Trạng thái đơn hàng',
                   icon: Icons.assignment_turned_in,
                   destinationCallback: () {
-                    // TODO: Implement navigation to Order Status Management page
+                    appRouter.goToOrderStatusList();
                   },
                 ),
               ],

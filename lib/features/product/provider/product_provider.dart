@@ -2,10 +2,10 @@ import 'dart:developer';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../domain/entities/get_id.dart';
 import '../../../domain/entities/product/inventory.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../domain/repositories/product/transaction_repository.dart';
+import '../../../domain/repositories/product/update_product_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
 import '../../../routes/app_router.dart';
@@ -50,20 +50,9 @@ class LoadProduct extends _$LoadProduct with LoadListController<Product>, Common
   Future<void> createProduct(Product product) async {
     try {
       showLoading();
-      final productRepo = ref.read(productRepositoryProvider);
 
       // Gọi repository để tạo sản phẩm (bao gồm xử lý ảnh)
-      final created = await productRepo.create(product);
-      ref.read(transactionRepositoryProvider).create(
-            Transaction(
-              id: undefinedId,
-              productId: created.id,
-              quantity: created.quantity,
-              type: TransactionType.import,
-              category: TransactionCategory.create,
-              timestamp: DateTime.now(),
-            ),
-          );
+      final created = await ref.read(updateProductRepositoryProvider).createProduct(product);
 
       state = state.copyWith(data: [...state.data, created]);
 
@@ -95,20 +84,9 @@ class LoadProduct extends _$LoadProduct with LoadListController<Product>, Common
   Future<void> updateProduct(Product product, int currentQuantity) async {
     try {
       showLoading();
-      final productRepo = ref.read(productRepositoryProvider);
       // Gọi repository để cập nhật sản phẩm (bao gồm xử lý ảnh)
-      final updatedProduct = await productRepo.update(product);
-      final difference = updatedProduct.quantity - currentQuantity;
-      ref.read(transactionRepositoryProvider).create(
-            Transaction(
-              id: undefinedId,
-              productId: updatedProduct.id,
-              quantity: difference.abs(),
-              type: difference >= 0 ? TransactionType.import : TransactionType.export,
-              category: TransactionCategory.update,
-              timestamp: DateTime.now(),
-            ),
-          );
+      final updatedProduct =
+          await ref.read(updateProductRepositoryProvider).updateProduct(product, TransactionCategory.update);
 
       ref.invalidate(getTransactionsByProductIdProvider(updatedProduct.id));
 

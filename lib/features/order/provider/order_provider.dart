@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/index.dart';
 import '../../../domain/repositories/order/order_repository.dart';
+import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
 
 part 'order_provider.freezed.dart';
@@ -50,8 +53,12 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
           orderDate: DateTime.now(),
           createdAt: DateTime.now(),
           createdBy: '',
+          productCount: state.orderItems.length,
           totalAmount: state.totalQuantity,
           totalPrice: state.totalPrice,
+          customer: state.order?.customer,
+          customerContact: state.order?.customerContact,
+          note: state.order?.note,
         ),
         state.orderItems.values.toList());
 
@@ -60,11 +67,115 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
     state = const OrderState(orderItems: {});
 
     showSuccess('Tạo đơn hàng thành công');
-
-    // appRouter.popForced();
   }
 
-  void saveDraft() {}
+  void saveDraft() {
+    showLoading();
+
+    final orderRepository = ref.read(orderRepositoryProvider);
+    orderRepository
+        .createOrder(
+      Order(
+        id: undefinedId,
+        status: OrderStatus.draft,
+        orderDate: DateTime.now(),
+        createdAt: DateTime.now(),
+        createdBy: '',
+        productCount: state.orderItems.length,
+        totalAmount: state.totalQuantity,
+        totalPrice: state.totalPrice,
+        customer: state.order?.customer,
+        customerContact: state.order?.customerContact,
+        note: state.order?.note,
+      ),
+      state.orderItems.values.toList(),
+    )
+        .then((_) {
+      hideLoading();
+      state = const OrderState(orderItems: {});
+      showSuccess('Lưu nháp đơn hàng thành công');
+    }).onError((error, st) {
+      hideLoading();
+      showError('Lỗi khi lưu nháp đơn hàng');
+      log('create draft error', error: error, stackTrace: st);
+    });
+  }
+
+  void setCustomerInfo(String name, String contact) {
+    final currentOrder = state.order;
+    if (currentOrder != null) {
+      state = state.copyWith(
+        order: currentOrder.copyWith(
+          customer: name,
+          customerContact: contact,
+        ),
+      );
+    } else {
+      state = state.copyWith(
+        order: Order(
+          id: undefinedId,
+          status: OrderStatus.draft,
+          orderDate: DateTime.now(),
+          createdAt: DateTime.now(),
+          createdBy: '',
+          productCount: state.orderItems.length,
+          totalAmount: state.totalQuantity,
+          totalPrice: state.totalPrice,
+          customer: name,
+          customerContact: contact,
+          note: state.order?.note,
+        ),
+      );
+    }
+  }
+
+  void setNote(String note) {
+    final currentOrder = state.order;
+    if (currentOrder != null) {
+      state = state.copyWith(
+        order: currentOrder.copyWith(note: note),
+      );
+    } else {
+      state = state.copyWith(
+        order: Order(
+          id: undefinedId,
+          status: OrderStatus.draft,
+          orderDate: DateTime.now(),
+          createdAt: DateTime.now(),
+          createdBy: '',
+          productCount: state.orderItems.length,
+          totalAmount: state.totalQuantity,
+          totalPrice: state.totalPrice,
+          note: note,
+          customer: state.order?.customer,
+          customerContact: state.order?.customerContact,
+        ),
+      );
+    }
+  }
+}
+
+@riverpod
+class OrderDetail extends _$OrderDetail with CommonProvider<OrderState> {
+  @override
+  OrderState build(Order order) {
+    Future(() {
+      final orderItemRepository = ref.read(orderItemRepositoryProvider);
+      orderItemRepository.getItemsByOrderId(order.id).then((items) async {
+        final productRepository = ref.read(productRepositoryProvider);
+        final orderItems = <Product, OrderItem>{};
+        for (final item in items) {
+          final product = await productRepository.read(item.productId);
+          orderItems[product] = item;
+        }
+        state = OrderState(order: order, orderItems: orderItems);
+      }).onError((error, stackTrace) {
+        log('Error fetching order items', error: error, stackTrace: stackTrace);
+        state = OrderState(order: order, orderItems: {});
+      });
+    });
+    return OrderState(order: order, orderItems: {});
+  }
 }
 
 @freezed

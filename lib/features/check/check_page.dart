@@ -62,7 +62,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
     ).show(context);
   }
 
-  void _onBarcodeScanned(Barcode barcode) async {
+  Future _onBarcodeScanned(Barcode barcode) async {
     try {
       final searchProductRepo = ref.read(searchProductRepositoryProvider);
       final product = await searchProductRepo.searchByBarcode(barcode.rawValue ?? '');

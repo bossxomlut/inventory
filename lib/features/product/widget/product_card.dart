@@ -112,12 +112,14 @@ class CustomProductCard extends StatelessWidget {
     this.onTap,
     this.bottomWidget,
     this.subtitleWidget,
+    this.trailingWidget,
   });
 
   final Product product;
   final VoidCallback? onTap;
   final Widget? subtitleWidget;
   final Widget? bottomWidget;
+  final Widget? trailingWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +192,12 @@ class CustomProductCard extends StatelessWidget {
                   ],
                 ),
               ),
+              //trailing widget
+              if (trailingWidget != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: trailingWidget!,
+                ),
             ],
           ),
           if (bottomWidget != null) const SizedBox(height: 8),

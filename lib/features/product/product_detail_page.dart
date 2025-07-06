@@ -777,11 +777,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                     color: Colors.white,
                                     child: ListTile(
                                       leading: Icon(
-                                        transaction.type == TransactionType.import
+                                        transaction.type == TransactionType.increase
                                             ? Icons.add_circle_outline
                                             : Icons.remove_circle_outline,
                                         color:
-                                            transaction.type == TransactionType.import ? Colors.green : Colors.orange,
+                                            transaction.type == TransactionType.increase ? Colors.green : Colors.orange,
                                       ),
                                       title: Text('${transaction.category.displayName}'),
                                       subtitle: Column(

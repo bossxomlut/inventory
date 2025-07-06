@@ -15,9 +15,42 @@ class ScannerView extends StatefulWidget {
     this.singleScan = false, // New flag for single/multiple scans
   });
 
-  final ValueChanged<Barcode> onBarcodeScanned;
+  final Future Function(Barcode barcode) onBarcodeScanned;
   final bool autoStopCamera;
   final bool singleScan; // Added parameter
+
+  static Future scanBarcodePage(
+    BuildContext context, {
+    required Future Function(Barcode barcode) onBarcodeScanned,
+    bool autoStopCamera = false,
+    bool singleScan = false, // New parameter for single scan
+  }) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(),
+          body: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 300,
+                child: ScannerView(
+                  onBarcodeScanned: (Barcode value) {
+                    return onBarcodeScanned(value);
+                  },
+                  singleScan: false,
+                ),
+              ),
+              const AppDivider(),
+              Expanded(
+                child: const SizedBox(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   State<ScannerView> createState() => ScannerViewState();
@@ -26,7 +59,8 @@ class ScannerView extends StatefulWidget {
 class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
   final stopWatch = Stopwatch();
   final MobileScannerController controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.unrestricted,
+    detectionTimeoutMs: 500,
+    detectionSpeed: DetectionSpeed.normal,
   );
 
   Timer? _timer;
@@ -56,7 +90,7 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
     _startScanner();
 
     if (widget.autoStopCamera) {
-      controller.addListener(_listenAutoStopCamera);
+      // controller.addListener(_listenAutoStopCamera);
     }
   }
 
@@ -64,22 +98,28 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
     controller.start();
     _barcodeSubscription = controller.barcodes.listen(
       (BarcodeCapture event) {
-        if (event.barcodes.isNotEmpty && !_hasScanned) {
-          final barcode = event.barcodes.last;
-          if (barcode.displayValue != null) {
-            print('Detected time: ${stopWatch.elapsedMilliseconds}');
-            widget.onBarcodeScanned(barcode);
-
-            if (widget.singleScan) {
-              _hasScanned = true; // Prevent further scans
-              controller.stop(); // Stop the scanner
-            } else {
-              resetTimer(); // Reset timer for multiple scans
-            }
-          }
-        }
+        scanListener(event);
       },
     );
+  }
+
+  void scanListener(BarcodeCapture event) async {
+    if (event.barcodes.isNotEmpty && !_hasScanned) {
+      _hasScanned = true; // Prevent further scans
+
+      final barcode = event.barcodes.last;
+      if (barcode.displayValue != null) {
+        await widget.onBarcodeScanned(barcode);
+        await controller.start();
+        if (widget.singleScan) {
+          _hasScanned = true; // Prevent further scans
+          controller.stop(); // Stop the scanner
+        } else {
+          resetTimer(); // Reset timer for multiple scans
+        }
+      }
+      _hasScanned = false; // Prevent further scans
+    }
   }
 
   void _listenAutoStopCamera() {
@@ -182,14 +222,14 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
                 MobileScanner(
                   controller: controller,
                   onDetect: (BarcodeCapture barcodes) {
-                    if (barcodes.barcodes.isNotEmpty && (!_hasScanned || !widget.singleScan)) {
-                      print('detected barcodes: ${barcodes.barcodes.map((e) => e.displayValue).join(', ')}');
-                      widget.onBarcodeScanned(barcodes.barcodes.last!);
-                      if (widget.singleScan) {
-                        _hasScanned = true;
-                        controller.stop();
-                      }
-                    }
+                    // if (barcodes.barcodes.isNotEmpty && (!_hasScanned || !widget.singleScan)) {
+                    //   print('detected barcodes: ${barcodes.barcodes.map((e) => e.displayValue).join(', ')}');
+                    //   widget.onBarcodeScanned(barcodes.barcodes.last!);
+                    //   if (widget.singleScan) {
+                    //     _hasScanned = true;
+                    //     controller.stop();
+                    //   }
+                    // }
                   },
                   errorBuilder: (context, error, _) {
                     return ErrorWidget('Camera error: $error');
@@ -272,7 +312,7 @@ class InnerScannerPage extends StatelessWidget with ShowBottomSheet {
           SizedBox(
             height: 300,
             child: ScannerView(
-              onBarcodeScanned: (Barcode value) {
+              onBarcodeScanned: (Barcode value) async {
                 Navigator.of(context).pop();
                 onBarcodeScanned(value);
               },

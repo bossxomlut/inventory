@@ -12,6 +12,7 @@ class OrderCollection {
   late DateTime orderDate; // Date when the order was placed
   late String customerName; // Name of the customer
   late String customerContact; // Contact information of the customer
+  late int productCount; // Total amount for the order
   late int totalAmount; // Total amount for the order
   late double totalPrice; // Total price of the order including taxes and discounts
   String? note; // Optional note for the order

@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/helpers/double_utils.dart';
 import '../../core/helpers/format_utils.dart';
-import '../../core/helpers/scaffold_utils.dart';
 import '../../domain/index.dart';
 import '../../domain/repositories/order/price_repository.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
 import '../../provider/index.dart';
-import '../../shared_widgets/app_bar.dart';
-import '../../shared_widgets/app_divider.dart';
-import '../../shared_widgets/button/bottom_button_bar.dart';
-import '../../shared_widgets/button/plus_minus_input_view.dart';
-import '../../shared_widgets/search/search_item_widget.dart';
+import '../../shared_widgets/index.dart';
+import '../../shared_widgets/toast.dart';
 import '../product/widget/index.dart';
 import 'provider/order_provider.dart';
 
@@ -23,7 +20,36 @@ class CreateOrderPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderStaste = ref.watch(orderCreationProvider);
+    final isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
     final theme = context.appTheme;
+    final noteController = useTextEditingController();
+
+    useEffect(() {
+      noteController.text = orderStaste.order?.note ?? '';
+      return null;
+    }, [orderStaste.order?.note]);
+
+    Widget buildBottomButtonBar() {
+      return BottomButtonBar(
+        cancelButtonText: 'Lưu nháp',
+        saveButtonText: 'Tạo đơn',
+        onCancel: orderStaste.isNotEmpty
+            ? () {
+                //set note
+                ref.read(orderCreationProvider.notifier).setNote(noteController.text.trim());
+                ref.read(orderCreationProvider.notifier).saveDraft();
+              }
+            : null,
+        onSave: orderStaste.isNotEmpty
+            ? () {
+                ref.read(orderCreationProvider.notifier).setNote(noteController.text.trim());
+
+                ref.read(orderCreationProvider.notifier).createOrder();
+              }
+            : null,
+      );
+    }
+
     return Scaffold(
       appBar: CustomAppBar(title: 'Tạo đơn'),
       body: SingleChildScrollView(
@@ -55,12 +81,22 @@ class CreateOrderPage extends HookConsumerWidget {
                         ),
                       ],
                     ),
-                  ...orderStaste.orderItems.entries.map(
-                    (entry) => OrderItemWidget(
-                      product: entry.key,
-                      orderItem: entry.value,
-                    ),
+                  //listView Separator
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: orderStaste.orderItems.length,
+                    separatorBuilder: (context, index) => const AppDivider(),
+                    itemBuilder: (context, index) {
+                      final product = orderStaste.orderItems.keys.elementAt(index);
+                      final orderItem = orderStaste.orderItems.values.elementAt(index);
+                      return OrderItemWidget(
+                        product: product,
+                        orderItem: orderItem,
+                      );
+                    },
                   ),
+
                   Row(
                     children: [
                       //add product button
@@ -87,7 +123,41 @@ class CreateOrderPage extends HookConsumerWidget {
                       Expanded(
                         child: TextButton(
                           onPressed: () async {
-                            showSelectOrderItem(context, ref);
+                            ScannerView.scanBarcodePage(
+                              context,
+                              onBarcodeScanned: (value) async {
+                                //search product by barcode
+                                try {
+                                  final productRepo = ref.read(searchProductRepositoryProvider);
+                                  final product = await productRepo.searchByBarcode(value.displayValue ?? '');
+                                  final currentQuantity = ref
+                                      .read(orderCreationProvider.select((state) => state.orderItems[product]))
+                                      ?.quantity;
+
+                                  await OrderNumberInputWidget(
+                                    product: product,
+                                    currentQuantity: currentQuantity,
+                                    onSave: (quantity, price) {
+                                      //add order item
+                                      ref.read(orderCreationProvider.notifier).addOrderItem(
+                                            product,
+                                            OrderItem(
+                                              id: undefinedId,
+                                              orderId: undefinedId,
+                                              productId: product.id,
+                                              productName: product.name,
+                                              quantity: quantity,
+                                              price: price,
+                                            ),
+                                          );
+                                      Navigator.pop(context); // Đóng bottom sheet sau khi thêm sản phẩm
+                                    },
+                                  ).show(context);
+                                } catch (e) {
+                                  showError(message: 'Không tìm thấy sản phẩm với mã vạch ${value.displayValue}');
+                                }
+                              },
+                            );
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -105,6 +175,100 @@ class CreateOrderPage extends HookConsumerWidget {
                     ],
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            //Khách hàng
+            ColoredBox(
+              color: Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      //show bottom sheet to select customer
+                      CustomerInforWidget(
+                        onSave: (String name, String contact) {
+                          ref.read(orderCreationProvider.notifier).setCustomerInfo(name, contact);
+                        },
+                      ).show(context);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Khách hàng',
+                            style: theme.textMedium16Default,
+                          ),
+                          //icon next
+                          const Spacer(),
+                          const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tên khách hàng',
+                          style: theme.textRegular15Subtle,
+                        ),
+                        Text(
+                          orderStaste.order?.customer ?? 'Chưa có',
+                          style: theme.textRegular15Default,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Liên hệ',
+                          style: theme.textRegular15Subtle,
+                        ),
+                        Text(
+                          orderStaste.order?.customerContact ?? 'Chưa có',
+                          style: theme.textRegular15Default,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ),
+            // Note
+            const SizedBox(height: 10),
+            ColoredBox(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Ghi chú',
+                      style: theme.textMedium16Default,
+                    ),
+                    const SizedBox(height: 8),
+                    CustomTextField.multiLines(
+                      controller: noteController,
+                      minLines: 1,
+                      hint: 'Nhập ghi chú',
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -159,7 +323,8 @@ class CreateOrderPage extends HookConsumerWidget {
               ),
             ),
             const SizedBox(height: 10),
-            const SizedBox(height: 100),
+
+            isKeyboardVisible ? buildBottomButtonBar() : SizedBox(height: 100),
 
             //Thanh toán
           ],
@@ -171,20 +336,7 @@ class CreateOrderPage extends HookConsumerWidget {
         },
         child: const Icon(Icons.search),
       ),
-      bottomNavigationBar: BottomButtonBar(
-        cancelButtonText: 'Lưu nháp',
-        saveButtonText: 'Tạo đơn',
-        onCancel: orderStaste.isNotEmpty
-            ? () {
-                ref.read(orderCreationProvider.notifier).saveDraft();
-              }
-            : null,
-        onSave: orderStaste.isNotEmpty
-            ? () {
-                ref.read(orderCreationProvider.notifier).createOrder();
-              }
-            : null,
-      ),
+      bottomNavigationBar: buildBottomButtonBar(),
     );
   }
 }
@@ -259,7 +411,11 @@ class OrderItemWidget extends HookConsumerWidget {
                   }
                 },
               ),
-
+              //Tồn
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Tồn: ${product.quantity.displayFormat()}'),
+              ),
               if (isSelected)
                 // Hiển thị số lượng và nút cộng trừ
                 PlusMinusButton(
@@ -295,6 +451,367 @@ class OrderItemSelectionWidget extends HookConsumerWidget {
     return OrderItemWidget(
       product: product,
       orderItem: orderItem,
+    );
+  }
+}
+
+class CustomerInforWidget extends HookWidget with ShowBottomSheet {
+  const CustomerInforWidget({super.key, required this.onSave});
+
+  final Function(String name, String contact) onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    //controllers
+    final nameController = useTextEditingController();
+    final contactController = useTextEditingController();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('Thông tin khách hàng'),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: TextField(
+            controller: nameController,
+            decoration: InputDecoration(
+              labelText: 'Tên khách hàng',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: TextField(
+            controller: contactController,
+            decoration: InputDecoration(
+              labelText: 'Liên hệ',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        // Nút để lưu thông tin khách hàng
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Đóng bottom sheet
+
+              // Lấy thông tin từ các TextField và gọi onSave
+              final name = nameController.text.trim();
+              final contact = contactController.text.trim();
+              if (name.isNotEmpty && contact.isNotEmpty) {
+                onSave(name, contact);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
+                );
+              }
+            },
+            child: Text('Lưu'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+@RoutePage()
+class OrderDetailPage extends HookConsumerWidget {
+  const OrderDetailPage({super.key, required this.order});
+
+  final Order order;
+
+  @override
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orderStaste = ref.watch(orderDetailProvider(order));
+    final theme = context.appTheme;
+    return Scaffold(
+      appBar: CustomAppBar(title: 'Chi tiết đơn hàng'),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ColoredBox(
+              color: Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  //Order info
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    child: Text(
+                      'Thông tin đơn hàng',
+                      style: theme.textMedium16Default,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Mã đơn hàng',
+                          style: theme.textRegular15Subtle,
+                        ),
+                        Text(
+                          '#${orderStaste.order?.id.toString() ?? 'Chưa có'}',
+                          style: theme.textRegular15Default,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tổng số lượng',
+                          style: theme.textRegular15Subtle,
+                        ),
+                        Text(
+                          orderStaste.totalQuantity.displayFormat(),
+                          style: theme.textRegular15Default,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tổng tiền',
+                          style: theme.textRegular15Subtle,
+                        ),
+                        Text(
+                          orderStaste.totalPrice.priceFormat(),
+                          style: theme.textRegular15Default,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tên khách hàng',
+                          style: theme.textRegular15Subtle,
+                        ),
+                        Text(
+                          orderStaste.order?.customer ?? 'Chưa có',
+                          style: theme.textRegular15Default,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Liên hệ',
+                          style: theme.textRegular15Subtle,
+                        ),
+                        Text(
+                          orderStaste.order?.customerContact ?? 'Chưa có',
+                          style: theme.textRegular15Default,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Note
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Ghi chú',
+                          style: theme.textRegular15Subtle,
+                        ),
+                        Text(
+                          orderStaste.order?.note ?? '',
+                          style: theme.textRegular15Default,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            ColoredBox(
+              color: Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    child: Text(
+                      'Sản phẩm',
+                      style: theme.textMedium16Default,
+                    ),
+                  ),
+                  //listView Separator
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: orderStaste.orderItems.length,
+                    separatorBuilder: (context, index) => const AppDivider(),
+                    itemBuilder: (context, index) => _OrderItem(
+                      product: orderStaste.orderItems.keys.elementAt(index),
+                      orderItem: orderStaste.orderItems.values.elementAt(index),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            //Thanh toán
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OrderItem extends StatelessWidget {
+  const _OrderItem({super.key, required this.product, this.orderItem});
+  final Product product;
+  final OrderItem? orderItem;
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: CustomProductCard(
+        product: product,
+        trailingWidget: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            QuantityWidget(quantity: orderItem?.quantity ?? 0),
+            const SizedBox(height: 8),
+            Container(
+              constraints: BoxConstraints(
+                minWidth: 56,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: context.appTheme.colorTextSupportRed.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: context.appTheme.colorBorderField),
+              ),
+              // alignment: Alignment.center,
+              child: Text(
+                'Giá: ${orderItem?.price.priceFormat() ?? '0'}',
+                style: context.appTheme.textRegular14Default,
+              ),
+            ),
+          ],
+        ),
+        bottomWidget: Align(
+          alignment: Alignment.centerRight,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'Tổng: ${((orderItem?.price ?? 0) * (orderItem?.quantity ?? 0)).priceFormat()}',
+                style: theme.textMedium15Default,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet {
+  const OrderNumberInputWidget({
+    super.key,
+    required this.product,
+    required this.currentQuantity,
+    required this.onSave,
+  });
+
+  final Product product;
+  final int? currentQuantity;
+  final Function(int quantity, double price) onSave;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quantity = useState(currentQuantity ?? product.quantity);
+    final productPrice = ref.watch(productPriceByIdProvider(product.id));
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CustomProductCard(
+            product: product,
+            subtitleWidget: productPrice.when(
+              data: (price) => Text(
+                'Giá bán: ${price.sellingPrice?.priceFormat()}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              loading: () => SizedBox(),
+              error: (error, stack) => SizedBox(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const AppDivider(),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Text('Số lượng đặt hàng:', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: PlusMinusInputView(
+                  initialValue: quantity.value,
+                  minValue: 0,
+                  onChanged: (val) => quantity.value = val,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Huỷ'),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: () {
+                  onSave(quantity.value, productPrice.valueOrNull?.sellingPrice ?? 0);
+                },
+                child: const Text('Lưu'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

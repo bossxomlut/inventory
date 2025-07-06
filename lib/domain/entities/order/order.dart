@@ -33,6 +33,7 @@ class Order with _$Order {
     required DateTime orderDate,
     required DateTime createdAt,
     required String createdBy,
+    required int productCount,
     required int totalAmount,
     required double totalPrice,
     DateTime? updatedAt,

@@ -4,8 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../data/check/check_repository.dart';
 import '../../index.dart';
 import '../index.dart';
-import '../product/inventory_repository.dart';
-import '../product/transaction_repository.dart';
+import '../product/update_product_repository.dart';
 
 part 'check_repository.g.dart';
 
@@ -13,8 +12,7 @@ part 'check_repository.g.dart';
 CheckRepository checkRepository(Ref ref) => CheckRepositoryImpl(
       checkSessionRepository: ref.read(checkSessionRepositoryProvider),
       checkedProductRepository: ref.read(checkedProductRepositoryProvider),
-      productRepository: ref.read(productRepositoryProvider),
-      transactionRepository: ref.read(transactionRepositoryProvider),
+      updateProductRepository: ref.read(updateProductRepositoryProvider),
     );
 
 @riverpod

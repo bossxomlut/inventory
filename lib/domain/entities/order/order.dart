@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../index.dart';
 
 part 'order.freezed.dart';
@@ -9,8 +11,20 @@ enum OrderStatus {
   cancelled, // Order has been cancelled
 }
 
-// Order status extensions for UI
-extension OrderStatusExtension on OrderStatus {
+extension OrderX on OrderStatus {
+  Color get color {
+    switch (this) {
+      case OrderStatus.draft:
+        return Colors.grey;
+      case OrderStatus.confirmed:
+        return Colors.blue;
+      case OrderStatus.done:
+        return Colors.green;
+      case OrderStatus.cancelled:
+        return Colors.red;
+    }
+  }
+
   String get displayName {
     switch (this) {
       case OrderStatus.draft:

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sample_app/features/order/provider/order_list_provider.dart';
 
 import '../../core/helpers/double_utils.dart';
 import '../../core/helpers/format_utils.dart';
@@ -8,6 +9,7 @@ import '../../domain/index.dart';
 import '../../domain/repositories/order/price_repository.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
 import '../../provider/index.dart';
+import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../../shared_widgets/toast.dart';
 import '../product/widget/index.dart';
@@ -15,7 +17,9 @@ import 'provider/order_provider.dart';
 
 @RoutePage()
 class CreateOrderPage extends HookConsumerWidget {
-  const CreateOrderPage({super.key});
+  const CreateOrderPage(this.order, {super.key});
+
+  final Order? order;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,6 +27,14 @@ class CreateOrderPage extends HookConsumerWidget {
     final isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
     final theme = context.appTheme;
     final noteController = useTextEditingController();
+
+    useEffect(() {
+      // Set initial note if order is not null
+      if (order != null) {
+        ref.watch(orderCreationProvider.notifier).initializeOrder(order!);
+      }
+      return null;
+    }, [order]);
 
     useEffect(() {
       noteController.text = orderStaste.order?.note ?? '';
@@ -51,7 +63,7 @@ class CreateOrderPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: CustomAppBar(title: 'Tạo đơn'),
+      appBar: const CustomAppBar(title: 'Tạo đơn'),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +108,7 @@ class CreateOrderPage extends HookConsumerWidget {
                       );
                     },
                   ),
-
+                  const AppDivider(),
                   Row(
                     children: [
                       //add product button
@@ -188,6 +200,8 @@ class CreateOrderPage extends HookConsumerWidget {
                     onTap: () {
                       //show bottom sheet to select customer
                       CustomerInforWidget(
+                        customerName: orderStaste.order?.customer,
+                        customerContact: orderStaste.order?.customerContact,
                         onSave: (String name, String contact) {
                           ref.read(orderCreationProvider.notifier).setCustomerInfo(name, contact);
                         },
@@ -324,7 +338,7 @@ class CreateOrderPage extends HookConsumerWidget {
             ),
             const SizedBox(height: 10),
 
-            isKeyboardVisible ? buildBottomButtonBar() : SizedBox(height: 100),
+            isKeyboardVisible ? buildBottomButtonBar() : const SizedBox(height: 100),
 
             //Thanh toán
           ],
@@ -387,8 +401,8 @@ class OrderItemWidget extends HookConsumerWidget {
                   'Giá bán: ${price.sellingPrice?.priceFormat()}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                loading: () => SizedBox(),
-                error: (error, stack) => SizedBox(),
+                loading: () => const SizedBox(),
+                error: (error, stack) => const SizedBox(),
               ),
             ),
           ),
@@ -465,61 +479,75 @@ class OrderItemSelectionWidget extends HookConsumerWidget {
 }
 
 class CustomerInforWidget extends HookWidget with ShowBottomSheet {
-  const CustomerInforWidget({super.key, required this.onSave});
+  const CustomerInforWidget({super.key, this.customerName, this.customerContact, required this.onSave});
+  final String? customerName;
+  final String? customerContact;
 
   final Function(String name, String contact) onSave;
 
   @override
   Widget build(BuildContext context) {
     //controllers
-    final nameController = useTextEditingController();
-    final contactController = useTextEditingController();
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text('Thông tin khách hàng'),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: TextField(
-            controller: nameController,
-            decoration: InputDecoration(
-              labelText: 'Tên khách hàng',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: TextField(
-            controller: contactController,
-            decoration: InputDecoration(
-              labelText: 'Liên hệ',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-        // Nút để lưu thông tin khách hàng
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Đóng bottom sheet
+    final nameController = useTextEditingController(text: customerName ?? '');
+    final contactController = useTextEditingController(text: customerContact ?? '');
+    final theme = context.appTheme;
 
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Thông tin khách hàng',
+                style: theme.headingSemibold20Default,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const SizedBox(height: 16),
+          //Gía bán
+          TitleBlockWidget(
+            title: 'Tên khách hàng',
+            child: CustomTextField(
+              controller: nameController,
+              label: 'Tên khách hàng',
+              textInputAction: TextInputAction.next,
+            ),
+          ),
+          const SizedBox(height: 16),
+          //Giá vốn
+          TitleBlockWidget(
+            title: 'Liên hệ',
+            child: CustomTextField(
+              controller: contactController,
+              label: 'Liên hệ',
+              textInputAction: TextInputAction.done,
+            ),
+          ),
+
+          // Add yo
+          BottomButtonBar(
+            padding: EdgeInsets.only(top: 16),
+            onSave: () async {
               // Lấy thông tin từ các TextField và gọi onSave
               final name = nameController.text.trim();
               final contact = contactController.text.trim();
-              if (name.isNotEmpty && contact.isNotEmpty) {
+              if (name.isNotEmpty || contact.isNotEmpty) {
+                Navigator.of(context).pop(); // Đóng bottom sheet
                 onSave(name, contact);
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
-                );
+                showError(message: 'Vui lòng nhập thông tin khách hàng');
               }
             },
-            child: Text('Lưu'),
+            onCancel: () {
+              Navigator.pop(context);
+            },
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -536,7 +564,7 @@ class OrderDetailPage extends HookConsumerWidget {
     final orderStaste = ref.watch(orderDetailProvider(order));
     final theme = context.appTheme;
     return Scaffold(
-      appBar: CustomAppBar(title: 'Chi tiết đơn hàng'),
+      appBar: const CustomAppBar(title: 'Chi tiết đơn hàng'),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -549,9 +577,22 @@ class OrderDetailPage extends HookConsumerWidget {
                   //Order info
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                    child: Text(
-                      'Thông tin đơn hàng',
-                      style: theme.textMedium16Default,
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            'Thông tin đơn hàng',
+                            style: theme.textMedium16Default,
+                          ),
+                        ),
+                        //order status tag here
+                        const SizedBox(width: 8),
+                        if (orderStaste.order != null)
+                          OrderStatusTag(
+                            status: orderStaste.order!.status,
+                            size: 20,
+                          ),
+                      ],
                     ),
                   ),
                   Padding(
@@ -695,6 +736,66 @@ class OrderDetailPage extends HookConsumerWidget {
           ],
         ),
       ),
+      bottomNavigationBar: buildBottomButtonBar(orderStaste.order, ref),
+    );
+  }
+
+  Widget buildBottomButtonBar(Order? order, WidgetRef ref) {
+    if (order == null) {
+      return const SizedBox.shrink();
+    }
+
+    switch (order.status) {
+      case OrderStatus.draft:
+        return BottomButtonBar(
+          saveButtonText: 'Tạo đơn',
+          cancelButtonText: 'Chỉnh sửa',
+          onSave: () async {
+            ref.read(orderDetailProvider(order).notifier).createOrder();
+            ref.invalidate(orderListProvider(order.status));
+          },
+          onCancel: () async {
+            await appRouter.goToUpdateDraftOrder(order);
+          },
+        );
+      case OrderStatus.confirmed:
+        return BottomButtonBar(
+          saveButtonText: 'Hoàn thành',
+          cancelButtonText: 'Huỷ đơn',
+          onSave: () {
+            ref.read(orderListProvider(order.status).notifier).confirmOrder(order);
+            ref.invalidate(orderDetailProvider(order));
+          },
+          onCancel: () {
+            ref.read(orderListProvider(order.status).notifier).cancelOrder(order);
+            ref.invalidate(orderDetailProvider(order));
+          },
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+}
+
+class OrderStatusTag extends StatelessWidget {
+  const OrderStatusTag({super.key, required this.status, this.size = 20});
+
+  final OrderStatus status;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: status.color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        status.displayName,
+        style: theme.textMedium16Default.copyWith(color: status.color),
+      ),
     );
   }
 }
@@ -717,7 +818,7 @@ class _OrderItem extends StatelessWidget {
             QuantityWidget(quantity: orderItem?.quantity ?? 0),
             const SizedBox(height: 8),
             Container(
-              constraints: BoxConstraints(
+              constraints: const BoxConstraints(
                 minWidth: 56,
               ),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -782,8 +883,8 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet {
                 'Giá bán: ${price.sellingPrice?.priceFormat()}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              loading: () => SizedBox(),
-              error: (error, stack) => SizedBox(),
+              loading: () => const SizedBox(),
+              error: (error, stack) => const SizedBox(),
             ),
           ),
           const SizedBox(height: 12),

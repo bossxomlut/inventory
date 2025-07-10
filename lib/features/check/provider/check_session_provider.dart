@@ -67,10 +67,10 @@ class LoadCheckSession extends _$LoadCheckSession
       final checkRepo = ref.read(checkRepositoryProvider);
       await checkRepo.updateSession(session.copyWith(status: status));
       refresh();
-      showSuccess('Check session updated successfully');
+      showSuccess('Cập nhật phiên kiểm kê thành công');
     } catch (e) {
       state = state.copyWith(error: e.toString());
-      showError('Update check session failed');
+      showError('Cập nhật phiên kiểm kê thất bại');
     }
   }
 
@@ -81,10 +81,10 @@ class LoadCheckSession extends _$LoadCheckSession
       final newList = state.data.toList();
       newList.removeWhere((e) => e.id == session.id);
       state = state.copyWith(data: newList);
-      showSuccess('Check session deleted successfully');
+      showSuccess('Xóa phiên kiểm kê thành công');
     } catch (e) {
       state = state.copyWith(error: e.toString());
-      showError('Delete check session failed');
+      showError('Xóa phiên kiểm kê thất bại');
     }
   }
 }

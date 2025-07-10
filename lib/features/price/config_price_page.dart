@@ -8,8 +8,10 @@ import '../../domain/entities/get_id.dart';
 import '../../domain/entities/order/price.dart';
 import '../../domain/entities/product/inventory.dart';
 import '../../domain/repositories/order/price_repository.dart';
+import '../../provider/index.dart';
 import '../../provider/load_list.dart';
 import '../../shared_widgets/index.dart';
+import '../../shared_widgets/toast.dart';
 import '../product/product_list_page.dart';
 import '../product/provider/product_provider.dart';
 import '../product/widget/product_card.dart';
@@ -20,16 +22,12 @@ class ConfigProductPricePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cấu hình giá sản phẩm'),
+    return const Scaffold(
+      appBar: CustomAppBar(
+        title: 'Cấu hình giá sản phẩm',
         actions: [],
       ),
-      body: const Column(
-        children: [
-          Expanded(child: ProductListView()),
-        ],
-      ),
+      body: ProductListView(),
     );
   }
 }
@@ -41,9 +39,10 @@ class ProductListView extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Use loadProductProvider directly
     final products = ref.watch(loadProductProvider);
+    final theme = context.appTheme;
 
     if (products.hasError) {
-      return Center(child: Text('Error: ${products.error}'));
+      return Center(child: Text('Lỗi: ${products.error}'));
     } else if (products.isEmpty) {
       return const EmptyItemWidget();
     } else {
@@ -71,27 +70,47 @@ class ProductListView extends HookConsumerWidget {
                     },
                     child: Container(
                       color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: CustomProductCard(
-                                product: product,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(child: CustomProductCard(product: product)),
+                          const SizedBox(width: 8),
+                          productPrice.when(
+                            data: (price) => Container(
+                              constraints: const BoxConstraints(maxWidth: 120),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  //giá vốn
+                                  Text(
+                                    'Giá vốn',
+                                    style: theme.textRegular13Subtle,
+                                  ),
+
+                                  Text(
+                                    '${price.purchasePrice?.priceFormat() ?? 'Chưa có'}',
+                                    style: theme.textMedium16Default,
+                                    textAlign: TextAlign.end,
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  Text(
+                                    'Giá bán',
+                                    style: theme.textRegular13Subtle,
+                                  ),
+                                  Text(
+                                    '${price.sellingPrice?.priceFormat() ?? 'Chưa có'}',
+                                    style: theme.textMedium16Default,
+                                    textAlign: TextAlign.end,
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            //product price here
-                            productPrice.when(
-                              data: (price) => Text(
-                                'Giá bán: ${price.sellingPrice?.priceFormat()}',
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                              loading: () => const SizedBox(),
-                              error: (error, stack) => const SizedBox(),
-                            ),
-                          ],
-                        ),
+                            loading: () => const SizedBox(),
+                            error: (error, stack) => const SizedBox(),
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -99,7 +118,6 @@ class ProductListView extends HookConsumerWidget {
               },
               separatorBuilder: (context, index) => const AppDivider(),
               onLoadMore: () async {
-                print('Loading more products...');
                 return Future(
                   () {
                     return ref.read(loadProductProvider.notifier).loadMore();
@@ -139,6 +157,21 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
       return double.tryParse(purchasePriceController.text);
     }
 
+    bool isValidFields() {
+      // Check if the fields are empty or have invalid number format
+      final sellPriceText = sellPriceController.text.trim();
+      if (sellPriceText.isNotEmpty && double.tryParse(sellPriceText) == null) {
+        return false; // Allow empty fields
+      }
+
+      final purchasePriceText = purchasePriceController.text.trim();
+      if (purchasePriceText.isNotEmpty && double.tryParse(purchasePriceText) == null) {
+        return false; // Allow empty fields
+      }
+
+      return true; // All fields are valid or empty
+    }
+
     useEffect(() {
       if (productPrice != null) {
         sellPriceController.text = productPrice!.sellingPrice?.inputFormat() ?? '';
@@ -151,30 +184,55 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ProductCard(product: product),
+          CustomProductCard(product: product),
           const SizedBox(height: 16),
           //Gía bán
-          TextField(
-            controller: sellPriceController,
-            decoration: const InputDecoration(
-              labelText: 'Giá bán',
-              border: OutlineInputBorder(),
+          TitleBlockWidget.widget(
+            titleWidget: AnimatedBuilder(
+              animation: sellPriceController,
+              builder: (BuildContext context, Widget? child) {
+                return Text(
+                  'Giá bán: ${sellingPrice() != null ? sellingPrice()?.priceFormat() : ''}',
+                  style: context.appTheme.textRegular13Subtle,
+                );
+              },
             ),
-            keyboardType: TextInputType.number,
+            child: CustomTextField(
+              controller: sellPriceController,
+              label: 'Giá bán',
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.next,
+            ),
           ),
           const SizedBox(height: 16),
-          //Gía vốn
-          TextField(
-            controller: purchasePriceController,
-            decoration: const InputDecoration(
-              labelText: 'Giá mua',
-              border: OutlineInputBorder(),
+          //Giá vốn
+          TitleBlockWidget.widget(
+            titleWidget: AnimatedBuilder(
+              animation: purchasePriceController,
+              builder: (BuildContext context, Widget? child) {
+                return Text(
+                  'Giá vốn: ${purchasePrice() != null ? purchasePrice()!.priceFormat() : ''}',
+                  style: context.appTheme.textRegular13Subtle,
+                );
+              },
             ),
-            keyboardType: TextInputType.number,
+            child: CustomTextField(
+              controller: purchasePriceController,
+              label: 'Giá vốn',
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
+            ),
           ),
-          // Add your form fields here
-          ElevatedButton(
-            onPressed: () async {
+
+          // Add yo
+          BottomButtonBar(
+            padding: EdgeInsets.only(top: 16),
+            onSave: () async {
+              if (!isValidFields()) {
+                showError(message: 'Vui lòng nhập đúng định dạng số');
+                return;
+              }
+
               final priceRepository = ref.read(priceRepositoryProvider);
               if (productPrice != null) {
                 // Update existing price
@@ -201,7 +259,9 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
               // Handle save action
               Navigator.pop(context);
             },
-            child: const Text('Lưu'),
+            onCancel: () {
+              Navigator.pop(context);
+            },
           ),
         ],
       ),

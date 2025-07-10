@@ -29,11 +29,11 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       state = state.copyWith(
         data: state.data.where((c) => c.id != category.id).toList(),
       );
-      showSuccess(message: 'Category deleted successfully');
+      showSuccess(message: 'Xóa danh mục thành công');
     } catch (e) {
       // Handle error
       state = state.copyWith(error: e.toString());
-      showError(message: 'Failed to delete category');
+      showError(message: 'Xóa danh mục thất bại');
     }
   }
 
@@ -43,7 +43,7 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       List<Category> categories = ref.read(multiSelectCategoryProvider).data.toList();
 
       if (categories.isEmpty) {
-        showSimpleInfo(message: 'No categories selected');
+        showSimpleInfo(message: 'Chưa chọn danh mục nào');
         return;
       }
 
@@ -55,13 +55,13 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       state = state.copyWith(
         data: state.data.where((c) => !categories.any((cat) => cat.id == c.id)).toList(),
       );
-      showSuccess(message: 'Categories deleted successfully');
+      showSuccess(message: 'Xóa các danh mục thành công');
 
       ref.read(multiSelectCategoryProvider.notifier).clear();
     } catch (e) {
       // Handle error
       state = state.copyWith(error: e.toString());
-      showError(message: 'Failed to delete categories');
+      showError(message: 'Xóa các danh mục thất bại');
     }
   }
 
@@ -70,12 +70,12 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       final repo = ref.read(categoryRepositoryProvider);
       final newCategory = await repo.create(category);
       state = state.copyWith(data: [newCategory, ...state.data]);
-      showSuccess(message: 'Add new category successfully');
+      showSuccess(message: 'Thêm danh mục thành công');
       return newCategory;
     } catch (e) {
       // Handle error
       state = state.copyWith(error: e.toString());
-      showError(message: 'Add new category failed');
+      showError(message: 'Thêm danh mục thất bại');
     }
   }
 
@@ -86,11 +86,11 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       state = state.copyWith(
         data: state.data.map((c) => c.id == updatedCategory.id ? updatedCategory : c).toList(),
       );
-      showSuccess(message: 'Update category successfully');
+      showSuccess(message: 'Cập nhật danh mục thành công');
     } catch (e) {
       // Handle error
       state = state.copyWith(error: e.toString());
-      showError(message: 'Update category failed');
+      showError(message: 'Cập nhật danh mục thất bại');
     }
   }
 }

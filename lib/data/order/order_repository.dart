@@ -30,20 +30,28 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
 
   @override
   Future<Order> createOrder(Order order, List<OrderItem> items) async {
+    bool isUpdateFromDraft = order.id != undefinedId;
+
     final createdOrder = await isar.writeTxn(() async {
-      final orderCollection = createNewItem(order);
+      final orderCollection = isUpdateFromDraft ? updateNewItem(order) : createNewItem(order);
 
       final orderId = await iCollection.put(orderCollection);
 
       final itemCollection = isar.collection<OrderItemCollection>();
 
       final orderItems = items.map((item) {
-        return OrderItemCollection()
+        final orderItem = OrderItemCollection()
           ..orderId = orderId
           ..productId = item.productId
           ..productName = item.productName
           ..quantity = item.quantity
           ..price = item.price;
+
+        if (item.id != undefinedId && order.status == OrderStatus.confirmed) {
+          orderItem.id = item.id; // Preserve the ID if updating
+        }
+
+        return orderItem;
       }).toList();
 
       itemCollection.putAll(orderItems);
@@ -95,6 +103,7 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
       ..orderDate = item.orderDate
       ..customerName = item.customer ?? ''
       ..customerContact = item.customerContact ?? ''
+      ..productCount = item.productCount
       ..totalAmount = item.totalAmount
       ..totalPrice = item.totalPrice
       ..note = item.note

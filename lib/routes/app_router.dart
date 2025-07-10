@@ -140,8 +140,12 @@ extension PriceAndOrderRouterX on AppRouter {
     push(ConfigProductPriceRoute());
   }
 
-  void goToCreateOrder() {
-    push(CreateOrderRoute());
+  Future goToCreateOrder({Order? order}) {
+    return push(CreateOrderRoute(order: order));
+  }
+
+  Future goToUpdateDraftOrder(Order order) {
+    return replace(CreateOrderRoute(order: order));
   }
 
   void goToOrderDetail(Order order) {

@@ -21,6 +21,7 @@ class ScannerView extends StatefulWidget {
 
   static Future scanBarcodePage(
     BuildContext context, {
+    String title = 'Quét mã vạch',
     required Future Function(Barcode barcode) onBarcodeScanned,
     bool autoStopCamera = false,
     bool singleScan = false, // New parameter for single scan
@@ -28,7 +29,7 @@ class ScannerView extends StatefulWidget {
     return Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          appBar: AppBar(),
+          appBar: CustomAppBar(title: title),
           body: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -232,7 +233,7 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
                     // }
                   },
                   errorBuilder: (context, error, _) {
-                    return ErrorWidget('Camera error: $error');
+                    return ErrorWidget('Lỗi camera: $error');
                   },
                   fit: BoxFit.fitWidth,
                 ),
@@ -384,11 +385,11 @@ class AnalyzeImageFromGalleryButton extends StatelessWidget {
 
         final SnackBar snackbar = barcodes != null
             ? const SnackBar(
-                content: Text('Barcode found!'),
+                content: Text('Đã tìm thấy mã vạch!'),
                 backgroundColor: Colors.green,
               )
             : const SnackBar(
-                content: Text('No barcode found!'),
+                content: Text('Không tìm thấy mã vạch!'),
                 backgroundColor: Colors.red,
               );
 
@@ -577,14 +578,14 @@ class ScannedBarcodeLabel extends StatelessWidget {
 
         if (scannedBarcodes.isEmpty) {
           return const Text(
-            'Scan something!',
+            'Quét mã vạch!',
             overflow: TextOverflow.fade,
             style: TextStyle(color: Colors.white),
           );
         }
 
         return Text(
-          values.isEmpty ? 'No display value.' : values,
+          values.isEmpty ? 'Không có giá trị hiển thị.' : values,
           overflow: TextOverflow.fade,
           style: const TextStyle(color: Colors.white),
         );

@@ -114,7 +114,13 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          appRouter.goToCreateOrder();
+          appRouter.goToCreateOrder().whenComplete(
+            () {
+              final currentTab = _tabController.index;
+              final currentStatus = statuses[currentTab];
+              ref.invalidate(orderListProvider(currentStatus));
+            },
+          );
         },
         child: const Icon(Icons.add),
       ),

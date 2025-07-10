@@ -3,9 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/helpers/double_utils.dart';
 import '../../core/index.dart';
 import '../../domain/index.dart';
+import '../../domain/repositories/order/price_repository.dart';
 import '../../domain/repositories/product/transaction_repository.dart';
+import '../../provider/index.dart';
+import '../../resources/theme.dart';
 import '../../shared_widgets/image/image_present_view.dart';
 import '../../shared_widgets/index.dart';
 import 'provider/product_detail_provider.dart';
@@ -73,8 +77,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
   // Method to show barcode bottom sheet
   void _showBarcodeBottomSheet(Product product) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final appTheme = context.appTheme;
 
     showModalBottomSheet<void>(
       context: context,
@@ -89,24 +92,24 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
             children: [
               Text(
                 'Mã sản phẩm',
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: appTheme.headingSemibold24Default,
               ),
               const SizedBox(height: 24),
               if (product.barcode != null && product.barcode!.isNotEmpty) ...[
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: appTheme.colorBackground,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.qr_code, size: 24, color: colorScheme.primary),
+                      Icon(Icons.qr_code, size: 24, color: appTheme.colorPrimary),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
                           product.barcode!,
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
+                          style: appTheme.headingSemibold20Default,
                         ),
                       ),
                     ],
@@ -118,8 +121,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   children: [
                     ElevatedButton.icon(
                       onPressed: () {
-                        // Copy to clipboard
-                        // This would typically use Clipboard.setData
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Đã sao chép mã sản phẩm vào bộ nhớ đệm')),
                         );
@@ -128,13 +129,12 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                       icon: const Icon(Icons.copy),
                       label: const Text('Sao chép'),
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: colorScheme.onPrimary,
-                        backgroundColor: colorScheme.primary,
+                        foregroundColor: appTheme.colorTextInverse,
+                        backgroundColor: appTheme.colorPrimary,
                       ),
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
-                        // Save or share functionality would go here
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Chức năng lưu trữ mã sẽ được triển khai sau')),
                         );
@@ -143,8 +143,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                       icon: const Icon(Icons.save),
                       label: const Text('Lưu trữ'),
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: colorScheme.onSecondary,
-                        backgroundColor: colorScheme.secondary,
+                        foregroundColor: appTheme.colorTextInverse,
+                        backgroundColor: appTheme.colorSecondary,
                       ),
                     ),
                   ],
@@ -161,19 +161,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Theo dõi thông tin sản phẩm từ provider
     final productDetail = ref.watch(productDetailProvider(productId));
-
-    // Sử dụng thông tin sản phẩm từ provider nếu có, nếu không thì dùng product từ widget
+    final productPrice = ref.watch(productPriceByIdProvider(productId));
     final product = productDetail ?? widget.product;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final appTheme = context.appTheme;
     final images = product.images ?? [];
     final hasImages = images.isNotEmpty && images.first.path != null;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: appTheme.colorBackground,
       body: RefreshIndicator(
         onRefresh: () => ref.read(productDetailProvider(productId).notifier).loadProduct(),
         child: CustomScrollView(
@@ -183,18 +180,18 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               expandedHeight: hasImages ? size.width * 0.75 : 200,
               pinned: true,
               stretch: true,
-              backgroundColor: colorScheme.primary,
-              foregroundColor: colorScheme.onPrimary,
+              backgroundColor: appTheme.colorPrimary,
+              foregroundColor: appTheme.colorTextInverse,
               leading: Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: hasImages ? Colors.white.withOpacity(0.3) : colorScheme.primaryContainer.withOpacity(0.3),
+                  color: appTheme.colorTextWhite.withOpacity(0.3),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, size: 20),
                   onPressed: () => Navigator.of(context).pop(),
-                  color: hasImages ? Colors.white : colorScheme.onPrimaryContainer,
+                  color: appTheme.colorTextWhite,
                   padding: EdgeInsets.zero,
                   tooltip: 'Quay lại',
                   constraints: const BoxConstraints(
@@ -208,7 +205,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ? GestureDetector(
                         onTap: _openImagePreview,
                         child: Hero(
-                          tag: 'product-image-${product.id}',
+                          tag: 'product-image-ÿ{product.id}',
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
@@ -216,33 +213,30 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 File(images[selectedIndex].path!),
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) => Container(
-                                  color: Colors.grey[300],
+                                  color: appTheme.colorBackgroundSublest,
                                   child: const Icon(Icons.broken_image, size: 64),
                                 ),
                               ),
-                              // Gradient overlay for better text visibility
-                              const DecoratedBox(
+                              DecoratedBox(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
-                                    colors: [Colors.transparent, Colors.black54],
+                                    colors: [Colors.transparent, appTheme.colorDynamicBlack80],
                                   ),
                                 ),
                               ),
-                              // Add product name overlay at the bottom of the image
                               Positioned(
                                 left: 16,
-                                right: 72, // Leave space for action buttons
+                                right: 72,
                                 bottom: 16,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       product.name,
-                                      style: theme.textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                      style: appTheme.headingSemibold24Default.copyWith(
+                                        color: appTheme.colorTextWhite,
                                         shadows: [const Shadow(blurRadius: 2.0, color: Colors.black54)],
                                       ),
                                       maxLines: 2,
@@ -257,7 +251,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: Colors.white.withOpacity(0.3),
+                                                color: appTheme.colorTextWhite.withOpacity(0.3),
                                                 borderRadius: BorderRadius.circular(12),
                                               ),
                                               child: Row(
@@ -266,13 +260,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                   Icon(
                                                     Icons.qr_code,
                                                     size: 14,
-                                                    color: Colors.white,
+                                                    color: appTheme.colorTextWhite,
                                                   ),
                                                   const SizedBox(width: 4),
                                                   Text(
                                                     product.barcode!,
-                                                    style: theme.textTheme.bodySmall?.copyWith(
-                                                      color: Colors.white,
+                                                    style: appTheme.textRegular12Default.copyWith(
+                                                      color: appTheme.colorTextWhite,
                                                       fontWeight: FontWeight.w500,
                                                     ),
                                                   ),
@@ -280,7 +274,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                   Icon(
                                                     Icons.info_outline,
                                                     size: 14,
-                                                    color: Colors.white,
+                                                    color: appTheme.colorTextWhite,
                                                   ),
                                                 ],
                                               ),
@@ -297,28 +291,27 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         ),
                       )
                     : Container(
-                        color: colorScheme.primary,
+                        color: appTheme.colorPrimary,
                         child: Stack(
                           children: [
                             Center(
                               child: Icon(
                                 Icons.inventory_2_outlined,
                                 size: 80,
-                                color: colorScheme.onPrimary,
+                                color: appTheme.colorTextWhite.withOpacity(0.7),
                               ),
                             ),
                             Positioned(
                               left: 16,
-                              right: 72, // Leave space for action buttons
+                              right: 72,
                               bottom: 16,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     product.name,
-                                    style: theme.textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.onPrimary,
+                                    style: appTheme.headingSemibold24Default.copyWith(
+                                      color: appTheme.colorTextWhite,
                                     ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
@@ -332,7 +325,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: colorScheme.onPrimary.withOpacity(0.15),
+                                              color: appTheme.colorTextWhite.withOpacity(0.3),
                                               borderRadius: BorderRadius.circular(12),
                                             ),
                                             child: Row(
@@ -341,21 +334,15 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                 Icon(
                                                   Icons.qr_code,
                                                   size: 14,
-                                                  color: colorScheme.onPrimary,
+                                                  color: appTheme.colorTextWhite,
                                                 ),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   product.barcode!,
-                                                  style: theme.textTheme.bodySmall?.copyWith(
-                                                    color: colorScheme.onPrimary,
+                                                  style: appTheme.textRegular12Default.copyWith(
+                                                    color: appTheme.colorTextWhite,
                                                     fontWeight: FontWeight.w500,
                                                   ),
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Icon(
-                                                  Icons.info_outline,
-                                                  size: 14,
-                                                  color: colorScheme.onPrimary,
                                                 ),
                                               ],
                                             ),
@@ -370,22 +357,20 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           ],
                         ),
                       ),
-                // Remove the title property to avoid duplication
                 titlePadding: EdgeInsets.zero,
               ),
               actions: [
-                // Edit button
                 Container(
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: hasImages ? Colors.white.withOpacity(0.3) : colorScheme.primaryContainer.withOpacity(0.3),
+                    color: appTheme.colorTextWhite.withOpacity(0.3),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.edit_outlined, size: 20),
                     onPressed: _openEditProductScreen,
                     tooltip: 'Chỉnh sửa sản phẩm',
-                    color: hasImages ? Colors.white : colorScheme.onPrimaryContainer,
+                    color: appTheme.colorTextWhite,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
                       minWidth: 36,
@@ -393,11 +378,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ),
                   ),
                 ),
-                // More options button
                 Container(
                   margin: const EdgeInsets.only(right: 8, left: 4),
                   decoration: BoxDecoration(
-                    color: hasImages ? Colors.white.withOpacity(0.3) : colorScheme.primaryContainer.withOpacity(0.3),
+                    color: appTheme.colorTextWhite.withOpacity(0.3),
                     shape: BoxShape.circle,
                   ),
                   width: 32,
@@ -408,7 +392,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                       // TODO: Implement share functionality
                     },
                     tooltip: 'Chia sẻ',
-                    color: hasImages ? Colors.white : colorScheme.onPrimaryContainer,
+                    color: appTheme.colorTextWhite,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
                       minWidth: 32,
@@ -441,12 +425,12 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           height: 72,
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: selectedIndex == index ? colorScheme.primary : Colors.transparent,
+                              color: selectedIndex == index ? appTheme.colorPrimary : Colors.transparent,
                               width: 2,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: appTheme.colorDynamicBlack80,
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
@@ -457,7 +441,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             fit: BoxFit.cover,
                             cacheWidth: 200,
                             errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey[300],
+                              color: appTheme.colorBackgroundSublest,
                               child: const Icon(Icons.broken_image, size: 24),
                             ),
                           ),
@@ -478,14 +462,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     // Inventory status card with price and quantity
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: appTheme.colorBackgroundSurface,
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -499,17 +476,31 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                     children: [
                                       Text(
                                         'Giá',
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          color: Colors.grey[600],
+                                        style: appTheme.textRegular14Default.copyWith(
+                                          color: appTheme.colorTextSubtle,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(
-                                        'Chưa có giá',
-                                        style: theme.textTheme.titleLarge?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: colorScheme.primary,
+                                      productPrice.when(
+                                        data: (price) {
+                                          return Text(
+                                            price?.sellingPrice != null
+                                                ? '${price.sellingPrice.priceFormat()}'
+                                                : 'Chưa có giá',
+                                            style: appTheme.headingSemibold24Default.copyWith(
+                                              color: price?.sellingPrice != null
+                                                  ? appTheme.colorPrimary
+                                                  : appTheme.colorTextSubtle,
+                                            ),
+                                          );
+                                        },
+                                        error: (error, stackTrace) => Text(
+                                          'Lỗi tải giá',
+                                          style: appTheme.headingSemibold24Default.copyWith(
+                                            color: appTheme.colorError,
+                                          ),
                                         ),
+                                        loading: () => const CircularProgressIndicator(),
                                       ),
                                     ],
                                   ),
@@ -517,7 +508,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 Container(
                                   height: 40,
                                   width: 1,
-                                  color: Colors.grey[300],
+                                  color: appTheme.colorDivider,
                                   margin: const EdgeInsets.symmetric(horizontal: 16),
                                 ),
                                 Expanded(
@@ -526,8 +517,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                     children: [
                                       Text(
                                         'Tồn kho',
-                                        style: theme.textTheme.bodyMedium?.copyWith(
-                                          color: Colors.grey[600],
+                                        style: appTheme.textRegular14Default.copyWith(
+                                          color: appTheme.colorTextSubtle,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -536,22 +527,24 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                           Icon(
                                             product.quantity > 0 ? Icons.check_circle : Icons.warning,
                                             size: 20,
-                                            color: product.quantity > 0 ? Colors.green : Colors.orange,
+                                            color: product.quantity > 0
+                                                ? appTheme.colorTextSupportGreen
+                                                : appTheme.colorTextSupportRed,
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
                                             '${product.quantity}',
-                                            style: theme.textTheme.titleLarge?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: product.quantity > 0 ? Colors.green : Colors.orange,
+                                            style: appTheme.headingSemibold24Default.copyWith(
+                                              color: product.quantity > 0
+                                                  ? appTheme.colorTextSupportGreen
+                                                  : appTheme.colorTextSupportRed,
                                             ),
                                           ),
                                           if (product.unit != null)
                                             Text(
                                               ' ${product.unit!.name}',
-                                              style: theme.textTheme.titleMedium?.copyWith(
-                                                fontWeight: FontWeight.normal,
-                                                color: Colors.grey[600],
+                                              style: appTheme.textMedium14Default.copyWith(
+                                                color: appTheme.colorTextSubtle,
                                               ),
                                             ),
                                         ],
@@ -567,7 +560,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 decoration: BoxDecoration(
                                   border: Border(
                                     top: BorderSide(
-                                      color: Colors.grey[300]!,
+                                      color: appTheme.colorDivider,
                                       width: 1,
                                     ),
                                   ),
@@ -579,9 +572,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         child: Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: colorScheme.secondaryContainer.withOpacity(0.15),
+                                            color: appTheme.colorSecondary.withOpacity(0.15),
                                             border: Border.all(
-                                              color: colorScheme.secondaryContainer.withOpacity(0.5),
+                                              color: appTheme.colorSecondary.withOpacity(0.5),
                                               width: 1,
                                             ),
                                           ),
@@ -590,13 +583,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                               Container(
                                                 padding: const EdgeInsets.all(8),
                                                 decoration: BoxDecoration(
-                                                  color: colorScheme.secondaryContainer,
+                                                  color: appTheme.colorSecondary,
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Icon(
                                                   Icons.category_outlined,
                                                   size: 18,
-                                                  color: colorScheme.secondary,
+                                                  color: appTheme.colorPrimary,
                                                 ),
                                               ),
                                               const SizedBox(width: 12),
@@ -606,17 +599,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                   children: [
                                                     Text(
                                                       'Danh mục',
-                                                      style: theme.textTheme.bodySmall?.copyWith(
-                                                        color: Colors.grey[600],
+                                                      style: appTheme.textRegular12Default.copyWith(
+                                                        color: appTheme.colorTextSubtle,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       product.category!.name,
-                                                      style: theme.textTheme.titleSmall?.copyWith(
-                                                        fontWeight: FontWeight.w600,
-                                                        color: colorScheme.secondary,
-                                                      ),
+                                                      style: appTheme.textMedium15Default,
                                                       maxLines: 1,
                                                       overflow: TextOverflow.ellipsis,
                                                     ),
@@ -634,9 +624,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         child: Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: colorScheme.primaryContainer.withOpacity(0.15),
+                                            color: appTheme.colorSecondary.withOpacity(0.15),
                                             border: Border.all(
-                                              color: colorScheme.primaryContainer.withOpacity(0.5),
+                                              color: appTheme.colorSecondary.withOpacity(0.5),
                                               width: 1,
                                             ),
                                           ),
@@ -645,13 +635,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                               Container(
                                                 padding: const EdgeInsets.all(8),
                                                 decoration: BoxDecoration(
-                                                  color: colorScheme.primaryContainer,
+                                                  color: appTheme.colorSecondary,
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Icon(
                                                   Icons.straighten_outlined,
                                                   size: 18,
-                                                  color: colorScheme.primary,
+                                                  color: appTheme.colorPrimary,
                                                 ),
                                               ),
                                               const SizedBox(width: 12),
@@ -661,16 +651,15 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                   children: [
                                                     Text(
                                                       'Đơn vị',
-                                                      style: theme.textTheme.bodySmall?.copyWith(
-                                                        color: Colors.grey[600],
+                                                      style: appTheme.textRegular12Default.copyWith(
+                                                        color: appTheme.colorTextSubtle,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       product.unit!.name,
-                                                      style: theme.textTheme.titleSmall?.copyWith(
-                                                        fontWeight: FontWeight.w600,
-                                                        color: colorScheme.primary,
+                                                      style: appTheme.headingSemibold20Default.copyWith(
+                                                        color: appTheme.colorPrimary,
                                                       ),
                                                       maxLines: 1,
                                                       overflow: TextOverflow.ellipsis,
@@ -702,14 +691,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             Icon(
                               Icons.description_outlined,
                               size: 20,
-                              color: colorScheme.primary,
+                              color: appTheme.colorPrimary, // was appTheme.primary
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'Mô tả',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.onBackground,
+                              style: appTheme.textMedium14Default.copyWith(
+                                color: appTheme.colorTextInverse, // was appTheme.onBackground
                               ),
                             ),
                           ],
@@ -717,10 +705,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                       ),
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: appTheme.colorBackgroundSurface,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
+                              color: appTheme.colorDynamicBlack80,
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -730,7 +718,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           padding: const EdgeInsets.all(16),
                           child: Text(
                             product.description!,
-                            style: theme.textTheme.bodyMedium,
+                            style: appTheme.textRegular14Default.copyWith(
+                              color: appTheme.colorTextSubtle,
+                            ),
                           ),
                         ),
                       ),
@@ -743,14 +733,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           Icon(
                             Icons.history,
                             size: 20,
-                            color: colorScheme.primary,
+                            color: appTheme.colorPrimary, // correct
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Lịch sử giao dịch',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onBackground,
+                            style: appTheme.headingSemibold20Default.copyWith(
+                              color: appTheme.colorTextDefault, // correct property
                             ),
                           ),
                         ],
@@ -774,20 +763,24 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 itemBuilder: (context, index) {
                                   final transaction = transactions[index];
                                   return ColoredBox(
-                                    color: Colors.white,
+                                    color: appTheme.colorBackgroundSurface,
                                     child: ListTile(
-                                      leading: Icon(
-                                        transaction.type == TransactionType.increase
-                                            ? Icons.add_circle_outline
-                                            : Icons.remove_circle_outline,
-                                        color:
-                                            transaction.type == TransactionType.increase ? Colors.green : Colors.orange,
+                                      leading: getTransactionIcon(transaction.type, appTheme),
+                                      title: Text(
+                                        '${transaction.category.displayName}',
+                                        style: appTheme.textRegular14Default.copyWith(
+                                          color: appTheme.colorTextDefault,
+                                        ),
                                       ),
-                                      title: Text('${transaction.category.displayName}'),
                                       subtitle: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text('${transaction.timestamp.timeAgo}'),
+                                          Text(
+                                            '${transaction.timestamp.timeAgo}',
+                                            style: appTheme.textRegular12Default.copyWith(
+                                              color: appTheme.colorTextSubtle,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                       trailing: ConstrainedBox(
@@ -817,5 +810,25 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         ),
       ),
     );
+  }
+
+  Widget getTransactionIcon(TransactionType transaction, AppThemeData appTheme) {
+    switch (transaction) {
+      case TransactionType.increase:
+        return Icon(
+          Icons.add_circle_outline,
+          color: appTheme.colorTextSupportGreen,
+        );
+      case TransactionType.decrease:
+        return Icon(
+          Icons.remove_circle_outline,
+          color: appTheme.colorTextSupportRed,
+        );
+      case TransactionType.balance:
+        return Icon(
+          Icons.check_circle_outlined,
+          color: appTheme.colorTextSupportBlue,
+        );
+    }
   }
 }

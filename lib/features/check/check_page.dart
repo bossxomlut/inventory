@@ -12,6 +12,7 @@ import '../../shared_widgets/index.dart';
 import '../product/widget/product_card.dart';
 import 'provider/check_product_provider.dart';
 import 'provider/check_session_provider.dart';
+import 'widget/create_session_bottom_sheet.dart';
 import 'widget/inventory_adjust_bottom_sheet.dart';
 
 @RoutePage()
@@ -62,10 +63,11 @@ class _CheckPageState extends ConsumerState<CheckPage> {
     ).show(context);
   }
 
-  Future _onBarcodeScanned(Barcode barcode) async {
+  Future<void> _onBarcodeScanned(Barcode barcode) async {
     try {
       final searchProductRepo = ref.read(searchProductRepositoryProvider);
       final product = await searchProductRepo.searchByBarcode(barcode.rawValue ?? '');
+      _openProductDetailBTS(product);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi quét mã vạch: $e')),
@@ -95,51 +97,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
   }
 
   void _showSessionInfo() {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Thông tin phiên kiểm kê',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            Text('Tên phiên: ${widget.session.name}', style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 8),
-            Text('Người tạo: ${widget.session.createdBy}', style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 8),
-            Text('Ngày tạo: ${widget.session.startDate.toString().substring(0, 16)}',
-                style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 8),
-            Text(
-              'Trạng thái: ${widget.session.status.toString().split('.').last}',
-              style: TextStyle(
-                fontSize: 16,
-                color: widget.session.status == CheckSessionStatus.inProgress ? Colors.blue : Colors.green,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            if (widget.session.note != null && widget.session.note!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text('Ghi chú: ${widget.session.note}', style: const TextStyle(fontSize: 16)),
-              ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Đóng'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    final appTheme = context.appTheme;
+    SessionDetailBottomSheet(session: widget.session).show(context);
   }
 
   @override
@@ -299,7 +258,6 @@ class CheckProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final product = check.product;
-    final theme = context.appTheme;
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),

@@ -73,6 +73,8 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
     showLoading();
 
     final orderRepository = ref.read(orderRepositoryProvider);
+    print('state.orderItems.values.toList(): ${state.orderItems.values.toList()}');
+
     orderRepository
         .createOrder(
       Order(
@@ -106,8 +108,8 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
     if (currentOrder != null) {
       state = state.copyWith(
         order: currentOrder.copyWith(
-          customer: name,
-          customerContact: contact,
+          customer: name.isNotEmpty ? name : null,
+          customerContact: contact.isNotEmpty ? contact : null,
         ),
       );
     } else {
@@ -121,8 +123,8 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
           productCount: state.orderItems.length,
           totalAmount: state.totalQuantity,
           totalPrice: state.totalPrice,
-          customer: name,
-          customerContact: contact,
+          customer: name.isNotEmpty ? name : null,
+          customerContact: contact.isNotEmpty ? contact : null,
           note: state.order?.note,
         ),
       );
@@ -153,13 +155,43 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
       );
     }
   }
+
+  void initializeOrder(Order order) async {
+    if (order.id == undefinedId) {
+      state = OrderState(order: order, orderItems: {});
+    } else {
+      //load existing order items
+      final orderItemRepository = ref.read(orderItemRepositoryProvider);
+      final orderItems = await orderItemRepository.getItemsByOrderId(order.id);
+      final Map<Product, OrderItem> orderItemsMap = {};
+      final productRepository = ref.read(productRepositoryProvider);
+      for (final item in orderItems) {
+        try {
+          final product = await productRepository.read(item.productId);
+          orderItemsMap[product] = item;
+        } catch (e) {
+          log('Error fetching product for order item: ${item.id}', error: e);
+        }
+      }
+
+      state = OrderState(
+        order: order,
+        orderItems: orderItemsMap,
+      );
+    }
+  }
 }
 
 @riverpod
 class OrderDetail extends _$OrderDetail with CommonProvider<OrderState> {
   @override
   OrderState build(Order order) {
-    Future(() {
+    Future(() async {
+      //get lasted order items
+      //
+      final orderRepository = ref.read(orderRepositoryProvider);
+      final lastedOrder = await orderRepository.read(order.id);
+
       final orderItemRepository = ref.read(orderItemRepositoryProvider);
       orderItemRepository.getItemsByOrderId(order.id).then((items) async {
         final productRepository = ref.read(productRepositoryProvider);
@@ -168,13 +200,31 @@ class OrderDetail extends _$OrderDetail with CommonProvider<OrderState> {
           final product = await productRepository.read(item.productId);
           orderItems[product] = item;
         }
-        state = OrderState(order: order, orderItems: orderItems);
+        state = OrderState(order: lastedOrder, orderItems: orderItems);
       }).onError((error, stackTrace) {
         log('Error fetching order items', error: error, stackTrace: stackTrace);
-        state = OrderState(order: order, orderItems: {});
+        state = OrderState(order: lastedOrder, orderItems: {});
       });
     });
     return OrderState(order: order, orderItems: {});
+  }
+
+  Future createOrder() async {
+    showLoading();
+
+    final orderRepository = ref.read(orderRepositoryProvider);
+    final order = await orderRepository.createOrder(
+      state.order!.copyWith(
+        status: OrderStatus.confirmed,
+      ),
+      state.orderItems.values.toList(),
+    );
+
+    state = state.copyWith(order: order);
+
+    hideLoading();
+
+    showSuccess('Tạo đơn hàng thành công');
   }
 }
 

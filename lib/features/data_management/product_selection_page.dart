@@ -3,10 +3,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../provider/theme.dart';
+import '../../provider/notification.dart';
 import '../../shared_widgets/index.dart';
 import '../../domain/models/shop_type.dart';
 import '../../domain/models/sample_product.dart';
 import '../../services/shop_type_service.dart';
+import '../../services/data_import_service.dart';
 import '../../resources/index.dart';
 import 'widgets/sample_product_card.dart';
 
@@ -42,7 +44,7 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
       });
 
       final products = await ShopTypeService.loadSampleProductsForShopType(widget.shopType);
-      
+
       setState(() {
         _products = products;
         _selectedProducts = List.from(products); // Select all by default
@@ -80,36 +82,28 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
 
   Future<void> _saveSelectedProducts() async {
     if (_selectedProducts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng chọn ít nhất một sản phẩm'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      ref.read(notificationProvider.notifier).showError('Vui lòng chọn ít nhất một sản phẩm');
       return;
     }
 
     try {
-      // TODO: Implement save to database logic here
-      await Future<void>.delayed(const Duration(seconds: 1)); // Simulate save
+      // Use DataImportService to import selected products
+      final dataImportService = ref.read(dataImportServiceProvider);
+      final result = await dataImportService.importFromSampleProducts(_selectedProducts);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã lưu ${_selectedProducts.length} sản phẩm thành công!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context);
+        if (result.success) {
+          ref.read(notificationProvider.notifier).showSuccess('Đã lưu ${result.successfulImports} sản phẩm thành công!');
+          Navigator.pop(context);
+        } else if (result.hasPartialSuccess) {
+          ref.read(notificationProvider.notifier).showWarning('Đã lưu ${result.successfulImports}/${result.totalLines} sản phẩm. ${result.failedImports} sản phẩm lỗi.');
+        } else {
+          ref.read(notificationProvider.notifier).showError('Lỗi khi lưu dữ liệu: ${result.errors.isNotEmpty ? result.errors.first : "Unknown error"}');
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi khi lưu dữ liệu: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ref.read(notificationProvider.notifier).showError('Lỗi khi lưu dữ liệu: $e');
       }
     }
   }
@@ -126,9 +120,7 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
             IconButton(
               onPressed: _selectedProducts.length == _products.length ? _deselectAll : _selectAll,
               icon: Icon(
-                _selectedProducts.length == _products.length 
-                  ? HugeIcons.strokeRoundedCancel01
-                  : HugeIcons.strokeRoundedCheckmarkSquare02,
+                _selectedProducts.length == _products.length ? HugeIcons.strokeRoundedCancel01 : HugeIcons.strokeRoundedCheckmarkSquare02,
                 color: theme.colorPrimary,
               ),
               tooltip: _selectedProducts.length == _products.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả',
@@ -375,9 +367,7 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
       ),
       child: SafeArea(
         child: AppButton.primary(
-          title: _selectedProducts.isEmpty 
-            ? 'Chọn ít nhất 1 sản phẩm'
-            : 'Hoàn thành (${_selectedProducts.length})',
+          title: _selectedProducts.isEmpty ? 'Chọn ít nhất 1 sản phẩm' : 'Hoàn thành (${_selectedProducts.length})',
           onPressed: _selectedProducts.isNotEmpty ? _saveSelectedProducts : null,
         ),
       ),

@@ -1,19 +1,14 @@
-import 'dart:convert';
-
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:isar/isar.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/index.dart';
 import '../../../core/persistence/simple_key_value_storage.dart';
-import '../../../domain/entities/order/price.dart';
 import '../../../domain/index.dart';
 import '../../../domain/repositories/auth/pin_code_repository.dart';
-import '../../../domain/repositories/order/price_repository.dart';
-import '../../../domain/repositories/product/inventory_repository.dart';
-import '../../../domain/repositories/product/update_product_repository.dart';
 import '../../../routes/app_router.dart';
+import '../../../services/data_import_service.dart';
+import '../../../provider/notification.dart';
 
 part 'auth_provider.g.dart';
 
@@ -46,66 +41,28 @@ class AuthController extends _$AuthController {
             await prefs.init();
             final isCreatedGuestData = await prefs.getBool(_isCreatedGuestData);
             if (isCreatedGuestData != true) {
-              //load assets
+              //load assets using DataImportService
               try {
-                final stringData = await rootBundle.loadString('assets/data/mock.jsonl');
+                final dataImportService = ref.read(dataImportServiceProvider);
+                final result = await dataImportService.importFromAssetFile('assets/data/mock.jsonl');
 
-                final categoryRepository = ref.read(categoryRepositoryProvider);
-                final unitRepository = ref.read(unitRepositoryProvider);
-                final updateProductRepo = ref.read(updateProductRepositoryProvider);
-                final priceRepository = ref.read(priceRepositoryProvider);
-                final lines = stringData.split('\n');
-                for (final line in lines) {
-                  try {
-                    final jsonData = jsonDecode(line) as Map<String, dynamic>;
-                    String? categoryName = jsonData['categoryName'] as String?;
-                    String? unitName = jsonData['unitName'] as String?;
-                    //find or create category
-                    Category? category;
-                    if (categoryName != null) {
-                      category = await categoryRepository.searchByName(categoryName);
-                      if (category == null) {
-                        category = await categoryRepository.create(Category(id: undefinedId, name: categoryName));
-                      }
-                    }
-
-                    Unit? unit;
-                    //find or create unit
-                    if (unitName != null) {
-                      unit = await unitRepository.searchByName(unitName);
-                      if (unit == null) {
-                        unit = await unitRepository.create(Unit(id: undefinedId, name: unitName));
-                      }
-                    }
-
-                    //create product
-                    final product = Product.fromJson(jsonData);
-
-                    await updateProductRepo.createProduct(product.copyWith(
-                      category: category,
-                      unit: unit,
-                    ));
-
-                    final double? price = jsonData.parseDouble('price');
-                    if (price != null) {
-                      //create price
-                      await priceRepository.create(
-                        ProductPrice(
-                          id: undefinedId,
-                          productId: product.id,
-                          productName: product.name,
-                          sellingPrice: price,
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    // Handle parsing error or invalid JSON line
-                    print('Error parsing line: $line, Error: $e');
+                if (result.success) {
+                  // Show success message using the notification provider
+                  ref.read(notificationProvider.notifier).showSuccess('Đã tải ${result.successfulImports} sản phẩm mẫu thành công!');
+                } else if (result.hasPartialSuccess) {
+                  // Show warning for partial success
+                  ref.read(notificationProvider.notifier).showWarning('Đã tải ${result.successfulImports}/${result.totalLines} sản phẩm. ${result.failedImports} sản phẩm lỗi.');
+                } else {
+                  // Log errors but don't fail the login process
+                  for (final error in result.errors) {
+                    print('Data import error: $error');
                   }
                 }
 
-                //set is created guest data
-              } catch (e) {}
+                print('Data import completed: ${result.successfulImports}/${result.totalLines} products imported');
+              } catch (e) {
+                print('Failed to import guest data: $e');
+              }
 
               await prefs.saveBool(_isCreatedGuestData, true);
             }

@@ -139,3 +139,4 @@ flutter:
     - assets/translations/
     - assets/translations/en-US.json
     - assets/data/mock.jsonl
+    - assets/images/

@@ -122,7 +122,7 @@
       "specialCharacter": "Contain 1 special character '!@#$%^&*()\"\\'",
       "passwordMatch": "Password does not match",
       "validateAccount": "Your account is not valid. Please use other account",
-      "adminExist": "Amin account already exist. Only one admin can be registered"
+      "adminExist": "Admin account already exist. Only one admin can be registered"
     },
     "verification": {
       "selectMethod": "Select method of\nreceiving code",

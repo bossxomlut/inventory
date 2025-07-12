@@ -263,7 +263,7 @@ class UserRoleWidget extends StatelessWidget {
               Gap(20),
               Expanded(
                 child: Text(
-                  role.name,
+                  role.displayName,
                   style: theme.headingSemibold20Default,
                 ),
               ),

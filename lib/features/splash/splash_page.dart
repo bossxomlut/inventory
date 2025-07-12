@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/persistence/isar_storage.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 
@@ -22,16 +23,16 @@ class SplashPage extends HookConsumerWidget {
       return null; // No cleanup needed
     }, []);
 
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FlutterLogo(size: 100),
-            SizedBox(height: 20),
-            CircularProgressIndicator(),
-            SizedBox(height: 20),
-            Text('Loading...'),
+            AppImage.asset(url: ImagePath.logo, width: 100, height: 100),
+            const SizedBox(height: 20),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 20),
+            const Text('Đang tải...'),
           ],
         ),
       ),

@@ -6,26 +6,7 @@ import '../../provider/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
-
-// Model cho menu item
-class MenuItem {
-  final String title;
-  final IconData icon;
-  final VoidCallback destinationCallback;
-
-  MenuItem({
-    required this.title,
-    required this.icon,
-    required this.destinationCallback,
-  });
-}
-
-// Group menu items by business category
-class MenuGroup {
-  final String title;
-  final List<MenuItem> items;
-  MenuGroup({required this.title, required this.items});
-}
+import 'menu_manager.dart';
 
 @RoutePage()
 class HomePage2 extends ConsumerWidget {
@@ -37,83 +18,8 @@ class HomePage2 extends ConsumerWidget {
     final theme = context.appTheme;
     return user.when(
         authenticated: (User user, DateTime? lastLoginTime) {
-          List<MenuGroup> menuGroups = [
-            MenuGroup(
-              title: 'Quản lý sản phẩm',
-              items: [
-                MenuItem(
-                  title: 'Sản phẩm',
-                  icon: Icons.inventory,
-                  destinationCallback: () {
-                    appRouter.goToProductList();
-                  },
-                ),
-                MenuItem(
-                  title: 'Kiểm kê',
-                  icon: Icons.fact_check,
-                  destinationCallback: () {
-                    appRouter.goToCheckSessions();
-                  },
-                ),
-                MenuItem(
-                  title: 'Danh mục',
-                  icon: Icons.category,
-                  destinationCallback: () {
-                    appRouter.goToCategory();
-                  },
-                ),
-                MenuItem(
-                  title: 'Đơn vị/Quy cách',
-                  icon: Icons.straighten,
-                  destinationCallback: () {
-                    appRouter.goToUnit();
-                  },
-                ),
-              ],
-            ),
-            MenuGroup(
-              title: 'Giá & Đơn hàng',
-              items: [
-                MenuItem(
-                  title: 'Giá bán',
-                  icon: Icons.price_change,
-                  destinationCallback: () {
-                    appRouter.goToConfigProductPrice();
-                  },
-                ),
-                MenuItem(
-                  title: 'Tạo đơn hàng',
-                  icon: Icons.add_shopping_cart,
-                  destinationCallback: () {
-                    appRouter.goToCreateOrder();
-                  },
-                ),
-                MenuItem(
-                  title: 'Danh sách đơn hàng',
-                  icon: Icons.assignment_turned_in,
-                  destinationCallback: () {
-                    appRouter.goToOrderStatusList();
-                  },
-                ),
-              ],
-            ),
-            // MenuGroup(
-            //   title: 'Khác',
-            //   items: [
-            //     MenuItem(
-            //       title: 'Giao dịch',
-            //       icon: Icons.receipt_long,
-            //       destinationCallback: () {},
-            //     ),
-            //     if (user.role == UserRole.admin)
-            //       MenuItem(
-            //         title: 'Người dùng',
-            //         icon: Icons.person,
-            //         destinationCallback: () {},
-            //       ),
-            //   ],
-            // ),
-          ];
+          // Sử dụng MenuManager để lấy menu theo role
+          List<MenuGroup> menuGroups = MenuManager.getMenuGroupsForRole(user.role);
 
           return Scaffold(
             body: SafeArea(

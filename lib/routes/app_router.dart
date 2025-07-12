@@ -1,5 +1,8 @@
 import '../domain/index.dart';
+import '../features/authentication/provider/auth_provider.dart';
+import '../provider/index.dart';
 import '../shared_widgets/index.dart';
+import '../shared_widgets/toast.dart';
 import 'app_router.gr.dart';
 
 export 'package:sample_app/routes/app_router.gr.dart';
@@ -158,10 +161,8 @@ extension PriceAndOrderRouterX on AppRouter {
 }
 
 extension AdminRouterX on AppRouter {
-  void goAdminHome() {
-    replaceAll(
-      [const UserRoute()],
-    );
+  void goToUserManagement() {
+    push(const UserRoute());
   }
 }
 
@@ -174,11 +175,35 @@ extension SettingRouterX on AppRouter {
 class AdminGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) {
-    final user = resolver.route.args as User;
-    if (user.role == UserRole.admin) {
-      resolver.next(true);
+    // Access the BuildContext from the resolver
+    final context = router.navigatorKey.currentContext;
+
+    if (context != null) {
+      // Read the provider using the context
+      //get user by ref
+      final user = context.read(authControllerProvider);
+      user.when(
+        authenticated: (User user, DateTime? lastLoginTime) {
+          if (user.role == UserRole.admin || user.role == UserRole.guest) {
+            resolver.next();
+          } else {
+            showError(message: 'Bạn không có quyền truy cập vào trang này');
+            resolver.next(false);
+          }
+        },
+        unauthenticated: () {
+          router.push(LoginRoute());
+          resolver.next(false);
+        },
+        initial: () {
+          router.push(LoginRoute());
+          resolver.next(false);
+        },
+      );
     } else {
+      // Handle case where context is null (e.g., redirect to error or login)
       router.push(LoginRoute());
+      resolver.next(false);
     }
   }
 }

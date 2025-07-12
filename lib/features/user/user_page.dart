@@ -48,8 +48,8 @@ class UserPage extends HookConsumerWidget {
     final showSearchState = useState(false);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Page'),
+      appBar: CustomAppBar(
+        title: 'Quản lý người dùng',
         actions: [
           IconButton(
             icon: const Icon(Icons.search),

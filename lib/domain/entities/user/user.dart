@@ -19,3 +19,17 @@ enum UserRole {
   user,
   guest,
 }
+
+//create extension displayName for UserRole
+extension UserRoleX on UserRole {
+  String get displayName {
+    switch (this) {
+      case UserRole.admin:
+        return 'Quản trị viên';
+      case UserRole.user:
+        return 'Người dùng';
+      case UserRole.guest:
+        return 'Khách';
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{"id": 1, "name": "Cà phê Arabica", "categoryName": "Cà phê", "unitName": "Kg", "price": 300000, "quantity": 20, "description": "Cà phê nguyên chất Arabica", "barcode": "8936061234567"}
+{"id": 2, "name": "Cà phê Robusta", "categoryName": "Cà phê", "unitName": "Kg", "price": 250000, "quantity": 30, "description": "Cà phê Robusta đậm đà", "barcode": "8936062345678"}
+{"id": 3, "name": "Trà ô long", "categoryName": "Trà", "unitName": "Kg", "price": 200000, "quantity": 15, "description": "Trà ô long thơm ngon", "barcode": "8936063456789"}
+{"id": 4, "name": "Trà xanh Thái Nguyên", "categoryName": "Trà", "unitName": "Kg", "price": 180000, "quantity": 25, "description": "Trà xanh cao cấp", "barcode": "8936064567890"}
+{"id": 5, "name": "Sữa tươi", "categoryName": "Nguyên liệu", "unitName": "Lít", "price": 30000, "quantity": 50, "description": "Sữa tươi nguyên chất", "barcode": "8936065678901"}
+{"id": 6, "name": "Đường cát", "categoryName": "Nguyên liệu", "unitName": "Kg", "price": 25000, "quantity": 100, "description": "Đường tinh luyện", "barcode": "8936066789012"}
+{"id": 7, "name": "Bánh croissant", "categoryName": "Bánh ngọt", "unitName": "Cái", "price": 25000, "quantity": 40, "description": "Bánh sừng bò Pháp", "barcode": "8936067890123"}
+{"id": 8, "name": "Bánh tiramisu", "categoryName": "Bánh ngọt", "unitName": "Miếng", "price": 45000, "quantity": 20, "description": "Bánh tiramisu Ý", "barcode": "8936068901234"}
+{"id": 9, "name": "Bánh muffin", "categoryName": "Bánh ngọt", "unitName": "Cái", "price": 20000, "quantity": 50, "description": "Bánh muffin blueberry", "barcode": "8936069012345"}
+{"id": 10, "name": "Ly giấy", "categoryName": "Dụng cụ", "unitName": "Cái", "price": 2000, "quantity": 500, "description": "Ly giấy dùng một lần", "barcode": "8936060123456"}
+{"id": 11, "name": "Nắp ly", "categoryName": "Dụng cụ", "unitName": "Cái", "price": 1000, "quantity": 500, "description": "Nắp ly nhựa", "barcode": "8936061234570"}
+{"id": 12, "name": "Ống hút giấy", "categoryName": "Dụng cụ", "unitName": "Cái", "price": 500, "quantity": 1000, "description": "Ống hút thân thiện môi trường", "barcode": "8936062345681"}
+{"id": 13, "name": "Syrup vanilla", "categoryName": "Nguyên liệu", "unitName": "Chai", "price": 80000, "quantity": 30, "description": "Syrup hương vanilla", "barcode": "8936063456792"}
+{"id": 14, "name": "Syrup caramel", "categoryName": "Nguyên liệu", "unitName": "Chai", "price": 85000, "quantity": 25, "description": "Syrup hương caramel", "barcode": "8936064567803"}
+{"id": 15, "name": "Whipping cream", "categoryName": "Nguyên liệu", "unitName": "Hộp", "price": 60000, "quantity": 40, "description": "Kem tươi đánh", "barcode": "8936065678914"}

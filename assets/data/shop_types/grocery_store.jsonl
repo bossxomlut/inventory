@@ -1,0 +1,15 @@
+{"id": 1, "name": "Gạo ST25", "categoryName": "Thực phẩm", "unitName": "Kg", "price": 30000, "quantity": 100, "description": "Gạo thơm chất lượng cao", "barcode": "8936063456789"}
+{"id": 2, "name": "Nước mắm Nam Ngư", "categoryName": "Gia vị", "unitName": "Chai", "price": 80000, "quantity": 60, "description": "Nước mắm cao cấp", "barcode": "8936066677880"}
+{"id": 3, "name": "Dầu ăn Tường An", "categoryName": "Gia vị", "unitName": "Chai", "price": 45000, "quantity": 80, "description": "Dầu ăn tinh luyện", "barcode": "8936064455669"}
+{"id": 4, "name": "Mì gói Hảo Hảo", "categoryName": "Thực phẩm", "unitName": "Thùng", "price": 120000, "quantity": 150, "description": "Mì tôm chua cay", "barcode": "8936065566778"}
+{"id": 5, "name": "Sữa tươi Vinamilk", "categoryName": "Sữa", "unitName": "Hộp", "price": 35000, "quantity": 90, "description": "Sữa tươi nguyên chất", "barcode": "8936060011223"}
+{"id": 6, "name": "Bánh quy Oreo", "categoryName": "Bánh kẹo", "unitName": "Hộp", "price": 35000, "quantity": 80, "description": "Bánh quy nhân sữa thơm ngon", "barcode": "8936069876543"}
+{"id": 7, "name": "Nước ngọt Coca-Cola 1.5L", "categoryName": "Đồ uống", "unitName": "Chai", "price": 18000, "quantity": 60, "description": "Nước ngọt có gas", "barcode": "8936064455667"}
+{"id": 8, "name": "Trà xanh C2", "categoryName": "Đồ uống", "unitName": "Chai", "price": 10000, "quantity": 200, "description": "Trà xanh đóng chai", "barcode": "8936068899002"}
+{"id": 9, "name": "Snack Lay's", "categoryName": "Bánh kẹo", "unitName": "Túi", "price": 20000, "quantity": 100, "description": "Snack khoai tây chiên giòn", "barcode": "8936061122336"}
+{"id": 10, "name": "Cà phê hòa tan Nescafé", "categoryName": "Đồ uống", "unitName": "Hộp", "price": 60000, "quantity": 100, "description": "Cà phê hòa tan thơm ngon", "barcode": "8936063344557"}
+{"id": 11, "name": "Đường cát trắng", "categoryName": "Gia vị", "unitName": "Kg", "price": 25000, "quantity": 50, "description": "Đường tinh luyện cao cấp", "barcode": "8936061234568"}
+{"id": 12, "name": "Muối biển", "categoryName": "Gia vị", "unitName": "Kg", "price": 15000, "quantity": 100, "description": "Muối biển nguyên chất", "barcode": "8936062345679"}
+{"id": 13, "name": "Bánh mì sandwich", "categoryName": "Bánh kẹo", "unitName": "Ổ", "price": 15000, "quantity": 30, "description": "Bánh mì tươi ngon", "barcode": "8936063456780"}
+{"id": 14, "name": "Trứng gà", "categoryName": "Thực phẩm", "unitName": "Vỉ", "price": 40000, "quantity": 50, "description": "Trứng gà tươi", "barcode": "8936064567891"}
+{"id": 15, "name": "Sữa chua Vinamilk", "categoryName": "Sữa", "unitName": "Lốc", "price": 10000, "quantity": 300, "description": "Sữa chua vị dâu", "barcode": "8936064455670"}

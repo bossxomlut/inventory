@@ -50,6 +50,11 @@ class AppRouter extends $AppRouter {
         AutoRoute(page: OrderDetailRoute.page),
         AutoRoute(page: OrderStatusListRoute.page),
 
+        //data management routes
+        AutoRoute(page: CreateSampleDataRoute.page),
+        AutoRoute(page: ExportDataRoute.page),
+        AutoRoute(page: DeleteDataRoute.page),
+
         //config admin route
         AutoRoute(
           page: UserRoute.page,
@@ -143,15 +148,15 @@ extension PriceAndOrderRouterX on AppRouter {
     push(ConfigProductPriceRoute());
   }
 
-  Future goToCreateOrder({Order? order}) {
+  Future<dynamic> goToCreateOrder({Order? order}) {
     return push(CreateOrderRoute(order: order));
   }
 
-  Future goToUpdateDraftOrder(Order order) {
+  Future<dynamic> goToUpdateDraftOrder(Order order) {
     return replace(CreateOrderRoute(order: order));
   }
 
-  Future goToOrderDetail(Order order) {
+  Future<dynamic> goToOrderDetail(Order order) {
     return push(OrderDetailRoute(order: order));
   }
 
@@ -169,6 +174,20 @@ extension AdminRouterX on AppRouter {
 extension SettingRouterX on AppRouter {
   void goToSetting() {
     push(SettingRoute());
+  }
+}
+
+extension DataManagementRouterX on AppRouter {
+  void goToCreateSampleData() {
+    push(CreateSampleDataRoute());
+  }
+
+  void goToExportData() {
+    push(ExportDataRoute());
+  }
+
+  void goToDeleteData() {
+    push(DeleteDataRoute());
   }
 }
 

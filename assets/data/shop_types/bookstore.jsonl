@@ -1,0 +1,15 @@
+{"id": 1, "name": "Bút bi Thiên Long", "categoryName": "Dụng cụ viết", "unitName": "Cái", "price": 5000, "quantity": 200, "description": "Bút bi thông dụng", "barcode": "8936061234567"}
+{"id": 2, "name": "Sổ tay A5", "categoryName": "Giấy tờ", "unitName": "Quyển", "price": 15000, "quantity": 100, "description": "Sổ tay tiện dụng cho ghi chú", "barcode": "8936062345678"}
+{"id": 3, "name": "Bút chì Faber-Castell", "categoryName": "Dụng cụ viết", "unitName": "Cái", "price": 3000, "quantity": 500, "description": "Bút chì 2B", "barcode": "8936063456789"}
+{"id": 4, "name": "Tập vở Hồng Hà", "categoryName": "Giấy tờ", "unitName": "Quyển", "price": 10000, "quantity": 400, "description": "Tập vở học sinh", "barcode": "8936064567890"}
+{"id": 5, "name": "Bút mực Pilot", "categoryName": "Dụng cụ viết", "unitName": "Cái", "price": 20000, "quantity": 150, "description": "Bút mực cao cấp", "barcode": "8936065678901"}
+{"id": 6, "name": "Kẹp giấy Deli", "categoryName": "Dụng cụ văn phòng", "unitName": "Hộp", "price": 15000, "quantity": 80, "description": "Kẹp giấy đa kích cỡ", "barcode": "8936066789012"}
+{"id": 7, "name": "Băng keo trong 3M", "categoryName": "Dụng cụ văn phòng", "unitName": "Cuộn", "price": 25000, "quantity": 50, "description": "Băng keo trong suốt", "barcode": "8936067890123"}
+{"id": 8, "name": "Thước kẻ Deli", "categoryName": "Dụng cụ học tập", "unitName": "Cái", "price": 10000, "quantity": 200, "description": "Thước kẻ nhựa bền", "barcode": "8936068901234"}
+{"id": 9, "name": "Hồ dán Glue Stick", "categoryName": "Dụng cụ văn phòng", "unitName": "Cái", "price": 12000, "quantity": 100, "description": "Hồ dán tiện lợi", "barcode": "8936069012345"}
+{"id": 10, "name": "Bút xóa Uni", "categoryName": "Dụng cụ viết", "unitName": "Cái", "price": 25000, "quantity": 80, "description": "Bút xóa mực tiện lợi", "barcode": "8936060123456"}
+{"id": 11, "name": "Giấy A4", "categoryName": "Giấy tờ", "unitName": "Ream", "price": 80000, "quantity": 50, "description": "Giấy in A4 chất lượng cao", "barcode": "8936061234570"}
+{"id": 12, "name": "Bìa hồ sơ", "categoryName": "Dụng cụ văn phòng", "unitName": "Cái", "price": 15000, "quantity": 100, "description": "Bìa đựng tài liệu", "barcode": "8936062345681"}
+{"id": 13, "name": "Máy tính Casio", "categoryName": "Thiết bị điện tử", "unitName": "Cái", "price": 200000, "quantity": 30, "description": "Máy tính bỏ túi", "barcode": "8936063456792"}
+{"id": 14, "name": "Compa vẽ hình", "categoryName": "Dụng cụ học tập", "unitName": "Bộ", "price": 50000, "quantity": 40, "description": "Bộ dụng cụ vẽ hình học", "barcode": "8936064567803"}
+{"id": 15, "name": "Sách giáo khoa Toán 12", "categoryName": "Sách", "unitName": "Quyển", "price": 150000, "quantity": 60, "description": "Sách giáo khoa chính thức", "barcode": "8936065678914"}

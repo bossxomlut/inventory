@@ -1,0 +1,15 @@
+{"id": 1, "name": "Nước rửa chén Sunlight", "categoryName": "Đồ gia dụng", "unitName": "Chai", "price": 45000, "quantity": 50, "description": "Nước rửa chén hiệu quả", "barcode": "8936069012345"}
+{"id": 2, "name": "Bàn chải đánh răng Colgate", "categoryName": "Vệ sinh cá nhân", "unitName": "Cái", "price": 20000, "quantity": 120, "description": "Bàn chải đánh răng mềm", "barcode": "8936061122334"}
+{"id": 3, "name": "Dầu gội Head & Shoulders", "categoryName": "Vệ sinh cá nhân", "unitName": "Chai", "price": 150000, "quantity": 40, "description": "Dầu gội trị gàu", "barcode": "8936066677889"}
+{"id": 4, "name": "Kem đánh răng P/S", "categoryName": "Vệ sinh cá nhân", "unitName": "Tuýp", "price": 25000, "quantity": 150, "description": "Kem đánh răng bảo vệ men răng", "barcode": "8936064455668"}
+{"id": 5, "name": "Sữa rửa mặt Cetaphil", "categoryName": "Vệ sinh cá nhân", "unitName": "Chai", "price": 300000, "quantity": 30, "description": "Sữa rửa mặt dịu nhẹ", "barcode": "8936062233447"}
+{"id": 6, "name": "Xà phòng Lifebuoy", "categoryName": "Vệ sinh cá nhân", "unitName": "Cục", "price": 15000, "quantity": 150, "description": "Xà phòng diệt khuẩn", "barcode": "8936060011225"}
+{"id": 7, "name": "Nước giặt OMO", "categoryName": "Đồ gia dụng", "unitName": "Chai", "price": 120000, "quantity": 60, "description": "Nước giặt hiệu quả", "barcode": "8936061234567"}
+{"id": 8, "name": "Nước xả vải Comfort", "categoryName": "Đồ gia dụng", "unitName": "Chai", "price": 80000, "quantity": 70, "description": "Nước xả vải thơm lâu", "barcode": "8936062345678"}
+{"id": 9, "name": "Giấy vệ sinh Saigon", "categoryName": "Vệ sinh cá nhân", "unitName": "Cuộn", "price": 35000, "quantity": 100, "description": "Giấy vệ sinh mềm mại", "barcode": "8936063456789"}
+{"id": 10, "name": "Khăn giấy Saigon", "categoryName": "Vệ sinh cá nhân", "unitName": "Hộp", "price": 25000, "quantity": 80, "description": "Khăn giấy mềm mịn", "barcode": "8936064567890"}
+{"id": 11, "name": "Tã Huggies", "categoryName": "Sản phẩm em bé", "unitName": "Bịch", "price": 200000, "quantity": 30, "description": "Tã em bé siêu thấm", "barcode": "8936065678901"}
+{"id": 12, "name": "Sữa tắm Romano", "categoryName": "Vệ sinh cá nhân", "unitName": "Chai", "price": 180000, "quantity": 40, "description": "Sữa tắm nam giới", "barcode": "8936066789012"}
+{"id": 13, "name": "Nước tẩy rửa Vim", "categoryName": "Đồ gia dụng", "unitName": "Chai", "price": 35000, "quantity": 90, "description": "Nước tẩy rửa đa năng", "barcode": "8936067890123"}
+{"id": 14, "name": "Khử mùi Febreze", "categoryName": "Đồ gia dụng", "unitName": "Chai", "price": 120000, "quantity": 50, "description": "Xịt khử mùi gia đình", "barcode": "8936068901234"}
+{"id": 15, "name": "Túi rác đen", "categoryName": "Đồ gia dụng", "unitName": "Cuộn", "price": 40000, "quantity": 60, "description": "Túi rác siêu bền", "barcode": "8936069012345"}

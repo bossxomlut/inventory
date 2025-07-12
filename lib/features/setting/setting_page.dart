@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-import '../../domain/repositories/auth/pin_code_repository.dart';
 import '../../provider/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
@@ -15,7 +14,6 @@ class SettingPage extends WidgetByDeviceTemplate {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
-    final pinCodeRepository = ref.read(pinCodeRepositoryProvider);
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -23,6 +21,81 @@ class SettingPage extends WidgetByDeviceTemplate {
       ),
       body: ListView(
         children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              'Quản lý dữ liệu',
+              style: theme.headingSemibold20Default.copyWith(
+                color: theme.colorTextSubtle,
+                fontSize: 18,
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.white,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(HugeIcons.strokeRoundedDatabaseAdd),
+                  title: const Text('Tạo từ dữ liệu mẫu'),
+                  onTap: () {
+                    appRouter.goToCreateSampleData();
+                  },
+                ),
+                const _Divider(),
+                ListTile(
+                  leading: const Icon(HugeIcons.strokeRoundedDatabaseAdd),
+                  title: const Text('Nhập dữ liệu từ file'),
+                  onTap: () {},
+                ),
+                const _Divider(),
+                ListTile(
+                  leading: const Icon(HugeIcons.strokeRoundedDatabaseExport),
+                  title: const Text('Xuất dữ liệu'),
+                  onTap: () {
+                    appRouter.goToExportData();
+                  },
+                ),
+                const _Divider(),
+                ListTile(
+                  leading: const Icon(HugeIcons.strokeRoundedDatabaseSetting),
+                  title: const Text('Xóa dữ liệu'),
+                  onTap: () {
+                    appRouter.goToDeleteData();
+                  },
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              'Về ứng dụng',
+              style: theme.headingSemibold20Default.copyWith(
+                color: theme.colorTextSubtle,
+                fontSize: 18,
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.white,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(HugeIcons.strokeRoundedHelpCircle),
+                  title: const Text('Hướng dẫn sử dụng'),
+                  onTap: () {},
+                ),
+                const _Divider(),
+                ListTile(
+                  leading: const Icon(HugeIcons.strokeRoundedStar),
+                  title: const Text('Đánh giá ứng dụng'),
+                  onTap: () {},
+                ),
+                const _Divider(),
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: LText(
@@ -37,51 +110,6 @@ class SettingPage extends WidgetByDeviceTemplate {
             color: Colors.white,
             child: Column(
               children: [
-                // HookBuilder(builder: (context) {
-                //   final isPinCodeEnabled = useState(false);
-                //
-                //   void loadPinCode() {
-                //     pinCodeRepository.isSetPinCode.then((value) => isPinCodeEnabled.value = value);
-                //   }
-                //
-                //   useEffect(() {
-                //     loadPinCode();
-                //
-                //     //
-                //     void listen(String? value) {
-                //       pinCodeRepository.isSetPinCode.then((value) => isPinCodeEnabled.value = value);
-                //     }
-                //
-                //     pinCodeRepository.listenPinCodeChange(listen);
-                //     return () {
-                //       pinCodeRepository.removePinCodeListener();
-                //     };
-                //   }, []);
-                //
-                //   return ListTile(
-                //     leading: const Icon(HugeIcons.strokeRoundedLockPassword),
-                //     title: const Text(
-                //       'Pin Code',
-                //       style: TextStyle(fontSize: 16),
-                //     ),
-                //     trailing: IgnorePointer(
-                //       child: Switch(
-                //         value: isPinCodeEnabled.value,
-                //         onChanged: (_) {},
-                //       ),
-                //     ),
-                //     onTap: () {
-                //       if (isPinCodeEnabled.value) {
-                //         final pinCode = ref.read(pinCodeRepositoryProvider);
-                //         pinCode.logout();
-                //         isPinCodeEnabled.value = false;
-                //       } else {
-                //         appRouter.goToPinCode();
-                //       }
-                //     },
-                //   );
-                // }),
-                // const _Divider(),
                 ListTile(
                   leading: const Icon(HugeIcons.strokeRoundedResetPassword),
                   title: LText(

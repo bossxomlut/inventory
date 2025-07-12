@@ -6,6 +6,7 @@ import '../../../domain/index.dart';
 import '../../../domain/repositories/order/order_repository.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
+import 'order_list_provider.dart';
 
 part 'order_provider.freezed.dart';
 part 'order_provider.g.dart';
@@ -48,7 +49,7 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
     final orderRepository = ref.read(orderRepositoryProvider);
     await orderRepository.createOrder(
         Order(
-          id: undefinedId,
+          id: haveInitOrder ? state.order!.id : undefinedId,
           status: OrderStatus.confirmed,
           orderDate: DateTime.now(),
           createdAt: DateTime.now(),
@@ -61,6 +62,8 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
           note: state.order?.note,
         ),
         state.orderItems.values.toList());
+
+    refreshDraftOrderList();
 
     hideLoading();
 
@@ -93,6 +96,8 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
       state.orderItems.values.toList(),
     )
         .then((_) {
+      refreshDraftOrderList();
+
       hideLoading();
       state = const OrderState(orderItems: {});
       showSuccess('Lưu nháp đơn hàng thành công');
@@ -178,6 +183,16 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
         order: order,
         orderItems: orderItemsMap,
       );
+    }
+  }
+
+  bool get haveInitOrder {
+    return state.order != null && state.order!.id != undefinedId;
+  }
+
+  void refreshDraftOrderList() {
+    if (haveInitOrder) {
+      ref.invalidate(orderListProvider(OrderStatus.draft));
     }
   }
 }

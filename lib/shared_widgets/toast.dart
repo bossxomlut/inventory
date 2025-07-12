@@ -1,107 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
+import '../provider/index.dart';
+import '../routes/app_router.dart';
+
 void showError({BuildContext? context, required String message}) {
+  final _context = context ?? appRouter.navigatorKey.currentContext!;
+  final theme = _context.appTheme;
+
   toastification
     ..dismissAll(delayForAnimation: false)
     ..show(
-      context: context, // optional if you use ToastificationWrapper
+      context: context,
       type: ToastificationType.error,
-      style: ToastificationStyle.fillColored,
+      style: ToastificationStyle.minimal,
       autoCloseDuration: const Duration(seconds: 3),
       showProgressBar: false,
-      applyBlurEffect: true,
-      // title: const LText(LKey.error),
       alignment: Alignment.topCenter,
-      // you can also use RichText widget for title and description parameters
-      description: RichText(text: TextSpan(text: message)),
-      // animationDuration: const Duration(milliseconds: 300),
-      // animationBuilder: (context, animation, alignment, child) {
-      //   return FadeTransition(
-      //     opacity: animation,
-      //     child: child,
-      //   );
-      // },
+      description: Text(
+        message,
+        style: theme.textMedium16Default.copyWith(
+          color: theme.colorError,
+        ),
+      ),
       icon: const Icon(Icons.error_outline),
-      showIcon: true, // show or hide the icon
+      showIcon: true,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x07000000),
-          blurRadius: 16,
-          offset: Offset(0, 16),
-          spreadRadius: 0,
-        )
-      ],
       closeButtonShowType: CloseButtonShowType.onHover,
       closeOnClick: true,
+      foregroundColor: theme.colorError,
+      primaryColor: theme.colorError,
     );
 }
 
 void showSuccess({BuildContext? context, required String message}) {
+  final _context = context ?? appRouter.navigatorKey.currentContext!;
+  final theme = _context.appTheme;
   toastification
     ..dismissAll(delayForAnimation: false)
     ..show(
-      context: context, // optional if you use ToastificationWrapper
+      context: context,
       type: ToastificationType.success,
-      style: ToastificationStyle.fillColored,
+      style: ToastificationStyle.minimal,
       autoCloseDuration: const Duration(seconds: 3),
       showProgressBar: false,
-      applyBlurEffect: true,
-      // title: const LText(LKey.success),
+      applyBlurEffect: false,
       alignment: Alignment.topCenter,
-      // you can also use RichText widget for title and description parameters
-      description: RichText(text: TextSpan(text: message)),
-      // animationDuration: const Duration(milliseconds: 300),
-      // animationBuilder: (context, animation, alignment, child) {
-      //   return FadeTransition(
-      //     opacity: animation,
-      //     child: child,
-      //   );
-      // },
+      description: Text(
+        message,
+        style: theme.textMedium16Default.copyWith(
+          color: theme.colorPrimary,
+        ),
+      ),
       icon: const Icon(Icons.check_circle_outline),
       showIcon: true, // show or hide the icon
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x07000000),
-          blurRadius: 16,
-          offset: Offset(0, 16),
-          spreadRadius: 0,
-        )
-      ],
-      closeButtonShowType: CloseButtonShowType.onHover,
       closeOnClick: true,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      closeButtonShowType: CloseButtonShowType.onHover,
+      foregroundColor: theme.colorPrimary,
+      primaryColor: theme.colorPrimary,
     );
 }
 
 void showSimpleInfo({BuildContext? context, required String message}) {
+  final _context = context ?? appRouter.navigatorKey.currentContext!;
+  final theme = _context.appTheme;
   toastification
     ..dismissAll(delayForAnimation: false)
     ..show(
-      context: context, // optional if you use ToastificationWrapper
+      context: context,
       type: ToastificationType.info,
-      style: ToastificationStyle.fillColored,
-      autoCloseDuration: const Duration(seconds: 2),
+      style: ToastificationStyle.minimal,
+      autoCloseDuration: const Duration(seconds: 3),
       showProgressBar: false,
-      applyBlurEffect: false,
       alignment: Alignment.topCenter,
-      description: RichText(text: TextSpan(text: message)),
+      description: Text(
+        message,
+        style: theme.textMedium16Default,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x07000000),
-          blurRadius: 16,
-          offset: Offset(0, 16),
-          spreadRadius: 0,
-        )
-      ],
       closeButtonShowType: CloseButtonShowType.onHover,
       closeOnClick: true,
     );

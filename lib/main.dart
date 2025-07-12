@@ -107,11 +107,19 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
             builder: (BuildContext context, WidgetRef ref, Widget? child) {
               final theme = ref.watch(themeProvider);
               return ToastificationWrapper(
+                config: ToastificationConfig(
+                  alignment: Alignment.topCenter,
+                  itemWidth: double.maxFinite,
+                  animationDuration: const Duration(milliseconds: 300),
+                  applyMediaQueryViewInsets: false,
+                  marginBuilder: (BuildContext context, AlignmentGeometry alignment) => EdgeInsets.zero,
+                ),
                 child: Stack(
                   fit: StackFit.expand,
                   alignment: Alignment.topCenter,
                   children: [
                     MaterialApp.router(
+                      title: 'Đơn và kho hàng',
                       routerConfig: appRouter.config(
                         navigatorObservers: () => <NavigatorObserver>[
                           RouteLoggerObserver(),
@@ -128,6 +136,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
                       ],
                       supportedLocales: context.supportedLocales,
                       locale: context.locale,
+                      debugShowCheckedModeBanner: false,
                     ),
                     const RootLoadingWidget(),
                     const RootNotificationWidget(),

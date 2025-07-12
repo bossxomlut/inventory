@@ -756,6 +756,7 @@ class OrderDetailPage extends HookConsumerWidget {
           },
           onCancel: () async {
             await appRouter.goToUpdateDraftOrder(order);
+            ref.invalidate(orderListProvider(order.status));
           },
         );
       case OrderStatus.confirmed:

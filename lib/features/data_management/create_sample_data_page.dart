@@ -5,6 +5,7 @@ import 'package:hugeicons/hugeicons.dart';
 import '../../domain/models/shop_type.dart';
 import '../../provider/theme.dart';
 import '../../shared_widgets/index.dart';
+import 'data_import_test_page.dart';
 import 'product_selection_page.dart';
 
 @RoutePage()
@@ -18,6 +19,16 @@ class CreateSampleDataPage extends ConsumerWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Tạo dữ liệu mẫu',
+        actions: [
+          IconButton(
+            onPressed: () => _navigateToTestPage(context),
+            icon: Icon(
+              HugeIcons.strokeRoundedTestTube,
+              color: Colors.white,
+            ),
+            tooltip: 'Test giao diện nhập dữ liệu',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -110,6 +121,16 @@ class CreateSampleDataPage extends ConsumerWidget {
       context,
       MaterialPageRoute<void>(
         builder: (context) => ProductSelectionPage(shopType: shopType),
+      ),
+    );
+  }
+
+  void _navigateToTestPage(BuildContext context) {
+    // Navigate to test page
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => const DataImportTestPage(),
       ),
     );
   }

@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-import '../../provider/theme.dart';
-import '../../provider/notification.dart';
-import '../../shared_widgets/index.dart';
-import '../../domain/models/shop_type.dart';
 import '../../domain/models/sample_product.dart';
-import '../../services/shop_type_service.dart';
-import '../../services/data_import_service.dart';
+import '../../domain/models/shop_type.dart';
+import '../../provider/notification.dart';
+import '../../provider/theme.dart';
 import '../../resources/index.dart';
+import '../../services/data_import_service.dart';
+import '../../services/data_import_service_ui.dart';
+import '../../services/shop_type_service.dart';
+import '../../shared_widgets/index.dart';
 import 'widgets/sample_product_card.dart';
 
 class ProductSelectionPage extends ConsumerStatefulWidget {
@@ -87,19 +88,17 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
     }
 
     try {
-      // Use DataImportService to import selected products
+      // Use DataImportService extension to import selected products with UI
       final dataImportService = ref.read(dataImportServiceProvider);
-      final result = await dataImportService.importFromSampleProducts(_selectedProducts);
+      final result = await dataImportService.importFromSampleProductsWithUI(
+        context,
+        _selectedProducts,
+        title: 'Nhập sản phẩm đã chọn',
+      );
 
-      if (mounted) {
-        if (result.success) {
-          ref.read(notificationProvider.notifier).showSuccess('Đã lưu ${result.successfulImports} sản phẩm thành công!');
-          Navigator.pop(context);
-        } else if (result.hasPartialSuccess) {
-          ref.read(notificationProvider.notifier).showWarning('Đã lưu ${result.successfulImports}/${result.totalLines} sản phẩm. ${result.failedImports} sản phẩm lỗi.');
-        } else {
-          ref.read(notificationProvider.notifier).showError('Lỗi khi lưu dữ liệu: ${result.errors.isNotEmpty ? result.errors.first : "Unknown error"}');
-        }
+      // Navigate back if successful
+      if (mounted && result != null && result.successfulImports > 0) {
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
@@ -120,8 +119,10 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
             IconButton(
               onPressed: _selectedProducts.length == _products.length ? _deselectAll : _selectAll,
               icon: Icon(
-                _selectedProducts.length == _products.length ? HugeIcons.strokeRoundedCancel01 : HugeIcons.strokeRoundedCheckmarkSquare02,
-                color: theme.colorPrimary,
+                _selectedProducts.length == _products.length
+                    ? HugeIcons.strokeRoundedCancel01
+                    : HugeIcons.strokeRoundedCheckmarkSquare02,
+                color: Colors.white,
               ),
               tooltip: _selectedProducts.length == _products.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả',
             ),

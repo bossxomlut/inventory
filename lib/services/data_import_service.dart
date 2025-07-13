@@ -1,14 +1,16 @@
 import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../core/index.dart';
 import '../domain/entities/order/price.dart';
 import '../domain/index.dart';
-import '../domain/repositories/product/inventory_repository.dart';
-import '../domain/repositories/order/price_repository.dart';
-import '../domain/repositories/product/update_product_repository.dart';
 import '../domain/models/sample_product.dart';
+import '../domain/repositories/order/price_repository.dart';
+import '../domain/repositories/product/inventory_repository.dart';
+import '../domain/repositories/product/update_product_repository.dart';
 
 /// Service for importing product data from JSONL files into the database
 class DataImportService {
@@ -16,12 +18,14 @@ class DataImportService {
   final UnitRepository unitRepository;
   final UpdateProductRepository updateProductRepository;
   final PriceRepository priceRepository;
+  final SearchProductRepository searchProductRepository;
 
   DataImportService({
     required this.categoryRepository,
     required this.unitRepository,
     required this.updateProductRepository,
     required this.priceRepository,
+    required this.searchProductRepository,
   });
 
   /// Import products from a JSONL file path
@@ -34,7 +38,7 @@ class DataImportService {
         success: false,
         totalLines: 0,
         successfulImports: 0,
-        errors: ['Failed to load asset file: $e'],
+        errors: ['Không thể tải tệp dữ liệu: $e'],
       );
     }
   }
@@ -48,8 +52,9 @@ class DataImportService {
       try {
         await _importSingleProduct(product.toJson());
         successfulImports++;
-      } catch (e) {
-        errors.add('Error importing product ${product.name}: $e');
+      } catch (e, st) {
+        log('Lỗi khi nhập sản phẩm "${product.name}": $e', error: e, stackTrace: st);
+        errors.add('Lỗi khi nhập sản phẩm "${product.name}": $e');
       }
     }
 
@@ -74,7 +79,7 @@ class DataImportService {
         await _importSingleProduct(jsonData);
         successfulImports++;
       } catch (e) {
-        errors.add('Error parsing line: $line, Error: $e');
+        errors.add('Lỗi phân tích dòng: $line, Lỗi: $e');
       }
     }
 
@@ -90,6 +95,23 @@ class DataImportService {
   Future<void> _importSingleProduct(Map<String, dynamic> jsonData) async {
     final String? categoryName = jsonData['categoryName'] as String?;
     final String? unitName = jsonData['unitName'] as String?;
+    final String? barcode = jsonData['barcode'] as String?;
+
+    // Check for barcode duplication if barcode exists
+    if (barcode != null && barcode.isNotEmpty) {
+      try {
+        final existingProduct = await searchProductRepository.searchByBarcode(barcode);
+        // If we reach here, a product with this barcode already exists
+        throw Exception('Sản phẩm với mã vạch "$barcode" đã tồn tại: ${existingProduct.name}');
+      } catch (e) {
+        // If searchByBarcode throws "Product not found", that's what we want (barcode is unique)
+        // Any other error should be rethrown
+        if (!e.toString().contains('Product not found')) {
+          rethrow;
+        }
+        // If "Product not found", continue with import - this is expected for new barcodes
+      }
+    }
 
     // Find or create category
     Category? category;
@@ -137,6 +159,7 @@ class DataImportService {
     final List<String> errors = [];
     final List<String> warnings = [];
     final lines = jsonlContent.split('\n').where((line) => line.trim().isNotEmpty).toList();
+    final Set<String> seenBarcodes = <String>{};
 
     int validLines = 0;
 
@@ -147,18 +170,40 @@ class DataImportService {
 
         // Check required fields
         if (jsonData['name'] == null || (jsonData['name'] as String).isEmpty) {
-          warnings.add('Line ${i + 1}: Product name is missing or empty');
+          warnings.add('Dòng ${i + 1}: Tên sản phẩm bị thiếu hoặc trống');
         }
 
         // Check price format
         final price = jsonData['price'];
         if (price != null && price is! num && double.tryParse(price.toString()) == null) {
-          warnings.add('Line ${i + 1}: Invalid price format');
+          warnings.add('Dòng ${i + 1}: Định dạng giá không hợp lệ');
+        }
+
+        // Check barcode duplication within the file
+        final String? barcode = jsonData['barcode'] as String?;
+        if (barcode != null && barcode.isNotEmpty) {
+          if (seenBarcodes.contains(barcode)) {
+            errors.add('Dòng ${i + 1}: Mã vạch "$barcode" bị trùng lặp trong tệp nhập');
+          } else {
+            seenBarcodes.add(barcode);
+
+            // Check if barcode already exists in database
+            try {
+              await searchProductRepository.searchByBarcode(barcode);
+              // If we reach here, product with this barcode exists
+              warnings.add('Dòng ${i + 1}: Mã vạch "$barcode" đã tồn tại trong cơ sở dữ liệu');
+            } catch (e) {
+              // If "Product not found", that's good - barcode is unique
+              if (!e.toString().contains('Product not found')) {
+                warnings.add('Dòng ${i + 1}: Không thể xác minh tính duy nhất của mã vạch "$barcode": $e');
+              }
+            }
+          }
         }
 
         validLines++;
       } catch (e) {
-        errors.add('Line ${i + 1}: Invalid JSON format - $e');
+        errors.add('Dòng ${i + 1}: Định dạng JSON không hợp lệ - $e');
       }
     }
 
@@ -218,5 +263,6 @@ final dataImportServiceProvider = Provider<DataImportService>((ref) {
     unitRepository: ref.read(unitRepositoryProvider),
     updateProductRepository: ref.read(updateProductRepositoryProvider),
     priceRepository: ref.read(priceRepositoryProvider),
+    searchProductRepository: ref.read(searchProductRepositoryProvider),
   );
 });

@@ -3,9 +3,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/persistence/isar_storage.dart';
+import '../../provider/storage_provider.dart';
 import '../../resources/index.dart';
+import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
+import '../onboarding/onboarding_service.dart';
 
 @RoutePage()
 class SplashPage extends HookConsumerWidget {
@@ -14,12 +17,8 @@ class SplashPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     useEffect(() {
-      // Simulate a delay for splash screen
-      IsarDatabase().initialize().then((_) {
-        // After initialization, check authentication state
-        ref.read(authControllerProvider.notifier).checkLogin();
-      });
-
+      // Initialize app and check onboarding/auth flow
+      _initializeApp(ref);
       return null; // No cleanup needed
     }, []);
 
@@ -37,5 +36,31 @@ class SplashPage extends HookConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _initializeApp(WidgetRef ref) async {
+    try {
+      // Initialize database and storage in parallel
+      await Future.wait([
+        IsarDatabase().initialize(),
+        ref.read(storageInitializerProvider.future),
+      ]);
+
+      // Check if user has seen onboarding
+      final onboardingService = ref.read(onboardingServiceProvider);
+      final hasSeenOnboarding = await onboardingService.hasSeenOnboarding();
+
+      if (!hasSeenOnboarding) {
+        // Navigate to onboarding
+        appRouter.goToOnboarding();
+      } else {
+        // Check authentication state as before
+        ref.read(authControllerProvider.notifier).checkLogin();
+      }
+    } catch (e) {
+      // Handle initialization error
+      // Fall back to normal auth flow
+      ref.read(authControllerProvider.notifier).checkLogin();
+    }
   }
 }

@@ -7,6 +7,7 @@ import '../../provider/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
+import '../onboarding/onboarding_service.dart';
 
 @RoutePage()
 class SettingPage extends WidgetByDeviceTemplate {
@@ -107,6 +108,15 @@ class SettingPage extends WidgetByDeviceTemplate {
                   onTap: () {},
                 ),
                 const _Divider(),
+                if (canAccessDataManagement) ...[
+                  ListTile(
+                    leading: const Icon(HugeIcons.strokeRoundedRefresh),
+                    title: const Text('Xem lại hướng dẫn'),
+                    subtitle: const Text('Hiển thị lại màn hình giới thiệu'),
+                    onTap: () => _resetOnboarding(context, ref),
+                  ),
+                  const _Divider(),
+                ],
               ],
             ),
           ),
@@ -172,6 +182,31 @@ class SettingPage extends WidgetByDeviceTemplate {
         ],
       ),
     );
+  }
+
+  Future<void> _resetOnboarding(BuildContext context, WidgetRef ref) async {
+    try {
+      final onboardingService = ref.read(onboardingServiceProvider);
+      await onboardingService.resetOnboarding();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã reset thành công. Khởi động lại ứng dụng để xem lại hướng dẫn.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Có lỗi xảy ra khi reset hướng dẫn.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 

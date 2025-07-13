@@ -3,12 +3,12 @@ import 'package:restart_app/restart_app.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/index.dart';
-import '../../../core/persistence/simple_key_value_storage.dart';
 import '../../../domain/index.dart';
 import '../../../domain/repositories/auth/pin_code_repository.dart';
-import '../../../routes/app_router.dart';
 import '../../../features/data_management/services/data_import_service.dart';
 import '../../../provider/notification.dart';
+import '../../../provider/storage_provider.dart';
+import '../../../routes/app_router.dart';
 
 part 'auth_provider.g.dart';
 
@@ -37,9 +37,8 @@ class AuthController extends _$AuthController {
 
           if (user.role == UserRole.guest) {
             //check load database for guest mode use _isCreatedGuestData
-            final prefs = SimpleStorage();
-            await prefs.init();
-            final isCreatedGuestData = await prefs.getBool(_isCreatedGuestData);
+            final storage = await ref.read(initializedSimpleStorageProvider.future);
+            final isCreatedGuestData = await storage.getBool(_isCreatedGuestData);
             if (isCreatedGuestData != true) {
               //load assets using DataImportService
               try {
@@ -64,7 +63,7 @@ class AuthController extends _$AuthController {
                 print('Failed to import guest data: $e');
               }
 
-              await prefs.saveBool(_isCreatedGuestData, true);
+              await storage.saveBool(_isCreatedGuestData, true);
             }
           }
 

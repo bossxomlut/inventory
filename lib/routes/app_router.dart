@@ -21,6 +21,9 @@ class AppRouter extends $AppRouter {
   List<AutoRoute> get routes => <AutoRoute>[
         AutoRoute(page: SplashRoute.page, initial: true),
 
+        //onboarding route
+        AutoRoute(page: OnboardingRoute.page),
+
         //authentication routes
         AutoRoute(page: LoginRoute.page),
         AutoRoute(page: SignUpRoute.page),
@@ -79,6 +82,10 @@ class AppRouter extends $AppRouter {
 }
 
 extension AuthRouterX on AppRouter {
+  void goToOnboarding() {
+    replaceAll([OnboardingRoute()]);
+  }
+
   void goToLogin() {
     replaceAll([LoginRoute()]);
   }

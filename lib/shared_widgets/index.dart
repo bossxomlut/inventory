@@ -14,6 +14,7 @@ export 'button/plus_minus_input_view.dart';
 export 'data_import_result_dialog.dart';
 export 'data_validation_result_dialog.dart';
 export 'dialog.dart';
+export 'error_details_dialog.dart';
 export 'file_picker.dart';
 //Hooks
 export 'hook/index.dart';

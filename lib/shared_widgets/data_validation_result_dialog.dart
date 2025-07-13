@@ -4,19 +4,25 @@ import 'package:hugeicons/hugeicons.dart';
 import '../provider/theme.dart';
 import '../resources/theme.dart';
 import '../services/data_import_service.dart';
+import 'dialog.dart';
 
 /// Widget để hiển thị kết quả validation dữ liệu trước khi nhập
-class DataValidationResultDialog extends StatelessWidget {
+class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
   final ValidationResult result;
   final String title;
   final VoidCallback? onProceedImport;
+  final bool barrierDismissible;
 
   const DataValidationResultDialog({
     super.key,
     required this.result,
     this.title = 'Kiểm tra dữ liệu',
     this.onProceedImport,
+    this.barrierDismissible = false, // Không cho phép tap outside khi đang validation
   });
+
+  @override
+  String? get routeName => 'DataValidationResultDialog';
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +32,7 @@ class DataValidationResultDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
+      insetPadding: EdgeInsets.zero,
       child: Container(
         constraints: const BoxConstraints(
           maxWidth: 500,
@@ -85,24 +92,28 @@ class DataValidationResultDialog extends StatelessWidget {
 
             // Content
             Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Summary Statistics
-                    _buildSummarySection(theme),
+              child: Scrollbar(
+                thumbVisibility: true, // Always show scrollbar thumb
+                trackVisibility: true, // Show scrollbar track
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Summary Statistics
+                      _buildSummarySection(theme),
 
-                    if (result.errors.isNotEmpty) ...[
-                      const SizedBox(height: 24),
-                      _buildErrorSection(theme),
-                    ],
+                      if (result.errors.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        _buildErrorSection(theme),
+                      ],
 
-                    if (result.hasWarnings) ...[
-                      const SizedBox(height: 24),
-                      _buildWarningSection(theme),
+                      if (result.hasWarnings) ...[
+                        const SizedBox(height: 24),
+                        _buildWarningSection(theme),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -318,50 +329,54 @@ class DataValidationResultDialog extends StatelessWidget {
           const SizedBox(height: 12),
           Container(
             constraints: const BoxConstraints(maxHeight: 150),
-            child: SingleChildScrollView(
-              child: Column(
-                children: issues.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final issue = entry.value;
-                  return Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: color.withOpacity(0.1)),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: color,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${index + 1}',
-                              style: theme.buttonSemibold12.copyWith(
-                                color: Colors.white,
+            child: Scrollbar(
+              thumbVisibility: true, // Always show scrollbar thumb
+              trackVisibility: true, // Show scrollbar track
+              child: SingleChildScrollView(
+                child: Column(
+                  children: issues.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final issue = entry.value;
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: color.withOpacity(0.1)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: theme.buttonSemibold12.copyWith(
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            issue,
-                            style: theme.textRegular14Default,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              issue,
+                              style: theme.textRegular14Default,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           ),
@@ -400,22 +415,28 @@ class DataValidationResultDialog extends StatelessWidget {
     }
   }
 
-  /// Static method để hiển thị dialog
-  static Future<bool> show(
+  /// Static method để hiển thị dialog sử dụng ShowDialog mixin
+  static Future<bool> showValidation(
     BuildContext context,
     ValidationResult result, {
     String? title,
     VoidCallback? onProceedImport,
+    bool barrierDismissible = false,
   }) async {
-    final result_ = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => DataValidationResultDialog(
-        result: result,
-        title: title ?? 'Kiểm tra dữ liệu',
-        onProceedImport: onProceedImport,
-      ),
-    );
+    final result_ = await DataValidationResultDialog(
+      result: result,
+      title: title ?? 'Kiểm tra dữ liệu',
+      onProceedImport: onProceedImport,
+      barrierDismissible: barrierDismissible,
+    ).show(context, barrierDismissible: barrierDismissible);
     return result_ ?? false;
+  }
+
+  /// Hiển thị dialog với các tùy chọn của ShowDialog mixin
+  Future<bool?> showWithOptions(BuildContext context, {bool? dismissible}) {
+    return show(
+      context,
+      barrierDismissible: dismissible ?? barrierDismissible,
+    );
   }
 }

@@ -9,6 +9,7 @@ import '../../../domain/repositories/product/update_product_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
 import '../../../routes/app_router.dart';
+import '../../../shared_widgets/index.dart';
 import '../../category/provider/category_provider.dart';
 import '../../unit/provider/unit_filter_provider.dart';
 import 'product_filter_provider.dart';
@@ -40,8 +41,6 @@ class LoadProduct extends _$LoadProduct with LoadListController<Product>, Common
 
     final search = filter['search'] as String? ?? '';
 
-    print('Search query: $search');
-
     // Truyền filter xuống repository
     return productRepo.search(search, query.page, query.pageSize, filter: filter);
   }
@@ -67,17 +66,29 @@ class LoadProduct extends _$LoadProduct with LoadListController<Product>, Common
       // Clear search text
       ref.read(textSearchProvider.notifier).state = '';
 
-      showSuccess('Add new product successfully');
+      hideLoading();
+
+      showSuccess('Thêm sản phẩm mới thành công');
       appRouter.popForced();
     } catch (e) {
-      //log error
-      print('Error creating product: $e');
-      // Handle error
-      state = state.copyWith(error: e.toString());
-      showError('Add new product failed');
-    } finally {
       hideLoading();
-    }
+
+      // Lấy context từ appRouter và sử dụng mixin ShowDialog với cấu hình
+      final context = appRouter.context;
+      if (context != null) {
+        // Tạo và hiển thị dialog lỗi sử dụng mixin ShowDialog
+        await ErrorDetailsDialog(
+          title: 'Lỗi tạo sản phẩm',
+          message: 'Không thể tạo sản phẩm mới. Vui lòng thử lại.',
+          details: e.toString(),
+          buttonText: 'Đóng',
+          barrierDismissible: false, // Không cho phép tap outside để đóng
+        ).show(context, barrierDismissible: false);
+      } else {
+        // Fallback nếu không có context
+        showError('Thêm sản phẩm mới thất bại: ${e.toString()}');
+      }
+    } finally {}
   }
 
   //update a product
@@ -85,22 +96,38 @@ class LoadProduct extends _$LoadProduct with LoadListController<Product>, Common
     try {
       showLoading();
       // Gọi repository để cập nhật sản phẩm (bao gồm xử lý ảnh)
-      final updatedProduct =
-          await ref.read(updateProductRepositoryProvider).updateProduct(product, TransactionCategory.update);
+      final updatedProduct = await ref.read(updateProductRepositoryProvider).updateProduct(product, TransactionCategory.update);
 
       ref.invalidate(getTransactionsByProductIdProvider(updatedProduct.id));
 
       state = state.copyWith(
         data: state.data.map((p) => p.id == updatedProduct.id ? updatedProduct : p).toList(),
       );
-      showSuccess('Update product successfully');
-    } catch (e, st) {
-      log('An error occurred while updating product: $e', stackTrace: st);
-      // Handle error
-      state = state.copyWith(error: e.toString());
-      showError('Update product failed');
-    } finally {
       hideLoading();
-    }
+
+      showSuccess('Cập nhật sản phẩm thành công');
+    } catch (e, st) {
+      hideLoading();
+
+      log('An error occurred while updating product: $e', stackTrace: st);
+
+      // Lấy context từ appRouter và sử dụng mixin ShowDialog với cấu hình
+      final context = appRouter.context;
+      if (context != null) {
+        // Tạo và hiển thị dialog lỗi sử dụng mixin ShowDialog
+        Future(() {
+          return ErrorDetailsDialog(
+            title: 'Lỗi cập nhật sản phẩm',
+            message: 'Không thể cập nhật sản phẩm. Vui lòng thử lại.',
+            details: e.toString(),
+            buttonText: 'Đóng',
+            barrierDismissible: false, // Không cho phép tap outside để đóng
+          ).show(context, barrierDismissible: false);
+        });
+      } else {
+        // Fallback nếu không có context
+        showError('Cập nhật sản phẩm thất bại: ${e.toString()}');
+      }
+    } finally {}
   }
 }

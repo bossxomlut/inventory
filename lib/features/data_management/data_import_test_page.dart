@@ -184,7 +184,7 @@ class DataImportTestPage extends ConsumerWidget {
       errors: [],
     );
 
-    DataImportResultDialog.show(context, result, title: 'Test thành công hoàn toàn');
+    DataImportResultDialog.showResult(context, result, title: 'Test thành công hoàn toàn');
   }
 
   void _showPartialSuccessDialog(BuildContext context) {
@@ -199,7 +199,7 @@ class DataImportTestPage extends ConsumerWidget {
       ],
     );
 
-    DataImportResultDialog.show(context, result, title: 'Test thành công một phần');
+    DataImportResultDialog.showResult(context, result, title: 'Test thành công một phần');
   }
 
   void _showFailedImportDialog(BuildContext context) {
@@ -216,7 +216,7 @@ class DataImportTestPage extends ConsumerWidget {
       ],
     );
 
-    DataImportResultDialog.show(context, result, title: 'Test thất bại hoàn toàn');
+    DataImportResultDialog.showResult(context, result, title: 'Test thất bại hoàn toàn');
   }
 
   void _showValidationSuccessDialog(BuildContext context) {
@@ -228,7 +228,7 @@ class DataImportTestPage extends ConsumerWidget {
       warnings: [],
     );
 
-    DataValidationResultDialog.show(
+    DataValidationResultDialog.showValidation(
       context,
       result,
       title: 'Test validation thành công',
@@ -251,7 +251,7 @@ class DataImportTestPage extends ConsumerWidget {
       ],
     );
 
-    DataValidationResultDialog.show(
+    DataValidationResultDialog.showValidation(
       context,
       result,
       title: 'Test validation có cảnh báo',
@@ -277,7 +277,7 @@ class DataImportTestPage extends ConsumerWidget {
       ],
     );
 
-    DataValidationResultDialog.show(
+    DataValidationResultDialog.showValidation(
       context,
       result,
       title: 'Test validation có lỗi',

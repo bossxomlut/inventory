@@ -4,17 +4,23 @@ import 'package:hugeicons/hugeicons.dart';
 import '../provider/theme.dart';
 import '../resources/theme.dart';
 import '../services/data_import_service.dart';
+import 'dialog.dart';
 
 /// Widget để hiển thị kết quả nhập dữ liệu một cách trực quan và chi tiết
-class DataImportResultDialog extends StatelessWidget {
+class DataImportResultDialog extends StatelessWidget with ShowDialog<void> {
   final DataImportResult result;
   final String title;
+  final bool barrierDismissible;
 
   const DataImportResultDialog({
     super.key,
     required this.result,
     this.title = 'Kết quả nhập dữ liệu',
+    this.barrierDismissible = true, // Cho phép tap outside để đóng khi xem kết quả
   });
+
+  @override
+  String? get routeName => 'DataImportResultDialog';
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +30,7 @@ class DataImportResultDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
+      insetPadding: EdgeInsets.zero,
       child: Container(
         constraints: const BoxConstraints(
           maxWidth: 500,
@@ -83,19 +90,23 @@ class DataImportResultDialog extends StatelessWidget {
 
             // Content
             Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Summary Statistics
-                    _buildSummarySection(theme),
+              child: Scrollbar(
+                thumbVisibility: true, // Always show scrollbar thumb
+                trackVisibility: true, // Show scrollbar track
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Summary Statistics
+                      _buildSummarySection(theme),
 
-                    if (result.hasErrors) ...[
-                      const SizedBox(height: 24),
-                      _buildErrorSection(theme),
+                      if (result.hasErrors) ...[
+                        const SizedBox(height: 24),
+                        _buildErrorSection(theme),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -296,50 +307,54 @@ class DataImportResultDialog extends StatelessWidget {
           const SizedBox(height: 12),
           Container(
             constraints: const BoxConstraints(maxHeight: 200),
-            child: SingleChildScrollView(
-              child: Column(
-                children: result.errors.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final error = entry.value;
-                  return Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: theme.colorError.withOpacity(0.1)),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: theme.colorError,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${index + 1}',
-                              style: theme.buttonSemibold12.copyWith(
-                                color: Colors.white,
+            child: Scrollbar(
+              thumbVisibility: true, // Always show scrollbar thumb
+              trackVisibility: true, // Show scrollbar track
+              child: SingleChildScrollView(
+                child: Column(
+                  children: result.errors.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final error = entry.value;
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: theme.colorError.withOpacity(0.1)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: theme.colorError,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: theme.buttonSemibold12.copyWith(
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            error,
-                            style: theme.textRegular14Default,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              error,
+                              style: theme.textRegular14Default,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           ),
@@ -378,19 +393,25 @@ class DataImportResultDialog extends StatelessWidget {
     }
   }
 
-  /// Static method để hiển thị dialog
-  static Future<void> show(
+  /// Static method để hiển thị dialog sử dụng ShowDialog mixin
+  static Future<void> showResult(
     BuildContext context,
     DataImportResult result, {
     String? title,
+    bool barrierDismissible = true,
   }) {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => DataImportResultDialog(
-        result: result,
-        title: title ?? 'Kết quả nhập dữ liệu',
-      ),
+    return DataImportResultDialog(
+      result: result,
+      title: title ?? 'Kết quả nhập dữ liệu',
+      barrierDismissible: barrierDismissible,
+    ).show(context, barrierDismissible: barrierDismissible);
+  }
+
+  /// Hiển thị dialog với các tùy chọn của ShowDialog mixin
+  Future<void> showWithOptions(BuildContext context, {bool? dismissible}) {
+    return show(
+      context,
+      barrierDismissible: dismissible ?? barrierDismissible,
     );
   }
 }

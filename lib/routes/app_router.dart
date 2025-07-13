@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../domain/index.dart';
 import '../features/authentication/provider/auth_provider.dart';
 import '../provider/index.dart';
@@ -68,6 +70,11 @@ class AppRouter extends $AppRouter {
   Future<T?> push<T extends Object?>(PageRouteInfo route, {OnNavigationFailure? onFailure}) {
     navigatorKey.currentContext?.hideKeyboard();
     return super.push(route, onFailure: onFailure);
+  }
+
+  //get context
+  BuildContext? get context {
+    return navigatorKey.currentContext;
   }
 }
 

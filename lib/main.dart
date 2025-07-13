@@ -155,11 +155,14 @@ class RootLoadingWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isLoading = ref.watch(isLoadingProvider);
+    final appTheme = context.appTheme;
     if (isLoading) {
       return Container(
         color: Colors.black.withOpacity(0.5),
         alignment: Alignment.center,
-        child: const CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: appTheme.colorPrimary,
+        ),
       );
     }
     return const SizedBox();

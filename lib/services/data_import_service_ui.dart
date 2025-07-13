@@ -18,7 +18,7 @@ extension DataImportServiceUI on DataImportService {
       final validation = await validateJsonlContent(jsonlContent);
 
       // Show validation result
-      final shouldProceed = await DataValidationResultDialog.show(
+      final shouldProceed = await DataValidationResultDialog.showValidation(
         context,
         validation,
         title: title ?? 'Kiểm tra dữ liệu nhập',
@@ -33,7 +33,7 @@ extension DataImportServiceUI on DataImportService {
 
       // Show import result
       if (context.mounted) {
-        await DataImportResultDialog.show(
+        await DataImportResultDialog.showResult(
           context,
           result,
           title: 'Kết quả nhập dữ liệu',
@@ -85,7 +85,7 @@ extension DataImportServiceUI on DataImportService {
       final result = await importFromSampleProducts(products);
 
       if (context.mounted) {
-        await DataImportResultDialog.show(
+        await DataImportResultDialog.showResult(
           context,
           result,
           title: title ?? 'Kết quả nhập sản phẩm',

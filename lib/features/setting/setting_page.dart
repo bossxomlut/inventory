@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
+import '../../domain/entities/user/user.dart';
 import '../../provider/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
@@ -14,6 +15,16 @@ class SettingPage extends WidgetByDeviceTemplate {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
+    final authState = ref.watch(authControllerProvider);
+
+    // Get current user role
+    final UserRole? currentUserRole = authState.maybeWhen(
+      authenticated: (user, lastLoginTime) => user.role,
+      orElse: () => null,
+    );
+
+    // Check if current user can access data management features
+    final bool canAccessDataManagement = currentUserRole == UserRole.admin || currentUserRole == UserRole.guest;
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -21,52 +32,55 @@ class SettingPage extends WidgetByDeviceTemplate {
       ),
       body: ListView(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              'Quản lý dữ liệu',
-              style: theme.headingSemibold20Default.copyWith(
-                color: theme.colorTextSubtle,
-                fontSize: 18,
+          // Only show "Quản lý dữ liệu" section for admin and guest users
+          if (canAccessDataManagement) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text(
+                'Quản lý dữ liệu',
+                style: theme.headingSemibold20Default.copyWith(
+                  color: theme.colorTextSubtle,
+                  fontSize: 18,
+                ),
               ),
             ),
-          ),
-          Material(
-            color: Colors.white,
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(HugeIcons.strokeRoundedDatabaseAdd),
-                  title: const Text('Tạo từ dữ liệu mẫu'),
-                  onTap: () {
-                    appRouter.goToCreateSampleData();
-                  },
-                ),
-                const _Divider(),
-                ListTile(
-                  leading: const Icon(HugeIcons.strokeRoundedDatabaseAdd),
-                  title: const Text('Nhập dữ liệu từ file'),
-                  onTap: () {},
-                ),
-                const _Divider(),
-                ListTile(
-                  leading: const Icon(HugeIcons.strokeRoundedDatabaseExport),
-                  title: const Text('Xuất dữ liệu'),
-                  onTap: () {
-                    appRouter.goToExportData();
-                  },
-                ),
-                const _Divider(),
-                ListTile(
-                  leading: const Icon(HugeIcons.strokeRoundedDatabaseSetting),
-                  title: const Text('Xóa dữ liệu'),
-                  onTap: () {
-                    appRouter.goToDeleteData();
-                  },
-                ),
-              ],
+            Material(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(HugeIcons.strokeRoundedDatabaseAdd),
+                    title: const Text('Tạo từ dữ liệu mẫu'),
+                    onTap: () {
+                      appRouter.goToCreateSampleData();
+                    },
+                  ),
+                  const _Divider(),
+                  ListTile(
+                    leading: const Icon(HugeIcons.strokeRoundedDatabaseAdd),
+                    title: const Text('Nhập dữ liệu từ file'),
+                    onTap: () {},
+                  ),
+                  const _Divider(),
+                  ListTile(
+                    leading: const Icon(HugeIcons.strokeRoundedDatabaseExport),
+                    title: const Text('Xuất dữ liệu'),
+                    onTap: () {
+                      appRouter.goToExportData();
+                    },
+                  ),
+                  const _Divider(),
+                  ListTile(
+                    leading: const Icon(HugeIcons.strokeRoundedDatabaseSetting),
+                    title: const Text('Xóa dữ liệu'),
+                    onTap: () {
+                      appRouter.goToDeleteData();
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Text(

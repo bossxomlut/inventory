@@ -4,13 +4,13 @@ import 'dart:developer';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../core/index.dart';
-import '../domain/entities/order/price.dart';
-import '../domain/index.dart';
-import '../domain/models/sample_product.dart';
-import '../domain/repositories/order/price_repository.dart';
-import '../domain/repositories/product/inventory_repository.dart';
-import '../domain/repositories/product/update_product_repository.dart';
+import '../../../core/index.dart';
+import '../../../domain/entities/order/price.dart';
+import '../../../domain/index.dart';
+import '../../../domain/models/sample_product.dart';
+import '../../../domain/repositories/order/price_repository.dart';
+import '../../../domain/repositories/product/inventory_repository.dart';
+import '../../../domain/repositories/product/update_product_repository.dart';
 
 /// Service for importing product data from JSONL files into the database
 class DataImportService {

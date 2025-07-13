@@ -7,8 +7,8 @@ import '../../domain/models/shop_type.dart';
 import '../../provider/notification.dart';
 import '../../provider/theme.dart';
 import '../../resources/index.dart';
-import '../../services/data_import_service.dart';
-import '../../services/data_import_service_ui.dart';
+import 'services/data_import_service.dart';
+import 'services/data_import_service_ui.dart';
 import '../../services/shop_type_service.dart';
 import '../../shared_widgets/index.dart';
 import 'widgets/sample_product_card.dart';
@@ -119,9 +119,7 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
             IconButton(
               onPressed: _selectedProducts.length == _products.length ? _deselectAll : _selectAll,
               icon: Icon(
-                _selectedProducts.length == _products.length
-                    ? HugeIcons.strokeRoundedCancel01
-                    : HugeIcons.strokeRoundedCheckmarkSquare02,
+                _selectedProducts.length == _products.length ? HugeIcons.strokeRoundedCancel01 : HugeIcons.strokeRoundedCheckmarkSquare02,
                 color: Colors.white,
               ),
               tooltip: _selectedProducts.length == _products.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả',

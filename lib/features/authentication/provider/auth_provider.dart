@@ -7,7 +7,7 @@ import '../../../core/persistence/simple_key_value_storage.dart';
 import '../../../domain/index.dart';
 import '../../../domain/repositories/auth/pin_code_repository.dart';
 import '../../../routes/app_router.dart';
-import '../../../services/data_import_service.dart';
+import '../../../features/data_management/services/data_import_service.dart';
 import '../../../provider/notification.dart';
 
 part 'auth_provider.g.dart';

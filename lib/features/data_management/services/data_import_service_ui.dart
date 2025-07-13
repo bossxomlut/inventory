@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import '../domain/models/sample_product.dart';
-import '../services/data_import_service.dart';
-import '../shared_widgets/index.dart';
+import '../../../domain/models/sample_product.dart';
+import '../../../shared_widgets/index.dart';
+import 'data_import_service.dart';
 
 /// Extension methods for DataImportService to show UI dialogs
 extension DataImportServiceUI on DataImportService {

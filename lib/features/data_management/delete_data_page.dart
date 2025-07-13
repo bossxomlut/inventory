@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:auto_route/auto_route.dart';
 
 import '../../provider/theme.dart';
 import '../../shared_widgets/index.dart';
+import 'services/index.dart';
 
 @RoutePage()
 class DeleteDataPage extends ConsumerWidget {
@@ -22,7 +24,7 @@ class DeleteDataPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
-              color: Colors.red.shade50,
+              color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -104,7 +106,7 @@ class DeleteDataPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 24),
                   Card(
-                    color: Colors.red.shade100,
+                    color: Colors.white,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -185,6 +187,7 @@ class DeleteDataPage extends ConsumerWidget {
     }
 
     return Card(
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -252,145 +255,47 @@ class DeleteDataPage extends ConsumerWidget {
   }
 
   void _deleteProducts(BuildContext context, WidgetRef ref) {
-    _showDeleteConfirmation(
-      context,
-      'sản phẩm',
-      'Thao tác này sẽ xóa tất cả sản phẩm trong kho. Dữ liệu không thể khôi phục.',
-      () {
-        // TODO: Implement delete products
-        _showSuccessMessage(context, 'Đã xóa toàn bộ dữ liệu sản phẩm!');
-      },
-    );
+    final dataDeletionService = ref.read(dataDeletionServiceProvider);
+    dataDeletionService.deleteAllProductsWithConfirmation(context);
   }
 
   void _deleteCategories(BuildContext context, WidgetRef ref) {
-    _showDeleteConfirmation(
-      context,
-      'danh mục',
-      'Thao tác này sẽ xóa tất cả danh mục sản phẩm. Các sản phẩm thuộc danh mục sẽ mất thông tin danh mục.',
-      () {
-        // TODO: Implement delete categories
-        _showSuccessMessage(context, 'Đã xóa toàn bộ dữ liệu danh mục!');
-      },
-    );
+    final dataDeletionService = ref.read(dataDeletionServiceProvider);
+    dataDeletionService.deleteAllCategoriesWithConfirmation(context);
   }
 
   void _deleteUnits(BuildContext context, WidgetRef ref) {
-    _showDeleteConfirmation(
-      context,
-      'đơn vị tính',
-      'Thao tác này sẽ xóa tất cả đơn vị tính. Các sản phẩm sử dụng đơn vị này sẽ mất thông tin đơn vị.',
-      () {
-        // TODO: Implement delete units
-        _showSuccessMessage(context, 'Đã xóa toàn bộ dữ liệu đơn vị tính!');
-      },
-    );
+    final dataDeletionService = ref.read(dataDeletionServiceProvider);
+    dataDeletionService.deleteAllUnitsWithConfirmation(context);
   }
 
   void _deleteOrders(BuildContext context, WidgetRef ref) {
+    // TODO: Implement orders deletion when OrderRepository is available
     _showDeleteConfirmation(
       context,
       'đơn hàng',
       'Thao tác này sẽ xóa tất cả đơn hàng và lịch sử giao dịch. Dữ liệu không thể khôi phục.',
       () {
-        // TODO: Implement delete orders
         _showSuccessMessage(context, 'Đã xóa toàn bộ dữ liệu đơn hàng!');
       },
     );
   }
 
   void _deleteCheckSessions(BuildContext context, WidgetRef ref) {
+    // TODO: Implement check sessions deletion when CheckRepository is available
     _showDeleteConfirmation(
       context,
       'phiên kiểm kê',
       'Thao tác này sẽ xóa tất cả phiên kiểm kê và kết quả kiểm kê. Dữ liệu không thể khôi phục.',
       () {
-        // TODO: Implement delete check sessions
         _showSuccessMessage(context, 'Đã xóa toàn bộ dữ liệu kiểm kê!');
       },
     );
   }
 
   void _deleteAllData(BuildContext context, WidgetRef ref) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning, color: Colors.red),
-            SizedBox(width: 8),
-            Text('XÓA TẤT CẢ DỮ LIỆU'),
-          ],
-        ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Bạn có chắc chắn muốn xóa TẤT CẢ dữ liệu trong ứng dụng?'),
-            SizedBox(height: 16),
-            Text('Thao tác này sẽ xóa:'),
-            Text('• Tất cả sản phẩm'),
-            Text('• Tất cả danh mục và đơn vị'),
-            Text('• Tất cả đơn hàng'),
-            Text('• Tất cả phiên kiểm kê'),
-            Text('• Tất cả cài đặt'),
-            SizedBox(height: 16),
-            Text(
-              'DỮ LIỆU KHÔNG THỂ KHÔI PHỤC!',
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _confirmDeleteAll(context, ref);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('XÓA TẤT CẢ'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDeleteAll(BuildContext context, WidgetRef ref) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('XÁC NHẬN LẦN CUỐI'),
-        content: const Text('Nhập "XÓA TẤT CẢ" để xác nhận:'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement delete all data
-              _showSuccessMessage(context, 'Đã xóa toàn bộ dữ liệu ứng dụng!');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('XÓA'),
-          ),
-        ],
-      ),
-    );
+    final dataDeletionService = ref.read(dataDeletionServiceProvider);
+    dataDeletionService.deleteAllDataWithConfirmation(context);
   }
 
   void _showDeleteConfirmation(BuildContext context, String dataType, String warning, VoidCallback onConfirm) {

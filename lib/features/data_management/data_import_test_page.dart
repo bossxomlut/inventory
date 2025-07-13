@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:auto_route/auto_route.dart';
 
 import '../../provider/theme.dart';
 import '../../shared_widgets/index.dart';
-import '../../services/data_import_service.dart';
-import '../../services/data_import_service_ui.dart';
+import '../../routes/app_router.dart';
+import 'services/index.dart';
 
 @RoutePage()
 class DataImportTestPage extends ConsumerWidget {
@@ -17,7 +18,7 @@ class DataImportTestPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Test giao diện nhập dữ liệu',
+        title: 'Quản lý dữ liệu',
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -119,6 +120,51 @@ class DataImportTestPage extends ConsumerWidget {
                     HugeIcons.strokeRoundedFlow,
                     theme.colorPrimary,
                     () => _testFullImportFlow(context, ref),
+                  ),
+                  const SizedBox(height: 24),
+                  // Phần xóa dữ liệu
+                  Card(
+                    color: Colors.red.shade50,
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                HugeIcons.strokeRoundedDelete02,
+                                color: Colors.red.shade700,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Quản lý xóa dữ liệu',
+                                style: theme.headingSemibold20Default.copyWith(
+                                  color: Colors.red.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Chức năng xóa dữ liệu với xác nhận và thông báo:',
+                            style: theme.textRegular14Default.copyWith(
+                              color: Colors.red.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTestCard(
+                    context,
+                    'Xem giao diện xóa dữ liệu',
+                    'Chuyển đến trang quản lý xóa dữ liệu',
+                    HugeIcons.strokeRoundedArrowRight02,
+                    Colors.red.shade600,
+                    () => _navigateToDeleteDataPage(context),
                   ),
                 ],
               ),
@@ -299,5 +345,10 @@ class DataImportTestPage extends ConsumerWidget {
       jsonlContent,
       title: 'Test full import flow',
     );
+  }
+
+  void _navigateToDeleteDataPage(BuildContext context) {
+    // Navigate to delete data page
+    (context.router as AppRouter).goToDeleteData();
   }
 }

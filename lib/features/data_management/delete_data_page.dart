@@ -104,6 +104,15 @@ class DeleteDataPage extends ConsumerWidget {
                     dangerLevel: 'Cao',
                     onPressed: () => _deleteCheckSessions(context, ref),
                   ),
+                  const SizedBox(height: 12),
+                  _buildDeleteCard(
+                    context,
+                    icon: Icons.history,
+                    title: 'Xóa lịch sử giao dịch',
+                    description: 'Xóa toàn bộ lịch sử thay đổi sản phẩm',
+                    dangerLevel: 'Cao',
+                    onPressed: () => _deleteProductTransactions(context, ref),
+                  ),
                   const SizedBox(height: 24),
                   Card(
                     color: Colors.white,
@@ -270,87 +279,22 @@ class DeleteDataPage extends ConsumerWidget {
   }
 
   void _deleteOrders(BuildContext context, WidgetRef ref) {
-    // TODO: Implement orders deletion when OrderRepository is available
-    _showDeleteConfirmation(
-      context,
-      'đơn hàng',
-      'Thao tác này sẽ xóa tất cả đơn hàng và lịch sử giao dịch. Dữ liệu không thể khôi phục.',
-      () {
-        _showSuccessMessage(context, 'Đã xóa toàn bộ dữ liệu đơn hàng!');
-      },
-    );
+    final dataDeletionService = ref.read(dataDeletionServiceProvider);
+    dataDeletionService.deleteAllOrdersWithConfirmation(context);
   }
 
   void _deleteCheckSessions(BuildContext context, WidgetRef ref) {
-    // TODO: Implement check sessions deletion when CheckRepository is available
-    _showDeleteConfirmation(
-      context,
-      'phiên kiểm kê',
-      'Thao tác này sẽ xóa tất cả phiên kiểm kê và kết quả kiểm kê. Dữ liệu không thể khôi phục.',
-      () {
-        _showSuccessMessage(context, 'Đã xóa toàn bộ dữ liệu kiểm kê!');
-      },
-    );
+    final dataDeletionService = ref.read(dataDeletionServiceProvider);
+    dataDeletionService.deleteAllCheckSessionsWithConfirmation(context);
+  }
+
+  void _deleteProductTransactions(BuildContext context, WidgetRef ref) {
+    final dataDeletionService = ref.read(dataDeletionServiceProvider);
+    dataDeletionService.deleteAllProductTransactionsWithConfirmation(context);
   }
 
   void _deleteAllData(BuildContext context, WidgetRef ref) {
     final dataDeletionService = ref.read(dataDeletionServiceProvider);
     dataDeletionService.deleteAllDataWithConfirmation(context);
-  }
-
-  void _showDeleteConfirmation(BuildContext context, String dataType, String warning, VoidCallback onConfirm) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Xóa dữ liệu $dataType'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(warning),
-            const SizedBox(height: 16),
-            const Row(
-              children: [
-                Icon(Icons.warning, color: Colors.red, size: 20),
-                SizedBox(width: 8),
-                Text(
-                  'Thao tác không thể hoàn tác!',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onConfirm();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Xóa'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSuccessMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 }

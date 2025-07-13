@@ -234,6 +234,63 @@ extension DataDeletionServiceUI on DataDeletionService {
     }
   }
 
+  /// Show confirmation dialog and delete all orders
+  Future<void> deleteAllOrdersWithConfirmation(BuildContext context) async {
+    final confirmed = await _showConfirmationDialog(
+      context,
+      title: 'Xác nhận xóa đơn hàng',
+      message: 'Bạn có chắc chắn muốn xóa TẤT CẢ đơn hàng? Hành động này không thể hoàn tác.',
+      confirmText: 'Xóa tất cả',
+      cancelText: 'Hủy',
+    );
+
+    if (confirmed && context.mounted) {
+      await _performDeletionWithProgress(
+        context,
+        () => deleteAllOrders(),
+        'Đang xóa đơn hàng...',
+      );
+    }
+  }
+
+  /// Show confirmation dialog and delete all check sessions
+  Future<void> deleteAllCheckSessionsWithConfirmation(BuildContext context) async {
+    final confirmed = await _showConfirmationDialog(
+      context,
+      title: 'Xác nhận xóa phiên kiểm kê',
+      message: 'Bạn có chắc chắn muốn xóa TẤT CẢ phiên kiểm kê? Hành động này không thể hoàn tác.',
+      confirmText: 'Xóa tất cả',
+      cancelText: 'Hủy',
+    );
+
+    if (confirmed && context.mounted) {
+      await _performDeletionWithProgress(
+        context,
+        () => deleteAllCheckSessions(),
+        'Đang xóa phiên kiểm kê...',
+      );
+    }
+  }
+
+  /// Show confirmation dialog and delete all product transactions
+  Future<void> deleteAllProductTransactionsWithConfirmation(BuildContext context) async {
+    final confirmed = await _showConfirmationDialog(
+      context,
+      title: 'Xác nhận xóa lịch sử giao dịch',
+      message: 'Bạn có chắc chắn muốn xóa TẤT CẢ lịch sử giao dịch sản phẩm? Hành động này không thể hoàn tác.',
+      confirmText: 'Xóa tất cả',
+      cancelText: 'Hủy',
+    );
+
+    if (confirmed && context.mounted) {
+      await _performDeletionWithProgress(
+        context,
+        () => deleteAllProductTransactions(),
+        'Đang xóa lịch sử giao dịch...',
+      );
+    }
+  }
+
   /// Show confirmation dialog
   Future<bool> _showConfirmationDialog(
     BuildContext context, {

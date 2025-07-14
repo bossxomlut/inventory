@@ -4,6 +4,7 @@ import 'package:hugeicons/hugeicons.dart';
 
 import '../../provider/theme.dart';
 import '../../shared_widgets/index.dart';
+import 'services/data_export_service.dart';
 
 @RoutePage()
 class ExportDataPage extends ConsumerWidget {
@@ -47,9 +48,9 @@ class ExportDataPage extends ConsumerWidget {
                       style: theme.textRegular14Default,
                     ),
                     const SizedBox(height: 8),
-                    _buildInfoItem('• JSON: Định dạng dễ đọc và xử lý'),
+                    _buildInfoItem('• JSONL: Định dạng JSON Lines, mỗi dòng là một object JSON'),
                     _buildInfoItem('• CSV: Định dạng Excel/Spreadsheet'),
-                    _buildInfoItem('• Backup: File backup hoàn chỉnh'),
+                    _buildInfoItem('• Backup: File backup hoàn chỉnh định dạng JSON'),
                   ],
                 ),
               ),
@@ -62,8 +63,8 @@ class ExportDataPage extends ConsumerWidget {
                     context,
                     icon: Icons.inventory,
                     title: 'Xuất dữ liệu sản phẩm',
-                    description: 'Xuất danh sách sản phẩm ra file JSON/CSV',
-                    onExportJson: () => _exportProductsJson(context, ref),
+                    description: 'Xuất danh sách sản phẩm ra file JSONL/CSV',
+                    onExportJson: () => _exportProductsJsonl(context, ref),
                     onExportCsv: () => _exportProductsCsv(context, ref),
                   ),
                   const SizedBox(height: 12),
@@ -71,8 +72,8 @@ class ExportDataPage extends ConsumerWidget {
                     context,
                     icon: Icons.category,
                     title: 'Xuất dữ liệu danh mục',
-                    description: 'Xuất danh sách danh mục ra file JSON/CSV',
-                    onExportJson: () => _exportCategoriesJson(context, ref),
+                    description: 'Xuất danh sách danh mục ra file JSONL/CSV',
+                    onExportJson: () => _exportCategoriesJsonl(context, ref),
                     onExportCsv: () => _exportCategoriesCsv(context, ref),
                   ),
                   const SizedBox(height: 12),
@@ -80,8 +81,8 @@ class ExportDataPage extends ConsumerWidget {
                     context,
                     icon: Icons.straighten,
                     title: 'Xuất dữ liệu đơn vị',
-                    description: 'Xuất danh sách đơn vị tính ra file JSON/CSV',
-                    onExportJson: () => _exportUnitsJson(context, ref),
+                    description: 'Xuất danh sách đơn vị tính ra file JSONL/CSV',
+                    onExportJson: () => _exportUnitsJsonl(context, ref),
                     onExportCsv: () => _exportUnitsCsv(context, ref),
                   ),
                   const SizedBox(height: 12),
@@ -89,8 +90,8 @@ class ExportDataPage extends ConsumerWidget {
                     context,
                     icon: Icons.shopping_cart,
                     title: 'Xuất dữ liệu đơn hàng',
-                    description: 'Xuất danh sách đơn hàng ra file JSON/CSV',
-                    onExportJson: () => _exportOrdersJson(context, ref),
+                    description: 'Xuất danh sách đơn hàng ra file JSONL/CSV',
+                    onExportJson: () => _exportOrdersJsonl(context, ref),
                     onExportCsv: () => _exportOrdersCsv(context, ref),
                   ),
                   const SizedBox(height: 24),
@@ -191,10 +192,10 @@ class ExportDataPage extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child:                  OutlinedButton.icon(
                     onPressed: onExportJson,
                     icon: const Icon(Icons.code),
-                    label: const Text('Xuất JSON'),
+                    label: const Text('Xuất JSONL'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -213,59 +214,135 @@ class ExportDataPage extends ConsumerWidget {
     );
   }
 
-  void _exportProductsJson(BuildContext context, WidgetRef ref) {
-    _showExportConfirmation(context, 'sản phẩm', 'JSON', () {
-      // TODO: Implement export products to JSON
-      _showSuccessMessage(context, 'Đã xuất dữ liệu sản phẩm ra file JSON!');
+  // Products export methods
+  void _exportProductsJsonl(BuildContext context, WidgetRef ref) {
+    _showExportConfirmation(context, 'sản phẩm', 'JSONL', () async {
+      try {
+        final exportService = ref.read(dataExportServiceProvider);
+        final filePath = await exportService.exportProductsToJsonl();
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Đã xuất dữ liệu sản phẩm ra file JSONL!\nFile: ${filePath.split('/').last}');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showErrorMessage(context, 'Lỗi xuất dữ liệu: $e');
+        }
+      }
     });
   }
 
   void _exportProductsCsv(BuildContext context, WidgetRef ref) {
-    _showExportConfirmation(context, 'sản phẩm', 'CSV', () {
-      // TODO: Implement export products to CSV
-      _showSuccessMessage(context, 'Đã xuất dữ liệu sản phẩm ra file CSV!');
+    _showExportConfirmation(context, 'sản phẩm', 'CSV', () async {
+      try {
+        final exportService = ref.read(dataExportServiceProvider);
+        final filePath = await exportService.exportProductsToCsv();
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Đã xuất dữ liệu sản phẩm ra file CSV!\nFile: ${filePath.split('/').last}');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showErrorMessage(context, 'Lỗi xuất dữ liệu: $e');
+        }
+      }
     });
   }
 
-  void _exportCategoriesJson(BuildContext context, WidgetRef ref) {
-    _showExportConfirmation(context, 'danh mục', 'JSON', () {
-      // TODO: Implement export categories to JSON
-      _showSuccessMessage(context, 'Đã xuất dữ liệu danh mục ra file JSON!');
+  // Categories export methods
+  void _exportCategoriesJsonl(BuildContext context, WidgetRef ref) {
+    _showExportConfirmation(context, 'danh mục', 'JSONL', () async {
+      try {
+        final exportService = ref.read(dataExportServiceProvider);
+        final filePath = await exportService.exportCategoriesToJsonl();
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Đã xuất dữ liệu danh mục ra file JSONL!\nFile: ${filePath.split('/').last}');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showErrorMessage(context, 'Lỗi xuất dữ liệu: $e');
+        }
+      }
     });
   }
 
   void _exportCategoriesCsv(BuildContext context, WidgetRef ref) {
-    _showExportConfirmation(context, 'danh mục', 'CSV', () {
-      // TODO: Implement export categories to CSV
-      _showSuccessMessage(context, 'Đã xuất dữ liệu danh mục ra file CSV!');
+    _showExportConfirmation(context, 'danh mục', 'CSV', () async {
+      try {
+        final exportService = ref.read(dataExportServiceProvider);
+        final filePath = await exportService.exportCategoriesToCsv();
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Đã xuất dữ liệu danh mục ra file CSV!\nFile: ${filePath.split('/').last}');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showErrorMessage(context, 'Lỗi xuất dữ liệu: $e');
+        }
+      }
     });
   }
 
-  void _exportUnitsJson(BuildContext context, WidgetRef ref) {
-    _showExportConfirmation(context, 'đơn vị tính', 'JSON', () {
-      // TODO: Implement export units to JSON
-      _showSuccessMessage(context, 'Đã xuất dữ liệu đơn vị tính ra file JSON!');
+  // Units export methods
+  void _exportUnitsJsonl(BuildContext context, WidgetRef ref) {
+    _showExportConfirmation(context, 'đơn vị tính', 'JSONL', () async {
+      try {
+        final exportService = ref.read(dataExportServiceProvider);
+        final filePath = await exportService.exportUnitsToJsonl();
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Đã xuất dữ liệu đơn vị tính ra file JSONL!\nFile: ${filePath.split('/').last}');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showErrorMessage(context, 'Lỗi xuất dữ liệu: $e');
+        }
+      }
     });
   }
 
   void _exportUnitsCsv(BuildContext context, WidgetRef ref) {
-    _showExportConfirmation(context, 'đơn vị tính', 'CSV', () {
-      // TODO: Implement export units to CSV
-      _showSuccessMessage(context, 'Đã xuất dữ liệu đơn vị tính ra file CSV!');
+    _showExportConfirmation(context, 'đơn vị tính', 'CSV', () async {
+      try {
+        final exportService = ref.read(dataExportServiceProvider);
+        final filePath = await exportService.exportUnitsToCsv();
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Đã xuất dữ liệu đơn vị tính ra file CSV!\nFile: ${filePath.split('/').last}');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showErrorMessage(context, 'Lỗi xuất dữ liệu: $e');
+        }
+      }
     });
   }
 
-  void _exportOrdersJson(BuildContext context, WidgetRef ref) {
-    _showExportConfirmation(context, 'đơn hàng', 'JSON', () {
-      // TODO: Implement export orders to JSON
-      _showSuccessMessage(context, 'Đã xuất dữ liệu đơn hàng ra file JSON!');
+  // Orders export methods
+  void _exportOrdersJsonl(BuildContext context, WidgetRef ref) {
+    _showExportConfirmation(context, 'đơn hàng', 'JSONL', () async {
+      try {
+        final exportService = ref.read(dataExportServiceProvider);
+        final filePath = await exportService.exportOrdersToJsonl();
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Đã xuất dữ liệu đơn hàng ra file JSONL!\nFile: ${filePath.split('/').last}');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showErrorMessage(context, 'Lỗi xuất dữ liệu: $e');
+        }
+      }
     });
   }
 
   void _exportOrdersCsv(BuildContext context, WidgetRef ref) {
-    _showExportConfirmation(context, 'đơn hàng', 'CSV', () {
-      // TODO: Implement export orders to CSV
-      _showSuccessMessage(context, 'Đã xuất dữ liệu đơn hàng ra file CSV!');
+    _showExportConfirmation(context, 'đơn hàng', 'CSV', () async {
+      try {
+        final exportService = ref.read(dataExportServiceProvider);
+        final filePath = await exportService.exportOrdersToCsv();
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Đã xuất dữ liệu đơn hàng ra file CSV!\nFile: ${filePath.split('/').last}');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showErrorMessage(context, 'Lỗi xuất dữ liệu: $e');
+        }
+      }
     });
   }
 
@@ -274,17 +351,26 @@ class ExportDataPage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Tạo file backup'),
-        content: const Text('Bạn có chắc chắn muốn tạo file backup toàn bộ dữ liệu? File sẽ được lưu vào thư mục Downloads.'),
+        content: const Text('Bạn có chắc chắn muốn tạo file backup toàn bộ dữ liệu? File sẽ được lưu vào thư mục Documents.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Hủy'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Implement create full backup
-              _showSuccessMessage(context, 'Đã tạo file backup thành công!');
+              try {
+                final exportService = ref.read(dataExportServiceProvider);
+                final filePath = await exportService.createFullBackup();
+                if (context.mounted) {
+                  _showSuccessMessage(context, 'Đã tạo file backup thành công!\nFile: ${filePath.split('/').last}');
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  _showErrorMessage(context, 'Lỗi tạo backup: $e');
+                }
+              }
             },
             child: const Text('Tạo backup'),
           ),
@@ -293,7 +379,7 @@ class ExportDataPage extends ConsumerWidget {
     );
   }
 
-  void _showExportConfirmation(BuildContext context, String dataType, String format, VoidCallback onConfirm) {
+  void _showExportConfirmation(BuildContext context, String dataType, String format, Future<void> Function() onConfirm) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -305,9 +391,9 @@ class ExportDataPage extends ConsumerWidget {
             child: const Text('Hủy'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              onConfirm();
+              await onConfirm();
             },
             child: const Text('Xuất'),
           ),
@@ -321,6 +407,17 @@ class ExportDataPage extends ConsumerWidget {
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.green,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  void _showErrorMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
       ),
     );
   }

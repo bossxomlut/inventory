@@ -54,7 +54,17 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           controller: _tabController,
-          tabs: statuses.map((s) => Tab(text: s.displayName)).toList(),
+          tabs: statuses.map((status) {
+            return Consumer(
+              builder: (context, ref, child) {
+                final orders = ref.watch(orderListProvider(status));
+                final count = orders.data.length;
+                return Tab(
+                  text: '${status.displayName} ($count)',
+                );
+              },
+            );
+          }).toList(),
           isScrollable: true,
           tabAlignment: TabAlignment.start,
         ),
@@ -141,6 +151,11 @@ class OrderListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orders = ref.watch(orderListProvider(status));
+
+    if (orders.data.isEmpty && !orders.isLoading) {
+      return OrderEmptyState(status: status);
+    }
+
     return LoadMoreList<Order>(
       items: orders.data,
       itemBuilder: (context, index) {
@@ -359,5 +374,83 @@ class OrderCard extends StatelessWidget {
           ],
         );
     }
+  }
+}
+
+class OrderEmptyState extends StatelessWidget {
+  const OrderEmptyState({
+    super.key,
+    required this.status,
+  });
+
+  final OrderStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+
+    String getMessage() {
+      switch (status) {
+        case OrderStatus.draft:
+          return 'Chưa có đơn hàng nháp nào';
+        case OrderStatus.confirmed:
+          return 'Chưa có đơn hàng đã xác nhận';
+        case OrderStatus.done:
+          return 'Chưa có đơn hàng hoàn thành';
+        case OrderStatus.cancelled:
+          return 'Chưa có đơn hàng bị hủy';
+      }
+    }
+
+    IconData getIcon() {
+      switch (status) {
+        case OrderStatus.draft:
+          return Icons.edit_note_outlined;
+        case OrderStatus.confirmed:
+          return Icons.check_circle_outline;
+        case OrderStatus.done:
+          return Icons.task_alt_outlined;
+        case OrderStatus.cancelled:
+          return Icons.cancel_outlined;
+      }
+    }
+
+    Color getIconColor() {
+      switch (status) {
+        case OrderStatus.draft:
+          return Colors.orange;
+        case OrderStatus.confirmed:
+          return Colors.blue;
+        case OrderStatus.done:
+          return Colors.green;
+        case OrderStatus.cancelled:
+          return Colors.red;
+      }
+    }
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            getIcon(),
+            size: 80,
+            color: getIconColor().withOpacity(0.3),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            getMessage(),
+            style: theme.textRegular16Subtle,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Nhấn nút + để tạo đơn hàng mới',
+            style: theme.textRegular14Sublest,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 }

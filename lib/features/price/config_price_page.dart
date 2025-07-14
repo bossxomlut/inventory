@@ -181,37 +181,63 @@ class ProductListView extends HookConsumerWidget {
                           Expanded(child: CustomProductCard(product: product)),
                           const SizedBox(width: 8),
                           productPrice.when(
-                            data: (price) => Container(
-                              constraints: const BoxConstraints(maxWidth: 120),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  //giá vốn
-                                  Text(
-                                    'Giá vốn',
-                                    style: theme.textRegular13Subtle,
-                                  ),
+                            data: (price) {
+                              final profitPercentage = price.profitPercentage;
 
-                                  Text(
-                                    '${price.purchasePrice?.priceFormat() ?? 'Chưa có'}',
-                                    style: theme.textMedium16Default,
-                                    textAlign: TextAlign.end,
-                                  ),
-                                  const SizedBox(height: 8),
+                              return Container(
+                                constraints: const BoxConstraints(maxWidth: 120),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    //giá vốn
+                                    Text(
+                                      'Giá vốn',
+                                      style: theme.textRegular13Subtle,
+                                    ),
+                                    Text(
+                                      '${price.purchasePrice?.priceFormat() ?? 'Chưa có'}',
+                                      style: theme.textMedium16Default,
+                                      textAlign: TextAlign.end,
+                                    ),
+                                    const SizedBox(height: 8),
 
-                                  Text(
-                                    'Giá bán',
-                                    style: theme.textRegular13Subtle,
-                                  ),
-                                  Text(
-                                    '${price.sellingPrice?.priceFormat() ?? 'Chưa có'}',
-                                    style: theme.textMedium16Default,
-                                    textAlign: TextAlign.end,
-                                  ),
-                                ],
-                              ),
-                            ),
+                                    Text(
+                                      'Giá bán',
+                                      style: theme.textRegular13Subtle,
+                                    ),
+                                    Text(
+                                      '${price.sellingPrice?.priceFormat() ?? 'Chưa có'}',
+                                      style: theme.textMedium16Default,
+                                      textAlign: TextAlign.end,
+                                    ),
+
+                                    // Profit percentage display
+                                    if (profitPercentage != null) ...[
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          Icon(
+                                            profitPercentage >= 0 ? Icons.trending_up : Icons.trending_down,
+                                            color: profitPercentage >= 0 ? Colors.green : Colors.red,
+                                            size: 16,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${profitPercentage >= 0 ? '+' : ''}${profitPercentage.displayFormat()}%',
+                                            style: theme.textRegular12Default.copyWith(
+                                              color: profitPercentage >= 0 ? Colors.green : Colors.red,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            },
                             loading: () => const SizedBox(),
                             error: (error, stack) => const SizedBox(),
                           ),
@@ -262,6 +288,19 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
       return double.tryParse(purchasePriceController.text);
     }
 
+    // Calculate profit percentage
+    double? calculateProfitPercentage() {
+      // Create temporary ProductPrice object to use the getter
+      final tempPrice = ProductPrice(
+        id: 0,
+        productId: 0,
+        productName: '',
+        sellingPrice: sellingPrice(),
+        purchasePrice: purchasePrice(),
+      );
+      return tempPrice.profitPercentage;
+    }
+
     bool isValidFields() {
       // Check if the fields are empty or have invalid number format
       final sellPriceText = sellPriceController.text.trim();
@@ -292,6 +331,57 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
         children: [
           CustomProductCard(product: product),
           const SizedBox(height: 16),
+
+          // Profit percentage display
+          AnimatedBuilder(
+            animation: Listenable.merge([sellPriceController, purchasePriceController]),
+            builder: (BuildContext context, Widget? child) {
+              final profitPercentage = calculateProfitPercentage();
+
+              if (profitPercentage == null) {
+                return const SizedBox.shrink();
+              }
+
+              final isProfit = profitPercentage >= 0;
+              final color = isProfit ? Colors.green : Colors.red;
+              final prefix = isProfit ? '+' : '';
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: color.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isProfit ? Icons.trending_up : Icons.trending_down,
+                      color: color,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Lợi nhuận: ',
+                      style: context.appTheme.textRegular14Default,
+                    ),
+                    Text(
+                      '${prefix}${profitPercentage.displayFormat()}%',
+                      style: context.appTheme.textMedium16Default.copyWith(color: color),
+                    ),
+                    const Spacer(),
+                    if (sellingPrice() != null && purchasePrice() != null)
+                      Text(
+                        '${prefix}${(sellingPrice()! - purchasePrice()!).priceFormat()}',
+                        style: context.appTheme.textRegular13Subtle.copyWith(color: color),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+
           //Gía bán
           TitleBlockWidget.widget(
             titleWidget: AnimatedBuilder(

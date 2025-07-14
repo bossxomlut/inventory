@@ -11,4 +11,16 @@ class ProductPrice with _$ProductPrice {
     double? purchasePrice, // Giá mua
     double? sellingPrice,
   }) = _ProductPrice;
+
+  const ProductPrice._();
+}
+
+extension ProductPriceX on ProductPrice {
+// Calculate profit percentage
+  double? get profitPercentage {
+    if (sellingPrice != null && purchasePrice != null && purchasePrice! > 0) {
+      return ((sellingPrice! - purchasePrice!) / purchasePrice!) * 100;
+    }
+    return null;
+  }
 }

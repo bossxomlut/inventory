@@ -10,8 +10,10 @@ import '../../domain/entities/product/inventory.dart';
 import '../../domain/repositories/order/price_repository.dart';
 import '../../provider/index.dart';
 import '../../provider/load_list.dart';
+import '../../provider/text_search.dart';
 import '../../shared_widgets/index.dart';
 import '../../shared_widgets/toast.dart';
+import '../../shared_widgets/hook/text_controller_hook.dart';
 import '../product/product_list_page.dart';
 import '../product/provider/product_provider.dart';
 import '../product/widget/product_card.dart';
@@ -22,14 +24,117 @@ class ConfigProductPricePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Reset search when leaving the page
+    useEffect(() {
+      return () {
+        ref.read(textSearchProvider.notifier).state = '';
+        ref.read(isSearchVisibleProvider.notifier).state = false;
+      };
+    }, []);
+
     return const Scaffold(
-      appBar: CustomAppBar(
-        title: 'Cấu hình giá sản phẩm',
-        actions: [],
-      ),
+      appBar: ConfigPriceAppBar(),
       body: ProductListView(),
     );
   }
+}
+
+// ConfigPriceAppBar with search functionality
+class ConfigPriceAppBar extends HookConsumerWidget implements PreferredSizeWidget {
+  const ConfigPriceAppBar({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final searchFocusNode = useFocusNode();
+    final searchController = useTextEditingController();
+    final debouncedSearchText = useDebouncedText(searchController);
+
+    // Trigger search when debounced text changes
+    useEffect(() {
+      Future(() => ref.read(textSearchProvider.notifier).state = debouncedSearchText);
+      return null;
+    }, [debouncedSearchText]);
+
+    final isSearchVisible = ref.watch(isSearchVisibleProvider);
+
+    return isSearchVisible
+        ? AppBar(
+            // Custom search AppBar
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            leading: InkWell(
+              child: const Icon(Icons.close, color: Colors.white),
+              onTap: () {
+                ref.read(isSearchVisibleProvider.notifier).state = false;
+                ref.read(textSearchProvider.notifier).state = '';
+                searchController.clear();
+              },
+            ),
+            titleSpacing: 0,
+            centerTitle: false,
+            title: TextField(
+              controller: searchController,
+              focusNode: searchFocusNode,
+              style: const TextStyle(color: Colors.white),
+              cursorColor: Colors.white,
+              decoration: InputDecoration(
+                  hintText: 'Tìm kiếm sản phẩm...',
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  border: InputBorder.none,
+                  suffix: Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: AnimatedBuilder(
+                        animation: searchController,
+                        builder: (context, _) {
+                          final isNotEmpty = searchController.text.isNotEmpty;
+                          if (!isNotEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return InkWell(
+                            onTap: () {
+                              searchController.clear();
+                              ref.read(textSearchProvider.notifier).state = '';
+                            },
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.clear,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          );
+                        }),
+                  )),
+              autofocus: true,
+              textInputAction: TextInputAction.search,
+              textAlignVertical: TextAlignVertical.center,
+            ),
+          )
+        : CustomAppBar(
+            title: 'Cấu hình giá sản phẩm',
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.search, color: Colors.white),
+                onPressed: () {
+                  ref.read(isSearchVisibleProvider.notifier).state = true;
+                  // Đảm bảo focus vào text field và mở bàn phím
+                  Future.delayed(const Duration(milliseconds: 50), () {
+                    FocusScope.of(context).requestFocus(searchFocusNode);
+                  });
+                },
+                tooltip: 'Tìm kiếm',
+              ),
+            ],
+          );
+  }
+
+  @override
+  Size get preferredSize => AppBar().preferredSize;
 }
 
 class ProductListView extends HookConsumerWidget {
@@ -37,7 +142,7 @@ class ProductListView extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Use loadProductProvider directly
+    // Use loadProductProvider which already has productFilterProvider inside
     final products = ref.watch(loadProductProvider);
     final theme = context.appTheme;
 
@@ -134,7 +239,7 @@ class ProductListView extends HookConsumerWidget {
 }
 
 //create product price bottom sheet
-class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSheet {
+class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSheet<void> {
   final Product product;
   final ProductPrice? productPrice;
 
@@ -177,6 +282,7 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
         sellPriceController.text = productPrice!.sellingPrice?.inputFormat() ?? '';
         purchasePriceController.text = productPrice!.purchasePrice?.inputFormat() ?? '';
       }
+      return null;
     }, [productPrice]);
 
     return Padding(

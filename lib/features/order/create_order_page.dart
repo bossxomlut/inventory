@@ -142,9 +142,7 @@ class CreateOrderPage extends HookConsumerWidget {
                                 try {
                                   final productRepo = ref.read(searchProductRepositoryProvider);
                                   final product = await productRepo.searchByBarcode(value.displayValue ?? '');
-                                  final currentQuantity = ref
-                                      .read(orderCreationProvider.select((state) => state.orderItems[product]))
-                                      ?.quantity;
+                                  final currentQuantity = ref.read(orderCreationProvider.select((state) => state.orderItems[product]))?.quantity;
 
                                   await OrderNumberInputWidget(
                                     product: product,
@@ -854,7 +852,7 @@ class _OrderItem extends StatelessWidget {
   }
 }
 
-class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet {
+class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<void> {
   const OrderNumberInputWidget({
     super.key,
     required this.product,
@@ -868,59 +866,136 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quantity = useState(currentQuantity ?? product.quantity);
+    final quantity = useState(currentQuantity ?? 1);
     final productPrice = ref.watch(productPriceByIdProvider(product.id));
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CustomProductCard(
-            product: product,
-            subtitleWidget: productPrice.when(
-              data: (price) => Text(
-                'Giá bán: ${price.sellingPrice?.priceFormat()}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              loading: () => const SizedBox(),
-              error: (error, stack) => const SizedBox(),
+          CustomProductCard(product: product),
+          const SizedBox(height: 16),
+
+          // Inventory quantity display
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.inventory_outlined,
+                  color: Colors.green,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Tồn kho: ',
+                  style: context.appTheme.textRegular14Default,
+                ),
+                Text(
+                  '${product.quantity}',
+                  style: context.appTheme.textMedium16Default.copyWith(color: Colors.green),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          const AppDivider(),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Text('Số lượng đặt hàng:', style: TextStyle(fontSize: 16)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: PlusMinusInputView(
-                  initialValue: quantity.value,
-                  minValue: 0,
-                  onChanged: (val) => quantity.value = val,
-                ),
-              ),
-            ],
+          const SizedBox(height: 16),
+
+          // Product price display
+          productPrice.when(
+            data: (price) => price.sellingPrice != null
+                ? Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.monetization_on_outlined,
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Giá bán: ',
+                          style: context.appTheme.textRegular14Default,
+                        ),
+                        Text(
+                          '${price.sellingPrice!.priceFormat()}',
+                          style: context.appTheme.textMedium16Default.copyWith(color: Colors.blue),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+            loading: () => const SizedBox(),
+            error: (error, stack) => const SizedBox(),
           ),
-          const SizedBox(height: 18),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Huỷ'),
-              ),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: () {
-                  onSave(quantity.value, productPrice.valueOrNull?.sellingPrice ?? 0);
-                },
-                child: const Text('Lưu'),
-              ),
-            ],
+
+          if (productPrice.valueOrNull?.sellingPrice != null) const SizedBox(height: 16),
+
+          // Quantity input
+          TitleBlockWidget.widget(
+            titleWidget: Text(
+              'Số lượng đặt hàng: ${quantity.value}',
+              style: context.appTheme.textRegular13Subtle,
+            ),
+            child: PlusMinusInputView(
+              initialValue: quantity.value,
+              minValue: 1,
+              maxValue: product.quantity, // Limit to available stock
+              onChanged: (val) => quantity.value = val,
+            ),
           ),
+
+          // Bottom button bar
+          BottomButtonBar(
+            padding: const EdgeInsets.only(top: 16),
+            onSave: quantity.value <= product.quantity
+                ? () {
+                    final price = productPrice.valueOrNull?.sellingPrice ?? 0;
+                    onSave(quantity.value, price);
+                    showSuccess(message: 'Đã thêm ${product.name} vào đơn hàng');
+                  }
+                : null, // Disable if quantity exceeds stock
+            onCancel: () {
+              Navigator.pop(context);
+            },
+          ),
+
+          // Warning message if quantity exceeds stock
+          if (quantity.value > product.quantity)
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber, color: Colors.red, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Số lượng vượt quá tồn kho (${product.quantity})',
+                      style: context.appTheme.textRegular12Default.copyWith(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

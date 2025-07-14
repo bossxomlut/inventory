@@ -15,14 +15,14 @@ class ScannerView extends StatefulWidget {
     this.singleScan = false, // New flag for single/multiple scans
   });
 
-  final Future Function(Barcode barcode) onBarcodeScanned;
+  final Future<void> Function(Barcode barcode) onBarcodeScanned;
   final bool autoStopCamera;
   final bool singleScan; // Added parameter
 
-  static Future scanBarcodePage(
+  static Future<void> scanBarcodePage(
     BuildContext context, {
     String title = 'Quét mã vạch',
-    required Future Function(Barcode barcode) onBarcodeScanned,
+    required Future<void> Function(Barcode barcode) onBarcodeScanned,
     bool autoStopCamera = false,
     bool singleScan = false, // New parameter for single scan
   }) {
@@ -204,8 +204,6 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
       children: [
         Expanded(
           child: LayoutBuilder(builder: (context, constraints) {
-            final screenSize = MediaQuery.sizeOf(context);
-
             final padding = 40.0;
 
             final w = constraints.maxWidth - padding;
@@ -273,6 +271,8 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
               ),
               SwitchCameraButton(controller: controller),
               AnalyzeImageFromGalleryButton(controller: controller),
+              // Debug test button
+              if (kDebugMode) TestScanButton(onTestScan: widget.onBarcodeScanned),
             ],
           ),
         ),
@@ -293,7 +293,7 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
   }
 }
 
-class InnerScannerPage extends StatelessWidget with ShowBottomSheet {
+class InnerScannerPage extends StatelessWidget with ShowBottomSheet<void> {
   const InnerScannerPage({
     super.key,
     required this.onBarcodeScanned,
@@ -845,5 +845,88 @@ class BorderScannerOverlay extends CustomPainter {
 extension BarcodeX on Barcode {
   String showInformation() {
     return '';
+  }
+}
+
+// Test button for debug mode
+class TestScanButton extends StatelessWidget {
+  const TestScanButton({
+    super.key,
+    required this.onTestScan,
+  });
+
+  final Future<void> Function(Barcode barcode) onTestScan;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () => _showTestDialog(context),
+      icon: const Icon(Icons.bug_report, color: Colors.orange),
+      tooltip: 'Test Scan (Debug)',
+    );
+  }
+
+  void _showTestDialog(BuildContext context) {
+    final textController = TextEditingController();
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Test Scan'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Nhập mã vạch test:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: textController,
+              decoration: const InputDecoration(
+                labelText: 'Mã vạch',
+                hintText: 'Nhập mã vạch...',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+              onSubmitted: (value) {
+                if (value.trim().isNotEmpty) {
+                  Navigator.pop(context);
+                  _simulateScan(value.trim());
+                }
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () {
+              final value = textController.text.trim();
+              if (value.isNotEmpty) {
+                Navigator.pop(context);
+                _simulateScan(value);
+              }
+            },
+            child: const Text('Scan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _simulateScan(String barcodeValue) {
+    // Create a mock Barcode object
+    final mockBarcode = Barcode(
+      type: BarcodeType.unknown,
+      format: BarcodeFormat.unknown,
+      rawValue: barcodeValue,
+      displayValue: barcodeValue,
+      rawBytes: null,
+      corners: [],
+      size: Size.zero,
+    );
+
+    onTestScan(mockBarcode);
   }
 }

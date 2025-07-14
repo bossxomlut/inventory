@@ -55,4 +55,10 @@ class CheckedList extends _$CheckedList {
       ...state.valueOrNull!.map((e) => e.id == updatedProduct.id ? updatedProduct : e),
     ]);
   }
+
+  CheckedProduct? checkExistProduct({
+    required Product product,
+  }) {
+    return state.value?.firstWhereOrNull((e) => e.product.id == product.id);
+  }
 }

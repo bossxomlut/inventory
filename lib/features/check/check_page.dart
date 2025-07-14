@@ -63,11 +63,25 @@ class _CheckPageState extends ConsumerState<CheckPage> {
     ).show(context);
   }
 
+  void _onSearchProductResult(Product? product) {
+    if (product != null) {
+      //search for current list of checked products
+      final existingCheck = ref.read(checkedListProvider(session).notifier).checkExistProduct(product: product);
+
+      if (existingCheck != null) {
+        // Nếu sản phẩm đã được kiểm kê, mở chi tiết kiểm kê hiện tại
+        _openProductDetailBTS(product, currentCheck: existingCheck);
+      } else {
+        _openProductDetailBTS(product);
+      }
+    }
+  }
+
   Future<void> _onBarcodeScanned(Barcode barcode) async {
     try {
       final searchProductRepo = ref.read(searchProductRepositoryProvider);
       final product = await searchProductRepo.searchByBarcode(barcode.rawValue ?? '');
-      _openProductDetailBTS(product);
+      _onSearchProductResult(product);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi quét mã vạch: $e')),
@@ -91,9 +105,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
       },
     ).show(context);
 
-    if (product != null) {
-      _openProductDetailBTS(product);
-    }
+    _onSearchProductResult(product);
   }
 
   void _showSessionInfo() {
@@ -204,38 +216,23 @@ class _CheckPageState extends ConsumerState<CheckPage> {
           : Consumer(builder: (context, ref, child) {
               final haveCheck = ref.watch(checkedListProvider(session)).value.isNotNullAndEmpty;
               return BottomAppBar(
-                padding: EdgeInsets.zero,
-                height: 70,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ElevatedButton.icon(
-                          onPressed: !haveCheck
-                              ? null
-                              : () {
-                                  try {
-                                    final notifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
-                                    notifier.updateStatus(widget.session, CheckSessionStatus.completed);
-                                    appRouter.popForced();
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Lỗi: $e')),
-                                    );
-                                  }
-                                },
-                          icon: const Icon(Icons.check_circle),
-                          label: const Text('Hoàn thành'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                color: Colors.transparent,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: AppButton.primary(
+                  title: 'Hoàn thành',
+                  onPressed: haveCheck
+                      ? () {
+                          try {
+                            final notifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
+                            notifier.updateStatus(widget.session, CheckSessionStatus.completed);
+                            appRouter.popForced();
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Lỗi: $e')),
+                            );
+                          }
+                        }
+                      : null,
                 ),
               );
             }),

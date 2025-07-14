@@ -63,7 +63,12 @@ class CheckRepositoryImpl extends CheckRepository {
     //add to transaction
 
     for (var check in checkedProducts) {
-      await updateProductRepository.updateProduct(check.product, TransactionCategory.check);
+      await updateProductRepository.updateProduct(
+        check.product.copyWith(
+          quantity: check.actualQuantity,
+        ),
+        TransactionCategory.check,
+      );
     }
 
     return checkSessionRepository.update(session);

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/entities/index.dart';
@@ -6,6 +8,7 @@ import '../../../domain/repositories/index.dart';
 import '../../../provider/index.dart';
 import '../../../resources/string.dart';
 import '../../../routes/app_router.dart';
+import '../../../shared_widgets/user_access_blocked_dialog.dart';
 import 'auth_provider.dart';
 
 part 'login_provider.g.dart';
@@ -31,6 +34,18 @@ class LoginController extends _$LoginController with CommonProvider<LoginState> 
 
     authRepository.login(userName, password).then(
       (User value) async {
+        // Check if user is active (only for regular users, admin can always login)
+        if (value.role == UserRole.user && !value.isActive) {
+          hideLoading();
+
+          // Show blocked dialog for login
+          final context = appRouter.navigatorKey.currentContext;
+          if (context != null) {
+            await UserAccessBlockedDialog.show(context, isRegistrationSuccess: false);
+          }
+          return;
+        }
+
         //read authProvider
         final authProvider = ref.watch(authControllerProvider.notifier);
 
@@ -42,6 +57,7 @@ class LoginController extends _$LoginController with CommonProvider<LoginState> 
       },
     ).onError(
       (error, StackTrace stackTrace) {
+        log('Login error: $error', stackTrace: stackTrace);
         hideLoading();
         showError(LKey.loginValidateMessageUserAccount.tr());
       },
@@ -118,6 +134,18 @@ class SignUpController extends _$SignUpController with CommonProvider<SignUpStat
     )
         .then(
       (value) async {
+        // Check if user is active (only for regular users, admin can always login)
+        if (value.role == UserRole.user && !value.isActive) {
+          hideLoading();
+
+          // Show registration success dialog
+          final context = appRouter.navigatorKey.currentContext;
+          if (context != null) {
+            await UserAccessBlockedDialog.show(context, isRegistrationSuccess: true);
+          }
+          return;
+        }
+
         //read authProvider
         final authProvider = ref.read(authControllerProvider.notifier);
 

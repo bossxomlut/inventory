@@ -10,4 +10,7 @@ class UserCollection {
   late int role;
   late int securityQuestionId;
   late String securityQuestionAnswer;
+  bool isActive = false;
+  DateTime? createdAt;
+  DateTime? lastLoginAt;
 }

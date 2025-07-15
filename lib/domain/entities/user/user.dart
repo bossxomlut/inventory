@@ -9,6 +9,9 @@ class User with _$User {
     required int id, // Mã người dùng
     required String username, // Tên đăng nhập
     required UserRole role, // Vai trò (admin/user/guest)
+    @Default(false) bool isActive, // Trạng thái hoạt động
+    DateTime? createdAt, // Thời gian tạo
+    DateTime? lastLoginAt, // Lần đăng nhập cuối
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

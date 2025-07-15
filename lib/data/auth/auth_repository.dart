@@ -11,18 +11,25 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> login(String account, String password) async {
-    return _isar.txnSync(
-      () {
-        final foundUser = _collection.filter().accountEqualTo(account).passwordEqualTo(password).findFirstSync();
+    return _isar.writeTxn(
+      () async {
+        final foundUser = await _collection.filter().accountEqualTo(account).and().passwordEqualTo(password).findFirst();
 
         if (foundUser == null) {
           throw Exception('Invalid credentials');
         }
 
+        // Update last login time
+        foundUser.lastLoginAt = DateTime.now();
+        await _collection.put(foundUser);
+
         return User(
           id: foundUser.id,
           username: foundUser.account,
           role: UserRole.values[foundUser.role],
+          isActive: foundUser.isActive,
+          createdAt: foundUser.createdAt,
+          lastLoginAt: foundUser.lastLoginAt,
         );
       },
     );
@@ -36,10 +43,7 @@ class AuthRepositoryImpl implements AuthRepository {
     int securityQuestionId,
     String securityQuestionAnswer,
   ) async {
-    //print('Registering user: $account, $password');
-
     print('Registering user: $account');
-    print('Password: $password');
 
     return _isar.writeTxnSync(() {
       //find if user already exists
@@ -54,7 +58,9 @@ class AuthRepositoryImpl implements AuthRepository {
         ..password = password
         ..role = role.index
         ..securityQuestionId = securityQuestionId
-        ..securityQuestionAnswer = securityQuestionAnswer;
+        ..securityQuestionAnswer = securityQuestionAnswer
+        ..isActive = (role == UserRole.admin) // Admin luôn active, user cần được kích hoạt
+        ..createdAt = DateTime.now();
 
       _collection.putSync(newUser);
 
@@ -62,6 +68,8 @@ class AuthRepositoryImpl implements AuthRepository {
         id: newUser.id,
         username: newUser.account,
         role: role,
+        isActive: newUser.isActive,
+        createdAt: newUser.createdAt,
       );
     });
   }
@@ -71,21 +79,21 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> checkExistAdmin() {
-    return _isar.txnSync(() async {
-      final foundUser = _collection.filter().roleEqualTo(UserRole.admin.index).findFirstSync();
+    return _isar.txn(() async {
+      final foundUser = await _collection.filter().roleEqualTo(UserRole.admin.index).findFirst();
       return foundUser != null;
     });
   }
 
   @override
   Future<bool> checkSecurityQuestion(String account, int securityQuestionId, String answer) {
-    return _isar.txnSync(() async {
-      final foundUser = _collection
+    return _isar.txn(() async {
+      final foundUser = await _collection
           .filter()
           .accountEqualTo(account)
           .securityQuestionIdEqualTo(securityQuestionId)
           .securityQuestionAnswerEqualTo(answer)
-          .findFirstSync();
+          .findFirst();
 
       return foundUser != null;
     });
@@ -93,15 +101,47 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> updatePassword(String account, String password) {
-    return _isar.writeTxnSync(() async {
-      final foundUser = _collection.filter().accountEqualTo(account).findFirstSync();
+    return _isar.writeTxn(() async {
+      final foundUser = await _collection.filter().accountEqualTo(account).findFirst();
 
       if (foundUser == null) {
         throw NotFoundException('User not found');
       }
 
       foundUser.password = password;
-      _collection.putSync(foundUser);
+      await _collection.put(foundUser);
+    });
+  }
+
+  @override
+  Future<List<User>> getAllUsers() async {
+    return _isar.txn(() async {
+      final users = await _collection.where().findAll();
+
+      return users
+          .map((userCollection) => User(
+                id: userCollection.id,
+                username: userCollection.account,
+                role: UserRole.values[userCollection.role],
+                isActive: userCollection.isActive,
+                createdAt: userCollection.createdAt,
+                lastLoginAt: userCollection.lastLoginAt,
+              ))
+          .toList();
+    });
+  }
+
+  @override
+  Future<void> toggleUserAccess(int userId, bool isActive) async {
+    return _isar.writeTxn(() async {
+      final user = await _collection.get(userId);
+
+      if (user == null) {
+        throw Exception('User not found');
+      }
+
+      user.isActive = isActive;
+      await _collection.put(user);
     });
   }
 }

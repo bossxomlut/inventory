@@ -22,4 +22,8 @@ abstract class AuthRepository {
   Future<bool> checkSecurityQuestion(String account, int securityQuestionId, String answer);
 
   Future<void> updatePassword(String account, String password);
+  
+  Future<List<User>> getAllUsers();
+  
+  Future<void> toggleUserAccess(int userId, bool isActive);
 }

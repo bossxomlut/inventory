@@ -24,68 +24,115 @@ class HomePage2 extends ConsumerWidget {
           return Scaffold(
             body: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Greeting
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundColor: context.appTheme.colorSecondary,
-                          child: Icon(Icons.person, size: 32, color: context.appTheme.colorPrimary),
+                    // Modern header with greeting
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            theme.colorPrimary.withOpacity(0.08),
+                            theme.colorPrimary.withOpacity(0.03),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Xin chào,',
-                                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: theme.colorPrimary.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  theme.colorPrimary,
+                                  theme.colorPrimary.withOpacity(0.8),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                              Text(
-                                user.username,
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.colorPrimary.withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
                                 ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.person,
+                              size: 28,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Xin chào,',
+                                  style: theme.textRegular14Sublest,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  user.username,
+                                  style: theme.headingSemibold20Default,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: theme.colorBackground,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: theme.colorBorderSublest,
+                                width: 1,
                               ),
-                            ],
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.settings_outlined,
+                                color: theme.colorIcon,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                appRouter.goToSetting();
+                              },
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.settings_outlined,
-                            color: theme.colorIcon,
-                          ),
-                          onPressed: () {
-                            appRouter.goToSetting();
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     // Modern grid menu
                     Expanded(
                       child: ListView.separated(
                         itemCount: menuGroups.length,
-                        separatorBuilder: (context, idx) => const SizedBox(height: 18),
+                        separatorBuilder: (context, idx) => const SizedBox(height: 20),
                         itemBuilder: (context, groupIdx) {
                           final group = menuGroups[groupIdx];
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(left: 8, bottom: 8),
+                                padding: const EdgeInsets.only(left: 4, bottom: 10),
                                 child: Text(
                                   group.title,
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    color: context.appTheme.colorPrimary,
-                                  ),
+                                  style: theme.headingSemibold20Primary,
                                 ),
                               ),
                               GridView.builder(
@@ -93,68 +140,78 @@ class HomePage2 extends ConsumerWidget {
                                 physics: const NeverScrollableScrollPhysics(),
                                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                  childAspectRatio: 8 / 7,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                  childAspectRatio: 1.3,
                                 ),
                                 itemCount: group.items.length,
                                 itemBuilder: (context, index) {
                                   final item = group.items[index];
                                   return InkWell(
                                     onTap: item.destinationCallback,
-                                    borderRadius: BorderRadius.circular(18),
-                                    child: Ink(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(18),
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            context.appTheme.colorSecondary.withOpacity(0.5),
-                                            context.appTheme.colorSecondary,
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
+                                        color: theme.colorBackground,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: theme.colorBorderSublest,
+                                          width: 1,
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: context.appTheme.colorPrimary.withOpacity(0.08),
-                                            blurRadius: 12,
-                                            offset: const Offset(0, 6),
+                                            color: theme.colorPrimary.withOpacity(0.06),
+                                            blurRadius: 16,
+                                            offset: const Offset(0, 4),
+                                            spreadRadius: 0,
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.02),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                            spreadRadius: 0,
                                           ),
                                         ],
                                       ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(12),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: context.appTheme.colorPrimary.withOpacity(0.10),
-                                                  blurRadius: 8,
-                                                  offset: const Offset(0, 2),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 48,
+                                              height: 48,
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    theme.colorPrimary.withOpacity(0.1),
+                                                    theme.colorPrimary.withOpacity(0.05),
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
                                                 ),
-                                              ],
+                                                borderRadius: BorderRadius.circular(14),
+                                                border: Border.all(
+                                                  color: theme.colorPrimary.withOpacity(0.1),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Icon(
+                                                item.icon,
+                                                size: 24,
+                                                color: theme.colorPrimary,
+                                              ),
                                             ),
-                                            padding: const EdgeInsets.all(16),
-                                            child: Icon(
-                                              item.icon,
-                                              size: 28,
-                                              color: context.appTheme.colorPrimary,
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              item.title,
+                                              style: theme.textMedium13Default,
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                          ),
-                                          const SizedBox(height: 14),
-                                          Text(
-                                            item.title,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: context.appTheme.colorPrimary,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   );

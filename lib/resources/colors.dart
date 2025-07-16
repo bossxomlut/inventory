@@ -140,11 +140,11 @@ class LightColors implements AppColors {
   @override
   Color get backgroundSublestColor => const Color(0xFFF5F5F5);
   @override
-  Color get primaryColor => const Color(0xFF09553E);
+  Color get primaryColor => const Color(0xFFF5B041);
   @override
   Color get primaryDisableColor => const Color(0xFFE0E0E0);
   @override
-  Color get secondaryColor => const Color(0xFFE4F5EF);
+  Color get secondaryColor => const Color(0xFF27AE60);
   @override
   Color get tertiaryColor => const Color(0xFF2E2E2E);
   @override
@@ -178,7 +178,7 @@ class LightColors implements AppColors {
   @override
   Color get textInverseColor => const Color(0xE5000000);
   @override
-  Color get textPrimaryColor => const Color(0xFF09553E);
+  Color get textPrimaryColor => const Color(0xFFF5B041);
   @override
   Color get textColor => const Color(0xFFEBEBEB);
   @override
@@ -188,7 +188,7 @@ class LightColors implements AppColors {
   @override
   Color get textWhiteColor => Colors.white;
   @override
-  Color get indicatorColor => const Color(0xFF09553E);
+  Color get indicatorColor => const Color(0xFFF5B041);
   @override
   Color get indicatorPlaceholderColor => const Color(0xFFD1D1D1);
   @override

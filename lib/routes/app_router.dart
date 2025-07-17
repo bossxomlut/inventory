@@ -57,6 +57,7 @@ class AppRouter extends $AppRouter {
 
         //data management routes
         AutoRoute(page: CreateSampleDataRoute.page),
+        AutoRoute(page: ImportDataRoute.page),
         AutoRoute(page: ExportDataRoute.page),
         AutoRoute(page: DeleteDataRoute.page),
 
@@ -194,6 +195,10 @@ extension SettingRouterX on AppRouter {
 extension DataManagementRouterX on AppRouter {
   void goToCreateSampleData() {
     push(CreateSampleDataRoute());
+  }
+
+  void goToImportData() {
+    push(ImportDataRoute());
   }
 
   void goToExportData() {

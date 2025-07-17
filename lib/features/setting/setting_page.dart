@@ -7,6 +7,7 @@ import '../../provider/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
+import '../data_management/import_data_page.dart';
 import '../onboarding/onboarding_service.dart';
 
 @RoutePage()
@@ -60,7 +61,13 @@ class SettingPage extends WidgetByDeviceTemplate {
                   ListTile(
                     leading: const Icon(HugeIcons.strokeRoundedDatabaseAdd),
                     title: const Text('Nhập dữ liệu từ file'),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const ImportDataPage(),
+                        ),
+                      );
+                    },
                   ),
                   const _Divider(),
                   ListTile(

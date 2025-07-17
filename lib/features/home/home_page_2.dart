@@ -22,6 +22,7 @@ class HomePage2 extends ConsumerWidget {
           List<MenuGroup> menuGroups = MenuManager.getMenuGroupsForRole(user.role);
 
           return Scaffold(
+            backgroundColor: Colors.white,
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),

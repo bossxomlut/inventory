@@ -115,88 +115,216 @@ class _CheckPageState extends ConsumerState<CheckPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.appTheme;
+
     return Scaffold(
+      backgroundColor: theme.colorBackground,
       appBar: CustomAppBar(
         title: widget.session.name,
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.info_outline,
-              color: Colors.white,
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
             ),
-            onPressed: _showSessionInfo,
+            child: IconButton(
+              icon: Icon(
+                Icons.info_outline,
+                color: Colors.white,
+                size: 20,
+              ),
+              onPressed: _showSessionInfo,
+            ),
           ),
         ],
       ),
       body: Column(
         children: [
-          // Scan View
+          // Full Width Scanner Section
           if (!isDone)
-            SizedBox(
-              height: 250,
-              child: ScannerView(
-                onBarcodeScanned: _onBarcodeScanned,
-                singleScan: true,
+            Container(
+              height: 280,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: theme.colorBackgroundSurface,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                border: Border.all(
+                  color: theme.colorBorderSublest,
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorPrimary.withOpacity(0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Scanner area - full width
+                  Expanded(
+                    child: ScannerView(
+                      onBarcodeScanned: _onBarcodeScanned,
+                      singleScan: true,
+                    ),
+                  ),
+                ],
               ),
             ),
-
-          // Tiêu đề danh sách
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          // Modern Header Section
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: theme.colorBackgroundSurface,
+              border: Border.all(
+                color: theme.colorBorderSublest,
+                width: 1,
+              ),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Danh sách sản phẩm đã kiểm kê',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sản phẩm đã kiểm kê',
+                      style: theme.headingSemibold20Default,
+                    ),
+                    const SizedBox(height: 4),
+                    FutureBuilder(
+                      future: ref.read(checkRepositoryProvider).getChecksBySession(widget.session.id),
+                      builder: (context, snapshot) {
+                        final count = snapshot.data?.length ?? 0;
+                        return Text(
+                          '$count sản phẩm',
+                          style: theme.textRegular14Sublest,
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                FutureBuilder(
-                  future: ref.read(checkRepositoryProvider).getChecksBySession(widget.session.id),
-                  builder: (context, snapshot) {
-                    final count = snapshot.data?.length ?? 0;
-                    return Text(
-                      '$count sản phẩm',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    );
-                  },
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        theme.colorPrimary.withOpacity(0.1),
+                        theme.colorPrimary.withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.colorPrimary.withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.inventory_2_outlined,
+                    color: theme.colorPrimary,
+                    size: 24,
+                  ),
                 ),
               ],
             ),
           ),
 
-          // Danh sách đã kiểm kê
+          // Modern Product List
           Expanded(
             child: Consumer(
               builder: (context, ref, _) {
                 final checks = ref.watch(checkedListProvider(session)).value;
 
                 if (checks.isNullOrEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Chưa có sản phẩm nào được kiểm kê',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: _onSearchProduct,
-                          icon: const Icon(Icons.search),
-                          label: const Text('Tìm sản phẩm'),
-                        ),
-                      ],
+                  return SingleChildScrollView(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.all(40),
+                      decoration: BoxDecoration(
+                        color: theme.colorBackgroundSurface,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: theme.colorPrimary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Icon(
+                              Icons.inventory_2_outlined,
+                              size: 40,
+                              color: theme.colorPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            'Chưa có sản phẩm nào được kiểm kê',
+                            style: theme.headingSemibold20Default,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Hãy quét mã vạch hoặc tìm kiếm sản phẩm để bắt đầu',
+                            style: theme.textRegular14Sublest,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  theme.colorPrimary,
+                                  theme.colorPrimary.withOpacity(0.8),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.colorPrimary.withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton.icon(
+                              onPressed: _onSearchProduct,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              icon: const Icon(Icons.search, color: Colors.white),
+                              label: Text(
+                                'Tìm sản phẩm',
+                                style: theme.buttonSemibold14.copyWith(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }
 
                 return ListView.separated(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   itemCount: checks!.length,
-                  padding: const EdgeInsets.only(bottom: 100),
                   itemBuilder: (context, index) {
                     final check = checks[index];
                     return CheckProductCard(
@@ -204,7 +332,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                       onTap: isDone ? null : () => _openProductDetailBTS(check.product, currentCheck: check),
                     );
                   },
-                  separatorBuilder: (context, index) => const SizedBox(height: 8),
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
                 );
               },
             ),
@@ -215,11 +343,13 @@ class _CheckPageState extends ConsumerState<CheckPage> {
           ? null
           : Consumer(builder: (context, ref, child) {
               final haveCheck = ref.watch(checkedListProvider(session)).value.isNotNullAndEmpty;
-              return BottomAppBar(
-                color: Colors.transparent,
+              return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: theme.colorBackgroundSurface,
+                ),
                 child: AppButton.primary(
-                  title: 'Hoàn thành',
+                  title: 'Hoàn thành kiểm kê',
                   onPressed: haveCheck
                       ? () {
                           try {
@@ -240,7 +370,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
           ? null
           : FloatingActionButton(
               onPressed: _onSearchProduct,
-              child: const Icon(Icons.search, color: Colors.white),
+              child: const Icon(Icons.search, color: Colors.white, size: 28),
             ),
     );
   }
@@ -254,65 +384,196 @@ class CheckProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.appTheme;
     final product = check.product;
+
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      child: CustomProductCard(
-        product: product,
-        onTap: onTap,
-        bottomWidget: Column(
-          children: [
-            AppDivider(),
-            Gap(4),
-            Row(
+      decoration: BoxDecoration(
+        color: theme.colorBackgroundSurface,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Hệ thống: ${check.expectedQuantity} | Thực tế: ${check.actualQuantity}',
-                      ),
-                      if (check.note != null && check.note!.isNotEmpty)
-                        Text(
-                          'Ghi chú: ${check.note}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                    ],
-                  ),
+                // Product Info Section
+                CustomProductCard(
+                  product: product,
+                  onTap: null, // Disable nested tap
+                  bottomWidget: null, // Remove default bottom widget
                 ),
+
+                const SizedBox(height: 16),
+
+                // Divider
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: check.status == CheckStatus.match
-                        ? Colors.green[100]
-                        : check.status == CheckStatus.surplus
-                            ? Colors.blue[100]
-                            : Colors.red[100],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    check.differenceText,
-                    style: TextStyle(
-                      color: check.status == CheckStatus.match
-                          ? Colors.green[800]
-                          : check.status == CheckStatus.surplus
-                              ? Colors.blue[800]
-                              : Colors.red[800],
-                      fontWeight: FontWeight.bold,
+                  height: 1,
+                  color: theme.colorDivider,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                ),
+
+                // Check Details Section
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Quantity Info
+                          Row(
+                            children: [
+                              _buildQuantityChip(
+                                theme,
+                                'Hệ thống',
+                                '${check.expectedQuantity}',
+                                theme.colorTextSupportBlue,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildQuantityChip(
+                                theme,
+                                'Thực tế',
+                                '${check.actualQuantity}',
+                                theme.colorTextSupportGreen,
+                              ),
+                            ],
+                          ),
+
+                          // Note if exists
+                          if (check.note != null && check.note!.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: theme.colorPrimary.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: theme.colorPrimary.withOpacity(0.1),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.note_alt_outlined,
+                                    size: 16,
+                                    color: theme.colorPrimary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      check.note!,
+                                      style: theme.textRegular12Default.copyWith(
+                                        color: theme.colorPrimary,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(width: 16),
+
+                    // Status Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(check.status, theme).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _getStatusColor(check.status, theme).withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _getStatusIcon(check.status),
+                            color: _getStatusColor(check.status, theme),
+                            size: 20,
+                          ),
+                          const Gap(4),
+                          Text(
+                            check.differenceText,
+                            style: theme.textMedium13Default.copyWith(
+                              color: _getStatusColor(check.status, theme),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildQuantityChip(dynamic theme, String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$label: ',
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor(CheckStatus status, dynamic theme) {
+    switch (status) {
+      case CheckStatus.match:
+        return Colors.green;
+      case CheckStatus.surplus:
+        return Colors.blue;
+      case CheckStatus.shortage:
+        return Colors.red;
+    }
+  }
+
+  IconData _getStatusIcon(CheckStatus status) {
+    switch (status) {
+      case CheckStatus.match:
+        return Icons.check_circle_outline;
+      case CheckStatus.surplus:
+        return Icons.trending_up;
+      case CheckStatus.shortage:
+        return Icons.trending_down;
+    }
   }
 }

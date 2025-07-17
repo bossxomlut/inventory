@@ -1,11 +1,11 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:auto_route/auto_route.dart';
 
 import '../../provider/theme.dart';
 import '../../resources/theme.dart';
-import '../../shared_widgets/index.dart';
 import '../../routes/app_router.dart';
+import '../../shared_widgets/index.dart';
 import 'onboarding_service.dart';
 import 'widgets/onboarding_content.dart';
 import 'widgets/onboarding_content_widget.dart';
@@ -24,18 +24,21 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   final List<OnboardingContent> _onboardingData = [
     const OnboardingContent(
-      title: 'Chào mừng đến với Inventory',
-      description: 'Ứng dụng quản lý kho hàng thông minh, giúp bạn dễ dàng theo dõi sản phẩm, quản lý tồn kho và kiểm soát đơn hàng một cách hiệu quả. Tất cả trong một giao diện đơn giản và trực quan.',
+      title: 'Chào mừng đến với Đơn và kho hàng',
+      description:
+          'Ứng dụng quản lý kho hàng thông minh, giúp bạn dễ dàng theo dõi sản phẩm, quản lý tồn kho và kiểm soát đơn hàng một cách hiệu quả. Tất cả trong một giao diện đơn giản và trực quan.',
       imagePath: 'assets/images/onboarding_welcome.png',
     ),
     const OnboardingContent(
       title: 'Tính năng nổi bật',
-      description: '• Quản lý sản phẩm và danh mục\n• Kiểm kê tự động với mã QR\n• Theo dõi đơn hàng và giao dịch\n• Báo cáo chi tiết và thống kê\n• Xuất nhập dữ liệu dễ dàng\n• Giao diện thân thiện với người dùng',
+      description:
+          '• Quản lý sản phẩm và danh mục\n• Kiểm kê tự động với mã QR\n• Theo dõi đơn hàng và giao dịch\n• Báo cáo chi tiết và thống kê\n• Xuất nhập dữ liệu dễ dàng\n• Giao diện thân thiện với người dùng',
       imagePath: 'assets/images/onboarding_features.png',
     ),
     const OnboardingContent(
       title: 'Dữ liệu an toàn',
-      description: 'Tất cả dữ liệu của bạn được lưu trữ cục bộ trên thiết bị, đảm bảo bảo mật tuyệt đối. Bạn có toàn quyền kiểm soát dữ liệu: xuất backup khi cần thiết hoặc xóa hoàn toàn bất cứ lúc nào.',
+      description:
+          'Tất cả dữ liệu của bạn được lưu trữ cục bộ trên thiết bị, đảm bảo bảo mật tuyệt đối. Bạn có toàn quyền kiểm soát dữ liệu: xuất backup khi cần thiết hoặc xóa hoàn toàn bất cứ lúc nào.',
       imagePath: 'assets/images/onboarding_data.png',
     ),
   ];

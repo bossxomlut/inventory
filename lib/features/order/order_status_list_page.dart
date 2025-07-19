@@ -88,12 +88,14 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
             itemBuilder: (BuildContext context, Order oder, int index) {
               return OrderCard(
                 order: oder,
-                onComplete: () {
-                  ref.read(orderListProvider(OrderStatus.confirmed).notifier).confirmOrder(oder);
+                onComplete: () async {
+                  await ref.read(orderListProvider(OrderStatus.confirmed).notifier).confirmOrder(oder);
+                  ref.invalidate(orderListProvider(OrderStatus.done));
                 },
-                onCancel: () {
+                onCancel: () async {
                   //cancel order
                   ref.read(orderListProvider(OrderStatus.confirmed).notifier).cancelOrder(oder);
+                  ref.invalidate(orderListProvider(OrderStatus.cancelled));
                 },
               );
             },
@@ -126,9 +128,8 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
         onPressed: () {
           appRouter.goToCreateOrder().whenComplete(
             () {
-              final currentTab = _tabController.index;
-              final currentStatus = statuses[currentTab];
-              ref.invalidate(orderListProvider(currentStatus));
+              ref.invalidate(orderListProvider(OrderStatus.draft));
+              ref.invalidate(orderListProvider(OrderStatus.confirmed));
             },
           );
         },

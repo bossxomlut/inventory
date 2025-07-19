@@ -43,7 +43,7 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
     state = state.copyWith(orderItems: updatedOrderItems);
   }
 
-  void createOrder() async {
+  Future createOrder() async {
     showLoading();
 
     final orderRepository = ref.read(orderRepositoryProvider);
@@ -72,13 +72,12 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
     showSuccess('Tạo đơn hàng thành công');
   }
 
-  void saveDraft() {
+  Future saveDraft() async {
     showLoading();
 
     final orderRepository = ref.read(orderRepositoryProvider);
-    print('state.orderItems.values.toList(): ${state.orderItems.values.toList()}');
 
-    orderRepository
+    await orderRepository
         .createOrder(
       Order(
         id: undefinedId,
@@ -240,6 +239,32 @@ class OrderDetail extends _$OrderDetail with CommonProvider<OrderState> {
     hideLoading();
 
     showSuccess('Tạo đơn hàng thành công');
+  }
+
+  Future completeOrder() async {
+    showLoading();
+
+    final orderRepository = ref.read(orderRepositoryProvider);
+    await orderRepository.completeOrder(state.order!);
+
+    state = state.copyWith(order: order.copyWith(status: OrderStatus.done));
+
+    hideLoading();
+
+    showSuccess('Chúc mừng bạn đã hoàn thành đơn hàng #${state.order!.id}');
+  }
+
+  Future cancelOrder() async {
+    showLoading();
+
+    final orderRepository = ref.read(orderRepositoryProvider);
+    await orderRepository.cancelOrder(state.order!);
+
+    state = state.copyWith(order: order.copyWith(status: OrderStatus.cancelled));
+
+    hideLoading();
+
+    showSuccess('Hủy đơn hàng thành công đơn #${state.order!.id}');
   }
 }
 

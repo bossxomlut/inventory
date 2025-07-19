@@ -46,17 +46,25 @@ class CreateOrderPage extends HookConsumerWidget {
         cancelButtonText: 'Lưu nháp',
         saveButtonText: 'Tạo đơn',
         onCancel: orderStaste.isNotEmpty
-            ? () {
+            ? () async {
                 //set note
                 ref.read(orderCreationProvider.notifier).setNote(noteController.text.trim());
-                ref.read(orderCreationProvider.notifier).saveDraft();
+                final isHaveInitialOrder = ref.read(orderCreationProvider.notifier).haveInitOrder;
+                await ref.read(orderCreationProvider.notifier).saveDraft();
+                if (isHaveInitialOrder) {
+                  ref.invalidate(orderListProvider(OrderStatus.draft));
+                }
               }
             : null,
         onSave: orderStaste.isNotEmpty
-            ? () {
+            ? () async {
                 ref.read(orderCreationProvider.notifier).setNote(noteController.text.trim());
-
-                ref.read(orderCreationProvider.notifier).createOrder();
+                final isHaveInitialOrder = ref.read(orderCreationProvider.notifier).haveInitOrder;
+                await ref.read(orderCreationProvider.notifier).createOrder();
+                if (isHaveInitialOrder) {
+                  ref.invalidate(orderListProvider(OrderStatus.draft));
+                  ref.invalidate(orderListProvider(OrderStatus.confirmed));
+                }
               }
             : null,
       );
@@ -142,7 +150,9 @@ class CreateOrderPage extends HookConsumerWidget {
                                 try {
                                   final productRepo = ref.read(searchProductRepositoryProvider);
                                   final product = await productRepo.searchByBarcode(value.displayValue ?? '');
-                                  final currentQuantity = ref.read(orderCreationProvider.select((state) => state.orderItems[product]))?.quantity;
+                                  final currentQuantity = ref
+                                      .read(orderCreationProvider.select((state) => state.orderItems[product]))
+                                      ?.quantity;
 
                                   await OrderNumberInputWidget(
                                     product: product,
@@ -734,11 +744,11 @@ class OrderDetailPage extends HookConsumerWidget {
           ],
         ),
       ),
-      bottomNavigationBar: buildBottomButtonBar(orderStaste.order, ref),
+      bottomNavigationBar: buildBottomButtonBar(order, orderStaste.order, ref),
     );
   }
 
-  Widget buildBottomButtonBar(Order? order, WidgetRef ref) {
+  Widget buildBottomButtonBar(Order sourceOrder, Order? order, WidgetRef ref) {
     if (order == null) {
       return const SizedBox.shrink();
     }
@@ -749,25 +759,27 @@ class OrderDetailPage extends HookConsumerWidget {
           saveButtonText: 'Tạo đơn',
           cancelButtonText: 'Chỉnh sửa',
           onSave: () async {
-            ref.read(orderDetailProvider(order).notifier).createOrder();
-            ref.invalidate(orderListProvider(order.status));
+            await ref.read(orderDetailProvider(sourceOrder).notifier).createOrder();
+            ref.invalidate(orderListProvider(OrderStatus.draft));
+            ref.invalidate(orderListProvider(OrderStatus.confirmed));
           },
           onCancel: () async {
-            await appRouter.goToUpdateDraftOrder(order);
-            ref.invalidate(orderListProvider(order.status));
+            await appRouter.goToUpdateDraftOrder(sourceOrder);
           },
         );
       case OrderStatus.confirmed:
         return BottomButtonBar(
           saveButtonText: 'Hoàn thành',
           cancelButtonText: 'Huỷ đơn',
-          onSave: () {
-            ref.read(orderListProvider(order.status).notifier).confirmOrder(order);
-            ref.invalidate(orderDetailProvider(order));
+          onSave: () async {
+            await ref.read(orderDetailProvider(sourceOrder).notifier).completeOrder();
+            ref.invalidate(orderListProvider(OrderStatus.confirmed));
+            ref.invalidate(orderListProvider(OrderStatus.done));
           },
-          onCancel: () {
-            ref.read(orderListProvider(order.status).notifier).cancelOrder(order);
-            ref.invalidate(orderDetailProvider(order));
+          onCancel: () async {
+            await ref.read(orderDetailProvider(sourceOrder).notifier).cancelOrder();
+            ref.invalidate(orderListProvider(OrderStatus.confirmed));
+            ref.invalidate(orderListProvider(OrderStatus.cancelled));
           },
         );
       default:

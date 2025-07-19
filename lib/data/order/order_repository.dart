@@ -151,7 +151,7 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
   Future<void> cancelOrder(Order order) async {
     final orderCollection = iCollection.getSync(order.id);
 
-    isar.writeTxn(() async {
+    await isar.writeTxn(() async {
       if (orderCollection != null) {
         orderCollection.status = OrderStatus.cancelled;
         orderCollection.updatedAt = DateTime.now();
@@ -165,7 +165,6 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
     for (final item in items) {
       await _updateProductRepository.refillStock(item.productId, item.quantity, TransactionCategory.cancelOrder);
     }
-    ;
   }
 
   @override

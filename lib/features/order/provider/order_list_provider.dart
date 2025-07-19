@@ -26,9 +26,9 @@ class OrderList extends _$OrderList with LoadListController<Order>, CommonProvid
     return orderRepository.getOrdersByStatus(status, query);
   }
 
-  void removeOrder(Order order) {
+  Future removeOrder(Order order) async {
     final orderRepository = ref.read(orderRepositoryProvider);
-    orderRepository.deleteOrder(order);
+    await orderRepository.deleteOrder(order);
 
     final updatedOrders = List<Order>.from(state.data);
     updatedOrders.remove(order);
@@ -36,7 +36,7 @@ class OrderList extends _$OrderList with LoadListController<Order>, CommonProvid
     showSuccess('Xóa đơn hàng thành công đơn #${order.id}');
   }
 
-  void cancelOrder(Order oder) async {
+  Future cancelOrder(Order oder) async {
     final orderRepository = ref.read(orderRepositoryProvider);
     await orderRepository.cancelOrder(oder);
 
@@ -47,7 +47,7 @@ class OrderList extends _$OrderList with LoadListController<Order>, CommonProvid
     showSuccess('Hủy đơn hàng thành công đơn #${oder.id}');
   }
 
-  void confirmOrder(Order oder) async {
+  Future confirmOrder(Order oder) async {
     final orderRepository = ref.read(orderRepositoryProvider);
     await orderRepository.completeOrder(oder);
 

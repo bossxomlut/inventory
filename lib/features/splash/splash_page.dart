@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/persistence/isar_storage.dart';
-import '../../provider/storage_provider.dart';
+import '../../provider/index.dart';
 import '../../resources/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
@@ -16,6 +16,7 @@ class SplashPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = context.appTheme;
     useEffect(() {
       // Initialize app and check onboarding/auth flow
       _initializeApp(ref);
@@ -27,11 +28,27 @@ class SplashPage extends HookConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppImage.asset(url: ImagePath.logo, width: 100, height: 100),
+            SizedBox(
+              width: 200,
+              height: 200,
+              child: AppImage.asset(
+                url: ImagePath.logo,
+                width: 200,
+                height: 200,
+              ),
+            ),
+            //Chào mừng bạn quay trờ lại
+            Text(
+              'Chào mừng bạn quay trở lại',
+              style: theme.textMedium16Default,
+            ),
             const SizedBox(height: 20),
             const CircularProgressIndicator(),
             const SizedBox(height: 20),
-            const Text('Đang tải...'),
+            Text(
+              'Đang tải...',
+              style: theme.textRegular13Subtle,
+            ),
           ],
         ),
       ),

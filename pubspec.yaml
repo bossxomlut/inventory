@@ -46,6 +46,7 @@ dependencies:
   flutter_hooks: ^0.21.2
   flutter_riverpod: ^2.6.1
   file_picker: 10.1.9
+  fl_chart: 0.63.0
 
   # G
   gap: ^3.0.1 # Provides spacing between widgets in Flutter layouts.

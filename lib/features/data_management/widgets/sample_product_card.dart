@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-import '../../../provider/theme.dart';
 import '../../../domain/models/sample_product.dart';
+import '../../../provider/theme.dart';
 
 class SampleProductCard extends StatelessWidget {
   final SampleProduct product;
@@ -37,9 +37,9 @@ class SampleProductCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              border: isSelected 
-                ? Border.all(color: theme.colorPrimary, width: 2)
-                : Border.all(color: Colors.transparent, width: 2),
+              border: isSelected
+                  ? Border.all(color: theme.colorPrimary, width: 2)
+                  : Border.all(color: Colors.transparent, width: 2),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,7 +51,7 @@ class SampleProductCard extends StatelessWidget {
                   activeColor: theme.colorPrimary,
                 ),
                 const SizedBox(width: 8),
-                
+
                 // Product Image Placeholder
                 Container(
                   width: 48,
@@ -67,9 +67,9 @@ class SampleProductCard extends StatelessWidget {
                     size: 24,
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // Product Info
                 Expanded(
                   child: Column(
@@ -82,9 +82,9 @@ class SampleProductCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      
+
                       const SizedBox(height: 4),
-                      
+
                       // SKU (if available)
                       if (product.barcode?.isNotEmpty == true) ...[
                         Row(
@@ -95,15 +95,19 @@ class SampleProductCard extends StatelessWidget {
                               color: theme.colorIcon,
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              'SKU: ${product.barcode!}',
-                              style: theme.textRegular12Default,
+                            Expanded(
+                              child: Text(
+                                'SKU: ${product.barcode!}',
+                                style: theme.textRegular12Default,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
                       ],
-                      
+
                       // Category
                       Row(
                         children: [
@@ -113,15 +117,19 @@ class SampleProductCard extends StatelessWidget {
                             color: theme.colorIcon,
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            product.categoryName,
-                            style: theme.textRegular14Default,
+                          Expanded(
+                            child: Text(
+                              product.categoryName,
+                              style: theme.textRegular14Default,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 4),
-                      
+
                       // Unit
                       Row(
                         children: [
@@ -137,7 +145,7 @@ class SampleProductCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      
+
                       // Description
                       if (product.description?.isNotEmpty == true) ...[
                         const SizedBox(height: 6),
@@ -148,9 +156,9 @@ class SampleProductCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       // Price
                       Text(
                         'Giá bán: ${product.price.toStringAsFixed(0)}đ',
@@ -163,9 +171,9 @@ class SampleProductCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // Right side - Quantity only
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

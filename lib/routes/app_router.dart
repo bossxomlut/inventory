@@ -68,6 +68,9 @@ class AppRouter extends $AppRouter {
             AdminGuard(),
           ],
         ),
+
+        //report route
+        AutoRoute(page: ReportRoute.page),
       ];
 
   @override
@@ -261,5 +264,11 @@ extension AppRouterInventoryX on AppRouter {
 
   void goToUnit() {
     push(UnitRoute());
+  }
+}
+
+extension ReportRouterX on AppRouter {
+  void goToReport() {
+    push(ReportRoute());
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/entities/user/user.dart';
 import '../../routes/app_router.dart';
+import '../../shared_widgets/toast.dart';
 
 // Model cho menu item
 class MenuItem {
@@ -111,8 +112,8 @@ class MenuManager {
             title: 'Báo cáo thống kê',
             icon: Icons.analytics,
             destinationCallback: () {
-              // TODO: Implement navigation to reports
-              // appRouter.goToReports();
+              // appRouter.goToReport();
+              showInfoSnackBar(appRouter.context!, 'Chức năng báo cáo thống kê đang được phát triển');
             },
           ),
         ],

@@ -65,6 +65,7 @@ dependencies:
   image_picker: ^1.1.2
   isar_key_value: ^0.3.0
   isar: any
+  in_app_review: ^2.0.10
 
   # J
   json_annotation: ^4.9.0 # Annotations to help with serializing/deserializing JSON in Dart.

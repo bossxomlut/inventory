@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../domain/entities/user/user.dart';
 import '../../provider/index.dart';
@@ -8,6 +9,7 @@ import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 import '../onboarding/onboarding_service.dart';
+import 'app_review_utils.dart';
 
 @RoutePage()
 class SettingPage extends WidgetByDeviceTemplate {
@@ -17,6 +19,7 @@ class SettingPage extends WidgetByDeviceTemplate {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
     final authState = ref.watch(authControllerProvider);
+    final storage = ref.read(initializedSimpleStorageProvider);
 
     // Get current user role
     final UserRole? currentUserRole = authState.maybeWhen(
@@ -104,10 +107,28 @@ class SettingPage extends WidgetByDeviceTemplate {
                   onTap: () {},
                 ),
                 const _Divider(),
-                ListTile(
-                  leading: const Icon(HugeIcons.strokeRoundedStar),
-                  title: const Text('Đánh giá ứng dụng'),
-                  onTap: () {},
+                storage.map(
+                  data: (data) {
+                    return FutureBuilder<bool>(
+                      initialData: false,
+                      future: InAppReviewUtil(data.value).isAvailable(),
+                      builder: (context, snapshot) {
+                        // Check if in-app review is available
+                        if (!snapshot.hasData || !(snapshot.data ?? false)) {
+                          return const SizedBox();
+                        }
+                        return ListTile(
+                          leading: const Icon(HugeIcons.strokeRoundedStar),
+                          title: const Text('Đánh giá ứng dụng'),
+                          onTap: () async {
+                            InAppReviewUtil(data.value).openStoreListing();
+                          },
+                        );
+                      },
+                    );
+                  },
+                  error: (__) => const SizedBox(),
+                  loading: (__) => const SizedBox(),
                 ),
                 const _Divider(),
                 if (canAccessDataManagement) ...[
@@ -176,11 +197,24 @@ class SettingPage extends WidgetByDeviceTemplate {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
           //logout button
+          FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                return Align(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Phiên bản: ${snapshot.data?.version ?? '---'}',
+                      style: theme.textRegular13Subtle,
+                    ),
+                  ),
+                );
+              }),
         ],
       ),
     );

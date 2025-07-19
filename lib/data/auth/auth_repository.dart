@@ -3,6 +3,7 @@ import 'package:isar/isar.dart';
 import '../../../domain/index.dart';
 import '../../../domain/repositories/index.dart';
 import '../user/user.dart';
+import '../../utils/hash_utils.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final Isar _isar = Isar.getInstance()!;
@@ -13,7 +14,8 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<User> login(String account, String password) async {
     return _isar.writeTxn(
       () async {
-        final foundUser = await _collection.filter().accountEqualTo(account).and().passwordEqualTo(password).findFirst();
+        final hashedPassword = hashPassword(password);
+        final foundUser = await _collection.filter().accountEqualTo(account).and().passwordEqualTo(hashedPassword).findFirst();
 
         if (foundUser == null) {
           throw Exception('Invalid credentials');
@@ -53,9 +55,10 @@ class AuthRepositoryImpl implements AuthRepository {
         throw Exception('User already exists');
       }
 
+      final hashedPassword = hashPassword(password);
       final newUser = UserCollection()
         ..account = account
-        ..password = password
+        ..password = hashedPassword
         ..role = role.index
         ..securityQuestionId = securityQuestionId
         ..securityQuestionAnswer = securityQuestionAnswer
@@ -88,27 +91,21 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<bool> checkSecurityQuestion(String account, int securityQuestionId, String answer) {
     return _isar.txn(() async {
-      final foundUser = await _collection
-          .filter()
-          .accountEqualTo(account)
-          .securityQuestionIdEqualTo(securityQuestionId)
-          .securityQuestionAnswerEqualTo(answer)
-          .findFirst();
+      final foundUser = await _collection.filter().accountEqualTo(account).securityQuestionIdEqualTo(securityQuestionId).securityQuestionAnswerEqualTo(answer).findFirst();
 
       return foundUser != null;
     });
   }
 
   @override
-  Future<void> updatePassword(String account, String password) {
-    return _isar.writeTxn(() async {
+  Future<void> updatePassword(String account, String password) async {
+    await _isar.writeTxn(() async {
       final foundUser = await _collection.filter().accountEqualTo(account).findFirst();
-
       if (foundUser == null) {
-        throw NotFoundException('User not found');
+        throw Exception('User not found');
       }
-
-      foundUser.password = password;
+      final hashedPassword = hashPassword(password);
+      foundUser.password = hashedPassword;
       await _collection.put(foundUser);
     });
   }

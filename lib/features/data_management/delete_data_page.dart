@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:auto_route/auto_route.dart';
 
 import '../../provider/theme.dart';
 import '../../shared_widgets/index.dart';
@@ -18,146 +17,137 @@ class DeleteDataPage extends ConsumerWidget {
       appBar: CustomAppBar(
         title: 'Xóa dữ liệu',
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.warning,
-                          color: Colors.red,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Cảnh báo',
-                          style: theme.headingSemibold20Default.copyWith(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Thao tác xóa dữ liệu không thể hoàn tác. Hãy chắc chắn rằng bạn đã backup dữ liệu trước khi thực hiện.',
-                      style: theme.textRegular14Default.copyWith(color: Colors.red.shade700),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildWarningItem('• Dữ liệu bị xóa sẽ không thể khôi phục'),
-                    _buildWarningItem('• Nên backup dữ liệu trước khi xóa'),
-                    _buildWarningItem('• Thao tác xóa có thể mất vài phút'),
-                  ],
-                ),
+        children: [
+          Card(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.warning,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Cảnh báo',
+                        style: theme.headingSemibold20Default.copyWith(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Thao tác xóa dữ liệu không thể hoàn tác. Hãy chắc chắn rằng bạn đã backup dữ liệu trước khi thực hiện.',
+                    style: theme.textRegular14Default.copyWith(color: Colors.red.shade700),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildWarningItem('• Dữ liệu bị xóa sẽ không thể khôi phục'),
+                  _buildWarningItem('• Nên backup dữ liệu trước khi xóa'),
+                  _buildWarningItem('• Thao tác xóa có thể mất vài phút'),
+                ],
               ),
             ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: ListView(
+          ),
+          const SizedBox(height: 12),
+          _buildDeleteCard(
+            context,
+            icon: Icons.inventory,
+            title: 'Xóa dữ liệu sản phẩm',
+            description: 'Xóa toàn bộ sản phẩm trong kho',
+            dangerLevel: 'Trung bình',
+            onPressed: () => _deleteProducts(context, ref),
+          ),
+          const SizedBox(height: 12),
+          _buildDeleteCard(
+            context,
+            icon: Icons.category,
+            title: 'Xóa dữ liệu danh mục',
+            description: 'Xóa toàn bộ danh mục sản phẩm',
+            dangerLevel: 'Thấp',
+            onPressed: () => _deleteCategories(context, ref),
+          ),
+          const SizedBox(height: 12),
+          _buildDeleteCard(
+            context,
+            icon: Icons.straighten,
+            title: 'Xóa dữ liệu đơn vị',
+            description: 'Xóa toàn bộ đơn vị tính',
+            dangerLevel: 'Thấp',
+            onPressed: () => _deleteUnits(context, ref),
+          ),
+          const SizedBox(height: 12),
+          _buildDeleteCard(
+            context,
+            icon: Icons.shopping_cart,
+            title: 'Xóa dữ liệu đơn hàng',
+            description: 'Xóa toàn bộ đơn hàng và lịch sử',
+            dangerLevel: 'Cao',
+            onPressed: () => _deleteOrders(context, ref),
+          ),
+          const SizedBox(height: 12),
+          _buildDeleteCard(
+            context,
+            icon: Icons.fact_check,
+            title: 'Xóa dữ liệu kiểm kê',
+            description: 'Xóa toàn bộ phiên kiểm kê',
+            dangerLevel: 'Cao',
+            onPressed: () => _deleteCheckSessions(context, ref),
+          ),
+          const SizedBox(height: 12),
+          _buildDeleteCard(
+            context,
+            icon: Icons.history,
+            title: 'Xóa lịch sử giao dịch',
+            description: 'Xóa toàn bộ lịch sử thay đổi sản phẩm',
+            dangerLevel: 'Cao',
+            onPressed: () => _deleteProductTransactions(context, ref),
+          ),
+          const SizedBox(height: 24),
+          Card(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 children: [
-                  _buildDeleteCard(
-                    context,
-                    icon: Icons.inventory,
-                    title: 'Xóa dữ liệu sản phẩm',
-                    description: 'Xóa toàn bộ sản phẩm trong kho',
-                    dangerLevel: 'Trung bình',
-                    onPressed: () => _deleteProducts(context, ref),
+                  Icon(
+                    Icons.delete_forever,
+                    size: 48,
+                    color: Colors.red,
                   ),
                   const SizedBox(height: 12),
-                  _buildDeleteCard(
-                    context,
-                    icon: Icons.category,
-                    title: 'Xóa dữ liệu danh mục',
-                    description: 'Xóa toàn bộ danh mục sản phẩm',
-                    dangerLevel: 'Thấp',
-                    onPressed: () => _deleteCategories(context, ref),
+                  Text(
+                    'Xóa toàn bộ dữ liệu',
+                    style: theme.headingSemibold20Default.copyWith(color: Colors.red),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
-                  _buildDeleteCard(
-                    context,
-                    icon: Icons.straighten,
-                    title: 'Xóa dữ liệu đơn vị',
-                    description: 'Xóa toàn bộ đơn vị tính',
-                    dangerLevel: 'Thấp',
-                    onPressed: () => _deleteUnits(context, ref),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Xóa tất cả dữ liệu và reset ứng dụng về trạng thái ban đầu',
+                    style: theme.textRegular14Default.copyWith(color: Colors.red.shade700),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
-                  _buildDeleteCard(
-                    context,
-                    icon: Icons.shopping_cart,
-                    title: 'Xóa dữ liệu đơn hàng',
-                    description: 'Xóa toàn bộ đơn hàng và lịch sử',
-                    dangerLevel: 'Cao',
-                    onPressed: () => _deleteOrders(context, ref),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDeleteCard(
-                    context,
-                    icon: Icons.fact_check,
-                    title: 'Xóa dữ liệu kiểm kê',
-                    description: 'Xóa toàn bộ phiên kiểm kê',
-                    dangerLevel: 'Cao',
-                    onPressed: () => _deleteCheckSessions(context, ref),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDeleteCard(
-                    context,
-                    icon: Icons.history,
-                    title: 'Xóa lịch sử giao dịch',
-                    description: 'Xóa toàn bộ lịch sử thay đổi sản phẩm',
-                    dangerLevel: 'Cao',
-                    onPressed: () => _deleteProductTransactions(context, ref),
-                  ),
-                  const SizedBox(height: 24),
-                  Card(
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.delete_forever,
-                            size: 48,
-                            color: Colors.red,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Xóa toàn bộ dữ liệu',
-                            style: theme.headingSemibold20Default.copyWith(color: Colors.red),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Xóa tất cả dữ liệu và reset ứng dụng về trạng thái ban đầu',
-                            style: theme.textRegular14Default.copyWith(color: Colors.red.shade700),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () => _deleteAllData(context, ref),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                              ),
-                              child: const Text('XÓA TẤT CẢ DỮ LIỆU'),
-                            ),
-                          ),
-                        ],
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _deleteAllData(context, ref),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
                       ),
+                      child: const Text('XÓA TẤT CẢ DỮ LIỆU'),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

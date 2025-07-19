@@ -45,6 +45,7 @@ dependencies:
   flutter_slidable: ^3.1.2
   flutter_hooks: ^0.21.2
   flutter_riverpod: ^2.6.1
+  file_picker: 10.1.9
 
   # G
   gap: ^3.0.1 # Provides spacing between widgets in Flutter layouts.

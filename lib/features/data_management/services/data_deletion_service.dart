@@ -2,13 +2,14 @@ import 'dart:developer';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../domain/repositories/product/inventory_repository.dart';
+import '../../../domain/entities/check/check_session.dart';
+import '../../../domain/entities/order/order.dart';
+import '../../../domain/entities/product/inventory.dart';
 import '../../../domain/repositories/check/check_repository.dart';
 import '../../../domain/repositories/order/order_repository.dart';
+import '../../../domain/repositories/order/price_repository.dart';
+import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../domain/repositories/product/transaction_repository.dart';
-import '../../../domain/entities/order/order.dart';
-import '../../../domain/entities/check/check_session.dart';
-import '../../../domain/entities/product/inventory.dart';
 import '../../../provider/load_list.dart';
 
 /// Service for managing data deletion operations
@@ -58,7 +59,8 @@ class DataDeletionService {
       }
 
       final bool overallSuccess = deletedCount > 0;
-      final String message = overallSuccess ? 'Đã xóa $deletedCount/$totalItems sản phẩm' : 'Không thể xóa sản phẩm nào';
+      final String message =
+          overallSuccess ? 'Đã xóa $deletedCount/$totalItems sản phẩm' : 'Không thể xóa sản phẩm nào';
 
       log('Hoàn thành xóa sản phẩm: $deletedCount/$totalItems');
 
@@ -123,7 +125,8 @@ class DataDeletionService {
       }
 
       final bool overallSuccess = deletedCount > 0;
-      final String message = overallSuccess ? 'Đã xóa $deletedCount/$totalItems danh mục' : 'Không thể xóa danh mục nào';
+      final String message =
+          overallSuccess ? 'Đã xóa $deletedCount/$totalItems danh mục' : 'Không thể xóa danh mục nào';
 
       log('Hoàn thành xóa danh mục: $deletedCount/$totalItems');
 
@@ -222,14 +225,11 @@ class DataDeletionService {
 
       // Get all orders by trying different statuses
       final List<Order> allOrders = [];
-      
+
       // Try to get orders with different statuses
       for (final status in OrderStatus.values) {
         try {
-          final ordersResult = await orderRepo.getOrdersByStatus(
-            status, 
-            const LoadListQuery(page: 1, pageSize: 10000)
-          );
+          final ordersResult = await orderRepo.getOrdersByStatus(status, const LoadListQuery(page: 1, pageSize: 10000));
           allOrders.addAll(ordersResult.data);
         } catch (e) {
           log('Lỗi khi lấy đơn hàng với status $status: $e');
@@ -262,7 +262,8 @@ class DataDeletionService {
       }
 
       final bool overallSuccess = deletedCount > 0;
-      final String message = overallSuccess ? 'Đã xóa $deletedCount/$totalItems đơn hàng' : 'Không thể xóa đơn hàng nào';
+      final String message =
+          overallSuccess ? 'Đã xóa $deletedCount/$totalItems đơn hàng' : 'Không thể xóa đơn hàng nào';
 
       log('Hoàn thành xóa đơn hàng: $deletedCount/$totalItems');
 
@@ -297,14 +298,14 @@ class DataDeletionService {
 
       // Get all check sessions (active and done)
       final List<CheckSession> allSessions = [];
-      
+
       try {
         final activeSessions = await checkSessionRepo.getActiveSessions();
         allSessions.addAll(activeSessions);
       } catch (e) {
         log('Lỗi khi lấy phiên kiểm kê active: $e');
       }
-      
+
       try {
         final doneSessions = await checkSessionRepo.getDoneSessions();
         allSessions.addAll(doneSessions);
@@ -338,7 +339,8 @@ class DataDeletionService {
       }
 
       final bool overallSuccess = deletedCount > 0;
-      final String message = overallSuccess ? 'Đã xóa $deletedCount/$totalItems phiên kiểm kê' : 'Không thể xóa phiên kiểm kê nào';
+      final String message =
+          overallSuccess ? 'Đã xóa $deletedCount/$totalItems phiên kiểm kê' : 'Không thể xóa phiên kiểm kê nào';
 
       log('Hoàn thành xóa phiên kiểm kê: $deletedCount/$totalItems');
 
@@ -403,7 +405,8 @@ class DataDeletionService {
       }
 
       final bool overallSuccess = deletedCount > 0;
-      final String message = overallSuccess ? 'Đã xóa $deletedCount/$totalItems lịch sử thay đổi' : 'Không thể xóa lịch sử thay đổi nào';
+      final String message =
+          overallSuccess ? 'Đã xóa $deletedCount/$totalItems lịch sử thay đổi' : 'Không thể xóa lịch sử thay đổi nào';
 
       log('Hoàn thành xóa lịch sử thay đổi: $deletedCount/$totalItems');
 
@@ -435,9 +438,9 @@ class DataDeletionService {
       final productRepo = ref.read(productRepositoryProvider);
       final allProductsResult = await productRepo.search('', 1, 10000);
       final allProducts = allProductsResult.data;
-      
+
       final List<Transaction> allTransactions = [];
-      
+
       // Get transactions for each product
       for (final product in allProducts) {
         try {
@@ -447,11 +450,137 @@ class DataDeletionService {
           log('Lỗi khi lấy transactions cho product ${product.id}: $e');
         }
       }
-      
+
       return allTransactions;
     } catch (e) {
       log('Lỗi khi lấy tất cả transactions: $e');
       return [];
+    }
+  }
+
+  // In lib/features/data_management/services/data_deletion_service.dart
+
+  Future<DataDeletionResult> deleteAllCheckedProducts() async {
+    try {
+      log('Bắt đầu xóa tất cả checked products...');
+
+      final checkedProductRepo = ref.read(checkedProductRepositoryProvider);
+      final allCheckedProducts = await checkedProductRepo.getAll();
+
+      if (allCheckedProducts.isEmpty) {
+        return DataDeletionResult(
+          success: true,
+          totalItems: 0,
+          deletedCount: 0,
+          failedCount: 0,
+          errors: [],
+          message: 'Không có checked product nào để xóa',
+        );
+      }
+
+      final List<String> errors = [];
+      int deletedCount = 0;
+      int totalItems = allCheckedProducts.length;
+
+      for (final checkedProduct in allCheckedProducts) {
+        try {
+          final success = await checkedProductRepo.delete(checkedProduct);
+          if (success) {
+            deletedCount++;
+          } else {
+            errors.add('Không thể xóa checked product: ${checkedProduct.id}');
+          }
+        } catch (e) {
+          errors.add('Lỗi khi xóa checked product ${checkedProduct.id}: $e');
+        }
+      }
+
+      final bool overallSuccess = deletedCount > 0;
+      final String message =
+          overallSuccess ? 'Đã xóa $deletedCount/$totalItems checked product' : 'Không thể xóa checked product nào';
+
+      log('Hoàn thành xóa checked product: $deletedCount/$totalItems');
+
+      return DataDeletionResult(
+        success: overallSuccess,
+        totalItems: totalItems,
+        deletedCount: deletedCount,
+        failedCount: totalItems - deletedCount,
+        errors: errors,
+        message: message,
+      );
+    } catch (e) {
+      log('Lỗi khi xóa tất cả checked product: $e');
+      return DataDeletionResult(
+        success: false,
+        totalItems: 0,
+        deletedCount: 0,
+        failedCount: 0,
+        errors: ['Lỗi khi xóa checked product: $e'],
+        message: 'Lỗi khi xóa checked product',
+      );
+    }
+  }
+
+  Future<DataDeletionResult> deleteAllProductPrices() async {
+    try {
+      log('Bắt đầu xóa tất cả product prices...');
+
+      final productPriceRepo = ref.read(priceRepositoryProvider);
+      final allProductPrices = await productPriceRepo.getAll();
+
+      if (allProductPrices.isEmpty) {
+        return DataDeletionResult(
+          success: true,
+          totalItems: 0,
+          deletedCount: 0,
+          failedCount: 0,
+          errors: [],
+          message: 'Không có product price nào để xóa',
+        );
+      }
+
+      final List<String> errors = [];
+      int deletedCount = 0;
+      int totalItems = allProductPrices.length;
+
+      for (final productPrice in allProductPrices) {
+        try {
+          final success = await productPriceRepo.delete(productPrice);
+          if (success) {
+            deletedCount++;
+          } else {
+            errors.add('Không thể xóa product price: ${productPrice.id}');
+          }
+        } catch (e) {
+          errors.add('Lỗi khi xóa product price ${productPrice.id}: $e');
+        }
+      }
+
+      final bool overallSuccess = deletedCount > 0;
+      final String message =
+          overallSuccess ? 'Đã xóa $deletedCount/$totalItems product price' : 'Không thể xóa product price nào';
+
+      log('Hoàn thành xóa product price: $deletedCount/$totalItems');
+
+      return DataDeletionResult(
+        success: overallSuccess,
+        totalItems: totalItems,
+        deletedCount: deletedCount,
+        failedCount: totalItems - deletedCount,
+        errors: errors,
+        message: message,
+      );
+    } catch (e) {
+      log('Lỗi khi xóa tất cả product price: $e');
+      return DataDeletionResult(
+        success: false,
+        totalItems: 0,
+        deletedCount: 0,
+        failedCount: 0,
+        errors: ['Lỗi khi xóa product price: $e'],
+        message: 'Lỗi khi xóa product price',
+      );
     }
   }
 
@@ -465,21 +594,56 @@ class DataDeletionService {
       int totalFailedCount = 0;
       int totalItemsCount = 0;
 
-      // Delete products first (they depend on categories and units)
+      // Delete product transactions first
+      final transactionResult = await deleteAllProductTransactions();
+      allErrors.addAll(transactionResult.errors);
+      totalDeletedCount += transactionResult.deletedCount;
+      totalFailedCount += transactionResult.failedCount;
+      totalItemsCount += transactionResult.totalItems;
+
+      // Delete checked products
+      final checkedProductResult = await deleteAllCheckedProducts();
+      allErrors.addAll(checkedProductResult.errors);
+      totalDeletedCount += checkedProductResult.deletedCount;
+      totalFailedCount += checkedProductResult.failedCount;
+      totalItemsCount += checkedProductResult.totalItems;
+
+      // Delete product prices
+      final productPriceResult = await deleteAllProductPrices();
+      allErrors.addAll(productPriceResult.errors);
+      totalDeletedCount += productPriceResult.deletedCount;
+      totalFailedCount += productPriceResult.failedCount;
+      totalItemsCount += productPriceResult.totalItems;
+
+      // Delete orders
+      final orderResult = await deleteAllOrders();
+      allErrors.addAll(orderResult.errors);
+      totalDeletedCount += orderResult.deletedCount;
+      totalFailedCount += orderResult.failedCount;
+      totalItemsCount += orderResult.totalItems;
+
+      // Delete check sessions
+      final checkSessionResult = await deleteAllCheckSessions();
+      allErrors.addAll(checkSessionResult.errors);
+      totalDeletedCount += checkSessionResult.deletedCount;
+      totalFailedCount += checkSessionResult.failedCount;
+      totalItemsCount += checkSessionResult.totalItems;
+
+      // Delete products (they depend on categories and units)
       final productResult = await deleteAllProducts();
       allErrors.addAll(productResult.errors);
       totalDeletedCount += productResult.deletedCount;
       totalFailedCount += productResult.failedCount;
       totalItemsCount += productResult.totalItems;
 
-      // Then delete categories
+      // Delete categories
       final categoryResult = await deleteAllCategories();
       allErrors.addAll(categoryResult.errors);
       totalDeletedCount += categoryResult.deletedCount;
       totalFailedCount += categoryResult.failedCount;
       totalItemsCount += categoryResult.totalItems;
 
-      // Finally delete units
+      // Delete units
       final unitResult = await deleteAllUnits();
       allErrors.addAll(unitResult.errors);
       totalDeletedCount += unitResult.deletedCount;
@@ -487,7 +651,8 @@ class DataDeletionService {
       totalItemsCount += unitResult.totalItems;
 
       final bool overallSuccess = totalDeletedCount > 0;
-      final String message = overallSuccess ? 'Đã xóa $totalDeletedCount/$totalItemsCount mục dữ liệu' : 'Không thể xóa dữ liệu nào';
+      final String message =
+          overallSuccess ? 'Đã xóa $totalDeletedCount/$totalItemsCount mục dữ liệu' : 'Không thể xóa dữ liệu nào';
 
       log('Hoàn thành xóa tất cả dữ liệu: $totalDeletedCount/$totalItemsCount');
 

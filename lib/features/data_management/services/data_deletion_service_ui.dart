@@ -123,13 +123,14 @@ class DeletionProgressDialog extends StatelessWidget with ShowDialog<void> {
   Widget build(BuildContext context) {
     final theme = context.appTheme;
 
-    return Center(
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Container(
-        margin: const EdgeInsets.all(24),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -219,7 +220,8 @@ extension DataDeletionServiceUI on DataDeletionService {
     final confirmed = await _showConfirmationDialog(
       context,
       title: 'Xác nhận xóa toàn bộ dữ liệu',
-      message: 'Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu (sản phẩm, danh mục và đơn vị)?\n\nHành động này không thể hoàn tác và sẽ xóa toàn bộ dữ liệu trong ứng dụng.',
+      message:
+          'Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu (sản phẩm, danh mục và đơn vị)?\n\nHành động này không thể hoàn tác và sẽ xóa toàn bộ dữ liệu trong ứng dụng.',
       confirmText: 'Xóa toàn bộ',
       cancelText: 'Hủy',
       isDestructive: true,

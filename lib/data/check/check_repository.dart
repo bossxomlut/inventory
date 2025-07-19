@@ -284,4 +284,12 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
       return Future.wait(collections.map(getItemFromCollection));
     });
   }
+
+  @override
+  Future<List<CheckedProduct>> getAll() {
+    return isar.txnSync(() async {
+      final collections = isar.checkedProductCollections.where().findAllSync();
+      return Future.wait(collections.map(getItemFromCollection));
+    });
+  }
 }

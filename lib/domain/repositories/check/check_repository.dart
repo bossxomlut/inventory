@@ -48,6 +48,9 @@ abstract class CheckSessionRepository implements CrudRepository<CheckSession, in
 }
 
 abstract class CheckedProductRepository
-    implements CrudRepository<CheckedProduct, int>, SearchRepositoryWithPagination<CheckedProduct> {
+    implements
+        CrudRepository<CheckedProduct, int>,
+        SearchRepositoryWithPagination<CheckedProduct>,
+        GetAllRepository<CheckedProduct> {
   Future<List<CheckedProduct>> getCheckedListBySession(int sessionId);
 }

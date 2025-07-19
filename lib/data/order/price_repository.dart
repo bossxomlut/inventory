@@ -52,4 +52,11 @@ class PriceRepositoryImpl extends PriceRepository with IsarCrudRepository<Produc
       return getItemFromCollection(collection);
     });
   }
+
+  @override
+  Future<List<ProductPrice>> getAll() {
+    return iCollection.where().findAll().then((collections) {
+      return Future.wait(collections.map(getItemFromCollection));
+    });
+  }
 }

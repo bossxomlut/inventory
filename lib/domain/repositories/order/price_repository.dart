@@ -16,6 +16,6 @@ Future<ProductPrice> productPriceById(Ref ref, int id) async {
   return repository.getProductPriceByProductId(id);
 }
 
-abstract class PriceRepository implements CrudRepository<ProductPrice, int> {
+abstract class PriceRepository implements CrudRepository<ProductPrice, int>, GetAllRepository<ProductPrice> {
   Future<ProductPrice> getProductPriceByProductId(int productId);
 }

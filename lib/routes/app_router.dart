@@ -57,9 +57,9 @@ class AppRouter extends $AppRouter {
 
         //data management routes
         AutoRoute(page: CreateSampleDataRoute.page),
-        AutoRoute(page: ImportDataRoute.page),
         AutoRoute(page: ExportDataRoute.page),
         AutoRoute(page: DeleteDataRoute.page),
+        AutoRoute(page: ImportDataRoute.page),
 
         //config admin route
         AutoRoute(

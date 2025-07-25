@@ -130,15 +130,27 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> toggleUserAccess(int userId, bool isActive) async {
-    return _isar.writeTxn(() async {
+    await _isar.writeTxn(() async {
       final user = await _collection.get(userId);
-
-      if (user == null) {
-        throw Exception('User not found');
+      if (user != null) {
+        user.isActive = isActive;
+        await _collection.put(user);
       }
-
-      user.isActive = isActive;
-      await _collection.put(user);
     });
+  }
+
+  @override
+  Future<void> createDefaultAdmin() async {
+    final adminExists = await checkExistAdmin();
+    if (!adminExists) {
+      await register(
+        'admin', // account
+        'admin', // password
+        UserRole.admin, // role
+        1, // securityQuestionId
+        'red', // securityQuestionAnswer
+      );
+      print('Default admin account created: admin/admin');
+    }
   }
 }

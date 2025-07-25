@@ -26,4 +26,6 @@ abstract class AuthRepository {
   Future<List<User>> getAllUsers();
   
   Future<void> toggleUserAccess(int userId, bool isActive);
+  
+  Future<void> createDefaultAdmin();
 }

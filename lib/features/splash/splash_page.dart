@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/persistence/isar_storage.dart';
+import '../../domain/repositories/auth/auth_repository.dart';
 import '../../provider/index.dart';
 import '../../resources/index.dart';
 import '../../routes/app_router.dart';
@@ -62,6 +63,10 @@ class SplashPage extends HookConsumerWidget {
         IsarDatabase().initialize(),
         ref.read(storageInitializerProvider.future),
       ]);
+
+      // Create default admin if not exists
+      final authRepository = ref.read(authRepositoryProvider);
+      await authRepository.createDefaultAdmin();
 
       // Check if user has seen onboarding
       final onboardingService = ref.read(onboardingServiceProvider);

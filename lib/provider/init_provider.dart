@@ -1,26 +1,25 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-// Provider để theo dõi xem đã hiển thị dialog thông tin admin chưa
-final hasShownAdminDialogProvider = StateNotifierProvider<HasShownAdminDialogNotifier, bool>((ref) {
-  return HasShownAdminDialogNotifier();
+import '../core/persistence/key_value_storage.dart';
+import 'storage_provider.dart';
+
+final hasShownAdminDialogServiceProvider = Provider<HasShownAdminDialogService>((ref) {
+  return HasShownAdminDialogService(ref.read(simpleStorageProvider));
 });
 
-class HasShownAdminDialogNotifier extends StateNotifier<bool> {
-  HasShownAdminDialogNotifier() : super(false) {
-    _loadDialogState();
-  }
+class HasShownAdminDialogService {
+  HasShownAdminDialogService(this.storage);
 
   static const String _keyHasShownAdminDialog = 'has_shown_admin_dialog';
 
-  Future<void> _loadDialogState() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getBool(_keyHasShownAdminDialog) ?? false;
+  final KeyValueStorage storage;
+
+  Future<bool> checkNeedToShowDialog() async {
+    return storage.getBool(_keyHasShownAdminDialog).then((bool? value) => !(value ?? false));
   }
 
   Future<void> setDialogShown() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_keyHasShownAdminDialog, true);
-    state = true;
+    await storage.saveBool(_keyHasShownAdminDialog, true);
   }
 }

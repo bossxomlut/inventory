@@ -1,22 +1,22 @@
 import 'package:in_app_review/in_app_review.dart';
 
-import '../../core/persistence/simple_key_value_storage.dart';
+import '../../core/persistence/key_value_storage.dart';
 
 class InAppReviewUtil {
-  InAppReviewUtil(this._simpleStorage);
+  InAppReviewUtil(this._storage);
 
   final InAppReview _inAppReview = InAppReview.instance;
 
-  final SimpleStorage _simpleStorage;
+  final KeyValueStorage _storage;
 
   static final String _isShowedKey = 'inAppReviewShowedKey';
 
   Future<void> checkAndShowReviewDialog() async {
-    final bool isShowed = await _simpleStorage.getBool(_isShowedKey) ?? false;
+    final bool isShowed = await _storage.getBool(_isShowedKey) ?? false;
     if (!isShowed) {
       if (await _inAppReview.isAvailable()) {
         await _inAppReview.requestReview();
-        await _simpleStorage.saveBool(_isShowedKey, true);
+        await _storage.saveBool(_isShowedKey, true);
       }
     }
   }

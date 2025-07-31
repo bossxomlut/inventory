@@ -24,6 +24,7 @@ void main() async {
   ///Ensure localization is initialized
   await Future.wait(<Future<void>>[
     EasyLocalization.ensureInitialized(),
+    simpleStorage.init(),
     // SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     //   DeviceOrientation.portraitUp,
     //   DeviceOrientation.portraitDown,

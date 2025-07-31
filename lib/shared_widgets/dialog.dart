@@ -6,7 +6,11 @@ import 'index.dart';
 mixin ShowDialog<T> on Widget {
   String? get routeName => 'AppDialog';
 
-  Future<T?> show(BuildContext context, {bool barrierDismissible = false}) {
+  Future<T?> show(
+    BuildContext context, {
+    bool barrierDismissible = false,
+    EdgeInsetsGeometry? padding,
+  }) {
     context.hideKeyboard();
     final theme = context.appTheme;
     return showDialog(
@@ -16,7 +20,7 @@ mixin ShowDialog<T> on Widget {
       barrierDismissible: barrierDismissible,
       builder: (BuildContext context) {
         return Padding(
-          padding: const EdgeInsets.all(40),
+          padding: padding ?? const EdgeInsets.all(40),
           child: this,
         );
       },

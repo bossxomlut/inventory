@@ -37,7 +37,7 @@ class AuthController extends _$AuthController {
 
           if (user.role == UserRole.guest) {
             //check load database for guest mode use _isCreatedGuestData
-            final storage = await ref.read(initializedSimpleStorageProvider.future);
+            final storage = await ref.read(simpleStorageProvider);
             final isCreatedGuestData = await storage.getBool(_isCreatedGuestData);
             if (isCreatedGuestData != true) {
               //load assets using DataImportService
@@ -47,10 +47,13 @@ class AuthController extends _$AuthController {
 
                 if (result.success) {
                   // Show success message using the notification provider
-                  ref.read(notificationProvider.notifier).showSuccess('Đã tải ${result.successfulImports} sản phẩm mẫu thành công!');
+                  ref
+                      .read(notificationProvider.notifier)
+                      .showSuccess('Đã tải ${result.successfulImports} sản phẩm mẫu thành công!');
                 } else if (result.hasPartialSuccess) {
                   // Show warning for partial success
-                  ref.read(notificationProvider.notifier).showWarning('Đã tải ${result.successfulImports}/${result.totalLines} sản phẩm. ${result.failedImports} sản phẩm lỗi.');
+                  ref.read(notificationProvider.notifier).showWarning(
+                      'Đã tải ${result.successfulImports}/${result.totalLines} sản phẩm. ${result.failedImports} sản phẩm lỗi.');
                 } else {
                   // Log errors but don't fail the login process
                   for (final error in result.errors) {

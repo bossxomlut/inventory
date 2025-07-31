@@ -10,6 +10,7 @@ import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../../shared_widgets/toast.dart';
 import 'provider/login_provider.dart';
+import 'widget/default_admin_account_widget.dart';
 
 @RoutePage()
 class SignUpPage extends WidgetByDeviceTemplate {
@@ -270,9 +271,7 @@ class UserRoleWidget extends StatelessWidget {
               if (isDisable)
                 IconButton(
                   onPressed: () {
-                    showSimpleInfo(
-                      message: message ?? LKey.signUpValidateMessageAdminExist.tr(context: context),
-                    );
+                    const DefaultAdminAccountWidget().show(context, padding: EdgeInsets.zero);
                   },
                   icon: const Icon(
                     Icons.info_outline,

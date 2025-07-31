@@ -94,7 +94,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
                 },
                 onCancel: () async {
                   //cancel order
-                  ref.read(orderListProvider(OrderStatus.confirmed).notifier).cancelOrder(oder);
+                  await ref.read(orderListProvider(OrderStatus.confirmed).notifier).cancelOrder(oder);
                   ref.invalidate(orderListProvider(OrderStatus.cancelled));
                 },
               );

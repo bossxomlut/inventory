@@ -61,7 +61,6 @@ class SplashPage extends HookConsumerWidget {
       // Initialize database and storage in parallel
       await Future.wait([
         IsarDatabase().initialize(),
-        ref.read(storageInitializerProvider.future),
       ]);
 
       // Create default admin if not exists

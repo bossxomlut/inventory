@@ -19,7 +19,6 @@ class SettingPage extends WidgetByDeviceTemplate {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
     final authState = ref.watch(authControllerProvider);
-    final storage = ref.read(initializedSimpleStorageProvider);
 
     // Get current user role
     final UserRole? currentUserRole = authState.maybeWhen(
@@ -107,29 +106,26 @@ class SettingPage extends WidgetByDeviceTemplate {
                   onTap: () {},
                 ),
                 const _Divider(),
-                storage.map(
-                  data: (data) {
-                    return FutureBuilder<bool>(
-                      initialData: false,
-                      future: InAppReviewUtil(data.value).isAvailable(),
-                      builder: (context, snapshot) {
-                        // Check if in-app review is available
-                        if (!snapshot.hasData || !(snapshot.data ?? false)) {
-                          return const SizedBox();
-                        }
-                        return ListTile(
-                          leading: const Icon(HugeIcons.strokeRoundedStar),
-                          title: const Text('Đánh giá ứng dụng'),
-                          onTap: () async {
-                            InAppReviewUtil(data.value).openStoreListing();
-                          },
-                        );
-                      },
-                    );
-                  },
-                  error: (__) => const SizedBox(),
-                  loading: (__) => const SizedBox(),
-                ),
+                Builder(builder: (context) {
+                  final inAppReviewUtil = InAppReviewUtil(ref.read(simpleStorageProvider));
+                  return FutureBuilder<bool>(
+                    initialData: false,
+                    future: inAppReviewUtil.isAvailable(),
+                    builder: (context, snapshot) {
+                      // Check if in-app review is available
+                      if (!snapshot.hasData || !(snapshot.data ?? false)) {
+                        return const SizedBox();
+                      }
+                      return ListTile(
+                        leading: const Icon(HugeIcons.strokeRoundedStar),
+                        title: const Text('Đánh giá ứng dụng'),
+                        onTap: () async {
+                          inAppReviewUtil.openStoreListing();
+                        },
+                      );
+                    },
+                  );
+                }),
                 const _Divider(),
                 if (canAccessDataManagement) ...[
                   ListTile(

@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sample_app/provider/index.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:toastification/toastification.dart';
 
 import 'resources/index.dart';
@@ -11,6 +12,10 @@ import 'routes/app_router.dart';
 import 'shared_widgets/toast.dart';
 
 bool get showDevicePreview => false;
+
+String SUPABASE_URL = 'https://zmbetybifmkbawswijwv.supabase.co';
+String SUPABASE_ANON_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptYmV0eWJpZm1rYmF3c3dpand2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwNTkwNTAsImV4cCI6MjA2OTYzNTA1MH0.OzSwZ7LGa-to79wjzp1JQceWQ37LD1MD9DdKRsNYFoU';
 
 /*
 * Manual configure environment to load sensitive data
@@ -33,6 +38,10 @@ void main() async {
 
   ///Start load environment
   // await getIt.get<EnvLoader>().load(env);
+  await Supabase.initialize(
+    url: SUPABASE_URL,
+    anonKey: SUPABASE_ANON_KEY,
+  );
 
   // ThemeUtils.initThemeMode();
 

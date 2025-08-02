@@ -91,6 +91,7 @@ dependencies:
   screenshot: ^3.0.0
   share_plus: ^10.1.4
   sign_in_button: ^3.0.0
+  supabase_flutter: ^2.9.1
 
   # U
   url_launcher: ^6.3.1

@@ -112,8 +112,8 @@ class MenuManager {
             title: 'Báo cáo thống kê',
             icon: Icons.analytics,
             destinationCallback: () {
-              // appRouter.goToReport();
-              showInfoSnackBar(appRouter.context!, 'Chức năng báo cáo thống kê đang được phát triển');
+              appRouter.goToReport();
+              // showInfoSnackBar(appRouter.context!, 'Chức năng báo cáo thống kê đang được phát triển');
             },
           ),
         ],

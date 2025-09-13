@@ -99,7 +99,8 @@ class RevenueLineChart extends StatelessWidget {
             color: Colors.green,
             barWidth: 3,
             spots: spots,
-            dotData: const FlDotData(show: false),
+            dotData: const FlDotData(show: true),
+            // curveSmoothness: 0.20,
           ),
         ],
       ),
@@ -187,26 +188,54 @@ class RevenueCategoryPieChart extends StatelessWidget {
       Colors.teal,
     ];
 
-    return PieChart(
-      PieChartData(
-        sectionsSpace: 2,
-        centerSpaceRadius: 40,
-        sections: data.asMap().entries.map((e) {
-          final index = e.key;
-          final item = e.value;
-          return PieChartSectionData(
-            value: item.revenue,
-            title: "${item.percentage.toStringAsFixed(1)}%",
-            color: colors[index % colors.length],
-            radius: 50,
-            titleStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+    return Column(
+      children: [
+        Flexible(
+          child: PieChart(
+            PieChartData(
+              sectionsSpace: 2,
+              centerSpaceRadius: 40,
+              sections: data.asMap().entries.map((e) {
+                final index = e.key;
+                final item = e.value;
+                return PieChartSectionData(
+                  value: item.revenue,
+                  title: "${item.percentage.toStringAsFixed(1)}%",
+                  color: colors[index % colors.length],
+                  radius: 60,
+                  titleStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                );
+              }).toList(),
             ),
-          );
-        }).toList(),
-      ),
+          ),
+        ),
+        // Legend
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: data.asMap().entries.map((e) {
+            final index = e.key;
+            final item = e.value;
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  color: colors[index % colors.length],
+                ),
+                const SizedBox(width: 4),
+                Text(item.categoryName),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

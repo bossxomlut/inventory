@@ -32,6 +32,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             title,
             style: theme.textMedium16Default.copyWith(
               color: theme.colorTextWhite,
+              fontSize: 22,
+              fontWeight: FontWeight.w400,
             ),
           ),
       leading: leading ?? AppBackButton(onBack: onBack),

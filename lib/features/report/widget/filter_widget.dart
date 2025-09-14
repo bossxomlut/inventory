@@ -120,30 +120,26 @@ class _TabTimeFilterMenuWidgetState extends State<TabTimeFilterMenuWidget> with 
           ),
         ),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                padding: EdgeInsets.only(left: 16.0, right: 16.0),
-                labelPadding: EdgeInsets.only(right: 8.0),
-                dividerHeight: 0,
-                indicatorColor: Colors.transparent,
-                tabAlignment: TabAlignment.start,
-                tabs: TimeFilterTypeExtension.predefinedTypes.map((type) {
-                  return ChoiceChip(
-                    label: Text(type.displayName),
-                    selected: widget.selected == type,
-                    onSelected: (isSelected) {
-                      if (isSelected) {
-                        widget.onSelected(type);
-                      }
-                    },
-                  );
-                }).toList(),
-              ),
-            ],
+          child: TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            padding: EdgeInsets.only(left: 16.0, right: 16.0),
+            labelPadding: EdgeInsets.only(right: 8.0),
+            dividerHeight: 0,
+            indicatorColor: Colors.transparent,
+            tabAlignment: TabAlignment.start,
+            indicator: BoxDecoration(),
+            tabs: TimeFilterTypeExtension.predefinedTypes.map((type) {
+              return ChoiceChip(
+                label: Text(type.displayName),
+                selected: widget.selected == type,
+                onSelected: (isSelected) {
+                  if (isSelected) {
+                    widget.onSelected(type);
+                  }
+                },
+              );
+            }).toList(),
           ),
         ),
       ],

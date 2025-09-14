@@ -36,29 +36,36 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
   }
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Báo cáo',
-        bottom: TabBar(
-          labelStyle: theme.textMedium15Default.copyWith(color: Colors.white),
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          controller: _tabController,
-          tabs: tabs.map((e) => Tab(text: e)).toList(),
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-        ),
+        // bottom: TabBar(
+        //   labelStyle: theme.textMedium15Default.copyWith(color: Colors.white),
+        //   labelColor: Colors.white,
+        //   unselectedLabelColor: Colors.white70,
+        //   controller: _tabController,
+        //   tabs: tabs.map((e) => Tab(text: e)).toList(),
+        //   isScrollable: true,
+        //   tabAlignment: TabAlignment.start,
+        // ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          const OverviewContent(),
-          const Placeholder(),
-          const Placeholder(),
-        ],
-      ),
+      body: const OverviewContent(),
+      // body: TabBarView(
+      //   controller: _tabController,
+      //   children: [
+      //     const OverviewContent(),
+      //     const Placeholder(),
+      //     const Placeholder(),
+      //   ],
+      // ),
     );
   }
 }
@@ -83,44 +90,50 @@ class _OverviewContentState extends ConsumerState<OverviewContent> {
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.only(top: 12),
-          sliver: SliverToBoxAdapter(
-            child: TabTimeFilterMenuWidget(
-              selected: selectedFilter,
-              onSelected: (value) {
-                switch (value) {
-                  case TimeFilterType.custom:
-                    showDateRangePicker(
-                      context: context,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime.now(),
-                      initialDateRange: customDateRange ??
-                          DateTimeRange(
-                            start: DateTime.now().subtract(const Duration(days: 7)),
-                            end: DateTime.now(),
-                          ),
-                    ).then((pickedRange) {
-                      if (pickedRange != null) {
-                        setState(() {
-                          selectedFilter = value;
-                          final start = DateTimeUtils.getOnlyDate(pickedRange.start);
-                          final end = DateTimeUtils.getEndOfDay(pickedRange.end);
+        SliverAppBar(
+          pinned: true,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: 68,
+          title: TabTimeFilterMenuWidget(
+            selected: selectedFilter,
+            onSelected: (value) {
+              switch (value) {
+                case TimeFilterType.custom:
+                  showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                    initialDateRange: customDateRange ??
+                        DateTimeRange(
+                          start: DateTime.now().subtract(const Duration(days: 7)),
+                          end: DateTime.now(),
+                        ),
+                  ).then((pickedRange) {
+                    if (pickedRange != null) {
+                      setState(() {
+                        selectedFilter = value;
+                        final start = DateTimeUtils.getOnlyDate(pickedRange.start);
+                        final end = DateTimeUtils.getEndOfDay(pickedRange.end);
 
-                          customDateRange = DateTimeRange(start: start, end: end);
-                        });
-                      }
-                    });
-                    break;
-                  default:
-                    setState(() {
-                      selectedFilter = value;
-                      customDateRange = null;
-                    });
-                }
-              },
-            ),
+                        customDateRange = DateTimeRange(start: start, end: end);
+                      });
+                    }
+                  });
+                  break;
+                default:
+                  setState(() {
+                    selectedFilter = value;
+                    customDateRange = null;
+                  });
+              }
+            },
           ),
+          leading: const SizedBox(),
+          backgroundColor: Colors.transparent,
+          titleSpacing: 0,
+          centerTitle: false,
+          leadingWidth: 0,
         ),
         SliverPadding(
           padding: const EdgeInsets.only(top: 12),

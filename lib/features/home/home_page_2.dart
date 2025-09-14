@@ -208,7 +208,7 @@ class HomePage2 extends ConsumerWidget {
                                           const SizedBox(height: 10),
                                           Text(
                                             item.title,
-                                            style: theme.textMedium13Default,
+                                            style: theme.textMedium16Default,
                                             textAlign: TextAlign.center,
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,

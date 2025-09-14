@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/helpers/double_utils.dart';
 import '../../../core/index.dart';
 import '../../../domain/entities/report/dashboard_chart.dart';
+import '../../../shared_widgets/box.dart';
 import 'dashboard_chart_container.dart';
 import 'full_screen_chart_page.dart';
 
@@ -71,7 +72,7 @@ class RevenueLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return const Center(child: Text("Không có dữ liệu"));
+      return const Center(child: NotFoundWidget());
     }
 
     final spots = data.asMap().entries.map((e) {
@@ -127,7 +128,7 @@ class TopProductsBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return const Center(child: Text("Không có dữ liệu"));
+      return const Center(child: NotFoundWidget());
     }
 
     return Column(
@@ -206,7 +207,7 @@ class RevenueCategoryPieChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return const Center(child: Text("Không có dữ liệu"));
+      return const Center(child: NotFoundWidget());
     }
 
     final theme = Theme.of(context);
@@ -247,7 +248,8 @@ class RevenueCategoryPieChart extends StatelessWidget {
                             Flexible(
                               child: LayoutBuilder(builder: (context, constraints) {
                                 final widthPercentage = (data[i].percentage / 100).clamp(0.0, 1.0);
-                                return FractionallySizedBox(
+                                return AnimatedFractionallySizedBox(
+                                  duration: const Duration(milliseconds: 300),
                                   widthFactor: widthPercentage,
                                   child: Container(
                                     height: 40,
@@ -293,7 +295,7 @@ class BubbleCategoryChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return const Center(child: Text("No data"));
+      return const Center(child: NotFoundWidget());
     }
 
     // Lấy top 3 theo percentage
@@ -301,8 +303,8 @@ class BubbleCategoryChart extends StatelessWidget {
     final top3 = topData.take(3).toList();
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final maxBubbleSize = screenWidth * 0.35; // ~35% width
-    final minBubbleSize = screenWidth * 0.20; // ~20% width
+    final maxBubbleSize = screenWidth * 0.6; // ~35% width
+    final minBubbleSize = screenWidth * 0.0; // ~20% width
 
     double _bubbleSize(double percentage) {
       // Scale theo percentage nhưng có giới hạn min/max
@@ -344,7 +346,8 @@ class BubbleCategoryChart extends StatelessWidget {
   }) {
     return Align(
       alignment: alignment,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         width: size,
         height: size,
         decoration: BoxDecoration(

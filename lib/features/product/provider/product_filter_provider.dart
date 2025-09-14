@@ -89,7 +89,7 @@ extension TimeFilterTypeExtension on TimeFilterType {
   }
 
   DateTime? get startDate {
-    final now = DateTime.now();
+    final now = DateUtils.dateOnly(DateTime.now());
     switch (this) {
       case TimeFilterType.yesterday:
         final yesterday = now.subtract(const Duration(days: 1));
@@ -109,15 +109,17 @@ extension TimeFilterTypeExtension on TimeFilterType {
   }
 
   DateTime? get endDate {
+    final now = DateUtils.dateOnly(DateTime.now());
+
     switch (this) {
       case TimeFilterType.yesterday:
-        final yesterday = DateTime.now().subtract(const Duration(days: 1));
+        final yesterday = now.subtract(const Duration(days: 1));
         return DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
       case TimeFilterType.today:
       case TimeFilterType.last7Days:
       case TimeFilterType.last1Month:
       case TimeFilterType.last3Months:
-        final today = DateTime.now();
+        final today = now;
         return DateTime(today.year, today.month, today.day, 23, 59, 59);
 
       case TimeFilterType.custom:

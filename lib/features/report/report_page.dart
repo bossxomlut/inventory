@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/helpers/date_time_utils.dart';
 import '../../core/helpers/double_utils.dart';
 import '../../core/helpers/format_utils.dart';
+import '../../domain/entities/report/dashboard_chart.dart';
 import '../../domain/entities/report/difference.dart';
 import '../../provider/index.dart';
 import '../../shared_widgets/index.dart';
@@ -222,17 +223,17 @@ class DashboardWidget extends ConsumerWidget {
                 ),
                 DashboardSummaryWidget(
                   title: "Tổng đơn hàng",
-                  value: 0.0.priceFormat(),
+                  value: 0.0.displayFormat(),
                   difference: DifferenceEntity.empty(),
                 ),
                 DashboardSummaryWidget(
                   title: "Sản phẩm đã bán",
-                  value: 0.0.priceFormat(),
+                  value: 0.0.displayFormat(),
                   difference: DifferenceEntity.empty(),
                 ),
                 DashboardSummaryWidget(
                   title: "Số lượng đã bán",
-                  value: 0.0.priceFormat(),
+                  value: 0.0.displayFormat(),
                   difference: DifferenceEntity.empty(),
                 ),
               ],
@@ -262,7 +263,7 @@ class DashboardWidget2 extends ConsumerWidget {
         // Charts
         chartsAsync.when(
           data: (charts) => DashboardChartsWidget(data: charts),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => DashboardChartsWidget(data: DashboardChartData.empty()),
           error: (e, _) => Text("Error: $e"),
         ),
       ],

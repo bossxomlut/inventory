@@ -50,4 +50,10 @@ class DashboardChartData with _$DashboardChartData {
   }) = _DashboardChartData;
 
   factory DashboardChartData.fromJson(Map<String, dynamic> json) => _$DashboardChartDataFromJson(json);
+
+  factory DashboardChartData.empty() => const DashboardChartData(
+        revenueByDay: [],
+        topSellingProducts: [],
+        revenueByCategory: [],
+      );
 }

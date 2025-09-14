@@ -194,7 +194,49 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
       },
       isCanLoadMore:
           widget.enableLoadMore && !_endOfList, // Set to true if you want to implement load more functionality
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      padding: padding,
     );
   }
+
+  EdgeInsets get padding => const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0);
+}
+
+class SearchAndConfirmItemWidget<T> extends SearchItemWidget<T> {
+  const SearchAndConfirmItemWidget({
+    super.key,
+    required super.itemBuilder,
+    required super.searchItems,
+    super.onAddItem,
+    super.title,
+    super.addItemWidget,
+    super.itemBuilderWithIndex,
+    super.onSubmitted,
+    super.textEditingController,
+    super.keyboardType,
+    super.enableLoadMore,
+    super.showAddButtonWhenEmpty,
+    required this.onConfirm,
+  });
+
+  final VoidCallback onConfirm;
+
+  @override
+  State<SearchItemWidget<T>> createState() => _SearchAndConfirmItemWidgetState<T>();
+}
+
+class _SearchAndConfirmItemWidgetState<T> extends _SearchItemWidgetState<T> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.transparent,
+      body: super.build(context),
+      floatingActionButton: FloatingActionButton(
+        onPressed: (widget as SearchAndConfirmItemWidget<T>).onConfirm,
+        child: const Icon(Icons.check),
+      ),
+    );
+  }
+
+  EdgeInsets get padding => const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 80.0);
 }

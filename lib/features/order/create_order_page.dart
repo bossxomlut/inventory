@@ -364,7 +364,10 @@ class CreateOrderPage extends HookConsumerWidget {
 }
 
 void showSelectOrderItem(BuildContext context, WidgetRef ref) {
-  SearchItemWidget<Product>(
+  SearchAndConfirmItemWidget<Product>(
+    onConfirm: () {
+      Navigator.pop(context);
+    },
     itemBuilder: (context, product, index) {
       return OrderItemSelectionWidget(product: product);
     },

@@ -23,17 +23,19 @@ class DifferenceWidget extends StatelessWidget {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color.withOpacity(0.1),
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.trending_up_outlined,
-                  color: color,
-                  size: 16,
+            FittedBox(
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color.withOpacity(0.1),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.trending_up_outlined,
+                    color: color,
+                    size: 16,
+                  ),
                 ),
               ),
             ),

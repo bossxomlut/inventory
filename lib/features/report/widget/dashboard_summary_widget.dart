@@ -39,9 +39,11 @@ class DashboardSummaryWidget extends StatelessWidget {
             ),
           ),
           if (difference != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: DifferenceWidget(difference!),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: DifferenceWidget(difference!),
+              ),
             ),
         ],
       ),

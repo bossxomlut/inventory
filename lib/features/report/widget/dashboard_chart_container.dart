@@ -16,41 +16,39 @@ class DashboardChartContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (showTitle) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(color: Colors.white),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (showTitle) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  child: Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.open_in_full),
-                    onPressed: onExpand,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-            ],
-            SizedBox(
-              height: 200, // có thể cho thành tham số
-              child: chart,
+                ),
+                IconButton(
+                  iconSize: 20,
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(Icons.open_in_full),
+                  onPressed: onExpand,
+                ),
+              ],
             ),
+            const SizedBox(height: 8),
           ],
-        ),
+          const SizedBox(height: 16),
+          chart,
+        ],
       ),
     );
   }

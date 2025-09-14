@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
 
-import '../../domain/entities/report/dashboard_chart.dart';
 import '../../domain/entities/report/dashboard_overview.dart';
+import '../../domain/entities/report/difference.dart';
 import '../../domain/index.dart';
 import '../../domain/repositories/report/dashboard_repository.dart';
 import '../order/order.dart';
@@ -103,6 +103,19 @@ class DashboardRepositoryImpl extends DashboardRepository {
     );
   }
 
+  /// Get yesterday's completed orders
+  Future<List<OrderCollection>> getYesterdayCompletedOrders() async {
+    final yesterday = DateTime.now().subtract(Duration(days: 1));
+    final lower = DateTime(yesterday.year, yesterday.month, yesterday.day);
+    final upper = DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+
+    return _getCompletedOrdersWithFilters(
+      fromDate: lower,
+      toDate: upper,
+      useUpdatedAt: true,
+    );
+  }
+
   /// Calculate total revenue from a list of orders
   double calculateTotalRevenue(List<OrderCollection> orders) {
     return orders.fold<double>(
@@ -119,215 +132,73 @@ class DashboardRepositoryImpl extends DashboardRepository {
     );
   }
 
+  /// Calculate total quantity of products sold from a list of orders
+  int calculateTotalQuantitySold(List<OrderCollection> orders) {
+    return orders.fold<int>(
+      0,
+      (previousValue, element) => previousValue + (element.totalAmount ?? 0),
+    );
+  }
+
+  /// Calculate difference between current and previous values
+  DifferenceEntity _calculateDifference(double current, double previous) {
+    if (previous == 0) {
+      if (current > 0) {
+        return DifferenceEntity(difference: Difference.higher, percentage: 100.0);
+      } else {
+        return DifferenceEntity(difference: Difference.none, percentage: 0.0);
+      }
+    }
+
+    final percentageChange = ((current - previous) / previous) * 100;
+
+    if (percentageChange > 0) {
+      return DifferenceEntity(difference: Difference.higher, percentage: percentageChange.abs());
+    } else if (percentageChange < 0) {
+      return DifferenceEntity(difference: Difference.lower, percentage: percentageChange.abs());
+    } else {
+      return DifferenceEntity(difference: Difference.equal, percentage: 0.0);
+    }
+  }
+
+  /// Calculate difference for integer values
+  DifferenceEntity _calculateDifferenceInt(int current, int previous) {
+    return _calculateDifference(current.toDouble(), previous.toDouble());
+  }
+
   @override
-  Future<DashboardOverview> fetchOverview() async {
-    // Get today's completed orders using reusable function
+  Future<DashboardOverview> fetchTodayOverview() async {
+    // Get current period data
     final todayCompletedOrders = await getTodayCompletedOrders();
-
-    final totalRevenue = calculateTotalRevenue(todayCompletedOrders);
-    final totalOrders = todayCompletedOrders.length;
-    final totalProductsSold = calculateTotalProductsSold(todayCompletedOrders);
-
-    // Get this month's completed orders using reusable function
     final monthCompletedOrders = await getMonthCompletedOrders();
-    final monthRevenue = calculateTotalRevenue(monthCompletedOrders);
+
+    // Get previous period data for comparison
+    final yesterdayCompletedOrders = await getYesterdayCompletedOrders();
+
+    // Calculate current period metrics
+    final todayRevenueValue = calculateTotalRevenue(todayCompletedOrders);
+    final totalProductQuantitySold = calculateTotalQuantitySold(monthCompletedOrders);
+    final totalOrdersValue = todayCompletedOrders.length;
+    final totalProductsSoldValue = calculateTotalProductsSold(todayCompletedOrders);
+
+    // Calculate previous period metrics for comparison
+    final yesterdayRevenueValue = calculateTotalRevenue(yesterdayCompletedOrders);
+    final yesterdayProductQuantitySold = calculateTotalQuantitySold(yesterdayCompletedOrders);
+    final yesterdayOrdersValue = yesterdayCompletedOrders.length;
+    final yesterdayProductsSoldValue = calculateTotalProductsSold(yesterdayCompletedOrders);
+
+    // Calculate differences
+    final todayRevenueDifference = _calculateDifference(todayRevenueValue, yesterdayRevenueValue);
+    final totalProductQuantityDifference =
+        _calculateDifferenceInt(totalProductQuantitySold, yesterdayProductQuantitySold);
+    final totalOrdersDifference = _calculateDifferenceInt(totalOrdersValue, yesterdayOrdersValue);
+    final totalProductsSoldDifference = _calculateDifferenceInt(totalProductsSoldValue, yesterdayProductsSoldValue);
 
     return DashboardOverview(
-      todayRevenue: totalRevenue,
-      monthRevenue: monthRevenue,
-      totalOrders: totalOrders,
-      totalProductsSold: totalProductsSold,
+      todayRevenue: TodayRevenueData(todayRevenueValue, todayRevenueDifference),
+      totalProductQuantitySold: TotalProductQuantitySoldData(totalProductQuantitySold, totalProductQuantityDifference),
+      totalOrders: TotalOrdersData(totalOrdersValue, totalOrdersDifference),
+      totalProductsSold: TotalProductsSoldData(totalProductsSoldValue, totalProductsSoldDifference),
     );
-  }
-
-  @override
-  Future<DashboardChartData> fetchCharts({
-    required DateTime from,
-    required DateTime to,
-  }) async {
-    // Get completed orders in the date range
-    final orders = await getCompletedOrders(fromDate: from, toDate: to, useUpdatedAt: true);
-
-    // Generate revenue by day data
-    final revenueByDay = await _generateRevenueByDay(orders, from, to);
-
-    // Generate top selling products data
-    final topSellingProducts = await _generateTopSellingProducts(orders);
-
-    // Generate revenue by category data (mock for now since we don't have product categories)
-    final revenueByCategory = await _generateRevenueByCategory(orders);
-
-    return DashboardChartData(
-      revenueByDay: revenueByDay,
-      topSellingProducts: topSellingProducts,
-      revenueByCategory: revenueByCategory,
-    );
-  }
-
-  /// Generate revenue by day chart data from completed orders (last 7 days only)
-  Future<List<RevenueByDay>> _generateRevenueByDay(
-    List<OrderCollection> orders,
-    DateTime from,
-    DateTime to,
-  ) async {
-    final Map<String, double> dailyRevenue = {};
-
-    // Calculate the last 7 days from the 'to' date
-    final last7DaysStart = to.subtract(Duration(days: 6)); // 6 days back + today = 7 days
-    final last7DaysEnd = to;
-
-    // Initialize last 7 days with 0 revenue
-    for (DateTime date = last7DaysStart;
-        date.isBefore(last7DaysEnd.add(Duration(days: 1)));
-        date = date.add(Duration(days: 1))) {
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      dailyRevenue[dateKey] = 0.0;
-    }
-
-    // Calculate actual revenue for each day (only for last 7 days)
-    for (final order in orders) {
-      final orderDate = order.updatedAt ?? order.createdAt;
-
-      // Only include orders from the last 7 days
-      if (orderDate.isAfter(last7DaysStart.subtract(Duration(days: 1))) &&
-          orderDate.isBefore(last7DaysEnd.add(Duration(days: 1)))) {
-        final dateKey =
-            '${orderDate.year}-${orderDate.month.toString().padLeft(2, '0')}-${orderDate.day.toString().padLeft(2, '0')}';
-
-        if (dailyRevenue.containsKey(dateKey)) {
-          dailyRevenue[dateKey] = (dailyRevenue[dateKey] ?? 0) + (order.totalPrice ?? 0);
-        }
-      }
-    }
-
-    // Convert to RevenueByDay objects
-    return dailyRevenue.entries.map((entry) {
-      final dateParts = entry.key.split('-');
-      final date = DateTime(
-        int.parse(dateParts[0]),
-        int.parse(dateParts[1]),
-        int.parse(dateParts[2]),
-      );
-      return RevenueByDay(date: date, revenue: entry.value);
-    }).toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-  }
-
-  /// Generate top selling products data from order items
-  Future<List<TopSellingProduct>> _generateTopSellingProducts(List<OrderCollection> orders) async {
-    if (orders.isEmpty) {
-      return [];
-    }
-
-    // Get all order IDs
-    final orderIds = orders.map((o) => o.id).toList();
-
-    // Get all order items for these orders
-    final orderItems = await orderItemCollection.filter().anyOf(
-      orderIds,
-      (QueryBuilder<OrderItemCollection, OrderItemCollection, QFilterCondition> q, element) {
-        return q.orderIdEqualTo(element);
-      },
-    ).findAll();
-
-    // Group by product and calculate totals
-    final Map<int, Map<String, dynamic>> productData = {};
-
-    for (final item in orderItems) {
-      final productId = item.productId;
-
-      if (productData.containsKey(productId)) {
-        productData[productId]!['quantitySold'] += item.quantity;
-        productData[productId]!['revenue'] += (item.price * item.quantity);
-      } else {
-        productData[productId] = {
-          'productName': item.productName,
-          'quantitySold': item.quantity,
-          'revenue': (item.price * item.quantity),
-        };
-      }
-    }
-
-    // Convert to TopSellingProduct objects and sort by quantity sold
-    final topProducts = productData.entries
-        .map((entry) => TopSellingProduct(
-              productId: entry.key,
-              productName: entry.value['productName'] as String,
-              quantitySold: entry.value['quantitySold'] as int,
-              revenue: entry.value['revenue'] as double,
-            ))
-        .toList()
-      ..sort((a, b) => b.quantitySold.compareTo(a.quantitySold));
-
-    // Return top 5 products
-    return topProducts.take(5).toList();
-  }
-
-  Future<List<RevenueByCategory>> _generateRevenueByCategory(List<OrderCollection> orders) async {
-    if (orders.isEmpty) {
-      return [];
-    }
-
-    //get all unit
-    final units = await categoryCollection.where().findAll();
-    //find all order items mapping with units if not created not default to uncategorized
-    final Map<int, String> unitMap = {
-      for (var unit in units) unit.id: unit.name,
-    };
-
-    //find all order items for these orders
-    final orderIds = orders.map((o) => o.id).toList();
-    final orderItems = await orderItemCollection.filter().anyOf(
-      orderIds,
-      (QueryBuilder<OrderItemCollection, OrderItemCollection, QFilterCondition> q, element) {
-        return q.orderIdEqualTo(element);
-      },
-    ).findAll();
-
-    //group by category and calculate totals
-    final Map<String, double> categoryData = {};
-
-    for (final item in orderItems) {
-      //get product information to find category
-      final product = await productCollection.get(item.productId);
-      if (product == null) {
-        continue; //skip if product not found
-      }
-
-      final categoryName = product.category?.value?.name ?? 'Uncategorized';
-      if (categoryData.containsKey(categoryName)) {
-        categoryData[categoryName] = (categoryData[categoryName] ?? 0) + (item.price * item.quantity);
-      } else {
-        categoryData[categoryName] = (item.price * item.quantity);
-      }
-    }
-
-    // Convert to RevenueByCategory objects and sort by revenue
-    final revenueByCategory = categoryData.entries
-        .map((entry) => RevenueByCategory(
-              categoryName: entry.key,
-              revenue: entry.value,
-              categoryId: units
-                  .firstWhere((u) => u.name == entry.key, orElse: () => CategoryCollection()..name = 'Uncategorized')
-                  .id,
-              percentage: 0, // Will calculate later
-            ))
-        .toList()
-      ..sort((a, b) => b.revenue.compareTo(a.revenue));
-
-    // Calculate total revenue for percentage calculation
-    final totalRevenue = revenueByCategory.fold<double>(0, (sum, item) => sum + item.revenue);
-
-    // Calculate percentage for each category by map
-
-    return revenueByCategory.map((category) {
-      final percentage = totalRevenue > 0 ? (category.revenue / totalRevenue) * 100 : 0;
-      return RevenueByCategory(
-        categoryName: category.categoryName,
-        revenue: category.revenue,
-        categoryId: category.categoryId,
-        percentage: percentage.toDouble(),
-      );
-    }).toList();
   }
 }

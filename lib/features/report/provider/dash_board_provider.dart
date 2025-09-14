@@ -8,14 +8,14 @@ import '../../../domain/repositories/report/dashboard_repository.dart';
 /// Provider load dữ liệu KPI cards (DashboardOverview)
 final dashboardOverviewProvider = FutureProvider.autoDispose<DashboardOverview>((ref) async {
   final repo = ref.read(dashboardRepositoryProvider);
-  return repo.fetchOverview();
+  return repo.fetchTodayOverview();
 });
 
 /// Provider load dữ liệu biểu đồ (DashboardChartData)
 final dashboardChartsProvider =
     FutureProvider.autoDispose.family<DashboardChartData, DateTimeRange>((ref, range) async {
   final link = ref.keepAlive();
-  final repo = ref.read(dashboardRepositoryProvider);
+  final repo = ref.read(dashboardChartsRepositoryProvider);
 
   return repo.fetchCharts(from: range.start, to: range.end);
 });

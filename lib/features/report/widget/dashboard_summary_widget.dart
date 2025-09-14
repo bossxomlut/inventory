@@ -1,64 +1,49 @@
 import 'package:flutter/material.dart';
 
+import '../../../domain/entities/report/difference.dart';
+import 'difference_widget.dart';
+
 class DashboardSummaryWidget extends StatelessWidget {
   final String title;
   final String value;
-  final Color? color;
-  final IconData? icon;
+  final DifferenceEntity? difference;
 
   const DashboardSummaryWidget({
     super.key,
     required this.title,
     required this.value,
-    this.color,
-    this.icon,
+    this.difference,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Icon + Title trên cùng một dòng
-            Row(
-              children: [
-                if (icon != null)
-                  Icon(
-                    icon,
-                    color: color ?? theme.primaryColor,
-                    size: 18,
-                  ),
-                if (icon != null) const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-              ],
+    return Container(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.outline,
             ),
-            const SizedBox(height: 8),
-            // Value nổi bật
-            Text(
-              value,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color ?? theme.primaryColor,
-              ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        ),
+          ),
+          if (difference != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: DifferenceWidget(difference!),
+            ),
+        ],
       ),
     );
   }

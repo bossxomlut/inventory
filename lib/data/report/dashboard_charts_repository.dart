@@ -50,74 +50,30 @@ class DashboardChartsRepositoryImpl extends DashboardChartsRepository {
     );
   }
 
-  /// Get today's completed orders
-  Future<List<OrderCollection>> getTodayCompletedOrders() async {
-    final today = DateTime.now();
-    final lower = DateTime(today.year, today.month, today.day);
-    final upper = DateTime(today.year, today.month, today.day, 23, 59, 59);
-
-    return _getCompletedOrdersWithFilters(
-      fromDate: lower,
-      toDate: upper,
-      useUpdatedAt: true,
-    );
-  }
-
-  /// Get this month's completed orders
-  Future<List<OrderCollection>> getMonthCompletedOrders() async {
-    final today = DateTime.now();
-    final monthLower = DateTime(today.year, today.month, 1);
-    final monthUpper = DateTime(today.year, today.month + 1, 0, 23, 59, 59);
-
-    return _getCompletedOrdersWithFilters(
-      fromDate: monthLower,
-      toDate: monthUpper,
-      useUpdatedAt: true,
-    );
-  }
-
-  /// Get last week's completed orders
-  Future<List<OrderCollection>> getLastWeekCompletedOrders() async {
-    final today = DateTime.now();
-    final lastWeekStart = today.subtract(Duration(days: 7));
-    final lastWeekEnd = today.subtract(Duration(days: 1));
-
-    return _getCompletedOrdersWithFilters(
-      fromDate: DateTime(lastWeekStart.year, lastWeekStart.month, lastWeekStart.day),
-      toDate: DateTime(lastWeekEnd.year, lastWeekEnd.month, lastWeekEnd.day, 23, 59, 59),
-      useUpdatedAt: true,
-    );
-  }
-
-  /// Get last month's completed orders
-  Future<List<OrderCollection>> getLastMonthCompletedOrders() async {
-    final today = DateTime.now();
-    final lastMonth = DateTime(today.year, today.month - 1, 1);
-    final lastMonthEnd = DateTime(today.year, today.month, 0, 23, 59, 59);
-
-    return _getCompletedOrdersWithFilters(
-      fromDate: lastMonth,
-      toDate: lastMonthEnd,
-      useUpdatedAt: true,
-    );
-  }
-
   @override
   Future<DashboardChartData> fetchCharts({
     required DateTime from,
     required DateTime to,
   }) async {
+    final diffInDays = to.difference(from).inDays;
+
+    final adjustedFromDate = diffInDays < 7 ? from.subtract(Duration(days: 6 - diffInDays)) : from;
+
     // Get completed orders in the date range
-    final orders = await getCompletedOrders(fromDate: from, toDate: to, useUpdatedAt: true);
+    final orders1 = await getCompletedOrders(fromDate: adjustedFromDate, toDate: to, useUpdatedAt: true);
 
     // Generate revenue by day data
-    final revenueByDay = await _generateRevenueByDay(orders, from, to);
+    final revenueByDay = await _generateRevenueByDay(orders1, adjustedFromDate, to);
+
+    final orders = await getCompletedOrders(fromDate: from, toDate: to, useUpdatedAt: true);
 
     // Generate top selling products data
     final topSellingProducts = await _generateTopSellingProducts(orders);
 
     // Generate revenue by category data (mock for now since we don't have product categories)
     final revenueByCategory = await _generateRevenueByCategory(orders);
+
+    print('Revenue by revenueByDay: $revenueByDay');
 
     return DashboardChartData(
       revenueByDay: revenueByDay,
@@ -126,53 +82,35 @@ class DashboardChartsRepositoryImpl extends DashboardChartsRepository {
     );
   }
 
-  /// Generate revenue by day chart data from completed orders (last 7 days only)
   Future<List<RevenueByDay>> _generateRevenueByDay(
     List<OrderCollection> orders,
     DateTime from,
     DateTime to,
   ) async {
-    final Map<String, double> dailyRevenue = {};
+    // Create a map to hold revenue by date
+    final Map<DateTime, double> revenueMap = {};
 
-    // Calculate the last 7 days from the 'to' date
-    final last7DaysStart = to.subtract(Duration(days: 6)); // 6 days back + today = 7 days
-    final last7DaysEnd = to;
-
-    // Initialize last 7 days with 0 revenue
-    for (DateTime date = last7DaysStart;
-        date.isBefore(last7DaysEnd.add(Duration(days: 1)));
-        date = date.add(Duration(days: 1))) {
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      dailyRevenue[dateKey] = 0.0;
+    // Initialize the map with all dates in the range set to 0 revenue
+    for (var date = from; date.isBefore(to) || date.isAtSameMomentAs(to); date = date.add(const Duration(days: 1))) {
+      final dateOnly = DateTime(date.year, date.month, date.day);
+      revenueMap[dateOnly] = 0.0;
     }
 
-    // Calculate actual revenue for each day (only for last 7 days)
+    // Aggregate revenue from orders
     for (final order in orders) {
-      final orderDate = order.updatedAt ?? order.createdAt;
-
-      // Only include orders from the last 7 days
-      if (orderDate.isAfter(last7DaysStart.subtract(Duration(days: 1))) &&
-          orderDate.isBefore(last7DaysEnd.add(Duration(days: 1)))) {
-        final dateKey =
-            '${orderDate.year}-${orderDate.month.toString().padLeft(2, '0')}-${orderDate.day.toString().padLeft(2, '0')}';
-
-        if (dailyRevenue.containsKey(dateKey)) {
-          dailyRevenue[dateKey] = (dailyRevenue[dateKey] ?? 0) + (order.totalPrice ?? 0);
-        }
+      final orderDate = DateTime(order.updatedAt!.year, order.updatedAt!.month, order.updatedAt!.day);
+      if (revenueMap.containsKey(orderDate)) {
+        revenueMap[orderDate] = (revenueMap[orderDate] ?? 0) + order.totalPrice;
       }
     }
 
-    // Convert to RevenueByDay objects
-    return dailyRevenue.entries.map((entry) {
-      final dateParts = entry.key.split('-');
-      final date = DateTime(
-        int.parse(dateParts[0]),
-        int.parse(dateParts[1]),
-        int.parse(dateParts[2]),
-      );
-      return RevenueByDay(date: date, revenue: entry.value);
-    }).toList()
+    // Convert the map to a sorted list of RevenueByDay
+    final revenueByDayList = revenueMap.entries
+        .map((entry) => RevenueByDay(date: entry.key, revenue: entry.value))
+        .toList()
       ..sort((a, b) => a.date.compareTo(b.date));
+
+    return revenueByDayList;
   }
 
   /// Generate top selling products data from order items

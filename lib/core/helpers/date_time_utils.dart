@@ -104,6 +104,11 @@ extension DateTimeUtils on DateTime? {
     return DateTime(dateTime.year, dateTime.month, dateTime.day);
   }
 
+  //get end of day
+  static DateTime getEndOfDay(DateTime dateTime) {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day, 23, 59, 59);
+  }
+
   //compare two dates
   static int compareByDate(DateTime dateTime, DateTime other) {
     if (dateTime.year < other.year) {

@@ -565,5 +565,13 @@ ThemeData dTheme(BuildContext context, AppThemeData theme) {
         },
       ),
     ),
+    popupMenuTheme: baseTheme.popupMenuTheme.copyWith(
+      color: theme.colorBackgroundSurface,
+      textStyle: theme.textRegular14Default.copyWith(color: theme.colorTextDefault),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: theme.colorBorderSubtle, width: 1),
+      ),
+    ),
   );
 }

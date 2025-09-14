@@ -13,4 +13,11 @@ class DifferenceEntity {
     required this.difference,
     required this.percentage,
   });
+
+  factory DifferenceEntity.empty() {
+    return DifferenceEntity(
+      difference: Difference.none,
+      percentage: 0.0,
+    );
+  }
 }

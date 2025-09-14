@@ -13,7 +13,10 @@ DashboardRepository dashboardRepository(ref) => DashboardRepositoryImpl();
 /// Định nghĩa interface cho Dashboard Repository
 abstract class DashboardRepository {
   /// Lấy dữ liệu tổng quan dashboard (KPI cards)
-  Future<DashboardOverview> fetchTodayOverview();
+  Future<DashboardOverview> fetchTodayOverview({
+    required DateTime from,
+    required DateTime to,
+  });
 }
 
 @riverpod

@@ -6,9 +6,13 @@ import '../../../domain/entities/report/dashboard_overview.dart';
 import '../../../domain/repositories/report/dashboard_repository.dart';
 
 /// Provider load dữ liệu KPI cards (DashboardOverview)
-final dashboardOverviewProvider = FutureProvider.autoDispose<DashboardOverview>((ref) async {
+final dashboardOverviewProvider =
+    FutureProvider.autoDispose.family<DashboardOverview, DateTimeRange>((ref, range) async {
   final repo = ref.read(dashboardRepositoryProvider);
-  return repo.fetchTodayOverview();
+  return repo.fetchTodayOverview(
+    from: range.start,
+    to: range.end,
+  );
 });
 
 /// Provider load dữ liệu biểu đồ (DashboardChartData)

@@ -7,7 +7,7 @@ import '../../unit/provider/unit_filter_provider.dart';
 
 enum ProductSortType { none, nameAsc, nameDesc, quantityAsc, quantityDesc }
 
-enum TimeFilterType { none, today, last7Days, last1Month, last3Months, custom }
+enum TimeFilterType { none, yesterday, today, last7Days, last1Month, last3Months, custom }
 
 extension ProductSortTypeExtension on ProductSortType {
   String get displayName {
@@ -42,8 +42,18 @@ extension ProductSortTypeExtension on ProductSortType {
 }
 
 extension TimeFilterTypeExtension on TimeFilterType {
+  static List<TimeFilterType> get predefinedTypes => [
+        TimeFilterType.yesterday,
+        TimeFilterType.today,
+        TimeFilterType.last7Days,
+        TimeFilterType.last1Month,
+        TimeFilterType.last3Months,
+      ];
+
   String get displayName {
     switch (this) {
+      case TimeFilterType.yesterday:
+        return 'Hôm qua';
       case TimeFilterType.today:
         return 'Hôm nay';
       case TimeFilterType.last7Days:
@@ -61,6 +71,8 @@ extension TimeFilterTypeExtension on TimeFilterType {
 
   IconData get icon {
     switch (this) {
+      case TimeFilterType.yesterday:
+        return Icons.history;
       case TimeFilterType.today:
         return Icons.today;
       case TimeFilterType.last7Days:
@@ -79,10 +91,13 @@ extension TimeFilterTypeExtension on TimeFilterType {
   DateTime? get startDate {
     final now = DateTime.now();
     switch (this) {
+      case TimeFilterType.yesterday:
+        final yesterday = now.subtract(const Duration(days: 1));
+        return DateTime(yesterday.year, yesterday.month, yesterday.day);
       case TimeFilterType.today:
         return DateTime(now.year, now.month, now.day);
       case TimeFilterType.last7Days:
-        return now.subtract(const Duration(days: 7));
+        return DateUtils.dateOnly(now).subtract(const Duration(days: 7));
       case TimeFilterType.last1Month:
         return DateTime(now.year, now.month - 1, now.day);
       case TimeFilterType.last3Months:
@@ -94,11 +109,21 @@ extension TimeFilterTypeExtension on TimeFilterType {
   }
 
   DateTime? get endDate {
-    final now = DateTime.now();
-    if (this == TimeFilterType.none || this == TimeFilterType.custom) {
-      return null;
+    switch (this) {
+      case TimeFilterType.yesterday:
+        final yesterday = DateTime.now().subtract(const Duration(days: 1));
+        return DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+      case TimeFilterType.today:
+      case TimeFilterType.last7Days:
+      case TimeFilterType.last1Month:
+      case TimeFilterType.last3Months:
+        final today = DateTime.now();
+        return DateTime(today.year, today.month, today.day, 23, 59, 59);
+
+      case TimeFilterType.custom:
+      case TimeFilterType.none:
+        return null;
     }
-    return DateTime(now.year, now.month, now.day, 23, 59, 59);
   }
 }
 

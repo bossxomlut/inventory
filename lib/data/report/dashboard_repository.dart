@@ -51,32 +51,6 @@ class DashboardRepositoryImpl extends DashboardRepository {
     );
   }
 
-  /// Get today's completed orders
-  Future<List<OrderCollection>> getTodayCompletedOrders() async {
-    final today = DateTime.now();
-    final lower = DateTime(today.year, today.month, today.day);
-    final upper = DateTime(today.year, today.month, today.day, 23, 59, 59);
-
-    return _getCompletedOrdersWithFilters(
-      fromDate: lower,
-      toDate: upper,
-      useUpdatedAt: true,
-    );
-  }
-
-  /// Get this month's completed orders
-  Future<List<OrderCollection>> getMonthCompletedOrders() async {
-    final today = DateTime.now();
-    final monthLower = DateTime(today.year, today.month, 1);
-    final monthUpper = DateTime(today.year, today.month + 1, 0, 23, 59, 59);
-
-    return _getCompletedOrdersWithFilters(
-      fromDate: monthLower,
-      toDate: monthUpper,
-      useUpdatedAt: true,
-    );
-  }
-
   /// Get last week's completed orders
   Future<List<OrderCollection>> getLastWeekCompletedOrders() async {
     final today = DateTime.now();
@@ -99,19 +73,6 @@ class DashboardRepositoryImpl extends DashboardRepository {
     return _getCompletedOrdersWithFilters(
       fromDate: lastMonth,
       toDate: lastMonthEnd,
-      useUpdatedAt: true,
-    );
-  }
-
-  /// Get yesterday's completed orders
-  Future<List<OrderCollection>> getYesterdayCompletedOrders() async {
-    final yesterday = DateTime.now().subtract(Duration(days: 1));
-    final lower = DateTime(yesterday.year, yesterday.month, yesterday.day);
-    final upper = DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
-
-    return _getCompletedOrdersWithFilters(
-      fromDate: lower,
-      toDate: upper,
       useUpdatedAt: true,
     );
   }
@@ -167,19 +128,28 @@ class DashboardRepositoryImpl extends DashboardRepository {
   }
 
   @override
-  Future<DashboardOverview> fetchTodayOverview() async {
+  Future<DashboardOverview> fetchTodayOverview({
+    required DateTime from,
+    required DateTime to,
+  }) async {
     // Get current period data
-    final todayCompletedOrders = await getTodayCompletedOrders();
-    final monthCompletedOrders = await getMonthCompletedOrders();
+    final orders = await _getCompletedOrdersWithFilters(fromDate: from, toDate: to);
+
+    int totalDifferenceBetweenDays = to.difference(from).inDays;
+    DateTime compareDateFrom = from.subtract(Duration(days: totalDifferenceBetweenDays + 1));
+    DateTime compareDateTo = to.subtract(Duration(days: totalDifferenceBetweenDays + 1));
+
+    print('Comparing from $compareDateFrom to $compareDateTo');
 
     // Get previous period data for comparison
-    final yesterdayCompletedOrders = await getYesterdayCompletedOrders();
+    final yesterdayCompletedOrders =
+        await _getCompletedOrdersWithFilters(fromDate: compareDateFrom, toDate: compareDateTo);
 
     // Calculate current period metrics
-    final todayRevenueValue = calculateTotalRevenue(todayCompletedOrders);
-    final totalProductQuantitySold = calculateTotalQuantitySold(monthCompletedOrders);
-    final totalOrdersValue = todayCompletedOrders.length;
-    final totalProductsSoldValue = calculateTotalProductsSold(todayCompletedOrders);
+    final todayRevenueValue = calculateTotalRevenue(orders);
+    final totalProductQuantitySold = calculateTotalQuantitySold(orders);
+    final totalOrdersValue = orders.length;
+    final totalProductsSoldValue = calculateTotalProductsSold(orders);
 
     // Calculate previous period metrics for comparison
     final yesterdayRevenueValue = calculateTotalRevenue(yesterdayCompletedOrders);

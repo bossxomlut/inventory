@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/ads/ad_banner_widget.dart';
+import '../../core/helpers/scaffold_utils.dart';
 import '../../domain/index.dart';
 import '../../provider/theme.dart';
 import '../../routes/app_router.dart';
@@ -23,6 +25,7 @@ class HomePage2 extends ConsumerWidget {
 
           return Scaffold(
             backgroundColor: Colors.white,
+            bottomNavigationBar: const SafeArea(child: AdBannerSmallWidget()),
             body: SafeArea(
               child: CustomScrollView(
                 slivers: [
@@ -71,7 +74,7 @@ class HomePage2 extends ConsumerWidget {
                                     ),
                                   ],
                                 ),
-                                child: Icon(
+                                child: const Icon(
                                   Icons.person,
                                   size: 28,
                                   color: Colors.white,
@@ -247,13 +250,13 @@ class HomePage2 extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Vui lòng đăng nhập để sử dụng ứng dụng.'),
-                    SizedBox(height: 16),
+                    const Text('Vui lòng đăng nhập để sử dụng ứng dụng.'),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         appRouter.goToLogin();
                       },
-                      child: Text('Đăng nhập'),
+                      child: const Text('Đăng nhập'),
                     ),
                   ],
                 ),

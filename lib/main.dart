@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sample_app/core/ads/admob_service.dart';
 import 'package:sample_app/provider/index.dart';
 import 'package:toastification/toastification.dart';
 
@@ -25,6 +26,7 @@ void main() async {
   await Future.wait(<Future<void>>[
     EasyLocalization.ensureInitialized(),
     simpleStorage.init(),
+    AdMobService().initialize(), // Khởi tạo AdMob
     // SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     //   DeviceOrientation.portraitUp,
     //   DeviceOrientation.portraitDown,

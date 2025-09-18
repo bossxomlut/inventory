@@ -52,6 +52,7 @@ dependencies:
   gap: ^3.0.1 # Provides spacing between widgets in Flutter layouts.
   google_fonts: ^6.2.1
   google_nav_bar: ^5.0.7
+  google_mobile_ads: ^5.1.0 # Google AdMob integration for Flutter
   extension_google_sign_in_as_googleapis_auth: ^2.0.12
   googleapis: ^13.2.0
 

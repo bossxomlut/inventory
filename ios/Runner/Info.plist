@@ -47,5 +47,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>We need camera to scan barcode, qrcode, etc.</string>
+	<!-- AdMob App ID cho iOS - Thay thế bằng App ID thực của bạn -->
+	<key>GADApplicationIdentifier</key>
+	<string>YOUR_ADMOB_APP_ID</string>
 </dict>
 </plist>

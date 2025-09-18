@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../core/ads/admob_service.dart';
 import '../../core/persistence/isar_storage.dart';
 import '../../domain/repositories/auth/auth_repository.dart';
 import '../../provider/index.dart';
@@ -58,6 +59,7 @@ class SplashPage extends HookConsumerWidget {
 
   Future<void> _initializeApp(WidgetRef ref) async {
     try {
+      AdMobService().setTestDeviceIds();
       // Initialize database and storage in parallel
       await Future.wait([
         IsarDatabase().initialize(),

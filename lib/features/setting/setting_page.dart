@@ -4,12 +4,14 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/ads/ad_banner_widget.dart';
+import '../../domain/entities/permission/permission.dart';
 import '../../domain/entities/user/user.dart';
 import '../../provider/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 import '../onboarding/onboarding_service.dart';
+import '../user/provider/user_permission_controller.dart';
 import 'app_review_utils.dart';
 
 @RoutePage()
@@ -21,14 +23,31 @@ class SettingPage extends WidgetByDeviceTemplate {
     final theme = context.appTheme;
     final authState = ref.watch(authControllerProvider);
 
-    // Get current user role
-    final UserRole? currentUserRole = authState.maybeWhen(
-      authenticated: (user, lastLoginTime) => user.role,
+    Set<PermissionKey> grantedPermissions = {};
+    final user = authState.maybeWhen(
+      authenticated: (user, lastLoginTime) => user,
       orElse: () => null,
     );
 
-    // Check if current user can access data management features
-    final bool canAccessDataManagement = currentUserRole == UserRole.admin || currentUserRole == UserRole.guest;
+    if (user != null) {
+      if (user.role == UserRole.admin || user.role == UserRole.guest) {
+        grantedPermissions =
+            PermissionCatalog.defaultPermissionsForUserRole(user.role);
+      } else {
+        final permissionValue =
+            ref.watch(userPermissionControllerProvider(user.id));
+        if (permissionValue.hasValue) {
+          grantedPermissions = permissionValue.value!;
+        }
+      }
+    }
+
+    final bool canAccessDataManagement = grantedPermissions.intersection({
+      PermissionKey.dataCreateSample,
+      PermissionKey.dataImport,
+      PermissionKey.dataExport,
+      PermissionKey.dataDelete,
+    }).isNotEmpty;
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -40,7 +59,8 @@ class SettingPage extends WidgetByDeviceTemplate {
           // Only show "Quản lý dữ liệu" section for admin and guest users
           if (canAccessDataManagement) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Text(
                 'Quản lý dữ liệu',
                 style: theme.headingSemibold20Default.copyWith(
@@ -89,7 +109,8 @@ class SettingPage extends WidgetByDeviceTemplate {
             ),
           ],
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Text(
               'Về ứng dụng',
               style: theme.headingSemibold20Default.copyWith(
@@ -109,7 +130,8 @@ class SettingPage extends WidgetByDeviceTemplate {
                 ),
                 const _Divider(),
                 Builder(builder: (context) {
-                  final inAppReviewUtil = InAppReviewUtil(ref.read(simpleStorageProvider));
+                  final inAppReviewUtil =
+                      InAppReviewUtil(ref.read(simpleStorageProvider));
                   return FutureBuilder<bool>(
                     initialData: false,
                     future: inAppReviewUtil.isAvailable(),
@@ -142,7 +164,8 @@ class SettingPage extends WidgetByDeviceTemplate {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: LText(
               LKey.settingAccount,
               style: theme.headingSemibold20Default.copyWith(
@@ -166,7 +189,8 @@ class SettingPage extends WidgetByDeviceTemplate {
                 ),
                 const _Divider(),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 10),
                   child: Material(
                     color: Colors.grey.shade300,
                     shape: RoundedRectangleBorder(
@@ -226,7 +250,8 @@ class SettingPage extends WidgetByDeviceTemplate {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Đã reset thành công. Khởi động lại ứng dụng để xem lại hướng dẫn.'),
+            content: Text(
+                'Đã reset thành công. Khởi động lại ứng dụng để xem lại hướng dẫn.'),
             backgroundColor: Colors.green,
           ),
         );

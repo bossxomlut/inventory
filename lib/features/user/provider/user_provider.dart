@@ -35,7 +35,6 @@ class LoadUser extends _$LoadUser with LoadListController<User> {
       },
     ).then(
       (List<User> value) {
-        print('value: $value, search: ${query.search}');
         //search
         if (query.search != null && query.search!.isNotEmpty) {
           final list = value.where((user) {

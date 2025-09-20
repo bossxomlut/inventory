@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../domain/entities/permission/permission.dart';
 import '../domain/index.dart';
-import '../features/authentication/provider/auth_provider.dart';
-import '../provider/index.dart';
 import '../shared_widgets/index.dart';
-import '../shared_widgets/toast.dart';
 import 'app_router.gr.dart';
+import 'guards.dart';
 
 export 'package:sample_app/routes/app_router.gr.dart';
 
@@ -32,49 +31,150 @@ class AppRouter extends $AppRouter {
         AutoRoute(page: PinCodeRoute.page),
 
         //setting routes
-        AutoRoute(page: SettingRoute.page),
+        AutoRoute(
+          page: SettingRoute.page,
+          guards: [
+            // AdminGuard(),
+          ],
+        ),
 
         //home routes
-        AutoRoute(page: HomeRoute.page),
-        AutoRoute(page: HomeRoute.page),
+        AutoRoute(
+          page: HomeRoute.page,
+          guards: [
+            AuthGuard(),
+          ],
+        ),
         AutoRoute(page: HomeRoute2.page),
 
         //product routes
-        AutoRoute(page: ProductListRoute.page),
-        AutoRoute(page: ProductDetailRoute.page),
-        AutoRoute(page: CategoryRoute.page),
-        AutoRoute(page: UnitRoute.page),
+        AutoRoute(
+          page: ProductListRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.productView),
+          ],
+        ),
+        AutoRoute(
+          page: ProductDetailRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.productView),
+          ],
+        ),
+        AutoRoute(
+          page: CategoryRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.categoryManage),
+          ],
+        ),
+        AutoRoute(
+          page: UnitRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.unitManage),
+          ],
+        ),
 
         //Check routes
-        AutoRoute(page: CheckSessionsRoute.page),
-        AutoRoute(page: CheckRoute.page),
+        AutoRoute(
+          page: CheckSessionsRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.inventoryView),
+          ],
+        ),
+        AutoRoute(
+          page: CheckRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.inventoryManage),
+          ],
+        ),
 
         //Price and Order routes
-        AutoRoute(page: ConfigProductPriceRoute.page),
-        AutoRoute(page: CreateOrderRoute.page),
-        AutoRoute(page: OrderDetailRoute.page),
-        AutoRoute(page: OrderStatusListRoute.page),
+        AutoRoute(
+          page: ConfigProductPriceRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.priceConfigure),
+          ],
+        ),
+        AutoRoute(
+          page: CreateOrderRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.orderCreate),
+          ],
+        ),
+        AutoRoute(
+          page: OrderDetailRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.orderView),
+          ],
+        ),
+        AutoRoute(
+          page: OrderStatusListRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.orderView),
+          ],
+        ),
 
         //data management routes
-        AutoRoute(page: CreateSampleDataRoute.page),
-        AutoRoute(page: ExportDataRoute.page),
-        AutoRoute(page: DeleteDataRoute.page),
-        AutoRoute(page: ImportDataRoute.page),
+        AutoRoute(
+          page: CreateSampleDataRoute.page,
+          guards: [
+            PermissionGuard(PermissionKey.dataCreateSample),
+          ],
+        ),
+        AutoRoute(
+          page: ExportDataRoute.page,
+          guards: [
+            PermissionGuard(PermissionKey.dataExport),
+          ],
+        ),
+        AutoRoute(
+          page: DeleteDataRoute.page,
+          guards: [
+            PermissionGuard(PermissionKey.dataDelete),
+          ],
+        ),
+        AutoRoute(
+          page: ImportDataRoute.page,
+          guards: [
+            PermissionGuard(PermissionKey.dataImport),
+          ],
+        ),
 
         //config admin route
         AutoRoute(
           page: UserRoute.page,
           guards: [
-            AdminGuard(),
+            PermissionGuard(PermissionKey.userManage),
+          ],
+        ),
+        AutoRoute(
+          page: UserPermissionRoute.page,
+          guards: [
+            PermissionGuard(PermissionKey.permissionManage),
           ],
         ),
 
         //report route
-        AutoRoute(page: ReportRoute.page),
+        AutoRoute(
+          page: ReportRoute.page,
+          guards: [
+            PermissionGuard(PermissionKey.reportView),
+          ],
+        ),
       ];
 
   @override
-  Future<T?> push<T extends Object?>(PageRouteInfo route, {OnNavigationFailure? onFailure}) {
+  Future<T?> push<T extends Object?>(PageRouteInfo route,
+      {OnNavigationFailure? onFailure}) {
     navigatorKey.currentContext?.hideKeyboard();
     return super.push(route, onFailure: onFailure);
   }
@@ -187,6 +287,10 @@ extension AdminRouterX on AppRouter {
   void goToUserManagement() {
     push(const UserRoute());
   }
+
+  void goToUserPermission(User user) {
+    push(UserPermissionRoute(user: user));
+  }
 }
 
 extension SettingRouterX on AppRouter {
@@ -210,42 +314,6 @@ extension DataManagementRouterX on AppRouter {
 
   void goToDeleteData() {
     push(DeleteDataRoute());
-  }
-}
-
-class AdminGuard extends AutoRouteGuard {
-  @override
-  void onNavigation(NavigationResolver resolver, StackRouter router) {
-    // Access the BuildContext from the resolver
-    final context = router.navigatorKey.currentContext;
-
-    if (context != null) {
-      // Read the provider using the context
-      //get user by ref
-      final user = context.read(authControllerProvider);
-      user.when(
-        authenticated: (User user, DateTime? lastLoginTime) {
-          if (user.role == UserRole.admin || user.role == UserRole.guest) {
-            resolver.next();
-          } else {
-            showError(message: 'Bạn không có quyền truy cập vào trang này');
-            resolver.next(false);
-          }
-        },
-        unauthenticated: () {
-          router.push(LoginRoute());
-          resolver.next(false);
-        },
-        initial: () {
-          router.push(LoginRoute());
-          resolver.next(false);
-        },
-      );
-    } else {
-      // Handle case where context is null (e.g., redirect to error or login)
-      router.push(LoginRoute());
-      resolver.next(false);
-    }
   }
 }
 

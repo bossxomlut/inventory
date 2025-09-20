@@ -9,6 +9,7 @@ import '../../data/order/order.dart';
 import '../../data/order/product_price.dart';
 import '../../data/product/inventory.dart';
 import '../../data/user/user.dart';
+import '../../data/user/user_permission.dart';
 import '../../domain/index.dart';
 import 'index.dart';
 
@@ -21,7 +22,8 @@ class IsarDatabase {
 
         final SecurityStorage securityStorage = SecurityStorage();
 
-        final authState = await securityStorage.getObject('auth_state', AuthState.fromJson);
+        final authState =
+            await securityStorage.getObject('auth_state', AuthState.fromJson);
 
         authState?.whenOrNull(
           authenticated: (User user, DateTime? lastLoginTime) {
@@ -49,6 +51,7 @@ class IsarDatabase {
             ProductPriceCollectionSchema,
             OrderItemCollectionSchema,
             OrderCollectionSchema,
+            UserPermissionCollectionSchema,
           ],
           directory: directory,
         );

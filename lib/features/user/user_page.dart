@@ -4,8 +4,9 @@ import 'package:auto_route/auto_route.dart';
 
 import '../../domain/entities/user/user.dart';
 import '../../provider/theme.dart';
+import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
-import '../user_management/provider/user_management_provider.dart';
+import 'provider/user_management_provider.dart';
 
 @RoutePage()
 class UserPage extends ConsumerWidget {
@@ -29,8 +30,9 @@ class UserPage extends ConsumerWidget {
       ),
       body: users.when(
         data: (userList) {
-          final regularUsers = userList.where((user) => user.role == UserRole.user).toList();
-          
+          final regularUsers =
+              userList.where((user) => user.role == UserRole.user).toList();
+
           return Column(
             children: [
               // Header thống kê
@@ -40,7 +42,8 @@ class UserPage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: theme.colorPrimary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.colorPrimary.withOpacity(0.2)),
+                  border:
+                      Border.all(color: theme.colorPrimary.withOpacity(0.2)),
                 ),
                 child: Row(
                   children: [
@@ -77,7 +80,8 @@ class UserPage extends ConsumerWidget {
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: regularUsers.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 12),
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final user = regularUsers[index];
                           return UserCard(user: user);
@@ -127,7 +131,7 @@ class UserEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -222,7 +226,9 @@ class UserCard extends ConsumerWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: user.isActive ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3),
+          color: user.isActive
+              ? Colors.green.withOpacity(0.3)
+              : Colors.red.withOpacity(0.3),
           width: 1.5,
         ),
         boxShadow: [
@@ -246,7 +252,9 @@ class UserCard extends ConsumerWidget {
                     radius: 28,
                     backgroundColor: user.isActive ? Colors.green : Colors.grey,
                     child: Text(
-                      user.username.isNotEmpty ? user.username[0].toUpperCase() : 'U',
+                      user.username.isNotEmpty
+                          ? user.username[0].toUpperCase()
+                          : 'U',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -291,9 +299,12 @@ class UserCard extends ConsumerWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: user.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                            color: user.isActive
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -377,34 +388,58 @@ class UserCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: managementState.isLoading ? null : () {
-                    _showToggleConfirmDialog(context, ref, user, !user.isActive);
-                  },
-                  icon: managementState.isLoading 
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Icon(
-                        user.isActive ? Icons.block : Icons.check_circle,
-                        size: 18,
-                      ),
+                  onPressed: managementState.isLoading
+                      ? null
+                      : () {
+                          _showToggleConfirmDialog(
+                              context, ref, user, !user.isActive);
+                        },
+                  icon: managementState.isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Icon(
+                          user.isActive ? Icons.block : Icons.check_circle,
+                          size: 18,
+                        ),
                   label: Text(
                     user.isActive ? 'Khóa tài khoản' : 'Kích hoạt tài khoản',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: user.isActive ? Colors.red.shade50 : Colors.green.shade50,
+                    backgroundColor: user.isActive
+                        ? Colors.red.shade50
+                        : Colors.green.shade50,
                     foregroundColor: user.isActive ? Colors.red : Colors.green,
                     elevation: 0,
                     side: BorderSide(
-                      color: user.isActive ? Colors.red.withOpacity(0.3) : Colors.green.withOpacity(0.3),
+                      color: user.isActive
+                          ? Colors.red.withOpacity(0.3)
+                          : Colors.green.withOpacity(0.3),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
+              if (user.role == UserRole.user) ...[
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: user.isActive
+                        ? () {
+                            appRouter.goToUserPermission(user);
+                          }
+                        : null,
+                    icon: const Icon(Icons.shield_outlined),
+                    label: const Text('Phân quyền'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -412,7 +447,8 @@ class UserCard extends ConsumerWidget {
     );
   }
 
-  void _showToggleConfirmDialog(BuildContext context, WidgetRef ref, User user, bool newValue) {
+  void _showToggleConfirmDialog(
+      BuildContext context, WidgetRef ref, User user, bool newValue) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -444,7 +480,9 @@ class UserCard extends ConsumerWidget {
                     radius: 20,
                     backgroundColor: user.isActive ? Colors.green : Colors.grey,
                     child: Text(
-                      user.username.isNotEmpty ? user.username[0].toUpperCase() : 'U',
+                      user.username.isNotEmpty
+                          ? user.username[0].toUpperCase()
+                          : 'U',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -476,11 +514,11 @@ class UserCard extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              newValue 
-                ? 'Bạn có chắc muốn kích hoạt quyền truy cập cho người dùng này? '
-                  'Sau khi kích hoạt, người dùng sẽ có thể đăng nhập vào ứng dụng.'
-                : 'Bạn có chắc muốn khóa quyền truy cập cho người dùng này? '
-                  'Người dùng sẽ không thể đăng nhập vào ứng dụng cho đến khi được kích hoạt lại.',
+              newValue
+                  ? 'Bạn có chắc muốn kích hoạt quyền truy cập cho người dùng này? '
+                      'Sau khi kích hoạt, người dùng sẽ có thể đăng nhập vào ứng dụng.'
+                  : 'Bạn có chắc muốn khóa quyền truy cập cho người dùng này? '
+                      'Người dùng sẽ không thể đăng nhập vào ứng dụng cho đến khi được kích hoạt lại.',
               style: const TextStyle(fontSize: 14),
             ),
           ],
@@ -493,7 +531,9 @@ class UserCard extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ref.read(userManagementProvider.notifier).toggleUserAccess(user.id, newValue);
+              ref
+                  .read(userManagementProvider.notifier)
+                  .toggleUserAccess(user.id, newValue);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: newValue ? Colors.green : Colors.red,

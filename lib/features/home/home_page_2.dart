@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/ads/ad_banner_widget.dart';
 import '../../core/helpers/scaffold_utils.dart';
+import '../../domain/entities/permission/permission.dart';
 import '../../domain/index.dart';
 import '../../provider/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
+import '../user/provider/user_permission_controller.dart';
 import 'menu_manager.dart';
 
 @RoutePage()
@@ -20,8 +22,80 @@ class HomePage2 extends ConsumerWidget {
     final theme = context.appTheme;
     return user.when(
         authenticated: (User user, DateTime? lastLoginTime) {
-          // Sử dụng MenuManager để lấy menu theo role
-          List<MenuGroup> menuGroups = MenuManager.getMenuGroupsForRole(user.role);
+          final isPrivilegedUser =
+              user.role == UserRole.admin || user.role == UserRole.guest;
+          Set<PermissionKey> grantedPermissions;
+
+          if (isPrivilegedUser) {
+            grantedPermissions =
+                PermissionCatalog.defaultPermissionsForUserRole(user.role);
+          } else {
+            final permissions =
+                ref.watch(userPermissionControllerProvider(user.id));
+            if (permissions.isLoading) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (permissions.hasError) {
+              return Scaffold(
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.warning_amber,
+                            size: 40, color: Colors.redAccent),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Không thể tải quyền truy cập',
+                          style: Theme.of(context).textTheme.titleMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text('${permissions.error}',
+                            textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => ref.refresh(
+                              userPermissionControllerProvider(user.id)),
+                          child: const Text('Thử lại'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+            grantedPermissions = permissions.value ?? {};
+          }
+
+          final menuGroups = MenuManager.getMenuGroups(
+              user: user, permissions: grantedPermissions);
+
+          if (menuGroups.isEmpty) {
+            return Scaffold(
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.lock_outline,
+                          size: 48, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Tài khoản của bạn chưa được cấp quyền truy cập tính năng nào. Vui lòng liên hệ quản trị viên.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
 
           return Scaffold(
             backgroundColor: Colors.white,
@@ -30,7 +104,8 @@ class HomePage2 extends ConsumerWidget {
               child: CustomScrollView(
                 slivers: [
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
                         // Modern header with greeting
@@ -68,7 +143,8 @@ class HomePage2 extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: theme.colorPrimary.withOpacity(0.3),
+                                      color:
+                                          theme.colorPrimary.withOpacity(0.3),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -135,7 +211,8 @@ class HomePage2 extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.only(left: 4, bottom: 10),
+                              padding:
+                                  const EdgeInsets.only(left: 4, bottom: 10),
                               child: Text(
                                 group.title,
                                 style: theme.headingSemibold20Primary,
@@ -144,7 +221,8 @@ class HomePage2 extends ConsumerWidget {
                             GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 12,
                                 mainAxisSpacing: 12,
@@ -166,7 +244,8 @@ class HomePage2 extends ConsumerWidget {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: theme.colorPrimary.withOpacity(0.06),
+                                          color: theme.colorPrimary
+                                              .withOpacity(0.06),
                                           blurRadius: 16,
                                           offset: const Offset(0, 4),
                                           spreadRadius: 0,
@@ -182,7 +261,8 @@ class HomePage2 extends ConsumerWidget {
                                     child: Padding(
                                       padding: const EdgeInsets.all(16),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Container(
                                             width: 48,
@@ -190,15 +270,19 @@ class HomePage2 extends ConsumerWidget {
                                             decoration: BoxDecoration(
                                               gradient: LinearGradient(
                                                 colors: [
-                                                  theme.colorPrimary.withOpacity(0.1),
-                                                  theme.colorPrimary.withOpacity(0.05),
+                                                  theme.colorPrimary
+                                                      .withOpacity(0.1),
+                                                  theme.colorPrimary
+                                                      .withOpacity(0.05),
                                                 ],
                                                 begin: Alignment.topLeft,
                                                 end: Alignment.bottomRight,
                                               ),
-                                              borderRadius: BorderRadius.circular(14),
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
                                               border: Border.all(
-                                                color: theme.colorPrimary.withOpacity(0.1),
+                                                color: theme.colorPrimary
+                                                    .withOpacity(0.1),
                                                 width: 1,
                                               ),
                                             ),
@@ -213,7 +297,8 @@ class HomePage2 extends ConsumerWidget {
                                             child: FittedBox(
                                               child: Text(
                                                 item.title,
-                                                style: theme.textMedium16Default,
+                                                style:
+                                                    theme.textMedium16Default,
                                                 textAlign: TextAlign.center,
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
@@ -232,7 +317,8 @@ class HomePage2 extends ConsumerWidget {
                         ),
                       );
                     },
-                    separatorBuilder: (BuildContext context, int index) => const SizedBox(
+                    separatorBuilder: (BuildContext context, int index) =>
+                        const SizedBox(
                       height: 12,
                     ),
                     itemCount: menuGroups.length,

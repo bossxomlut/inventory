@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../../domain/entities/permission/permission.dart';
 import '../../domain/entities/user/user.dart';
 import '../../routes/app_router.dart';
-import '../../shared_widgets/toast.dart';
 
 // Model cho menu item
 class MenuItem {
   final String title;
   final IconData icon;
   final VoidCallback destinationCallback;
+  final Set<PermissionKey> requiredPermissions;
 
   MenuItem({
     required this.title,
     required this.icon,
     required this.destinationCallback,
+    this.requiredPermissions = const {},
   });
 }
 
@@ -26,18 +28,34 @@ class MenuGroup {
 
 /// Class quản lý menu cho từng UserRole
 class MenuManager {
-  static List<MenuGroup> getMenuGroupsForRole(UserRole role) {
-    switch (role) {
-      case UserRole.admin:
-      case UserRole.guest: // Guest có menu giống Admin
-        return _getAdminMenuGroups();
-      case UserRole.user:
-        return _getUserMenuGroups();
+  static List<MenuGroup> getMenuGroups({
+    required User user,
+    required Set<PermissionKey> permissions,
+  }) {
+    final effectivePermissions = <PermissionKey>{
+      if (user.role == UserRole.admin || user.role == UserRole.guest)
+        ...PermissionCatalog.defaultPermissionsForUserRole(user.role)
+      else
+        ...permissions,
+    };
+
+    final groups = <MenuGroup>[];
+
+    for (final baseGroup in _baseMenuGroups()) {
+      final filteredItems = baseGroup.items
+          .where((item) =>
+              item.requiredPermissions.every(effectivePermissions.contains))
+          .toList();
+
+      if (filteredItems.isNotEmpty) {
+        groups.add(MenuGroup(title: baseGroup.title, items: filteredItems));
+      }
     }
+
+    return groups;
   }
 
-  /// Menu dành cho Admin và Guest
-  static List<MenuGroup> _getAdminMenuGroups() {
+  static List<MenuGroup> _baseMenuGroups() {
     return [
       MenuGroup(
         title: 'Quản lý sản phẩm',
@@ -48,6 +66,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToProductList();
             },
+            requiredPermissions: {PermissionKey.productView},
           ),
           MenuItem(
             title: 'Kiểm kê',
@@ -55,6 +74,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToCheckSessions();
             },
+            requiredPermissions: {PermissionKey.inventoryView},
           ),
           MenuItem(
             title: 'Danh mục',
@@ -62,6 +82,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToCategory();
             },
+            requiredPermissions: {PermissionKey.categoryManage},
           ),
           MenuItem(
             title: 'Đơn vị/Quy cách',
@@ -69,6 +90,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToUnit();
             },
+            requiredPermissions: {PermissionKey.unitManage},
           ),
         ],
       ),
@@ -81,6 +103,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToConfigProductPrice();
             },
+            requiredPermissions: {PermissionKey.priceConfigure},
           ),
           MenuItem(
             title: 'Tạo đơn hàng',
@@ -88,6 +111,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToCreateOrder();
             },
+            requiredPermissions: {PermissionKey.orderCreate},
           ),
           MenuItem(
             title: 'Danh sách đơn hàng',
@@ -95,6 +119,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToOrderStatusList();
             },
+            requiredPermissions: {PermissionKey.orderView},
           ),
         ],
       ),
@@ -107,58 +132,52 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToUserManagement();
             },
+            requiredPermissions: {PermissionKey.userManage},
           ),
           MenuItem(
             title: 'Báo cáo thống kê',
             icon: Icons.analytics,
             destinationCallback: () {
               appRouter.goToReport();
-              // showInfoSnackBar(appRouter.context!, 'Chức năng báo cáo thống kê đang được phát triển');
             },
-          ),
-        ],
-      ),
-    ];
-  }
-
-  /// Menu dành cho User (giới hạn hơn)
-  static List<MenuGroup> _getUserMenuGroups() {
-    return [
-      MenuGroup(
-        title: 'Quản lý sản phẩm',
-        items: [
-          MenuItem(
-            title: 'Sản phẩm',
-            icon: Icons.inventory,
-            destinationCallback: () {
-              appRouter.goToProductList();
-            },
-          ),
-          MenuItem(
-            title: 'Kiểm kê',
-            icon: Icons.fact_check,
-            destinationCallback: () {
-              appRouter.goToCheckSessions();
-            },
+            requiredPermissions: {PermissionKey.reportView},
           ),
         ],
       ),
       MenuGroup(
-        title: 'Đơn hàng',
+        title: 'Quản lý dữ liệu',
         items: [
           MenuItem(
-            title: 'Tạo đơn hàng',
-            icon: Icons.add_shopping_cart,
+            title: 'Tạo dữ liệu mẫu',
+            icon: Icons.dataset,
             destinationCallback: () {
-              appRouter.goToCreateOrder();
+              appRouter.goToCreateSampleData();
             },
+            requiredPermissions: {PermissionKey.dataCreateSample},
           ),
           MenuItem(
-            title: 'Danh sách đơn hàng',
-            icon: Icons.assignment_turned_in,
+            title: 'Nhập dữ liệu',
+            icon: Icons.file_upload,
             destinationCallback: () {
-              appRouter.goToOrderStatusList();
+              appRouter.goToImportData();
             },
+            requiredPermissions: {PermissionKey.dataImport},
+          ),
+          MenuItem(
+            title: 'Xuất dữ liệu',
+            icon: Icons.file_download,
+            destinationCallback: () {
+              appRouter.goToExportData();
+            },
+            requiredPermissions: {PermissionKey.dataExport},
+          ),
+          MenuItem(
+            title: 'Xóa dữ liệu',
+            icon: Icons.delete_forever,
+            destinationCallback: () {
+              appRouter.goToDeleteData();
+            },
+            requiredPermissions: {PermissionKey.dataDelete},
           ),
         ],
       ),

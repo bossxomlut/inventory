@@ -19,11 +19,19 @@ class MenuItem {
   });
 }
 
+enum MenuGroupId {
+  productManagement,
+  priceAndOrder,
+  systemAdministration,
+  dataManagement,
+}
+
 // Group menu items by business category
 class MenuGroup {
+  final MenuGroupId id;
   final String title;
   final List<MenuItem> items;
-  MenuGroup({required this.title, required this.items});
+  MenuGroup({required this.id, required this.title, required this.items});
 }
 
 /// Class quản lý menu cho từng UserRole
@@ -31,6 +39,7 @@ class MenuManager {
   static List<MenuGroup> getMenuGroups({
     required User user,
     required Set<PermissionKey> permissions,
+    List<MenuGroupId>? preferredOrder,
   }) {
     final effectivePermissions = <PermissionKey>{
       if (user.role == UserRole.admin || user.role == UserRole.guest)
@@ -48,8 +57,29 @@ class MenuManager {
           .toList();
 
       if (filteredItems.isNotEmpty) {
-        groups.add(MenuGroup(title: baseGroup.title, items: filteredItems));
+        groups.add(MenuGroup(
+          id: baseGroup.id,
+          title: baseGroup.title,
+          items: filteredItems,
+        ));
       }
+    }
+
+    if (preferredOrder != null && preferredOrder.isNotEmpty) {
+      final fallbackPositions = <MenuGroupId, int>{
+        for (var i = 0; i < groups.length; i++) groups[i].id: i,
+      };
+      groups.sort((a, b) {
+        final indexA = preferredOrder.indexOf(a.id);
+        final indexB = preferredOrder.indexOf(b.id);
+        final valueA = indexA >= 0
+            ? indexA
+            : preferredOrder.length + (fallbackPositions[a.id] ?? 0);
+        final valueB = indexB >= 0
+            ? indexB
+            : preferredOrder.length + (fallbackPositions[b.id] ?? 0);
+        return valueA.compareTo(valueB);
+      });
     }
 
     return groups;
@@ -58,6 +88,7 @@ class MenuManager {
   static List<MenuGroup> _baseMenuGroups() {
     return [
       MenuGroup(
+        id: MenuGroupId.productManagement,
         title: 'Quản lý sản phẩm',
         items: [
           MenuItem(
@@ -95,6 +126,7 @@ class MenuManager {
         ],
       ),
       MenuGroup(
+        id: MenuGroupId.priceAndOrder,
         title: 'Giá & Đơn hàng',
         items: [
           MenuItem(
@@ -124,6 +156,7 @@ class MenuManager {
         ],
       ),
       MenuGroup(
+        id: MenuGroupId.systemAdministration,
         title: 'Quản trị hệ thống',
         items: [
           MenuItem(
@@ -145,6 +178,7 @@ class MenuManager {
         ],
       ),
       MenuGroup(
+        id: MenuGroupId.dataManagement,
         title: 'Quản lý dữ liệu',
         items: [
           MenuItem(
@@ -182,5 +216,18 @@ class MenuManager {
         ],
       ),
     ];
+  }
+
+  static String titleFor(MenuGroupId id) {
+    switch (id) {
+      case MenuGroupId.productManagement:
+        return 'Quản lý sản phẩm';
+      case MenuGroupId.priceAndOrder:
+        return 'Giá & Đơn hàng';
+      case MenuGroupId.systemAdministration:
+        return 'Quản trị hệ thống';
+      case MenuGroupId.dataManagement:
+        return 'Quản lý dữ liệu';
+    }
   }
 }

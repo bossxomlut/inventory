@@ -11,6 +11,7 @@ import '../../provider/permissions.dart';
 import '../../resources/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
+import 'provider/order_action_confirm_provider.dart';
 import 'provider/order_list_provider.dart';
 
 @RoutePage()
@@ -83,27 +84,97 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
     _visibleStatuses = List<OrderStatus>.from(visibleStatuses);
   }
 
+  Future<bool> _shouldConfirmAction(
+    BuildContext context,
+    OrderActionType type,
+    Order order,
+  ) async {
+    final settings = await ref.read(orderActionConfirmControllerProvider.future);
+    if (!settings.isEnabled(type)) {
+      return true;
+    }
+
+    final title = switch (type) {
+      OrderActionType.confirm => 'Xác nhận hành động',
+      OrderActionType.cancel => 'Huỷ đơn hàng',
+      OrderActionType.delete => 'Xoá đơn hàng',
+    };
+
+    final message = switch (type) {
+      OrderActionType.confirm =>
+          'Bạn có chắc chắn muốn hoàn thành đơn hàng #${order.id}?',
+      OrderActionType.cancel =>
+          'Bạn có chắc chắn muốn huỷ đơn hàng #${order.id}?',
+      OrderActionType.delete =>
+          'Bạn có chắc chắn muốn xoá đơn hàng #${order.id}?',
+    };
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Huỷ'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Đồng ý'),
+          ),
+        ],
+      ),
+    );
+
+    return result ?? false;
+  }
+
   VoidCallback? _buildRemoveCallback(
-      WidgetRef ref, OrderStatus status, Order order, bool canDelete) {
+      BuildContext context, WidgetRef ref, OrderStatus status, Order order, bool canDelete) {
     if (!canDelete) {
       return null;
     }
 
     switch (status) {
       case OrderStatus.draft:
-        return () {
+        return () async {
+          final confirmed = await _shouldConfirmAction(
+            context,
+            OrderActionType.delete,
+            order,
+          );
+          if (!confirmed) {
+            return;
+          }
           ref
               .read(orderListProvider(OrderStatus.draft).notifier)
               .removeOrder(order);
         };
       case OrderStatus.done:
-        return () {
+        return () async {
+          final confirmed = await _shouldConfirmAction(
+            context,
+            OrderActionType.delete,
+            order,
+          );
+          if (!confirmed) {
+            return;
+          }
           ref
               .read(orderListProvider(OrderStatus.done).notifier)
               .removeOrder(order);
         };
       case OrderStatus.cancelled:
-        return () {
+        return () async {
+          final confirmed = await _shouldConfirmAction(
+            context,
+            OrderActionType.delete,
+            order,
+          );
+          if (!confirmed) {
+            return;
+          }
           ref
               .read(orderListProvider(OrderStatus.cancelled).notifier)
               .removeOrder(order);
@@ -114,12 +185,20 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
   }
 
   VoidCallback? _buildCompleteCallback(
-      WidgetRef ref, OrderStatus status, Order order, bool canComplete) {
+      BuildContext context, WidgetRef ref, OrderStatus status, Order order, bool canComplete) {
     if (status != OrderStatus.confirmed || !canComplete) {
       return null;
     }
 
     return () async {
+      final confirmed = await _shouldConfirmAction(
+        context,
+        OrderActionType.confirm,
+        order,
+      );
+      if (!confirmed) {
+        return;
+      }
       await ref
           .read(orderListProvider(OrderStatus.confirmed).notifier)
           .confirmOrder(order);
@@ -128,12 +207,20 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
   }
 
   VoidCallback? _buildCancelCallback(
-      WidgetRef ref, OrderStatus status, Order order, bool canCancel) {
+      BuildContext context, WidgetRef ref, OrderStatus status, Order order, bool canCancel) {
     if (status != OrderStatus.confirmed || !canCancel) {
       return null;
     }
 
     return () async {
+      final confirmed = await _shouldConfirmAction(
+        context,
+        OrderActionType.cancel,
+        order,
+      );
+      if (!confirmed) {
+        return;
+      }
       await ref
           .read(orderListProvider(OrderStatus.confirmed).notifier)
           .cancelOrder(order);
@@ -216,6 +303,13 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
         return Scaffold(
           appBar: CustomAppBar(
             title: 'Danh sách dơn hàng',
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.tune),
+                tooltip: 'Thiết lập xác nhận hành động',
+                onPressed: () => _openConfirmSettingsDialog(context),
+              ),
+            ],
             bottom: TabBar(
               labelStyle:
                   theme.textMedium15Default.copyWith(color: Colors.white),
@@ -246,11 +340,11 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
                   return OrderCard(
                     order: order,
                     onRemove:
-                        _buildRemoveCallback(ref, status, order, canDelete),
-                    onComplete:
-                        _buildCompleteCallback(ref, status, order, canComplete),
-                    onCancel:
-                        _buildCancelCallback(ref, status, order, canCancel),
+                        _buildRemoveCallback(context, ref, status, order, canDelete),
+                    onComplete: _buildCompleteCallback(
+                        context, ref, status, order, canComplete),
+                    onCancel: _buildCancelCallback(
+                        context, ref, status, order, canCancel),
                   );
                 },
                 canCreateOrder: canCreate,
@@ -276,6 +370,105 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
               : null,
         );
       },
+    );
+  }
+
+  Future<void> _openConfirmSettingsDialog(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Consumer(
+        builder: (context, ref, _) {
+          final settingsAsync = ref.watch(orderActionConfirmControllerProvider);
+          return settingsAsync.when(
+            loading: () => const AlertDialog(
+              content: SizedBox(
+                height: 80,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+            error: (error, stack) => AlertDialog(
+              title: const Text('Thiết lập xác nhận hành động'),
+              content: Text('Không thể tải cấu hình: $error'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Đóng'),
+                ),
+              ],
+            ),
+            data: (settings) {
+              final notifier =
+                  ref.read(orderActionConfirmControllerProvider.notifier);
+              return AlertDialog(
+                title: const Text('Thiết lập xác nhận hành động'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildActionToggle(
+                      context,
+                      title: 'Xác nhận/Hoàn thành đơn',
+                      description:
+                          'Bật: Hiển thị hộp thoại xác nhận trước khi đánh dấu đơn hàng đã hoàn thành.\nTắt: Thực hiện ngay không cần xác nhận.',
+                      value: settings.confirm,
+                      onChanged: (value) =>
+                          notifier.setActionEnabled(OrderActionType.confirm, value),
+                    ),
+                    _buildActionToggle(
+                      context,
+                      title: 'Huỷ đơn hàng',
+                      description:
+                          'Bật: Hiển thị hộp thoại xác nhận trước khi huỷ đơn hàng.\nTắt: Huỷ ngay lập tức.',
+                      value: settings.cancel,
+                      onChanged: (value) =>
+                          notifier.setActionEnabled(OrderActionType.cancel, value),
+                    ),
+                    _buildActionToggle(
+                      context,
+                      title: 'Xoá đơn hàng',
+                      description:
+                          'Bật: Yêu cầu xác nhận trước khi xoá đơn hàng khỏi danh sách.\nTắt: Xoá ngay lập tức.',
+                      value: settings.delete,
+                      onChanged: (value) =>
+                          notifier.setActionEnabled(OrderActionType.delete, value),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () async {
+                      await notifier.reset();
+                    },
+                    child: const Text('Khôi phục mặc định'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('Đóng'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildActionToggle(
+    BuildContext context, {
+    required String title,
+    required String description,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile.adaptive(
+      contentPadding: EdgeInsets.zero,
+      value: value,
+      title: Text(title),
+      subtitle: Text(
+        description,
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+      onChanged: onChanged,
     );
   }
 }

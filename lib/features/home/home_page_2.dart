@@ -11,6 +11,7 @@ import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 import 'menu_manager.dart';
+import 'provider/menu_group_order_provider.dart';
 
 @RoutePage()
 class HomePage2 extends ConsumerWidget {
@@ -57,8 +58,13 @@ class HomePage2 extends ConsumerWidget {
               ),
             ),
             data: (grantedPermissions) {
+              final menuOrderState = ref.watch(menuGroupOrderControllerProvider);
+              final preferredOrder = menuOrderState.value;
               final menuGroups = MenuManager.getMenuGroups(
-                  user: user, permissions: grantedPermissions);
+                user: user,
+                permissions: grantedPermissions,
+                preferredOrder: preferredOrder,
+              );
 
               if (menuGroups.isEmpty) {
                 return Scaffold(
@@ -161,27 +167,26 @@ class HomePage2 extends ConsumerWidget {
                                       ],
                                     ),
                                   ),
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: theme.colorBackground,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: theme.colorBorderSublest,
-                                        width: 1,
+                                  Row(
+                                    children: [
+                                      if (menuGroups.length > 1)
+                                        _buildHeaderIcon(
+                                          context,
+                                          icon: Icons.swap_vert,
+                                          tooltip: 'Sắp xếp nhóm menu',
+                                          onTap: () =>
+                                              _openMenuReorderSheet(context, ref, menuGroups),
+                                        ),
+                                      const SizedBox(width: 12),
+                                      _buildHeaderIcon(
+                                        context,
+                                        icon: Icons.settings_outlined,
+                                        tooltip: 'Cài đặt',
+                                        onTap: () {
+                                          appRouter.goToSetting();
+                                        },
                                       ),
-                                    ),
-                                    child: IconButton(
-                                      icon: Icon(
-                                        Icons.settings_outlined,
-                                        color: theme.colorIcon,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        appRouter.goToSetting();
-                                      },
-                                    ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -342,5 +347,136 @@ class HomePage2 extends ConsumerWidget {
               ),
             ),
         initial: () => const SizedBox());
+  }
+
+  Widget _buildHeaderIcon(
+    BuildContext context, {
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    final theme = context.appTheme;
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: theme.colorBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorBorderSublest,
+          width: 1,
+        ),
+      ),
+      child: IconButton(
+        tooltip: tooltip,
+        icon: Icon(icon, color: theme.colorIcon, size: 20),
+        onPressed: onTap,
+      ),
+    );
+  }
+
+  Future<void> _openMenuReorderSheet(
+    BuildContext context,
+    WidgetRef ref,
+    List<MenuGroup> groups,
+  ) async {
+    final controller = ref.read(menuGroupOrderControllerProvider.notifier);
+    final initialOrder = groups.map((group) => group.id).toList();
+
+    final result = await showModalBottomSheet<List<MenuGroupId>>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        var tempOrder = List<MenuGroupId>.from(initialOrder);
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.swap_vert, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Sắp xếp nhóm chức năng',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Kéo thả để ưu tiên nhóm hiển thị. Cài đặt chỉ áp dụng cho tài khoản hiện tại.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: (tempOrder.length * 64).clamp(200, 400).toDouble(),
+                      child: ReorderableListView(
+                        buildDefaultDragHandles: false,
+                        onReorder: (oldIndex, newIndex) {
+                          setState(() {
+                            if (newIndex > oldIndex) {
+                              newIndex -= 1;
+                            }
+                            final item = tempOrder.removeAt(oldIndex);
+                            tempOrder.insert(newIndex, item);
+                          });
+                        },
+                        children: [
+                          for (var i = 0; i < tempOrder.length; i++)
+                            ReorderableDragStartListener(
+                              key: ValueKey(tempOrder[i]),
+                              index: i,
+                              child: ListTile(
+                                leading: const Icon(Icons.drag_indicator),
+                                title: Text(MenuManager.titleFor(tempOrder[i])),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () async {
+                            await controller.reset();
+                            if (sheetContext.mounted) {
+                              Navigator.of(sheetContext).pop();
+                            }
+                          },
+                          child: const Text('Khôi phục mặc định'),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () => Navigator.of(sheetContext).pop(),
+                          child: const Text('Đóng'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(sheetContext).pop(tempOrder);
+                          },
+                          child: const Text('Lưu'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      await controller.saveOrder(result);
+    }
   }
 }

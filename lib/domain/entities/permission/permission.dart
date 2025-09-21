@@ -77,7 +77,6 @@ enum PermissionKey {
   orderViewDone,
   orderViewCancelled,
   orderCreate,
-  orderUpdate,
   orderDelete,
   orderConfirm,
   orderComplete,

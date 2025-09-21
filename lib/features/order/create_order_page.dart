@@ -13,6 +13,7 @@ import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../../shared_widgets/toast.dart';
 import '../product/widget/index.dart';
+import 'provider/order_action_confirm_provider.dart';
 import 'provider/order_provider.dart';
 
 @RoutePage()
@@ -777,6 +778,7 @@ class OrderDetailPage extends HookConsumerWidget {
             ),
           ),
           bottomNavigationBar: buildBottomButtonBar(
+            context,
             order,
             orderStaste.order,
             ref,
@@ -790,6 +792,7 @@ class OrderDetailPage extends HookConsumerWidget {
   }
 
   Widget buildBottomButtonBar(
+    BuildContext context,
     Order sourceOrder,
     Order? order,
     WidgetRef ref, {
@@ -799,6 +802,48 @@ class OrderDetailPage extends HookConsumerWidget {
   }) {
     if (order == null) {
       return const SizedBox.shrink();
+    }
+
+    Future<bool> shouldConfirm(OrderActionType type) async {
+      final settings = await ref.read(orderActionConfirmControllerProvider.future);
+      if (!settings.isEnabled(type)) {
+        return true;
+      }
+
+      final title = switch (type) {
+        OrderActionType.confirm => 'Xác nhận hành động',
+        OrderActionType.cancel => 'Huỷ đơn hàng',
+        OrderActionType.delete => 'Xoá đơn hàng',
+      };
+
+      final message = switch (type) {
+        OrderActionType.confirm =>
+            'Bạn có chắc chắn muốn hoàn thành đơn hàng #${order.id}?',
+        OrderActionType.cancel =>
+            'Bạn có chắc chắn muốn huỷ đơn hàng #${order.id}?',
+        OrderActionType.delete =>
+            'Bạn có chắc chắn muốn xoá đơn hàng #${order.id}?',
+      };
+
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Huỷ'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Đồng ý'),
+            ),
+          ],
+        ),
+      );
+
+      return result ?? false;
     }
 
     switch (order.status) {
@@ -814,6 +859,10 @@ class OrderDetailPage extends HookConsumerWidget {
           showCancelButton: allowManagement,
           onSave: allowManagement
               ? () async {
+                  final confirmed = await shouldConfirm(OrderActionType.confirm);
+                  if (!confirmed) {
+                    return;
+                  }
                   await ref.read(orderDetailProvider(sourceOrder).notifier).createOrder();
                   ref.invalidate(orderListProvider(OrderStatus.draft));
                   ref.invalidate(orderListProvider(OrderStatus.confirmed));
@@ -838,6 +887,10 @@ class OrderDetailPage extends HookConsumerWidget {
           showCancelButton: allowCancelOrder,
           onSave: allowComplete
               ? () async {
+                  final confirmed = await shouldConfirm(OrderActionType.confirm);
+                  if (!confirmed) {
+                    return;
+                  }
                   await ref.read(orderDetailProvider(sourceOrder).notifier).completeOrder();
                   ref.invalidate(orderListProvider(OrderStatus.confirmed));
                   ref.invalidate(orderListProvider(OrderStatus.done));
@@ -845,6 +898,10 @@ class OrderDetailPage extends HookConsumerWidget {
               : null,
           onCancel: allowCancelOrder
               ? () async {
+                  final confirmed = await shouldConfirm(OrderActionType.cancel);
+                  if (!confirmed) {
+                    return;
+                  }
                   await ref.read(orderDetailProvider(sourceOrder).notifier).cancelOrder();
                   ref.invalidate(orderListProvider(OrderStatus.confirmed));
                   ref.invalidate(orderListProvider(OrderStatus.cancelled));

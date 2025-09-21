@@ -66,14 +66,14 @@ class AppRouter extends $AppRouter {
           page: CategoryRoute.page,
           guards: [
             AuthGuard(),
-            PermissionGuard(PermissionKey.categoryManage),
+            PermissionGuard(PermissionKey.categoryView),
           ],
         ),
         AutoRoute(
           page: UnitRoute.page,
           guards: [
             AuthGuard(),
-            PermissionGuard(PermissionKey.unitManage),
+            PermissionGuard(PermissionKey.unitView),
           ],
         ),
 
@@ -89,7 +89,7 @@ class AppRouter extends $AppRouter {
           page: CheckRoute.page,
           guards: [
             AuthGuard(),
-            PermissionGuard(PermissionKey.inventoryManage),
+            PermissionGuard(PermissionKey.inventoryView),
           ],
         ),
 
@@ -98,7 +98,7 @@ class AppRouter extends $AppRouter {
           page: ConfigProductPriceRoute.page,
           guards: [
             AuthGuard(),
-            PermissionGuard(PermissionKey.priceConfigure),
+            PermissionGuard(PermissionKey.priceUpdate),
           ],
         ),
         AutoRoute(

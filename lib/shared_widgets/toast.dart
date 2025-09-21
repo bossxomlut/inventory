@@ -71,6 +71,10 @@ void showSuccess({BuildContext? context, required String message}) {
     );
 }
 
+void showInfo({BuildContext? context, required String message}) {
+  showSimpleInfo(context: context, message: message);
+}
+
 void showSimpleInfo({BuildContext? context, required String message}) {
   final _context = context ?? appRouter.navigatorKey.currentContext!;
   final theme = _context.appTheme;

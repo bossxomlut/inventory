@@ -39,9 +39,19 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
     final quantity = useState<int>(0);
     final images = useState<List<ImageStorageModel>>([]);
 
+    final permissionsAsync = ref.watch(currentUserPermissionsProvider);
+    final bool canCreateProduct = permissionsAsync.maybeWhen(
+      data: (value) => value.contains(PermissionKey.productCreate),
+      orElse: () => false,
+    );
+
     bool isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
 
     void onSave() {
+      if (!canCreateProduct) {
+        return;
+      }
+
       context.hideKeyboard();
 
       // Create a new product
@@ -70,8 +80,8 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
       ref.read(loadProductProvider.notifier).createProduct(newProduct);
     }
-
-    return Scaffold(
+    
+    final Widget form = Scaffold(
       extendBody: true,
       resizeToAvoidBottomInset: true,
       appBar: CustomAppBar(
@@ -83,15 +93,14 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
           },
         ),
         actions: [
-          !isKeyboardVisible
-              ? const SizedBox()
-              : IconButton(
-                  icon: Text(
-                    'Lưu',
-                    style: context.appTheme.textMedium15Default.copyWith(color: Colors.white),
-                  ),
-                  onPressed: onSave,
-                ),
+          if (isKeyboardVisible && canCreateProduct)
+            IconButton(
+              icon: Text(
+                'Lưu',
+                style: context.appTheme.textMedium15Default.copyWith(color: Colors.white),
+              ),
+              onPressed: onSave,
+            ),
         ],
         // centerTitle: true,
       ),
@@ -213,11 +222,68 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
               onCancel: () {
                 Navigator.pop(context);
               },
-              onSave: onSave,
+              onSave: canCreateProduct ? onSave : null,
+              showSaveButton: canCreateProduct,
             ),
           ],
         ),
       ),
+    );
+
+    return permissionsAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const SizedBox(height: 12),
+                Text(
+                  'Không thể tải quyền truy cập',
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text('$error', textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.refresh(currentUserPermissionsProvider),
+                  child: const Text('Thử lại'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      data: (permissions) {
+        if (!permissions.contains(PermissionKey.productCreate)) {
+          return Scaffold(
+            appBar: CustomAppBar(
+              title: 'Thêm sản phẩm',
+              leading: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            body: const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Bạn không có quyền tạo sản phẩm mới.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+
+        return form;
+      },
     );
   }
 }

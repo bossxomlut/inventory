@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/entities/order/order.dart';
 import '../../core/helpers/double_utils.dart';
 import '../../core/index.dart';
+import '../../domain/index.dart';
 import '../../provider/index.dart';
+import '../../provider/permissions.dart';
 import '../../resources/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
@@ -15,11 +18,14 @@ class OrderStatusListPage extends ConsumerStatefulWidget {
   const OrderStatusListPage({super.key});
 
   @override
-  ConsumerState<OrderStatusListPage> createState() => _OrderStatusListPageState();
+  ConsumerState<OrderStatusListPage> createState() =>
+      _OrderStatusListPageState();
 }
 
-class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with SingleTickerProviderStateMixin {
+class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
+    with TickerProviderStateMixin {
   late TabController _tabController;
+  List<OrderStatus> _visibleStatuses = const [];
   final List<OrderStatus> statuses = [
     OrderStatus.draft,
     OrderStatus.confirmed,
@@ -43,98 +49,233 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
     super.dispose();
   }
 
+  void _syncTabController(List<OrderStatus> visibleStatuses) {
+    if (listEquals(_visibleStatuses, visibleStatuses)) {
+      return;
+    }
+
+    OrderStatus? previousStatus;
+    if (_visibleStatuses.isNotEmpty &&
+        _tabController.index < _visibleStatuses.length) {
+      previousStatus = _visibleStatuses[_tabController.index];
+    }
+
+    final fallbackStatus = visibleStatuses.contains(OrderStatus.confirmed)
+        ? OrderStatus.confirmed
+        : visibleStatuses.first;
+    final targetStatus =
+        previousStatus != null && visibleStatuses.contains(previousStatus)
+            ? previousStatus
+            : fallbackStatus;
+    final targetIndex = visibleStatuses.indexOf(targetStatus);
+
+    _tabController.dispose();
+    final clampedIndex = targetIndex < 0
+        ? 0
+        : targetIndex >= visibleStatuses.length
+            ? visibleStatuses.length - 1
+            : targetIndex;
+    _tabController = TabController(
+      length: visibleStatuses.length,
+      vsync: this,
+      initialIndex: clampedIndex,
+    );
+    _visibleStatuses = List<OrderStatus>.from(visibleStatuses);
+  }
+
+  VoidCallback? _buildRemoveCallback(
+      WidgetRef ref, OrderStatus status, Order order, bool canDelete) {
+    if (!canDelete) {
+      return null;
+    }
+
+    switch (status) {
+      case OrderStatus.draft:
+        return () {
+          ref
+              .read(orderListProvider(OrderStatus.draft).notifier)
+              .removeOrder(order);
+        };
+      case OrderStatus.done:
+        return () {
+          ref
+              .read(orderListProvider(OrderStatus.done).notifier)
+              .removeOrder(order);
+        };
+      case OrderStatus.cancelled:
+        return () {
+          ref
+              .read(orderListProvider(OrderStatus.cancelled).notifier)
+              .removeOrder(order);
+        };
+      case OrderStatus.confirmed:
+        return null;
+    }
+  }
+
+  VoidCallback? _buildCompleteCallback(
+      WidgetRef ref, OrderStatus status, Order order, bool canComplete) {
+    if (status != OrderStatus.confirmed || !canComplete) {
+      return null;
+    }
+
+    return () async {
+      await ref
+          .read(orderListProvider(OrderStatus.confirmed).notifier)
+          .confirmOrder(order);
+      ref.invalidate(orderListProvider(OrderStatus.done));
+    };
+  }
+
+  VoidCallback? _buildCancelCallback(
+      WidgetRef ref, OrderStatus status, Order order, bool canCancel) {
+    if (status != OrderStatus.confirmed || !canCancel) {
+      return null;
+    }
+
+    return () async {
+      await ref
+          .read(orderListProvider(OrderStatus.confirmed).notifier)
+          .cancelOrder(order);
+      ref.invalidate(orderListProvider(OrderStatus.cancelled));
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: 'Danh sách dơn hàng',
-        bottom: TabBar(
-          labelStyle: theme.textMedium15Default.copyWith(color: Colors.white),
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          controller: _tabController,
-          tabs: statuses.map((status) {
-            return Consumer(
-              builder: (context, ref, child) {
-                final orders = ref.watch(orderListProvider(status));
-                final count = orders.data.length;
-                return Tab(
-                  text: '${status.displayName} ($count)',
-                );
-              },
-            );
-          }).toList(),
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
+    final permissionsAsync = ref.watch(currentUserPermissionsProvider);
+
+    return permissionsAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.warning_amber,
+                    size: 40, color: Colors.redAccent),
+                const SizedBox(height: 12),
+                Text(
+                  'Không thể tải quyền truy cập',
+                  style: theme.textMedium16Default,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text('$error', textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.refresh(currentUserPermissionsProvider),
+                  child: const Text('Thử lại'),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          OrderListView(
-            status: OrderStatus.draft,
-            itemBuilder: (BuildContext context, Order oder, int index) {
-              return OrderCard(
-                order: oder,
-                onRemove: () {
-                  ref.read(orderListProvider(OrderStatus.draft).notifier).removeOrder(oder);
-                },
-              );
-            },
-          ),
-          OrderListView(
-            status: OrderStatus.confirmed,
-            itemBuilder: (BuildContext context, Order oder, int index) {
-              return OrderCard(
-                order: oder,
-                onComplete: () async {
-                  await ref.read(orderListProvider(OrderStatus.confirmed).notifier).confirmOrder(oder);
-                  ref.invalidate(orderListProvider(OrderStatus.done));
-                },
-                onCancel: () async {
-                  //cancel order
-                  await ref.read(orderListProvider(OrderStatus.confirmed).notifier).cancelOrder(oder);
-                  ref.invalidate(orderListProvider(OrderStatus.cancelled));
-                },
-              );
-            },
-          ),
-          OrderListView(
-            status: OrderStatus.done,
-            itemBuilder: (BuildContext context, Order oder, int index) {
-              return OrderCard(
-                order: oder,
-                onRemove: () {
-                  ref.read(orderListProvider(OrderStatus.done).notifier).removeOrder(oder);
-                },
-              );
-            },
-          ),
-          OrderListView(
-            status: OrderStatus.cancelled,
-            itemBuilder: (BuildContext context, Order oder, int index) {
-              return OrderCard(
-                order: oder,
-                onRemove: () {
-                  ref.read(orderListProvider(OrderStatus.cancelled).notifier).removeOrder(oder);
-                },
-              );
-            },
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          appRouter.goToCreateOrder().whenComplete(
-            () {
-              ref.invalidate(orderListProvider(OrderStatus.draft));
-              ref.invalidate(orderListProvider(OrderStatus.confirmed));
-            },
+      data: (permissions) {
+        final canViewDraft = permissions.contains(PermissionKey.orderViewDraft);
+        final canViewConfirmed =
+            permissions.contains(PermissionKey.orderViewConfirmed);
+        final canViewDone = permissions.contains(PermissionKey.orderViewDone);
+        final canViewCancelled =
+            permissions.contains(PermissionKey.orderViewCancelled);
+        final canCreate = permissions.contains(PermissionKey.orderCreate);
+        final canDelete = permissions.contains(PermissionKey.orderDelete);
+        final canComplete = permissions.contains(PermissionKey.orderComplete);
+        final canCancel = permissions.contains(PermissionKey.orderCancel);
+
+        final visibleStatuses = [
+          if (canViewDraft) OrderStatus.draft,
+          if (canViewConfirmed) OrderStatus.confirmed,
+          if (canViewDone) OrderStatus.done,
+          if (canViewCancelled) OrderStatus.cancelled,
+        ];
+
+        if (visibleStatuses.isEmpty) {
+          return Scaffold(
+            appBar: const CustomAppBar(title: 'Danh sách đơn hàng'),
+            body: const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Bạn không có quyền xem bất kỳ trạng thái đơn hàng nào.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
           );
-        },
-        child: const Icon(Icons.add),
-      ),
+        }
+
+        _syncTabController(visibleStatuses);
+
+        return Scaffold(
+          appBar: CustomAppBar(
+            title: 'Danh sách dơn hàng',
+            bottom: TabBar(
+              labelStyle:
+                  theme.textMedium15Default.copyWith(color: Colors.white),
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              controller: _tabController,
+              tabs: visibleStatuses.map((status) {
+                return Consumer(
+                  builder: (context, ref, child) {
+                    final orders = ref.watch(orderListProvider(status));
+                    final count = orders.data.length;
+                    return Tab(
+                      text: '${status.displayName} ($count)',
+                    );
+                  },
+                );
+              }).toList(),
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: visibleStatuses.map((status) {
+              return OrderListView(
+                status: status,
+                itemBuilder: (BuildContext context, Order order, int index) {
+                  return OrderCard(
+                    order: order,
+                    onRemove:
+                        _buildRemoveCallback(ref, status, order, canDelete),
+                    onComplete:
+                        _buildCompleteCallback(ref, status, order, canComplete),
+                    onCancel:
+                        _buildCancelCallback(ref, status, order, canCancel),
+                  );
+                },
+                canCreateOrder: canCreate,
+              );
+            }).toList(),
+          ),
+          floatingActionButton: canCreate
+              ? FloatingActionButton(
+                  onPressed: () {
+                    appRouter.goToCreateOrder().whenComplete(
+                      () {
+                        if (!mounted) {
+                          return;
+                        }
+                        ref.invalidate(orderListProvider(OrderStatus.draft));
+                        ref.invalidate(
+                            orderListProvider(OrderStatus.confirmed));
+                      },
+                    );
+                  },
+                  child: const Icon(Icons.add),
+                )
+              : null,
+        );
+      },
     );
   }
 }
@@ -144,17 +285,20 @@ class OrderListView extends ConsumerWidget {
     super.key,
     required this.status,
     required this.itemBuilder,
+    required this.canCreateOrder,
   });
 
   final OrderStatus status;
-  final Widget Function(BuildContext context, Order oder, int index) itemBuilder;
+  final Widget Function(BuildContext context, Order oder, int index)
+      itemBuilder;
+  final bool canCreateOrder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orders = ref.watch(orderListProvider(status));
 
     if (orders.data.isEmpty && !orders.isLoading) {
-      return OrderEmptyState(status: status);
+      return OrderEmptyState(status: status, canCreateOrder: canCreateOrder);
     }
 
     return LoadMoreList<Order>(
@@ -322,42 +466,53 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  Widget buildTrailing(BuildContext context, OrderStatus status, AppThemeData theme) {
+  Widget buildTrailing(
+      BuildContext context, OrderStatus status, AppThemeData theme) {
     switch (status) {
       case OrderStatus.confirmed:
+        final bool canComplete = onComplete != null;
+        final bool canCancelOrder = onCancel != null;
+        if (!canComplete && !canCancelOrder) {
+          return const SizedBox.shrink();
+        }
         return Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             //Button: Hoàn thành
-            TextButton(
-              onPressed: onComplete,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.green,
-                backgroundColor: Colors.green.withOpacity(0.1),
+            if (canComplete)
+              TextButton(
+                onPressed: onComplete,
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.green,
+                  backgroundColor: Colors.green.withOpacity(0.1),
+                ),
+                child: Text(
+                  'Hoàn thành',
+                  style: theme.textRegular15Default.copyWith(color: Colors.green),
+                ),
               ),
-              child: Text(
-                'Hoàn thành',
-                style: theme.textRegular15Default.copyWith(color: Colors.green),
-              ),
-            ),
-            Gap(12),
+            if (canComplete && canCancelOrder) const Gap(12),
             //Button: Huỷ
-            TextButton(
-              onPressed: onCancel,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-                backgroundColor: Colors.red.withOpacity(0.1),
+            if (canCancelOrder)
+              TextButton(
+                onPressed: onCancel,
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  backgroundColor: Colors.red.withOpacity(0.1),
+                ),
+                child: Text(
+                  'Hủy',
+                  style: theme.textRegular15Default.copyWith(color: Colors.red),
+                ),
               ),
-              child: Text(
-                'Hủy',
-                style: theme.textRegular15Default.copyWith(color: Colors.red),
-              ),
-            ),
           ],
         );
       case OrderStatus.draft:
       case OrderStatus.done:
       case OrderStatus.cancelled:
+        if (onRemove == null) {
+          return const SizedBox.shrink();
+        }
         return Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -382,9 +537,11 @@ class OrderEmptyState extends StatelessWidget {
   const OrderEmptyState({
     super.key,
     required this.status,
+    required this.canCreateOrder,
   });
 
   final OrderStatus status;
+  final bool canCreateOrder;
 
   @override
   Widget build(BuildContext context) {
@@ -445,11 +602,18 @@ class OrderEmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          Text(
-            'Nhấn nút + để tạo đơn hàng mới',
-            style: theme.textRegular14Sublest,
-            textAlign: TextAlign.center,
-          ),
+          if (canCreateOrder)
+            Text(
+              'Nhấn nút + để tạo đơn hàng mới',
+              style: theme.textRegular14Sublest,
+              textAlign: TextAlign.center,
+            )
+          else
+            Text(
+              'Liên hệ quản trị viên để được cấp quyền tạo đơn hàng.',
+              style: theme.textRegular14Sublest,
+              textAlign: TextAlign.center,
+            ),
         ],
       ),
     );

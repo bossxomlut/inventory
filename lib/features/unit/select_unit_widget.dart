@@ -78,7 +78,8 @@ class SelectUnitWidget extends HookConsumerWidget {
           Expanded(
             child: Builder(
               builder: (context) {
-                if (unitLoadProvider.isLoading && !unitLoadProvider.isLoadingMore) {
+                if (unitLoadProvider.isLoading &&
+                    !unitLoadProvider.isLoadingMore) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
@@ -115,6 +116,13 @@ void showUnit(
   BuildContext context, {
   required void Function(Unit unit) onSelected,
 }) {
+  final container = ProviderScope.containerOf(context, listen: false);
+  final permissionsAsync = container.read(currentUserPermissionsProvider);
+  final bool canCreate = permissionsAsync.maybeWhen(
+    data: (value) => value.contains(PermissionKey.unitCreate),
+    orElse: () => false,
+  );
+
   SearchItemWidget<Unit>(
     itemBuilder: (BuildContext context, Unit unit, int index) {
       return UnitCard(
@@ -124,17 +132,21 @@ void showUnit(
         },
       );
     },
-    onAddItem: () {
-      AddUnit().show(context).then(
-        (Unit? value) {
-          if (value != null) {
-            onSelected(value);
+    onAddItem: canCreate
+        ? () {
+            AddUnit().show(context).then(
+              (Unit? value) {
+                if (value != null) {
+                  onSelected(value);
+                }
+              },
+            );
           }
-        },
-      );
-    },
-    searchItems: (String keyword, page, size) async {
-      return context.read(unitRepositoryProvider).search(keyword, page, size).then((result) => result.data);
+        : null,
+    searchItems: (String keyword, int page, int size) async {
+      final repository = container.read(unitRepositoryProvider);
+      final result = await repository.search(keyword, page, size);
+      return result.data;
     },
   ).show(context);
 }

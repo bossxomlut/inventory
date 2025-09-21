@@ -570,220 +570,286 @@ class OrderDetailPage extends HookConsumerWidget {
   final Order order;
 
   @override
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderStaste = ref.watch(orderDetailProvider(order));
-    final theme = context.appTheme;
-    return Scaffold(
-      appBar: const CustomAppBar(title: 'Chi tiết đơn hàng'),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ColoredBox(
-              color: Colors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  //Order info
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                    child: Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            'Thông tin đơn hàng',
-                            style: theme.textMedium16Default,
-                          ),
-                        ),
-                        //order status tag here
-                        const SizedBox(width: 8),
-                        if (orderStaste.order != null)
-                          OrderStatusTag(
-                            status: orderStaste.order!.status,
-                            size: 20,
-                          ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Mã đơn hàng',
-                          style: theme.textRegular15Subtle,
-                        ),
-                        Text(
-                          '#${orderStaste.order?.id.toString() ?? 'Chưa có'}',
-                          style: theme.textRegular15Default,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Tổng số lượng',
-                          style: theme.textRegular15Subtle,
-                        ),
-                        Text(
-                          orderStaste.totalQuantity.displayFormat(),
-                          style: theme.textRegular15Default,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Tổng tiền',
-                          style: theme.textRegular15Subtle,
-                        ),
-                        Text(
-                          orderStaste.totalPrice.priceFormat(),
-                          style: theme.textRegular15Default,
-                        ),
-                      ],
-                    ),
-                  ),
+    final permissionsAsync = ref.watch(currentUserPermissionsProvider);
 
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Tên khách hàng',
-                          style: theme.textRegular15Subtle,
-                        ),
-                        Text(
-                          orderStaste.order?.customer ?? 'Chưa có',
-                          style: theme.textRegular15Default,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Liên hệ',
-                          style: theme.textRegular15Subtle,
-                        ),
-                        Text(
-                          orderStaste.order?.customerContact ?? 'Chưa có',
-                          style: theme.textRegular15Default,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Note
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Ghi chú',
-                          style: theme.textRegular15Subtle,
-                        ),
-                        Text(
-                          orderStaste.order?.note ?? '',
-                          style: theme.textRegular15Default,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              ),
+    return permissionsAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const SizedBox(height: 12),
+                Text(
+                  'Không thể tải quyền truy cập',
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text('$error', textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.refresh(currentUserPermissionsProvider),
+                  child: const Text('Thử lại'),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            ColoredBox(
-              color: Colors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                    child: Text(
-                      'Sản phẩm',
-                      style: theme.textMedium16Default,
-                    ),
-                  ),
-                  //listView Separator
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: orderStaste.orderItems.length,
-                    separatorBuilder: (context, index) => const AppDivider(),
-                    itemBuilder: (context, index) => _OrderItem(
-                      product: orderStaste.orderItems.keys.elementAt(index),
-                      orderItem: orderStaste.orderItems.values.elementAt(index),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            //Thanh toán
-          ],
+          ),
         ),
       ),
-      bottomNavigationBar: buildBottomButtonBar(order, orderStaste.order, ref),
+      data: (permissions) {
+        final theme = context.appTheme;
+        final canCreateOrEditOrder = permissions.contains(PermissionKey.orderCreate);
+        final canCompleteOrder = permissions.contains(PermissionKey.orderComplete);
+        final canCancelOrder = permissions.contains(PermissionKey.orderCancel);
+
+        return Scaffold(
+          appBar: const CustomAppBar(title: 'Chi tiết đơn hàng'),
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ColoredBox(
+                  color: Colors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Thông tin đơn hàng',
+                                style: theme.textMedium16Default,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            if (orderStaste.order != null)
+                              OrderStatusTag(
+                                status: orderStaste.order!.status,
+                                size: 20,
+                              ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Mã đơn hàng',
+                              style: theme.textRegular15Subtle,
+                            ),
+                            Text(
+                              '#${orderStaste.order?.id.toString() ?? 'Chưa có'}',
+                              style: theme.textRegular15Default,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Tổng số lượng',
+                              style: theme.textRegular15Subtle,
+                            ),
+                            Text(
+                              orderStaste.totalQuantity.displayFormat(),
+                              style: theme.textRegular15Default,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Tổng tiền',
+                              style: theme.textRegular15Subtle,
+                            ),
+                            Text(
+                              orderStaste.totalPrice.priceFormat(),
+                              style: theme.textRegular15Default,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Tên khách hàng',
+                              style: theme.textRegular15Subtle,
+                            ),
+                            Text(
+                              orderStaste.order?.customer ?? 'Chưa có',
+                              style: theme.textRegular15Default,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Liên hệ',
+                              style: theme.textRegular15Subtle,
+                            ),
+                            Text(
+                              orderStaste.order?.customerContact ?? 'Chưa có',
+                              style: theme.textRegular15Default,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Ghi chú',
+                              style: theme.textRegular15Subtle,
+                            ),
+                            Text(
+                              orderStaste.order?.note ?? '',
+                              style: theme.textRegular15Default,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ColoredBox(
+                  color: Colors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                        child: Text(
+                          'Sản phẩm',
+                          style: theme.textMedium16Default,
+                        ),
+                      ),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: orderStaste.orderItems.length,
+                        separatorBuilder: (context, index) => const AppDivider(),
+                        itemBuilder: (context, index) => _OrderItem(
+                          product: orderStaste.orderItems.keys.elementAt(index),
+                          orderItem: orderStaste.orderItems.values.elementAt(index),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                //Thanh toán
+              ],
+            ),
+          ),
+          bottomNavigationBar: buildBottomButtonBar(
+            order,
+            orderStaste.order,
+            ref,
+            canCreateOrEdit: canCreateOrEditOrder,
+            canComplete: canCompleteOrder,
+            canCancel: canCancelOrder,
+          ),
+        );
+      },
     );
   }
 
-  Widget buildBottomButtonBar(Order sourceOrder, Order? order, WidgetRef ref) {
+  Widget buildBottomButtonBar(
+    Order sourceOrder,
+    Order? order,
+    WidgetRef ref, {
+    required bool canCreateOrEdit,
+    required bool canComplete,
+    required bool canCancel,
+  }) {
     if (order == null) {
       return const SizedBox.shrink();
     }
 
     switch (order.status) {
       case OrderStatus.draft:
+        final allowManagement = canCreateOrEdit;
+        if (!allowManagement) {
+          return const SizedBox.shrink();
+        }
         return BottomButtonBar(
           saveButtonText: 'Tạo đơn',
           cancelButtonText: 'Chỉnh sửa',
-          onSave: () async {
-            await ref.read(orderDetailProvider(sourceOrder).notifier).createOrder();
-            ref.invalidate(orderListProvider(OrderStatus.draft));
-            ref.invalidate(orderListProvider(OrderStatus.confirmed));
-          },
-          onCancel: () async {
-            await appRouter.goToUpdateDraftOrder(sourceOrder);
-          },
+          showSaveButton: allowManagement,
+          showCancelButton: allowManagement,
+          onSave: allowManagement
+              ? () async {
+                  await ref.read(orderDetailProvider(sourceOrder).notifier).createOrder();
+                  ref.invalidate(orderListProvider(OrderStatus.draft));
+                  ref.invalidate(orderListProvider(OrderStatus.confirmed));
+                }
+              : null,
+          onCancel: allowManagement
+              ? () async {
+                  await appRouter.goToUpdateDraftOrder(sourceOrder);
+                }
+              : null,
         );
       case OrderStatus.confirmed:
+        final allowComplete = canComplete;
+        final allowCancelOrder = canCancel;
+        if (!allowComplete && !allowCancelOrder) {
+          return const SizedBox.shrink();
+        }
         return BottomButtonBar(
           saveButtonText: 'Hoàn thành',
           cancelButtonText: 'Huỷ đơn',
-          onSave: () async {
-            await ref.read(orderDetailProvider(sourceOrder).notifier).completeOrder();
-            ref.invalidate(orderListProvider(OrderStatus.confirmed));
-            ref.invalidate(orderListProvider(OrderStatus.done));
-          },
-          onCancel: () async {
-            await ref.read(orderDetailProvider(sourceOrder).notifier).cancelOrder();
-            ref.invalidate(orderListProvider(OrderStatus.confirmed));
-            ref.invalidate(orderListProvider(OrderStatus.cancelled));
-          },
+          showSaveButton: allowComplete,
+          showCancelButton: allowCancelOrder,
+          onSave: allowComplete
+              ? () async {
+                  await ref.read(orderDetailProvider(sourceOrder).notifier).completeOrder();
+                  ref.invalidate(orderListProvider(OrderStatus.confirmed));
+                  ref.invalidate(orderListProvider(OrderStatus.done));
+                }
+              : null,
+          onCancel: allowCancelOrder
+              ? () async {
+                  await ref.read(orderDetailProvider(sourceOrder).notifier).cancelOrder();
+                  ref.invalidate(orderListProvider(OrderStatus.confirmed));
+                  ref.invalidate(orderListProvider(OrderStatus.cancelled));
+                }
+              : null,
         );
       default:
         return const SizedBox.shrink();

@@ -44,7 +44,14 @@ class CategoryCard extends StatelessWidget {
 }
 
 class OptimizedCategoryCard extends ConsumerWidget {
-  const OptimizedCategoryCard({super.key});
+  const OptimizedCategoryCard({
+    super.key,
+    required this.canEdit,
+    required this.canToggleSelection,
+  });
+
+  final bool canEdit;
+  final bool canToggleSelection;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,32 +59,29 @@ class OptimizedCategoryCard extends ConsumerWidget {
     final category = ref.watch(currentCategoryProvider);
     // final category = ref.watch(categoryProvider.select((value) => value.data[index]));
 
-    print('build ngooài ${index}');
     return Stack(
       children: [
         CategoryCard(
           category: category,
           color: index.color,
-          onTap: () {
-            AddCategory(category: category).show(context);
-          },
+          onTap: canEdit ? () => AddCategory(category: category).show(context) : null,
         ),
         Positioned(
           top: 8,
           right: 8,
           child: Consumer(
             builder: (BuildContext context, WidgetRef ref, Widget? child) {
-              print('build bên trong ${index}');
-              final enable = ref.watch(multiSelectCategoryProvider.select((value) => value.enable));
-              if (!enable) {
+              final enable =
+                  ref.watch(multiSelectCategoryProvider.select((value) => value.enable));
+              if (!canToggleSelection || !enable) {
                 return const SizedBox.shrink();
               }
 
               return Consumer(
                 builder: (BuildContext context, WidgetRef ref, Widget? child) {
-                  print('build checkbox ${index}');
-                  final isSelected =
-                      ref.watch(multiSelectCategoryProvider.select((value) => value.data.contains(category)));
+                  final isSelected = ref.watch(
+                    multiSelectCategoryProvider.select((value) => value.data.contains(category)),
+                  );
                   return Checkbox(
                     value: isSelected,
                     onChanged: (value) {

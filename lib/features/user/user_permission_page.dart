@@ -124,7 +124,7 @@ class UserPermissionPage extends ConsumerWidget {
   }
 }
 
-class _PermissionGroupSection extends StatelessWidget {
+class _PermissionGroupSection extends StatefulWidget {
   const _PermissionGroupSection({
     required this.group,
     required this.definitions,
@@ -140,34 +140,42 @@ class _PermissionGroupSection extends StatelessWidget {
   final void Function(PermissionKey key, bool enabled) onToggle;
 
   @override
+  State<_PermissionGroupSection> createState() => _PermissionGroupSectionState();
+}
+
+class _PermissionGroupSectionState extends State<_PermissionGroupSection> {
+  bool _isExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final enabledCount = widget.definitions
+        .where((definition) => widget.permissions.contains(definition.key))
+        .length;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Icon(group.icon,
-                      color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      group.title,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            for (final definition in definitions)
-              SwitchListTile.adaptive(
-                value: permissions.contains(definition.key),
+      child: ExpansionTile(
+        leading: Icon(
+          widget.group.icon,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        title: Text(
+          widget.group.title,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        subtitle: Text(
+          '$enabledCount/${widget.definitions.length} quyền',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        initiallyExpanded: _isExpanded,
+        onExpansionChanged: (expanded) {
+          setState(() => _isExpanded = expanded);
+        },
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        children: widget.definitions
+            .map(
+              (definition) => SwitchListTile.adaptive(
+                value: widget.permissions.contains(definition.key),
                 title: Text(definition.title),
                 subtitle: definition.description == null
                     ? null
@@ -175,13 +183,14 @@ class _PermissionGroupSection extends StatelessWidget {
                         definition.description!,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
-                secondary: defaults.contains(definition.key)
+                secondary: widget.defaults.contains(definition.key)
                     ? const Icon(Icons.star, color: Colors.amber, size: 18)
                     : null,
-                onChanged: (enabled) => onToggle(definition.key, enabled),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                onChanged: (enabled) => widget.onToggle(definition.key, enabled),
               ),
-          ],
-        ),
+            )
+            .toList(),
       ),
     );
   }

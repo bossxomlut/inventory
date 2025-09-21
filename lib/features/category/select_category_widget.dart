@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/index.dart';
 import '../../domain/index.dart';
@@ -12,6 +13,13 @@ void showCategory(
   BuildContext context, {
   ValueChanged<Category>? onSelected,
 }) {
+  final container = ProviderScope.containerOf(context, listen: false);
+  final permissionsAsync = container.read(currentUserPermissionsProvider);
+  final bool canCreate = permissionsAsync.maybeWhen(
+    data: (value) => value.contains(PermissionKey.categoryCreate),
+    orElse: () => false,
+  );
+
   SearchItemWidget<Category>(
     itemBuilder: (BuildContext item, Category p1, int p2) {
       return CategoryCard(
@@ -22,17 +30,21 @@ void showCategory(
         },
       );
     },
-    onAddItem: () {
-      AddCategory().show(context).then(
-        (Category? value) {
-          if (value != null) {
-            onSelected?.call(value);
+    onAddItem: canCreate
+        ? () {
+            AddCategory().show(context).then(
+              (Category? value) {
+                if (value != null) {
+                  onSelected?.call(value);
+                }
+              },
+            );
           }
-        },
-      );
-    },
-    searchItems: (String keyword, page, size) async {
-      return context.read(categoryRepositoryProvider).search(keyword, page, size).then((result) => result.data);
+        : null,
+    searchItems: (String keyword, int page, int size) async {
+      final repository = container.read(categoryRepositoryProvider);
+      final result = await repository.search(keyword, page, size);
+      return result.data;
     },
     enableLoadMore: false,
   ).show(context);

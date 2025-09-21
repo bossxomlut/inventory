@@ -7,7 +7,7 @@ import '../../../domain/entities/check/check_session.dart';
 import '../../../provider/load_list.dart';
 import '../../../shared_widgets/index.dart';
 import '../../core/index.dart';
-import '../../domain/entities/check/check.dart';
+import '../../domain/index.dart';
 import '../../provider/index.dart';
 import '../../routes/app_router.dart';
 import 'provider/check_session_provider.dart';
@@ -21,64 +21,122 @@ class CheckSessionsPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tabController = useTabController(initialLength: 2);
     final isMounted = useIsMounted();
+    final permissionsAsync = ref.watch(currentUserPermissionsProvider);
 
-    Future<void> createNewSession() async {
-      final result = await CreateSessionBottomSheet().show(context);
-      //
-      if (result != null) {
-        try {
-          final sessionNotifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
-          final createdSession = await sessionNotifier.createCheckSession(result);
-
-          if (createdSession != null && isMounted()) {
-            appRouter.push(CheckRoute(session: createdSession));
-          }
-        } catch (e) {
-          if (isMounted()) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Lỗi tạo phiên: $e')),
-            );
-          }
-        }
-      }
-    }
-
-    // Main widget build
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: 'Phiên kiểm kê',
-        bottom: TabBar(
-          controller: tabController,
-          tabs: const [
-            Tab(text: 'Đang hoạt động', icon: Icon(Icons.pending_actions)),
-            Tab(text: 'Đã hoàn thành', icon: Icon(Icons.done_all)),
-          ],
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
+    return permissionsAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const SizedBox(height: 12),
+                Text(
+                  'Không thể tải quyền truy cập',
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text('$error', textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.refresh(currentUserPermissionsProvider),
+                  child: const Text('Thử lại'),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      body: TabBarView(
-        controller: tabController,
-        children: const [
-          ActiveSessionPage(),
-          DoneSessionPage(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: createNewSession,
-        child: const Icon(Icons.add),
-      ),
+      data: (permissions) {
+        final canViewSessions = permissions.contains(PermissionKey.inventoryView);
+        final canCreateSession = permissions.contains(PermissionKey.inventoryCreateSession);
+
+        if (!canViewSessions) {
+          return const Scaffold(
+            appBar: CustomAppBar(title: 'Phiên kiểm kê'),
+            body: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Bạn không có quyền xem danh sách phiên kiểm kê.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+
+        Future<void> createNewSession() async {
+          if (!canCreateSession) {
+            return;
+          }
+
+          final result = await CreateSessionBottomSheet().show(context);
+          if (result != null) {
+            try {
+              final sessionNotifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
+              final createdSession = await sessionNotifier.createCheckSession(result);
+
+              if (createdSession != null && isMounted()) {
+                appRouter.push(CheckRoute(session: createdSession));
+              }
+            } catch (e) {
+              if (isMounted()) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi tạo phiên: $e')),
+                );
+              }
+            }
+          }
+        }
+
+        return Scaffold(
+          appBar: CustomAppBar(
+            title: 'Phiên kiểm kê',
+            bottom: TabBar(
+              controller: tabController,
+              tabs: const [
+                Tab(text: 'Đang hoạt động', icon: Icon(Icons.pending_actions)),
+                Tab(text: 'Đã hoàn thành', icon: Icon(Icons.done_all)),
+              ],
+              indicatorColor: Colors.white,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+            ),
+          ),
+          body: TabBarView(
+            controller: tabController,
+            children: [
+              ActiveSessionPage(canManage: canCreateSession),
+              DoneSessionPage(canManage: canCreateSession),
+            ],
+          ),
+          floatingActionButton: canCreateSession
+              ? FloatingActionButton(
+                  onPressed: createNewSession,
+                  child: const Icon(Icons.add),
+                )
+              : null,
+        );
+      },
     );
   }
 }
 
 class SessionCard extends ConsumerWidget {
   final CheckSession session;
+  final bool canManage;
 
   const SessionCard(
     this.session, {
     super.key,
+    required this.canManage,
   });
 
   @override
@@ -117,7 +175,7 @@ class SessionCard extends ConsumerWidget {
               ),
             ],
           ),
-          trailing: session.status != CheckSessionStatus.inProgress
+          trailing: session.status != CheckSessionStatus.inProgress || !canManage
               ? null
               : PopupMenuButton(
                   itemBuilder: (context) => [
@@ -198,7 +256,12 @@ class SessionCard extends ConsumerWidget {
 }
 
 class ActiveSessionPage extends HookConsumerWidget {
-  const ActiveSessionPage({super.key});
+  const ActiveSessionPage({
+    super.key,
+    required this.canManage,
+  });
+
+  final bool canManage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -229,7 +292,10 @@ class ActiveSessionPage extends HookConsumerWidget {
     return ListView.separated(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemBuilder: (BuildContext context, int index) {
-        return SessionCard(activeSession.data[index]);
+        return SessionCard(
+          activeSession.data[index],
+          canManage: canManage,
+        );
       },
       separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 10),
       itemCount: activeSession.length,
@@ -238,7 +304,12 @@ class ActiveSessionPage extends HookConsumerWidget {
 }
 
 class DoneSessionPage extends HookConsumerWidget {
-  const DoneSessionPage({super.key});
+  const DoneSessionPage({
+    super.key,
+    required this.canManage,
+  });
+
+  final bool canManage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -269,7 +340,10 @@ class DoneSessionPage extends HookConsumerWidget {
     return ListView.separated(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemBuilder: (BuildContext context, int index) {
-        return SessionCard(activeSession.data[index]);
+        return SessionCard(
+          activeSession.data[index],
+          canManage: canManage,
+        );
       },
       separatorBuilder: (BuildContext context, int index) => const SizedBox(height: 12),
       itemCount: activeSession.length,

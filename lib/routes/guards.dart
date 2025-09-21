@@ -1,11 +1,11 @@
 //create auth guard
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/helpers/scaffold_utils.dart';
 import '../domain/entities/permission/permission.dart';
 import '../domain/entities/user/user.dart';
 import '../features/authentication/provider/auth_provider.dart';
-import '../features/user/provider/user_permission_controller.dart';
 import '../provider/index.dart';
 import '../shared_widgets/toast.dart';
 import 'app_router.dart';
@@ -71,8 +71,7 @@ class PermissionGuard extends AutoRouteGuard {
           return;
         }
 
-        final permissionsValue =
-            container.read(userPermissionControllerProvider(user.id));
+        final permissionsValue = container.read(currentUserPermissionsProvider);
 
         if (permissionsValue.hasError) {
           showError(message: 'Không thể kiểm tra quyền truy cập');
@@ -90,9 +89,7 @@ class PermissionGuard extends AutoRouteGuard {
           return;
         }
 
-        container
-            .read(userPermissionControllerProvider(user.id).future)
-            .then((value) {
+        container.read(currentUserPermissionsProvider.future).then((value) {
           if (value.contains(requiredPermission)) {
             resolver.next();
           } else {

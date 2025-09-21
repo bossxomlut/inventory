@@ -82,7 +82,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToCategory();
             },
-            requiredPermissions: {PermissionKey.categoryManage},
+            requiredPermissions: {PermissionKey.categoryView},
           ),
           MenuItem(
             title: 'Đơn vị/Quy cách',
@@ -90,7 +90,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToUnit();
             },
-            requiredPermissions: {PermissionKey.unitManage},
+            requiredPermissions: {PermissionKey.unitView},
           ),
         ],
       ),
@@ -103,7 +103,7 @@ class MenuManager {
             destinationCallback: () {
               appRouter.goToConfigProductPrice();
             },
-            requiredPermissions: {PermissionKey.priceConfigure},
+            requiredPermissions: {PermissionKey.priceUpdate},
           ),
           MenuItem(
             title: 'Tạo đơn hàng',

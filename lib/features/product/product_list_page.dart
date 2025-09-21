@@ -5,7 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-import '../../domain/entities/product/inventory.dart';
+import '../../domain/index.dart';
 import '../../provider/index.dart';
 import '../../provider/load_list.dart';
 import '../../routes/app_router.dart';
@@ -24,21 +24,75 @@ class ProductListPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: const ProductAppBar(),
-      endDrawer: const ProductFilterDrawer(),
-      body: const Column(
-        children: [
-          ProductFilterDisplayWidget(),
-          Expanded(child: ProductListView()),
-        ],
+    final permissionsAsync = ref.watch(currentUserPermissionsProvider);
+
+    return permissionsAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(HugeIcons.strokeRoundedAdd01),
-        onPressed: () {
-          const AddProductScreen().show(context);
-        },
+      error: (error, stackTrace) => Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const SizedBox(height: 12),
+                Text(
+                  'Không thể tải quyền truy cập',
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text('$error', textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.refresh(currentUserPermissionsProvider),
+                  child: const Text('Thử lại'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
+      data: (permissions) {
+        final canView = permissions.contains(PermissionKey.productView);
+        if (!canView) {
+          return const Scaffold(
+            body: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Bạn không có quyền xem danh sách sản phẩm.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final canCreate = permissions.contains(PermissionKey.productCreate);
+
+        return Scaffold(
+          appBar: const ProductAppBar(),
+          endDrawer: const ProductFilterDrawer(),
+          body: const Column(
+            children: [
+              ProductFilterDisplayWidget(),
+              Expanded(child: ProductListView()),
+            ],
+          ),
+          floatingActionButton: canCreate
+              ? FloatingActionButton(
+                  child: const Icon(HugeIcons.strokeRoundedAdd01),
+                  onPressed: () {
+                    const AddProductScreen().show(context);
+                  },
+                )
+              : null,
+        );
+      },
     );
   }
 }

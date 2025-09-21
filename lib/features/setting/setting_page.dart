@@ -5,13 +5,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/ads/ad_banner_widget.dart';
 import '../../domain/entities/permission/permission.dart';
-import '../../domain/entities/user/user.dart';
 import '../../provider/index.dart';
+import '../../provider/permissions.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 import '../onboarding/onboarding_service.dart';
-import '../user/provider/user_permission_controller.dart';
 import 'app_review_utils.dart';
 
 @RoutePage()
@@ -22,25 +21,12 @@ class SettingPage extends WidgetByDeviceTemplate {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
     final authState = ref.watch(authControllerProvider);
+    final permissionsAsync = ref.watch(currentUserPermissionsProvider);
 
-    Set<PermissionKey> grantedPermissions = {};
-    final user = authState.maybeWhen(
-      authenticated: (user, lastLoginTime) => user,
-      orElse: () => null,
+    final grantedPermissions = permissionsAsync.maybeWhen(
+      data: (value) => value,
+      orElse: () => <PermissionKey>{},
     );
-
-    if (user != null) {
-      if (user.role == UserRole.admin || user.role == UserRole.guest) {
-        grantedPermissions =
-            PermissionCatalog.defaultPermissionsForUserRole(user.role);
-      } else {
-        final permissionValue =
-            ref.watch(userPermissionControllerProvider(user.id));
-        if (permissionValue.hasValue) {
-          grantedPermissions = permissionValue.value!;
-        }
-      }
-    }
 
     final bool canAccessDataManagement = grantedPermissions.intersection({
       PermissionKey.dataCreateSample,

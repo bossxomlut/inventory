@@ -29,10 +29,22 @@ class _CheckPageState extends ConsumerState<CheckPage> {
 
   bool get isDone => session.status.index >= CheckSessionStatus.completed.index;
 
+  bool _hasPermission(PermissionKey key) {
+    return ref.read(currentUserPermissionsProvider).maybeWhen(
+          data: (value) => value.contains(key),
+          orElse: () => false,
+        );
+  }
+
+  bool get _canModifySession => !isDone && _hasPermission(PermissionKey.inventoryCreateSession);
+
   void _openProductDetailBTS(
     Product product, {
     CheckedProduct? currentCheck,
   }) async {
+    if (!_canModifySession) {
+      return;
+    }
     InventoryAdjustBottomSheet(
       product: product,
       currentQuantity: currentCheck?.actualQuantity,
@@ -64,6 +76,10 @@ class _CheckPageState extends ConsumerState<CheckPage> {
   }
 
   void _onSearchProductResult(Product? product) {
+    if (!_canModifySession) {
+      return;
+    }
+
     if (product != null) {
       //search for current list of checked products
       final existingCheck = ref.read(checkedListProvider(session).notifier).checkExistProduct(product: product);
@@ -78,6 +94,10 @@ class _CheckPageState extends ConsumerState<CheckPage> {
   }
 
   Future<void> _onBarcodeScanned(Barcode barcode) async {
+    if (!_canModifySession) {
+      return;
+    }
+
     try {
       final searchProductRepo = ref.read(searchProductRepositoryProvider);
       final product = await searchProductRepo.searchByBarcode(barcode.rawValue ?? '');
@@ -91,6 +111,10 @@ class _CheckPageState extends ConsumerState<CheckPage> {
   }
 
   void _onSearchProduct() async {
+    if (!_canModifySession) {
+      return;
+    }
+
     final product = await SearchItemWidget<Product>(
       itemBuilder: (context, product, index) {
         return ProductCard(
@@ -115,263 +139,315 @@ class _CheckPageState extends ConsumerState<CheckPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.appTheme;
+    final permissionsAsync = ref.watch(currentUserPermissionsProvider);
 
-    return Scaffold(
-      backgroundColor: theme.colorBackground,
-      appBar: CustomAppBar(
-        title: widget.session.name,
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: IconButton(
-              icon: Icon(
-                Icons.info_outline,
-                color: Colors.white,
-                size: 20,
-              ),
-              onPressed: _showSessionInfo,
-            ),
-          ),
-        ],
+    return permissionsAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       ),
-      body: Column(
-        children: [
-          // Full Width Scanner Section
-          if (!isDone)
-            Container(
-              height: 280,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: theme.colorBackgroundSurface,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-                border: Border.all(
-                  color: theme.colorBorderSublest,
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorPrimary.withOpacity(0.08),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Scanner area - full width
-                  Expanded(
-                    child: ScannerView(
-                      onBarcodeScanned: _onBarcodeScanned,
-                      singleScan: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          // Modern Header Section
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: theme.colorBackgroundSurface,
-              border: Border.all(
-                color: theme.colorBorderSublest,
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      error: (error, stackTrace) => Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sản phẩm đã kiểm kê',
-                      style: theme.headingSemibold20Default,
-                    ),
-                    const SizedBox(height: 4),
-                    FutureBuilder(
-                      future: ref.read(checkRepositoryProvider).getChecksBySession(widget.session.id),
-                      builder: (context, snapshot) {
-                        final count = snapshot.data?.length ?? 0;
-                        return Text(
-                          '$count sản phẩm',
-                          style: theme.textRegular14Sublest,
-                        );
-                      },
-                    ),
-                  ],
+                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const SizedBox(height: 12),
+                Text(
+                  'Không thể tải quyền truy cập',
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
                 ),
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        theme.colorPrimary.withOpacity(0.1),
-                        theme.colorPrimary.withOpacity(0.05),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: theme.colorPrimary.withOpacity(0.1),
-                      width: 1,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.inventory_2_outlined,
-                    color: theme.colorPrimary,
-                    size: 24,
-                  ),
+                const SizedBox(height: 8),
+                Text('$error', textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.refresh(currentUserPermissionsProvider),
+                  child: const Text('Thử lại'),
                 ),
               ],
             ),
           ),
-
-          // Modern Product List
-          Expanded(
-            child: Consumer(
-              builder: (context, ref, _) {
-                final checks = ref.watch(checkedListProvider(session)).value;
-
-                if (checks.isNullOrEmpty) {
-                  return SingleChildScrollView(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 12),
-                      padding: const EdgeInsets.all(40),
-                      decoration: BoxDecoration(
-                        color: theme.colorBackgroundSurface,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: theme.colorPrimary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Icon(
-                              Icons.inventory_2_outlined,
-                              size: 40,
-                              color: theme.colorPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Chưa có sản phẩm nào được kiểm kê',
-                            style: theme.headingSemibold20Default,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Hãy quét mã vạch hoặc tìm kiếm sản phẩm để bắt đầu',
-                            style: theme.textRegular14Sublest,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 24),
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  theme.colorPrimary,
-                                  theme.colorPrimary.withOpacity(0.8),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorPrimary.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: ElevatedButton.icon(
-                              onPressed: _onSearchProduct,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              icon: const Icon(Icons.search, color: Colors.white),
-                              label: Text(
-                                'Tìm sản phẩm',
-                                style: theme.buttonSemibold14.copyWith(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  itemCount: checks!.length,
-                  itemBuilder: (context, index) {
-                    final check = checks[index];
-                    return CheckProductCard(
-                      check: check,
-                      onTap: isDone ? null : () => _openProductDetailBTS(check.product, currentCheck: check),
-                    );
-                  },
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                );
-              },
-            ),
-          ),
-        ],
+        ),
       ),
-      bottomNavigationBar: isDone
-          ? null
-          : Consumer(builder: (context, ref, child) {
-              final haveCheck = ref.watch(checkedListProvider(session)).value.isNotNullAndEmpty;
-              return Container(
+      data: (permissions) {
+        final theme = context.appTheme;
+        final canViewSession = permissions.contains(PermissionKey.inventoryView);
+        final canModifySession = permissions.contains(PermissionKey.inventoryCreateSession) && !isDone;
+        final canFinalizeSession = permissions.contains(PermissionKey.inventoryFinalizeSession) && !isDone;
+
+        if (!canViewSession) {
+          return Scaffold(
+            appBar: CustomAppBar(title: widget.session.name),
+            body: const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Bạn không có quyền xem chi tiết phiên kiểm kê này.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: theme.colorBackground,
+          appBar: CustomAppBar(
+            title: widget.session.name,
+            actions: [
+              Container(
+                margin: const EdgeInsets.only(right: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.info_outline, color: Colors.white, size: 20),
+                  onPressed: _showSessionInfo,
+                ),
+              ),
+            ],
+          ),
+          body: Column(
+            children: [
+              if (canModifySession)
+                Container(
+                  height: 280,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: theme.colorBackgroundSurface,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                    border: Border.all(
+                      color: theme.colorBorderSublest,
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorPrimary.withOpacity(0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ScannerView(
+                          onBarcodeScanned: _onBarcodeScanned,
+                          singleScan: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: theme.colorBackgroundSurface,
+                  border: Border.all(
+                    color: theme.colorBorderSublest,
+                    width: 1,
+                  ),
                 ),
-                child: AppButton.primary(
-                  title: 'Hoàn thành kiểm kê',
-                  onPressed: haveCheck
-                      ? () {
-                          try {
-                            final notifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
-                            notifier.updateStatus(widget.session, CheckSessionStatus.completed);
-                            appRouter.popForced();
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Lỗi: $e')),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Sản phẩm đã kiểm kê',
+                          style: theme.headingSemibold20Default,
+                        ),
+                        const SizedBox(height: 4),
+                        FutureBuilder(
+                          future: ref.read(checkRepositoryProvider).getChecksBySession(widget.session.id),
+                          builder: (context, snapshot) {
+                            final count = snapshot.data?.length ?? 0;
+                            return Text(
+                              '$count sản phẩm',
+                              style: theme.textRegular14Sublest,
                             );
-                          }
-                        }
-                      : null,
+                          },
+                        ),
+                      ],
+                    ),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            theme.colorPrimary.withOpacity(0.1),
+                            theme.colorPrimary.withOpacity(0.05),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: theme.colorPrimary.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.inventory_2_outlined,
+                        color: theme.colorPrimary,
+                        size: 24,
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            }),
-      floatingActionButton: isDone
-          ? null
-          : FloatingActionButton(
-              onPressed: _onSearchProduct,
-              child: const Icon(Icons.search, color: Colors.white, size: 28),
-            ),
+              ),
+              Expanded(
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final checks = ref.watch(checkedListProvider(session)).value;
+
+                    if (checks.isNullOrEmpty) {
+                      return SingleChildScrollView(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.all(40),
+                          decoration: BoxDecoration(
+                            color: theme.colorBackgroundSurface,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: theme.colorPrimary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: 40,
+                                  color: theme.colorPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                'Chưa có sản phẩm nào được kiểm kê',
+                                style: theme.headingSemibold20Default,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                canModifySession
+                                    ? 'Hãy quét mã vạch hoặc tìm kiếm sản phẩm để bắt đầu'
+                                    : 'Bạn không có quyền chỉnh sửa phiên kiểm kê này.',
+                                style: theme.textRegular14Sublest,
+                                textAlign: TextAlign.center,
+                              ),
+                              if (canModifySession) ...[
+                                const SizedBox(height: 24),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        theme.colorPrimary,
+                                        theme.colorPrimary.withOpacity(0.8),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: theme.colorPrimary.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ElevatedButton.icon(
+                                    onPressed: _onSearchProduct,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    icon: const Icon(Icons.search, color: Colors.white),
+                                    label: Text(
+                                      'Tìm sản phẩm',
+                                      style: theme.buttonSemibold14.copyWith(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      itemCount: checks!.length,
+                      itemBuilder: (context, index) {
+                        final check = checks[index];
+                        return CheckProductCard(
+                          check: check,
+                          onTap: canModifySession
+                              ? () => _openProductDetailBTS(check.product, currentCheck: check)
+                              : null,
+                        );
+                      },
+                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: canFinalizeSession
+              ? Consumer(
+                  builder: (context, ref, child) {
+                    final haveCheck = ref.watch(checkedListProvider(session)).value.isNotNullAndEmpty;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: theme.colorBackgroundSurface,
+                      ),
+                      child: AppButton.primary(
+                        title: 'Hoàn thành kiểm kê',
+                        onPressed: haveCheck
+                            ? () {
+                                try {
+                                  final notifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
+                                  notifier.updateStatus(widget.session, CheckSessionStatus.completed);
+                                  appRouter.popForced();
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Lỗi: $e')),
+                                  );
+                                }
+                              }
+                            : null,
+                      ),
+                    );
+                  },
+                )
+              : null,
+          floatingActionButton: canModifySession
+              ? FloatingActionButton(
+                  onPressed: _onSearchProduct,
+                  child: const Icon(Icons.search, color: Colors.white, size: 28),
+                )
+              : null,
+        );
+      },
     );
   }
 }

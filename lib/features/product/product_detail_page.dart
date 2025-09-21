@@ -68,6 +68,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
   /// Opens the edit product screen
   void _openEditProductScreen() {
+    final permissions = ref.read(currentUserPermissionsProvider);
+    final canEdit = permissions.maybeWhen(
+      data: (value) => value.contains(PermissionKey.productUpdate),
+      orElse: () => false,
+    );
+
+    if (!canEdit) {
+      return;
+    }
+
     EditProductScreen(product: ref.read(productDetailProvider(productId)) ?? widget.product).show(context).whenComplete(
       () {
         ref.read(productDetailProvider(productId).notifier).loadProduct();
@@ -168,6 +178,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     final images = product.images ?? [];
     final hasImages = images.isNotEmpty && images.first.path != null;
     final size = MediaQuery.of(context).size;
+    final permissionsAsync = ref.watch(currentUserPermissionsProvider);
+    final canEditProduct = permissionsAsync.maybeWhen(
+      data: (value) => value.contains(PermissionKey.productUpdate),
+      orElse: () => false,
+    );
 
     return Scaffold(
       backgroundColor: appTheme.colorBackground,
@@ -360,24 +375,25 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                 titlePadding: EdgeInsets.zero,
               ),
               actions: [
-                Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: appTheme.colorTextWhite.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.edit_outlined, size: 20),
-                    onPressed: _openEditProductScreen,
-                    tooltip: 'Chỉnh sửa sản phẩm',
-                    color: appTheme.colorTextWhite,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 36,
-                      minHeight: 36,
+                if (canEditProduct)
+                  Container(
+                    margin: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: appTheme.colorTextWhite.withOpacity(0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.edit_outlined, size: 20),
+                      onPressed: _openEditProductScreen,
+                      tooltip: 'Chỉnh sửa sản phẩm',
+                      color: appTheme.colorTextWhite,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
                     ),
                   ),
-                ),
                 Container(
                   margin: const EdgeInsets.only(right: 8, left: 4),
                   decoration: BoxDecoration(

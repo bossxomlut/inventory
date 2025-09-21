@@ -11,6 +11,8 @@ class BottomButtonBar extends StatelessWidget {
   final String? saveButtonText;
   final String? cancelButtonText;
   final bool isListenKeyboardVisibility;
+  final bool showSaveButton;
+  final bool showCancelButton;
 
   const BottomButtonBar({
     super.key,
@@ -20,10 +22,15 @@ class BottomButtonBar extends StatelessWidget {
     this.saveButtonText,
     this.cancelButtonText,
     this.isListenKeyboardVisibility = false,
+    this.showSaveButton = true,
+    this.showCancelButton = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (!showSaveButton && !showCancelButton) {
+      return const SizedBox.shrink();
+    }
     return KeyboardVisibilityBuilder(
       isDisable: !isListenKeyboardVisibility,
       child: ColoredBox(
@@ -33,17 +40,21 @@ class BottomButtonBar extends StatelessWidget {
           child: SafeArea(
             child: Row(
               children: [
-                Expanded(
+                if (showCancelButton)
+                  Expanded(
                     child: AppButton.secondary(
-                  title: cancelButtonText ?? 'Huỷ',
-                  onPressed: onCancel,
-                )),
-                const Gap(8),
-                Expanded(
+                      title: cancelButtonText ?? 'Huỷ',
+                      onPressed: onCancel,
+                    ),
+                  ),
+                if (showCancelButton && showSaveButton) const Gap(8),
+                if (showSaveButton)
+                  Expanded(
                     child: AppButton.primary(
-                  title: saveButtonText ?? 'Lưu',
-                  onPressed: onSave,
-                )),
+                      title: saveButtonText ?? 'Lưu',
+                      onPressed: onSave,
+                    ),
+                  ),
               ],
             ),
           ),

@@ -1,3 +1,5 @@
+import 'ads_config.dart';
+
 enum AdEnvironment { test, production }
 
 // Danh sách devices test
@@ -26,7 +28,9 @@ class TestAdUnitIds implements AdUnitIds {
 
 class AndroidAdUnitIds implements AdUnitIds {
   @override
-  String get bannerAdUnitId => 'YOUR_ANDROID_BANNER_AD_UNIT_ID';
+  String get bannerAdUnitId => adsConfig.androidBannerAdUnitId.isNotEmpty
+      ? adsConfig.androidBannerAdUnitId
+      : 'YOUR_ANDROID_BANNER_AD_UNIT_ID';
 
   @override
   String get interstitialAdUnitId => 'YOUR_INTERSTITIAL_AD_UNIT_ID';

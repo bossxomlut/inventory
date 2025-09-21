@@ -53,3 +53,4 @@ ios/Runner.xcworkspace/contents.xcworkspacedata
 ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 ios/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
 .metadata
+lib/core/ads/ads_config_local.dart

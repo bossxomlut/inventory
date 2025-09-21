@@ -23,6 +23,12 @@ if (flutterVersionName == null) {
     flutterVersionName = "1.0"
 }
 
+def admobAppId = localProperties.getProperty("admob.app.id")
+if (admobAppId == null || admobAppId.trim().isEmpty()) {
+    // Default to Google's sample AdMob app id so builds keep working without local config.
+    admobAppId = "ca-app-pub-3940256099942544~3347511713"
+}
+
 android {
     namespace = "com.bossxomlut.inventory"
     compileSdk = 35
@@ -42,6 +48,7 @@ android {
         targetSdk = 35
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
+        manifestPlaceholders += [ADMOB_APP_ID: admobAppId]
     }
 
     signingConfigs {

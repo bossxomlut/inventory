@@ -4,7 +4,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/helpers/double_utils.dart';
 import '../../core/index.dart';
-import '../../domain/entities/get_id.dart';
 import '../../domain/entities/order/price.dart';
 import '../../domain/entities/product/inventory.dart';
 import '../../domain/repositories/order/price_repository.dart';
@@ -17,6 +16,7 @@ import '../../shared_widgets/hook/text_controller_hook.dart';
 import '../product/product_list_page.dart';
 import '../product/provider/product_provider.dart';
 import '../product/widget/product_card.dart';
+import 'provider/config_price_form_controller.dart';
 
 @RoutePage()
 class ConfigProductPricePage extends HookConsumerWidget {
@@ -279,6 +279,13 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
   Widget build(BuildContext context, WidgetRef ref) {
     final sellPriceController = useTextEditingController();
     final purchasePriceController = useTextEditingController();
+    final formArgs = useMemoized(
+      () => ConfigPriceFormArgs(product: product, initialPrice: productPrice),
+      [product, productPrice],
+    );
+    final formState = ref.watch(configPriceFormControllerProvider(formArgs));
+    final formNotifier =
+        ref.read(configPriceFormControllerProvider(formArgs).notifier);
 
     double? sellingPrice() {
       return double.tryParse(sellPriceController.text);
@@ -299,21 +306,6 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
         purchasePrice: purchasePrice(),
       );
       return tempPrice.profitPercentage;
-    }
-
-    bool isValidFields() {
-      // Check if the fields are empty or have invalid number format
-      final sellPriceText = sellPriceController.text.trim();
-      if (sellPriceText.isNotEmpty && double.tryParse(sellPriceText) == null) {
-        return false; // Allow empty fields
-      }
-
-      final purchasePriceText = purchasePriceController.text.trim();
-      if (purchasePriceText.isNotEmpty && double.tryParse(purchasePriceText) == null) {
-        return false; // Allow empty fields
-      }
-
-      return true; // All fields are valid or empty
     }
 
     useEffect(() {
@@ -423,41 +415,25 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
           // Add yo
           BottomButtonBar(
             padding: EdgeInsets.only(top: 16),
-            onSave: () async {
-              if (!isValidFields()) {
-                showError(message: 'Vui lòng nhập đúng định dạng số');
-                return;
-              }
-
-              final priceRepository = ref.read(priceRepositoryProvider);
-              if (productPrice != null) {
-                // Update existing price
-                await priceRepository.update(
-                  productPrice!.copyWith(
-                    sellingPrice: sellingPrice(), // Replace with actual value
-                    purchasePrice: purchasePrice(), // Replace with actual value
-                  ),
-                );
-              } else {
-                // Create new price
-                await priceRepository.create(
-                  ProductPrice(
-                    id: undefinedId,
-                    productName: product.name,
-                    productId: product.id,
-                    sellingPrice: sellingPrice(), // Replace with actual value
-                    purchasePrice: purchasePrice(), // Replace with actual value
-                  ),
-                );
-              }
-
-              ref.invalidate(productPriceByIdProvider(product.id));
-              // Handle save action
-              Navigator.pop(context);
-            },
+            onSave: formState.isSaving
+                ? null
+                : () async {
+                    final result = await formNotifier.save(
+                      sellingText: sellPriceController.text,
+                      purchaseText: purchasePriceController.text,
+                    );
+                    if (result.isSuccess) {
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    } else if (result.errorMessage != null) {
+                      showError(message: result.errorMessage!);
+                    }
+                  },
             onCancel: () {
               Navigator.pop(context);
             },
+            saveButtonText: formState.isSaving ? 'Đang lưu...' : null,
           ),
         ],
       ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,6 +10,7 @@ import '../../provider/permissions.dart';
 import '../../provider/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
+import '../../shared_widgets/button/bottom_button_bar.dart';
 import '../authentication/provider/auth_provider.dart';
 import 'menu_manager.dart';
 import 'provider/menu_group_order_provider.dart';
@@ -414,36 +416,23 @@ class HomePage2 extends ConsumerWidget {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(height: 16),
-                    SizedBox(
-                      height: (tempOrder.length * 64).clamp(200, 400).toDouble(),
-                      child: ReorderableListView(
-                        buildDefaultDragHandles: false,
-                        onReorder: (oldIndex, newIndex) {
-                          setState(() {
-                            if (newIndex > oldIndex) {
-                              newIndex -= 1;
-                            }
-                            final item = tempOrder.removeAt(oldIndex);
-                            tempOrder.insert(newIndex, item);
-                          });
-                        },
-                        children: [
-                          for (var i = 0; i < tempOrder.length; i++)
-                            ReorderableDragStartListener(
-                              key: ValueKey(tempOrder[i]),
-                              index: i,
-                              child: ListTile(
-                                leading: const Icon(Icons.drag_indicator),
-                                title: Text(MenuManager.titleFor(tempOrder[i])),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
                       children: [
-                        TextButton(
+                        FilledButton.tonalIcon(
+                          onPressed: listEquals(tempOrder, initialOrder)
+                              ? null
+                              : () {
+                                  setState(() {
+                                    tempOrder =
+                                        List<MenuGroupId>.from(initialOrder);
+                                  });
+                                },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Hoàn tác thay đổi'),
+                        ),
+                        OutlinedButton(
                           onPressed: () async {
                             await controller.reset();
                             if (sheetContext.mounted) {
@@ -452,19 +441,117 @@ class HomePage2 extends ConsumerWidget {
                           },
                           child: const Text('Khôi phục mặc định'),
                         ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () => Navigator.of(sheetContext).pop(),
-                          child: const Text('Đóng'),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(sheetContext).pop(tempOrder);
-                          },
-                          child: const Text('Lưu'),
-                        ),
                       ],
+                    ),
+                    const SizedBox(height: 16),
+                    Flexible(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceVariant
+                              .withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: ReorderableListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 4,
+                          ),
+                          buildDefaultDragHandles: false,
+                          shrinkWrap: true,
+                          itemCount: tempOrder.length,
+                          itemBuilder: (context, index) {
+                            final id = tempOrder[index];
+                            return ReorderableDelayedDragStartListener(
+                              key: ValueKey(id),
+                              index: index,
+                              child: Card(
+                                elevation: 0,
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 22,
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primaryContainer,
+                                        child: Icon(
+                                          Icons.drag_indicator,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimaryContainer,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              MenuManager.titleFor(id),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Vị trí hiện tại: ${index + 1}',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Icon(
+                                        Icons.reorder,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline,
+                                        size: 28,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          onReorder: (oldIndex, newIndex) {
+                            setState(() {
+                              if (newIndex > oldIndex) {
+                                newIndex -= 1;
+                              }
+                              final item = tempOrder.removeAt(oldIndex);
+                              tempOrder.insert(newIndex, item);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    BottomButtonBar(
+                      padding: const EdgeInsets.only(top: 12),
+                      onCancel: () {
+                        Navigator.of(sheetContext).pop();
+                      },
+                      onSave: () {
+                        Navigator.of(sheetContext).pop(tempOrder);
+                      },
+                      cancelButtonText: 'Đóng',
+                      saveButtonText: 'Lưu',
                     ),
                   ],
                 ),

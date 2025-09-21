@@ -15,3 +15,7 @@ final Logger routeLogger = Logger(
 final Logger blocLogger = Logger(
   printer: PrettyPrinter(methodCount: 0),
 );
+
+final Logger userConfigLogger = Logger(
+  printer: PrettyPrinter(methodCount: 0),
+);

@@ -12,6 +12,7 @@ import '../../resources/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import 'provider/order_action_confirm_provider.dart';
+import 'provider/order_action_handler.dart';
 import 'provider/order_list_provider.dart';
 
 @RoutePage()
@@ -84,52 +85,6 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
     _visibleStatuses = List<OrderStatus>.from(visibleStatuses);
   }
 
-  Future<bool> _shouldConfirmAction(
-    BuildContext context,
-    OrderActionType type,
-    Order order,
-  ) async {
-    final settings = await ref.read(orderActionConfirmControllerProvider.future);
-    if (!settings.isEnabled(type)) {
-      return true;
-    }
-
-    final title = switch (type) {
-      OrderActionType.confirm => 'Xác nhận hành động',
-      OrderActionType.cancel => 'Huỷ đơn hàng',
-      OrderActionType.delete => 'Xoá đơn hàng',
-    };
-
-    final message = switch (type) {
-      OrderActionType.confirm =>
-          'Bạn có chắc chắn muốn hoàn thành đơn hàng #${order.id}?',
-      OrderActionType.cancel =>
-          'Bạn có chắc chắn muốn huỷ đơn hàng #${order.id}?',
-      OrderActionType.delete =>
-          'Bạn có chắc chắn muốn xoá đơn hàng #${order.id}?',
-    };
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Huỷ'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Đồng ý'),
-          ),
-        ],
-      ),
-    );
-
-    return result ?? false;
-  }
-
   VoidCallback? _buildRemoveCallback(
       BuildContext context, WidgetRef ref, OrderStatus status, Order order, bool canDelete) {
     if (!canDelete) {
@@ -139,45 +94,21 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
     switch (status) {
       case OrderStatus.draft:
         return () async {
-          final confirmed = await _shouldConfirmAction(
-            context,
-            OrderActionType.delete,
-            order,
-          );
-          if (!confirmed) {
-            return;
-          }
-          ref
-              .read(orderListProvider(OrderStatus.draft).notifier)
-              .removeOrder(order);
+          await ref
+              .read(orderActionHandlerProvider)
+              .deleteOrder(context, OrderStatus.draft, order);
         };
       case OrderStatus.done:
         return () async {
-          final confirmed = await _shouldConfirmAction(
-            context,
-            OrderActionType.delete,
-            order,
-          );
-          if (!confirmed) {
-            return;
-          }
-          ref
-              .read(orderListProvider(OrderStatus.done).notifier)
-              .removeOrder(order);
+          await ref
+              .read(orderActionHandlerProvider)
+              .deleteOrder(context, OrderStatus.done, order);
         };
       case OrderStatus.cancelled:
         return () async {
-          final confirmed = await _shouldConfirmAction(
-            context,
-            OrderActionType.delete,
-            order,
-          );
-          if (!confirmed) {
-            return;
-          }
-          ref
-              .read(orderListProvider(OrderStatus.cancelled).notifier)
-              .removeOrder(order);
+          await ref
+              .read(orderActionHandlerProvider)
+              .deleteOrder(context, OrderStatus.cancelled, order);
         };
       case OrderStatus.confirmed:
         return null;
@@ -191,18 +122,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
     }
 
     return () async {
-      final confirmed = await _shouldConfirmAction(
-        context,
-        OrderActionType.confirm,
-        order,
-      );
-      if (!confirmed) {
-        return;
-      }
-      await ref
-          .read(orderListProvider(OrderStatus.confirmed).notifier)
-          .confirmOrder(order);
-      ref.invalidate(orderListProvider(OrderStatus.done));
+      await ref.read(orderActionHandlerProvider).completeOrder(context, order);
     };
   }
 
@@ -213,18 +133,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
     }
 
     return () async {
-      final confirmed = await _shouldConfirmAction(
-        context,
-        OrderActionType.cancel,
-        order,
-      );
-      if (!confirmed) {
-        return;
-      }
-      await ref
-          .read(orderListProvider(OrderStatus.confirmed).notifier)
-          .cancelOrder(order);
-      ref.invalidate(orderListProvider(OrderStatus.cancelled));
+      await ref.read(orderActionHandlerProvider).cancelOrder(context, order);
     };
   }
 

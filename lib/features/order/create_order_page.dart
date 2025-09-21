@@ -14,6 +14,7 @@ import '../../shared_widgets/index.dart';
 import '../../shared_widgets/toast.dart';
 import '../product/widget/index.dart';
 import 'provider/order_action_confirm_provider.dart';
+import 'provider/order_action_handler.dart';
 import 'provider/order_provider.dart';
 
 @RoutePage()
@@ -804,75 +805,34 @@ class OrderDetailPage extends HookConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    Future<bool> shouldConfirm(OrderActionType type) async {
-      final settings = await ref.read(orderActionConfirmControllerProvider.future);
-      if (!settings.isEnabled(type)) {
-        return true;
-      }
-
-      final title = switch (type) {
-        OrderActionType.confirm => 'Xác nhận hành động',
-        OrderActionType.cancel => 'Huỷ đơn hàng',
-        OrderActionType.delete => 'Xoá đơn hàng',
-      };
-
-      final message = switch (type) {
-        OrderActionType.confirm =>
-            'Bạn có chắc chắn muốn hoàn thành đơn hàng #${order.id}?',
-        OrderActionType.cancel =>
-            'Bạn có chắc chắn muốn huỷ đơn hàng #${order.id}?',
-        OrderActionType.delete =>
-            'Bạn có chắc chắn muốn xoá đơn hàng #${order.id}?',
-      };
-
-      final result = await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Huỷ'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Đồng ý'),
-            ),
-          ],
-        ),
-      );
-
-      return result ?? false;
-    }
+    final actionHandler = ref.read(orderActionHandlerProvider);
 
     switch (order.status) {
       case OrderStatus.draft:
-        final allowManagement = canCreateOrEdit;
-        if (!allowManagement) {
+        if (!canCreateOrEdit) {
           return const SizedBox.shrink();
         }
         return BottomButtonBar(
           saveButtonText: 'Tạo đơn',
           cancelButtonText: 'Chỉnh sửa',
-          showSaveButton: allowManagement,
-          showCancelButton: allowManagement,
-          onSave: allowManagement
-              ? () async {
-                  final confirmed = await shouldConfirm(OrderActionType.confirm);
-                  if (!confirmed) {
-                    return;
-                  }
-                  await ref.read(orderDetailProvider(sourceOrder).notifier).createOrder();
-                  ref.invalidate(orderListProvider(OrderStatus.draft));
-                  ref.invalidate(orderListProvider(OrderStatus.confirmed));
-                }
-              : null,
-          onCancel: allowManagement
-              ? () async {
-                  await appRouter.goToUpdateDraftOrder(sourceOrder);
-                }
-              : null,
+          showSaveButton: true,
+          showCancelButton: true,
+          onSave: () async {
+            final confirmed = await actionHandler.confirmAction(
+              context,
+              OrderActionType.confirm,
+              sourceOrder,
+            );
+            if (!confirmed) {
+              return;
+            }
+            await ref.read(orderDetailProvider(sourceOrder).notifier).createOrder();
+            ref.invalidate(orderListProvider(OrderStatus.draft));
+            ref.invalidate(orderListProvider(OrderStatus.confirmed));
+          },
+          onCancel: () async {
+            await appRouter.goToUpdateDraftOrder(sourceOrder);
+          },
         );
       case OrderStatus.confirmed:
         final allowComplete = canComplete;
@@ -887,7 +847,11 @@ class OrderDetailPage extends HookConsumerWidget {
           showCancelButton: allowCancelOrder,
           onSave: allowComplete
               ? () async {
-                  final confirmed = await shouldConfirm(OrderActionType.confirm);
+                  final confirmed = await actionHandler.confirmAction(
+                    context,
+                    OrderActionType.confirm,
+                    sourceOrder,
+                  );
                   if (!confirmed) {
                     return;
                   }
@@ -898,7 +862,11 @@ class OrderDetailPage extends HookConsumerWidget {
               : null,
           onCancel: allowCancelOrder
               ? () async {
-                  final confirmed = await shouldConfirm(OrderActionType.cancel);
+                  final confirmed = await actionHandler.confirmAction(
+                    context,
+                    OrderActionType.cancel,
+                    sourceOrder,
+                  );
                   if (!confirmed) {
                     return;
                   }

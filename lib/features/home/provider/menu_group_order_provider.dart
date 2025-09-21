@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../features/authentication/provider/auth_provider.dart';
 import '../../../provider/index.dart';
 import '../menu_manager.dart';
+import '../../../logger.dart';
 
 part 'menu_group_order_provider.g.dart';
 
@@ -51,7 +51,9 @@ class MenuGroupOrderController extends _$MenuGroupOrderController {
       _storageKey(userId),
       order.map((id) => id.name).toList(),
     );
-    debugPrint('[MenuGroupOrder] Saved for user $userId -> ${order.map((e) => e.name).toList()}');
+    userConfigLogger.i(
+      '[MenuGroupOrder] Saved for user $userId -> ${order.map((e) => e.name).toList()}',
+    );
     state = AsyncValue.data(List<MenuGroupId>.from(order));
   }
 
@@ -60,7 +62,7 @@ class MenuGroupOrderController extends _$MenuGroupOrderController {
     await storage.init();
     final userId = _currentUserId;
     await storage.remove(_storageKey(userId));
-    debugPrint('[MenuGroupOrder] Reset for user $userId');
+    userConfigLogger.i('[MenuGroupOrder] Reset for user $userId');
     state = const AsyncValue.data([]);
   }
 }

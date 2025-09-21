@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../features/authentication/provider/auth_provider.dart';
 import '../../../provider/index.dart';
+import '../../../logger.dart';
 
 part 'order_action_confirm_provider.g.dart';
 
@@ -122,7 +122,8 @@ class OrderActionConfirmController extends _$OrderActionConfirmController {
       _storageKey(userId),
       jsonEncode(settings.toJson()),
     );
-    debugPrint(
-        '[OrderActionConfirm] Saved for user $userId -> ${settings.toJson()}');
+    userConfigLogger.i(
+      '[OrderActionConfirm] Saved for user $userId -> ${settings.toJson()}',
+    );
   }
 }

@@ -429,17 +429,18 @@ class HomePage2 extends ConsumerWidget {
                                         List<MenuGroupId>.from(initialOrder);
                                   });
                                 },
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Hoàn tác thay đổi'),
+                          icon: const Icon(Icons.undo),
+                          label: const Text('Hoàn tác'),
                         ),
-                        OutlinedButton(
+                        OutlinedButton.icon(
                           onPressed: () async {
                             await controller.reset();
                             if (sheetContext.mounted) {
                               Navigator.of(sheetContext).pop();
                             }
                           },
-                          child: const Text('Khôi phục mặc định'),
+                          icon: const Icon(Icons.restore),
+                          label: const Text('Mặc định'),
                         ),
                       ],
                     ),

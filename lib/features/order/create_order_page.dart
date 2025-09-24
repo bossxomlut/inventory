@@ -397,6 +397,8 @@ class OrderItemWidget extends HookConsumerWidget {
   final Product product;
   final OrderItem? orderItem;
 
+  bool get haveStock => product.quantity > 0;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isSelected = orderItem != null;
@@ -426,7 +428,7 @@ class OrderItemWidget extends HookConsumerWidget {
               //check box here
               Checkbox(
                 value: isSelected,
-                onChanged: (value) {
+                onChanged: !haveStock ? null : (value) {
                   // Xử lý thay đổi trạng thái checkbox
                   if (value == false) {
                     // Nếu bỏ chọn, xóa sản phẩm khỏi đơn hàng
@@ -456,6 +458,7 @@ class OrderItemWidget extends HookConsumerWidget {
                 // Hiển thị số lượng và nút cộng trừ
                 PlusMinusButton(
                   value: orderItem!.quantity,
+                  maxValue: product.quantity,
                   onChanged: (int value) {
                     ref.read(orderCreationProvider.notifier).updateOrderItem(
                           product,
@@ -980,6 +983,29 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<voi
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Warning message if quantity exceeds stock
+          if (quantity.value > product.quantity)
+            Container(
+              margin: const EdgeInsets.only(top: 8, bottom: 16),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber, color: Colors.red, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Số lượng vượt quá tồn kho (${product.quantity})',
+                      style: context.appTheme.textRegular12Default.copyWith(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           CustomProductCard(product: product),
           const SizedBox(height: 16),
 
@@ -1079,29 +1105,7 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<voi
             },
           ),
 
-          // Warning message if quantity exceeds stock
-          if (quantity.value > product.quantity)
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber, color: Colors.red, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Số lượng vượt quá tồn kho (${product.quantity})',
-                      style: context.appTheme.textRegular12Default.copyWith(color: Colors.red),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+
         ],
       ),
     );

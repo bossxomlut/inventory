@@ -17,11 +17,13 @@ class CheckedProduct with _$CheckedProduct {
     required int actualQuantity,
     required DateTime checkDate,
     String? note,
+    @Default(<CheckedInventoryLot>[]) List<CheckedInventoryLot> lots,
   }) = _CheckedProduct;
 
   const CheckedProduct._();
 
-  factory CheckedProduct.fromJson(Map<String, dynamic> json) => _$CheckedProductFromJson(json);
+  factory CheckedProduct.fromJson(Map<String, dynamic> json) =>
+      _$CheckedProductFromJson(json);
 
   // Computed properties
   CheckStatus get status {
@@ -57,4 +59,19 @@ class CheckedProduct with _$CheckedProduct {
     if (difference > 0) return '+$difference';
     return '$difference';
   }
+}
+
+@freezed
+class CheckedInventoryLot with _$CheckedInventoryLot {
+  const factory CheckedInventoryLot({
+    required int id,
+    int? inventoryLotId,
+    required DateTime expiryDate,
+    DateTime? manufactureDate,
+    required int expectedQuantity,
+    required int actualQuantity,
+  }) = _CheckedInventoryLot;
+
+  factory CheckedInventoryLot.fromJson(Map<String, dynamic> json) =>
+      _$CheckedInventoryLotFromJson(json);
 }

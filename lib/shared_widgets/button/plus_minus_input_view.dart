@@ -33,11 +33,25 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
   @override
   void initState() {
     super.initState();
-    number = widget.initialValue ?? 0;
+    number = _applyBounds(widget.initialValue ?? 0);
   }
 
-  bool get _canIncrement => widget.maxValue == null || number < widget.maxValue!;
-  bool get _canDecrement => widget.minValue == null || number > widget.minValue!;
+  @override
+  void didUpdateWidget(covariant PlusMinusInputView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final bounded = _applyBounds(number);
+    if (bounded != number) {
+      setState(() {
+        number = bounded;
+      });
+      widget.onChanged?.call(number);
+    }
+  }
+
+  bool get _canIncrement =>
+      widget.maxValue == null || number < widget.maxValue!;
+  bool get _canDecrement =>
+      widget.minValue == null || number > widget.minValue!;
 
   void _increment() {
     if (widget.maxValue == null || number < widget.maxValue!) {
@@ -73,6 +87,22 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
     _timer?.cancel();
   }
 
+  int _applyBounds(int value) {
+    final minValue = widget.minValue ?? 0;
+    final maxValue = widget.maxValue;
+
+    var result = value < minValue ? minValue : value;
+
+    if (maxValue != null) {
+      final effectiveMax = maxValue < minValue ? minValue : maxValue;
+      if (result > effectiveMax) {
+        result = effectiveMax;
+      }
+    }
+
+    return result;
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -82,6 +112,12 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
+    final minValue = widget.minValue ?? 0;
+    final maxValue = widget.maxValue;
+    final pickerMaxValue = maxValue != null
+        ? (maxValue < minValue ? minValue : maxValue)
+        : ((number > minValue ? number : minValue) + 1000);
+
     return SizedBox(
       height: 54,
       child: Row(
@@ -91,7 +127,8 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
             height: 54,
             child: GestureDetector(
               onTap: _decrement,
-              onLongPressStart: _canDecrement ? (_) => _startAutoDecrement() : null,
+              onLongPressStart:
+                  _canDecrement ? (_) => _startAutoDecrement() : null,
               onLongPressEnd: (_) => _stopAutoIncrement(),
               child: Container(
                 decoration: BoxDecoration(
@@ -101,7 +138,9 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
                     bottomLeft: Radius.circular(4),
                   ),
                   border: Border.all(
-                    color: _canDecrement ? theme.colorBorderField : Colors.transparent,
+                    color: _canDecrement
+                        ? theme.colorBorderField
+                        : Colors.transparent,
                     width: 1,
                   ),
                 ),
@@ -109,7 +148,8 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
                 child: Icon(
                   HugeIcons.strokeRoundedMinusSign,
                   size: 24,
-                  color: _canDecrement ? theme.colorIcon : theme.colorIconDisable,
+                  color:
+                      _canDecrement ? theme.colorIcon : theme.colorIconDisable,
                 ),
               ),
             ),
@@ -119,10 +159,13 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
             child: InkWell(
               onTap: () {
                 NumberInputWithList(
+                  maxValue: pickerMaxValue,
                   onChanged: (int value) {
                     Navigator.pop(context);
-                    number = value;
-                    setState(() {});
+                    final boundedValue = _applyBounds(value);
+                    setState(() {
+                      number = boundedValue;
+                    });
                     widget.onChanged?.call(number);
                   },
                 ).show(context);
@@ -152,7 +195,8 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
             height: 54,
             child: GestureDetector(
               onTap: _increment,
-              onLongPressStart: _canIncrement ? (_) => _startAutoIncrement() : null,
+              onLongPressStart:
+                  _canIncrement ? (_) => _startAutoIncrement() : null,
               onLongPressEnd: (_) => _stopAutoIncrement(),
               child: Container(
                 decoration: BoxDecoration(
@@ -162,7 +206,9 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
                     bottomRight: Radius.circular(4),
                   ),
                   border: Border.all(
-                    color: _canIncrement ? theme.colorBorderField : Colors.transparent,
+                    color: _canIncrement
+                        ? theme.colorBorderField
+                        : Colors.transparent,
                     width: 1,
                   ),
                 ),
@@ -170,7 +216,8 @@ class _PlusMinusInputViewState extends State<PlusMinusInputView> {
                 child: Icon(
                   HugeIcons.strokeRoundedPlusSign,
                   size: 24,
-                  color: _canIncrement ? theme.colorIcon : theme.colorIconDisable,
+                  color:
+                      _canIncrement ? theme.colorIcon : theme.colorIconDisable,
                 ),
               ),
             ),
@@ -186,13 +233,22 @@ class PlusMinusButton extends StatelessWidget {
   final int value;
   final ValueChanged<int> onChanged;
   final int minValue;
+  final int? maxValue;
 
   const PlusMinusButton({
     super.key,
     required this.value,
     required this.onChanged,
     this.minValue = 1,
+    this.maxValue,
   });
+
+  bool get canIncrement {
+    if (maxValue == null) {
+      return true;
+    }
+    return value < maxValue!;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -217,6 +273,7 @@ class PlusMinusButton extends StatelessWidget {
         GestureDetector(
           onTap: () {
             NumberInputWithList(
+              maxValue: maxValue ?? 100,
               onChanged: (int value) {
                 Navigator.pop(context);
                 onChanged(value);
@@ -251,7 +308,7 @@ class PlusMinusButton extends StatelessWidget {
             padding: EdgeInsets.zero,
             iconSize: 20,
             icon: const Icon(Icons.add),
-            onPressed: () {
+            onPressed: !canIncrement ? null : () {
               onChanged(value + 1);
             },
           ),
@@ -268,12 +325,30 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
 
   const NumberInputWithList({
     super.key,
-    this.minValue = 0,
+    this.minValue = 1,
     this.maxValue = 100,
     this.onChanged,
   });
 
-  List<int> get numbers => List.generate((maxValue - minValue) + 1, (index) => minValue + index);
+  List<int> get numbers {
+    if (maxValue < minValue) {
+      return [minValue];
+    }
+    return List.generate(
+        (maxValue - minValue) +1, (index) {
+          return minValue + index;
+    });
+  }
+
+  int _clampValue(int value) {
+    if (value < minValue) {
+      return minValue;
+    }
+    if (value > maxValue) {
+      return maxValue;
+    }
+    return value;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -287,7 +362,7 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
       //check if number is valid
       if (number != null) {
         if (onChanged != null) {
-          onChanged!(number);
+          onChanged!(_clampValue(number));
         }
       }
     }
@@ -298,13 +373,13 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
       onSubmitted: (String value) {
         getNumberFromText();
       },
-      itemBuilder: (BuildContext item, int index, int p2) {
-        final number = minValue + index;
+      itemBuilder: (BuildContext item, int number, int index) {
+
         return ListTile(
           title: Text('$number'),
           onTap: () {
             if (onChanged != null) {
-              onChanged!(number);
+              onChanged!(_clampValue(number));
             }
           },
         );
@@ -316,19 +391,22 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
         //check if number is valid
         if (number != null) {
           if (onChanged != null) {
-            onChanged!(number);
+            onChanged!(_clampValue(number));
           }
         }
       },
       searchItems: (keyword, page, size) async {
-        return numbers.where((number) => number.toString().contains(keyword)).toList();
+        return numbers
+            .where((number) => number.toString().contains(keyword))
+            .toList();
       },
       title: 'Nhập số lượng',
       addItemWidget: Icon(
         Icons.navigate_next_sharp,
         color: context.appTheme.colorIcon,
       ),
-      itemBuilderWithIndex: (BuildContext context, int index) => const AppDivider(),
+      itemBuilderWithIndex: (BuildContext context, int index) =>
+          const AppDivider(),
       enableLoadMore: false,
     );
   }

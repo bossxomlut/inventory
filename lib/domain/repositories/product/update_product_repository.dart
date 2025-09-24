@@ -3,15 +3,19 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/product/update_product_repository.dart';
 import '../../entities/product/inventory.dart';
+import '../../entities/product/inventory_lot_allocation.dart';
+import '../../services/product/inventory_lot_service.dart';
 import 'inventory_repository.dart';
 import 'transaction_repository.dart';
 
 part 'update_product_repository.g.dart';
 
 @riverpod
-UpdateProductRepository updateProductRepository(Ref ref) => UpdateProductRepositoryImpl(
+UpdateProductRepository updateProductRepository(Ref ref) =>
+    UpdateProductRepositoryImpl(
       productRepository: ref.read(productRepositoryProvider),
       transactionRepository: ref.read(transactionRepositoryProvider),
+      inventoryLotService: ref.read(inventoryLotServiceProvider),
     );
 
 abstract class UpdateProductRepository {
@@ -19,7 +23,27 @@ abstract class UpdateProductRepository {
 
   Future<Product> updateProduct(Product product, TransactionCategory category);
 
-  Future<void> deductStock(int productId, int quantity, TransactionCategory category);
+  Future<StockDeductionResult> deductStock(
+      int productId, int quantity, TransactionCategory category);
 
-  Future<void> refillStock(int productId, int quantity, TransactionCategory category);
+  Future<void> refillStock(
+    int productId,
+    int quantity,
+    TransactionCategory category, {
+    List<InventoryLotAllocation> allocations = const [],
+  });
+}
+
+class StockDeductionResult {
+  const StockDeductionResult({
+    required this.productId,
+    required this.quantity,
+    required this.allocations,
+  });
+
+  final int productId;
+  final int quantity;
+  final List<InventoryLotAllocation> allocations;
+
+  bool get hasAllocations => allocations.isNotEmpty;
 }

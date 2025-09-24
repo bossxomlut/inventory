@@ -12,6 +12,7 @@ class TransactionRepositoryImpl extends TransactionRepository
     return TransactionCollection()
       ..quantity = item.quantity
       ..productId = item.productId
+      ..inventoryLotId = item.inventoryLotId
       ..type = item.type
       ..category = item.category
       ..timestamp = item.timestamp;
@@ -32,6 +33,7 @@ class TransactionRepositoryImpl extends TransactionRepository
         type: collection.type,
         category: collection.category,
         timestamp: collection.timestamp,
+        inventoryLotId: collection.inventoryLotId,
       ),
     );
   }
@@ -41,6 +43,7 @@ class TransactionRepositoryImpl extends TransactionRepository
     return TransactionCollection()
       ..id = item.id
       ..productId = item.productId
+      ..inventoryLotId = item.inventoryLotId
       ..quantity = item.quantity
       ..type = item.type
       ..category = item.category
@@ -49,7 +52,12 @@ class TransactionRepositoryImpl extends TransactionRepository
 
   @override
   Future<List<Transaction>> getTransactionsByProductId(int productId) {
-    return iCollection.filter().productIdEqualTo(productId).sortByTimestampDesc().findAll().then(
+    return iCollection
+        .filter()
+        .productIdEqualTo(productId)
+        .sortByTimestampDesc()
+        .findAll()
+        .then(
           (collections) => collections.map(
             (TransactionCollection e) {
               return Transaction(
@@ -59,6 +67,7 @@ class TransactionRepositoryImpl extends TransactionRepository
                 type: e.type,
                 category: e.category,
                 timestamp: e.timestamp,
+                inventoryLotId: e.inventoryLotId,
               );
             },
           ).toList(),

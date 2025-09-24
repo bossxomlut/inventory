@@ -21,23 +21,34 @@ class CheckRepositoryImpl extends CheckRepository {
   });
 
   @override
-  Future<CheckedProduct> addProductToSession(CheckSession session, Product product, int actualQuantity,
-      {String? note}) {
+  Future<CheckedProduct> addProductToSession(
+    CheckSession session,
+    Product product,
+    int actualQuantity,
+    List<CheckedInventoryLot> lots, {
+    String? note,
+  }) {
+    final computedQuantity = lots.isNotEmpty
+        ? lots.fold<int>(0, (sum, lot) => sum + lot.actualQuantity)
+        : actualQuantity;
+
     return checkedProductRepository.create(
       CheckedProduct(
         id: undefinedId,
         product: product,
         expectedQuantity: product.quantity,
         session: session,
-        actualQuantity: actualQuantity,
+        actualQuantity: computedQuantity,
         note: note,
         checkDate: DateTime.now(),
+        lots: lots,
       ),
     );
   }
 
   @override
-  Future<CheckSession> createSession(String name, String createdBy, {String? note, String? checkedBy}) {
+  Future<CheckSession> createSession(String name, String createdBy,
+      {String? note, String? checkedBy}) {
     return checkSessionRepository.create(
       CheckSession(
         id: undefinedId,
@@ -56,17 +67,35 @@ class CheckRepositoryImpl extends CheckRepository {
   Future<CheckSession> updateSession(CheckSession session) async {
     //get all checkedProduct of this session
 
-    final checkedProducts = await checkedProductRepository.getCheckedListBySession(session.id);
+    final checkedProducts =
+        await checkedProductRepository.getCheckedListBySession(session.id);
     // Update the session with the current checks
 
     //update product quantity in session
     //add to transaction
 
     for (var check in checkedProducts) {
+      final updatedProduct = check.product.copyWith(
+        quantity: check.actualQuantity,
+        enableExpiryTracking: check.product.enableExpiryTracking,
+        lots: check.product.enableExpiryTracking
+            ? check.lots
+                .where((lot) => lot.actualQuantity > 0)
+                .map(
+                  (lot) => InventoryLot(
+                    id: lot.inventoryLotId ?? undefinedId,
+                    productId: check.product.id,
+                    quantity: lot.actualQuantity,
+                    expiryDate: lot.expiryDate,
+                    manufactureDate: lot.manufactureDate,
+                  ),
+                )
+                .toList()
+            : const [],
+      );
+
       await updateProductRepository.updateProduct(
-        check.product.copyWith(
-          quantity: check.actualQuantity,
-        ),
+        updatedProduct,
         TransactionCategory.check,
       );
     }
@@ -91,7 +120,13 @@ class CheckRepositoryImpl extends CheckRepository {
 
   @override
   Future<CheckedProduct> updateInventoryCheck(CheckedProduct check) {
-    return checkedProductRepository.update(check);
+    final computedQuantity = check.lots.isNotEmpty
+        ? check.lots.fold<int>(0, (sum, lot) => sum + lot.actualQuantity)
+        : check.actualQuantity;
+
+    return checkedProductRepository.update(
+      check.copyWith(actualQuantity: computedQuantity),
+    );
   }
 
   @override
@@ -111,7 +146,8 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
   int? getId(CheckSession item) => item.id;
 
   @override
-  Future<CheckSession> getItemFromCollection(CheckSessionCollection collection) async {
+  Future<CheckSession> getItemFromCollection(
+      CheckSessionCollection collection) async {
     return CheckSession(
       id: collection.id,
       name: collection.name,
@@ -152,8 +188,10 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
   @override
   Future<List<CheckSession>> getActiveSessions() {
     return isar.txnSync(() async {
-      final collections =
-          isar.checkSessionCollections.filter().statusEqualTo(CheckSessionStatus.inProgress).findAllSync();
+      final collections = isar.checkSessionCollections
+          .filter()
+          .statusEqualTo(CheckSessionStatus.inProgress)
+          .findAllSync();
 
       return Future.wait(collections.map(getItemFromCollection));
     });
@@ -162,8 +200,10 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
   @override
   Future<List<CheckSession>> getDoneSessions() {
     return isar.txnSync(() async {
-      final collections =
-          isar.checkSessionCollections.filter().statusEqualTo(CheckSessionStatus.completed).findAllSync();
+      final collections = isar.checkSessionCollections
+          .filter()
+          .statusEqualTo(CheckSessionStatus.completed)
+          .findAllSync();
 
       return Future.wait(collections.map(getItemFromCollection));
     });
@@ -172,11 +212,27 @@ class CheckSessionRepositoryImpl extends CheckSessionRepository
 
 class CheckedProductRepositoryImpl extends CheckedProductRepository
     with IsarCrudRepository<CheckedProduct, CheckedProductCollection> {
+  IsarCollection<CheckedInventoryLotCollection> get _lotCollection =>
+      isar.collection<CheckedInventoryLotCollection>();
+
   @override
   int? getId(CheckedProduct item) => item.id;
 
   @override
-  Future<CheckedProduct> getItemFromCollection(CheckedProductCollection collection) async {
+  Future<CheckedProduct> getItemFromCollection(
+      CheckedProductCollection collection) async {
+    await collection.product.load();
+    await collection.session.load();
+    if (collection.product.value != null) {
+      await collection.product.value!.images.load();
+      await collection.product.value!.lots.load();
+    }
+    await collection.lots.load();
+
+    final lots = collection.lots
+        .map((lot) => CheckedInventoryLotCollectionMapping().from(lot))
+        .toList();
+
     return CheckedProduct(
       id: collection.id,
       product: ProductMapping().from(collection.product.value!),
@@ -185,6 +241,7 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
       actualQuantity: collection.actualQuantity,
       checkDate: collection.checkDate,
       note: collection.note,
+      lots: lots,
     );
   }
 
@@ -212,7 +269,68 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
   }
 
   @override
-  Future<LoadResult<CheckedProduct>> search(String keyword, int page, int limit, {Map<String, dynamic>? filter}) async {
+  Future<CheckedProduct> create(CheckedProduct item) async {
+    final collection = createNewItem(item);
+    final lotCollections =
+        item.lots.map((lot) => CheckedInventoryLotMapping().from(lot)).toList();
+
+    await isar.writeTxn(() async {
+      await iCollection.put(collection);
+      await collection.product.save();
+      await collection.session.save();
+
+      for (final lotCollection in lotCollections) {
+        lotCollection.checkedProduct.value = collection;
+        await _lotCollection.put(lotCollection);
+        await lotCollection.checkedProduct.save();
+      }
+    });
+
+    return read(collection.id);
+  }
+
+  @override
+  Future<CheckedProduct> update(CheckedProduct item) async {
+    final existing = await iCollection.get(item.id);
+    if (existing == null) {
+      throw NotFoundException('Checked product not found');
+    }
+
+    final lotCollections =
+        item.lots.map((lot) => CheckedInventoryLotMapping().from(lot)).toList();
+
+    await isar.writeTxn(() async {
+      existing
+        ..expectedQuantity = item.expectedQuantity
+        ..actualQuantity = item.actualQuantity
+        ..checkDate = item.checkDate
+        ..note = item.note;
+      existing.product.value = ProductCollectionMapping().from(item.product);
+      existing.session.value = SessionCollectionMapping().from(item.session);
+
+      await iCollection.put(existing);
+      await existing.product.save();
+      await existing.session.save();
+
+      await existing.lots.load();
+      final oldIds = existing.lots.map((lot) => lot.id).toList();
+      if (oldIds.isNotEmpty) {
+        await _lotCollection.deleteAll(oldIds);
+      }
+
+      for (final lotCollection in lotCollections) {
+        lotCollection.checkedProduct.value = existing;
+        await _lotCollection.put(lotCollection);
+        await lotCollection.checkedProduct.save();
+      }
+    });
+
+    return read(item.id);
+  }
+
+  @override
+  Future<LoadResult<CheckedProduct>> search(String keyword, int page, int limit,
+      {Map<String, dynamic>? filter}) async {
     return isar.txn(() async {
       // Get all collections first
       var collections = await iCollection.where().findAll();
@@ -220,16 +338,24 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
       // Apply keyword search if needed (e.g., by product name or checked by)
       if (keyword.isNotEmpty) {
         collections = collections
-            .where((c) => c.product.value?.name.toLowerCase().contains(keyword.toLowerCase()) ?? false)
+            .where((c) =>
+                c.product.value?.name
+                    .toLowerCase()
+                    .contains(keyword.toLowerCase()) ??
+                false)
             .toList();
       }
 
       // Apply date range filter if provided
-      if (filter != null && filter.containsKey('startDate') && filter.containsKey('endDate')) {
+      if (filter != null &&
+          filter.containsKey('startDate') &&
+          filter.containsKey('endDate')) {
         final startDate = filter['startDate'] as DateTime;
         final endDate = filter['endDate'] as DateTime;
-        collections =
-            collections.where((c) => c.checkDate.isAfter(startDate) && c.checkDate.isBefore(endDate)).toList();
+        collections = collections
+            .where((c) =>
+                c.checkDate.isAfter(startDate) && c.checkDate.isBefore(endDate))
+            .toList();
       }
 
       // Apply sorting
@@ -259,37 +385,33 @@ class CheckedProductRepositoryImpl extends CheckedProductRepository
         );
       }
 
-      final endIndex = startIndex + limit > collections.length ? collections.length : startIndex + limit;
+      final endIndex = startIndex + limit > collections.length
+          ? collections.length
+          : startIndex + limit;
       final paginatedCollections = collections.sublist(startIndex, endIndex);
 
       // Convert to domain entities
       return LoadResult<CheckedProduct>(
-        data: await Future.wait(paginatedCollections.map(getItemFromCollection)),
+        data:
+            await Future.wait(paginatedCollections.map(getItemFromCollection)),
         totalCount: collections.length,
       );
     });
   }
 
   @override
-  Future<List<CheckedProduct>> getCheckedListBySession(int sessionId) {
-    return isar.txnSync(() async {
-      // Using Sync API as in original code
-      final collections = isar.checkedProductCollections
-          .filter()
-          .session(
-            (q) => q.idEqualTo(sessionId),
-          )
-          .findAllSync();
+  Future<List<CheckedProduct>> getCheckedListBySession(int sessionId) async {
+    final collections = await isar.checkedProductCollections
+        .filter()
+        .session((q) => q.idEqualTo(sessionId))
+        .findAll();
 
-      return Future.wait(collections.map(getItemFromCollection));
-    });
+    return Future.wait(collections.map(getItemFromCollection));
   }
 
   @override
-  Future<List<CheckedProduct>> getAll() {
-    return isar.txnSync(() async {
-      final collections = isar.checkedProductCollections.where().findAllSync();
-      return Future.wait(collections.map(getItemFromCollection));
-    });
+  Future<List<CheckedProduct>> getAll() async {
+    final collections = await isar.checkedProductCollections.where().findAll();
+    return Future.wait(collections.map(getItemFromCollection));
   }
 }

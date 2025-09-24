@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 
 import '../../domain/index.dart';
 import '../../domain/repositories/order/order_repository.dart';
+import '../../domain/entities/product/inventory_lot_allocation.dart';
 import '../../domain/repositories/product/update_product_repository.dart';
 import '../../provider/load_list.dart';
 import '../database/isar_repository.dart';
@@ -60,13 +61,37 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
     });
 
     if (createdOrder.status == OrderStatus.confirmed) {
-      //update product stock
+      final allocationCollection = isar.collection<OrderLotAllocationCollection>();
+      final allocationRecords = <OrderLotAllocationCollection>[];
+
       for (final item in items) {
-        await _updateProductRepository.deductStock(
+        final deductionResult = await _updateProductRepository.deductStock(
           item.productId,
           item.quantity,
           TransactionCategory.createOrder,
         );
+
+        if (deductionResult.hasAllocations) {
+          allocationRecords.addAll(
+            deductionResult.allocations.map(
+              (allocation) => OrderLotAllocationCollection()
+                ..orderId = createdOrder.id
+                ..productId = allocation.productId
+                ..lotId = allocation.lotId
+                ..quantity = allocation.quantity
+                ..expiryDate = allocation.expiryDate
+                ..manufactureDate = allocation.manufactureDate
+                ..lotCreatedAt = allocation.createdAt
+                ..lotUpdatedAt = allocation.updatedAt,
+            ),
+          );
+        }
+      }
+
+      if (allocationRecords.isNotEmpty) {
+        await isar.writeTxn(() async {
+          await allocationCollection.putAll(allocationRecords);
+        });
       }
     }
 
@@ -162,8 +187,30 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
     //update product stock
     final itemCollection = isar.collection<OrderItemCollection>();
     final items = await itemCollection.filter().orderIdEqualTo(order.id).findAll();
+    final allocationCollection = isar.collection<OrderLotAllocationCollection>();
     for (final item in items) {
-      await _updateProductRepository.refillStock(item.productId, item.quantity, TransactionCategory.cancelOrder);
+      final allocations = (await allocationCollection
+              .filter()
+              .orderIdEqualTo(order.id)
+              .and()
+              .productIdEqualTo(item.productId)
+              .findAll())
+          .map((e) => InventoryLotAllocation(
+                productId: e.productId,
+                lotId: e.lotId,
+                quantity: e.quantity,
+                expiryDate: e.expiryDate,
+                manufactureDate: e.manufactureDate,
+                createdAt: e.lotCreatedAt,
+                updatedAt: e.lotUpdatedAt,
+              ))
+          .toList();
+      await _updateProductRepository.refillStock(
+        item.productId,
+        item.quantity,
+        TransactionCategory.cancelOrder,
+        allocations: allocations,
+      );
     }
   }
 

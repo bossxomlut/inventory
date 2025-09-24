@@ -22,11 +22,18 @@ class CheckedList extends _$CheckedList {
   Future<void> addCheck({
     required Product product,
     required int checkQuantity,
+    required List<CheckedInventoryLot> lots,
     String? note,
   }) async {
     final checkRepo = ref.read(checkRepositoryProvider);
 
-    final checkedProduct = await checkRepo.addProductToSession(arg, product, checkQuantity, note: note);
+    final checkedProduct = await checkRepo.addProductToSession(
+      arg,
+      product,
+      checkQuantity,
+      lots,
+      note: note,
+    );
 
     showSuccess(message: 'Thêm sản phẩm vào kiểm kê thành công');
     state = AsyncValue.data([
@@ -38,6 +45,7 @@ class CheckedList extends _$CheckedList {
   Future<void> updateCheck({
     required CheckedProduct checkedProduct,
     required int checkQuantity,
+    required List<CheckedInventoryLot> lots,
     String? note,
   }) async {
     final checkRepo = ref.read(checkRepositoryProvider);
@@ -46,13 +54,15 @@ class CheckedList extends _$CheckedList {
       checkedProduct.copyWith(
         actualQuantity: checkQuantity,
         note: note,
+        lots: lots,
       ),
     );
 
     showSuccess(message: 'Cập nhật kiểm kê thành công');
 
     state = AsyncValue.data([
-      ...state.valueOrNull!.map((e) => e.id == updatedProduct.id ? updatedProduct : e),
+      ...state.valueOrNull!
+          .map((e) => e.id == updatedProduct.id ? updatedProduct : e),
     ]);
   }
 

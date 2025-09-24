@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/helpers/double_utils.dart';
 import '../../core/index.dart';
@@ -37,7 +38,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     super.initState();
     // Khởi tạo provider với ID của sản phẩm
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(productDetailProvider(productId).notifier).updateProductData(widget.product);
+      ref
+          .read(productDetailProvider(productId).notifier)
+          .updateProductData(widget.product);
       ref.read(productDetailProvider(productId).notifier).loadProduct();
     });
   }
@@ -50,7 +53,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     if (images.isEmpty || images.first.path == null) return;
 
     // Extract all valid image paths
-    final imagePaths = images.where((img) => img.path != null).map((img) => img.path!).toList();
+    final imagePaths = images
+        .where((img) => img.path != null)
+        .map((img) => img.path!)
+        .toList();
 
     if (imagePaths.isEmpty) return;
 
@@ -78,7 +84,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
       return;
     }
 
-    EditProductScreen(product: ref.read(productDetailProvider(productId)) ?? widget.product).show(context).whenComplete(
+    EditProductScreen(
+            product:
+                ref.read(productDetailProvider(productId)) ?? widget.product)
+        .show(context)
+        .whenComplete(
       () {
         ref.read(productDetailProvider(productId).notifier).loadProduct();
       },
@@ -114,7 +124,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.qr_code, size: 24, color: appTheme.colorPrimary),
+                      Icon(Icons.qr_code,
+                          size: 24, color: appTheme.colorPrimary),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
@@ -132,7 +143,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ElevatedButton.icon(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Đã sao chép mã sản phẩm vào bộ nhớ đệm')),
+                          const SnackBar(
+                              content: Text(
+                                  'Đã sao chép mã sản phẩm vào bộ nhớ đệm')),
                         );
                         Navigator.pop(context);
                       },
@@ -146,7 +159,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ElevatedButton.icon(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Chức năng lưu trữ mã sẽ được triển khai sau')),
+                          const SnackBar(
+                              content: Text(
+                                  'Chức năng lưu trữ mã sẽ được triển khai sau')),
                         );
                         Navigator.pop(context);
                       },
@@ -176,6 +191,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     final product = productDetail ?? widget.product;
     final appTheme = context.appTheme;
     final images = product.images ?? [];
+    final dateFormat = DateFormat('dd/MM/yyyy');
     final hasImages = images.isNotEmpty && images.first.path != null;
     final size = MediaQuery.of(context).size;
     final permissionsAsync = ref.watch(currentUserPermissionsProvider);
@@ -187,7 +203,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     return Scaffold(
       backgroundColor: appTheme.colorBackground,
       body: RefreshIndicator(
-        onRefresh: () => ref.read(productDetailProvider(productId).notifier).loadProduct(),
+        onRefresh: () =>
+            ref.read(productDetailProvider(productId).notifier).loadProduct(),
         child: CustomScrollView(
           slivers: [
             // App bar with image as background
@@ -227,9 +244,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                               Image.file(
                                 File(images[selectedIndex].path!),
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
                                   color: appTheme.colorBackgroundSublest,
-                                  child: const Icon(Icons.broken_image, size: 64),
+                                  child:
+                                      const Icon(Icons.broken_image, size: 64),
                                 ),
                               ),
                               DecoratedBox(
@@ -237,7 +256,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                   gradient: LinearGradient(
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
-                                    colors: [Colors.transparent, appTheme.colorDynamicBlack80],
+                                    colors: [
+                                      Colors.transparent,
+                                      appTheme.colorDynamicBlack80
+                                    ],
                                   ),
                                 ),
                               ),
@@ -250,24 +272,36 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                   children: [
                                     Text(
                                       product.name,
-                                      style: appTheme.headingSemibold24Default.copyWith(
+                                      style: appTheme.headingSemibold24Default
+                                          .copyWith(
                                         color: appTheme.colorTextWhite,
-                                        shadows: [const Shadow(blurRadius: 2.0, color: Colors.black54)],
+                                        shadows: [
+                                          const Shadow(
+                                              blurRadius: 2.0,
+                                              color: Colors.black54)
+                                        ],
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    if (product.barcode != null && product.barcode!.isNotEmpty) ...[
+                                    if (product.barcode != null &&
+                                        product.barcode!.isNotEmpty) ...[
                                       const SizedBox(height: 4),
                                       GestureDetector(
-                                        onTap: () => _showBarcodeBottomSheet(product),
+                                        onTap: () =>
+                                            _showBarcodeBottomSheet(product),
                                         child: Row(
                                           children: [
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: appTheme.colorTextWhite.withOpacity(0.3),
-                                                borderRadius: BorderRadius.circular(12),
+                                                color: appTheme.colorTextWhite
+                                                    .withOpacity(0.3),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
                                               ),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
@@ -275,21 +309,27 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                   Icon(
                                                     Icons.qr_code,
                                                     size: 14,
-                                                    color: appTheme.colorTextWhite,
+                                                    color:
+                                                        appTheme.colorTextWhite,
                                                   ),
                                                   const SizedBox(width: 4),
                                                   Text(
                                                     product.barcode!,
-                                                    style: appTheme.textRegular12Default.copyWith(
-                                                      color: appTheme.colorTextWhite,
-                                                      fontWeight: FontWeight.w500,
+                                                    style: appTheme
+                                                        .textRegular12Default
+                                                        .copyWith(
+                                                      color: appTheme
+                                                          .colorTextWhite,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                     ),
                                                   ),
                                                   const SizedBox(width: 4),
                                                   Icon(
                                                     Icons.info_outline,
                                                     size: 14,
-                                                    color: appTheme.colorTextWhite,
+                                                    color:
+                                                        appTheme.colorTextWhite,
                                                   ),
                                                 ],
                                               ),
@@ -325,23 +365,29 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 children: [
                                   Text(
                                     product.name,
-                                    style: appTheme.headingSemibold24Default.copyWith(
+                                    style: appTheme.headingSemibold24Default
+                                        .copyWith(
                                       color: appTheme.colorTextWhite,
                                     ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  if (product.barcode != null && product.barcode!.isNotEmpty) ...[
+                                  if (product.barcode != null &&
+                                      product.barcode!.isNotEmpty) ...[
                                     const SizedBox(height: 4),
                                     GestureDetector(
-                                      onTap: () => _showBarcodeBottomSheet(product),
+                                      onTap: () =>
+                                          _showBarcodeBottomSheet(product),
                                       child: Row(
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: appTheme.colorTextWhite.withOpacity(0.3),
-                                              borderRadius: BorderRadius.circular(12),
+                                              color: appTheme.colorTextWhite
+                                                  .withOpacity(0.3),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
@@ -349,13 +395,17 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                 Icon(
                                                   Icons.qr_code,
                                                   size: 14,
-                                                  color: appTheme.colorTextWhite,
+                                                  color:
+                                                      appTheme.colorTextWhite,
                                                 ),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   product.barcode!,
-                                                  style: appTheme.textRegular12Default.copyWith(
-                                                    color: appTheme.colorTextWhite,
+                                                  style: appTheme
+                                                      .textRegular12Default
+                                                      .copyWith(
+                                                    color:
+                                                        appTheme.colorTextWhite,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
@@ -425,7 +475,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               SliverToBoxAdapter(
                 child: Container(
                   height: 80,
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: images.length,
@@ -441,7 +492,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           height: 72,
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: selectedIndex == index ? appTheme.colorPrimary : Colors.transparent,
+                              color: selectedIndex == index
+                                  ? appTheme.colorPrimary
+                                  : Colors.transparent,
                               width: 2,
                             ),
                             boxShadow: [
@@ -456,7 +509,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             File(imageUrl),
                             fit: BoxFit.cover,
                             cacheWidth: 200,
-                            errorBuilder: (context, error, stackTrace) => Container(
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
                               color: appTheme.colorBackgroundSublest,
                               child: const Icon(Icons.broken_image, size: 24),
                             ),
@@ -488,11 +542,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Giá',
-                                        style: appTheme.textRegular14Default.copyWith(
+                                        style: appTheme.textRegular14Default
+                                            .copyWith(
                                           color: appTheme.colorTextSubtle,
                                         ),
                                       ),
@@ -503,7 +559,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                             price?.sellingPrice != null
                                                 ? '${price.sellingPrice.priceFormat()}'
                                                 : 'Chưa có giá',
-                                            style: appTheme.headingSemibold24Default.copyWith(
+                                            style: appTheme
+                                                .headingSemibold24Default
+                                                .copyWith(
                                               color: price?.sellingPrice != null
                                                   ? appTheme.colorPrimary
                                                   : appTheme.colorTextSubtle,
@@ -512,11 +570,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         },
                                         error: (error, stackTrace) => Text(
                                           'Lỗi tải giá',
-                                          style: appTheme.headingSemibold24Default.copyWith(
+                                          style: appTheme
+                                              .headingSemibold24Default
+                                              .copyWith(
                                             color: appTheme.colorError,
                                           ),
                                         ),
-                                        loading: () => const CircularProgressIndicator(),
+                                        loading: () =>
+                                            const CircularProgressIndicator(),
                                       ),
                                     ],
                                   ),
@@ -525,15 +586,18 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                   height: 40,
                                   width: 1,
                                   color: appTheme.colorDivider,
-                                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 16),
                                 ),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Tồn kho',
-                                        style: appTheme.textRegular14Default.copyWith(
+                                        style: appTheme.textRegular14Default
+                                            .copyWith(
                                           color: appTheme.colorTextSubtle,
                                         ),
                                       ),
@@ -541,7 +605,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                       Row(
                                         children: [
                                           Icon(
-                                            product.quantity > 0 ? Icons.check_circle : Icons.warning,
+                                            product.quantity > 0
+                                                ? Icons.check_circle
+                                                : Icons.warning,
                                             size: 20,
                                             color: product.quantity > 0
                                                 ? appTheme.colorTextSupportGreen
@@ -550,16 +616,22 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                           const SizedBox(width: 4),
                                           Text(
                                             '${product.quantity}',
-                                            style: appTheme.headingSemibold24Default.copyWith(
+                                            style: appTheme
+                                                .headingSemibold24Default
+                                                .copyWith(
                                               color: product.quantity > 0
-                                                  ? appTheme.colorTextSupportGreen
-                                                  : appTheme.colorTextSupportRed,
+                                                  ? appTheme
+                                                      .colorTextSupportGreen
+                                                  : appTheme
+                                                      .colorTextSupportRed,
                                             ),
                                           ),
                                           if (product.unit != null)
                                             Text(
                                               ' ${product.unit!.name}',
-                                              style: appTheme.textMedium14Default.copyWith(
+                                              style: appTheme
+                                                  .textMedium14Default
+                                                  .copyWith(
                                                 color: appTheme.colorTextSubtle,
                                               ),
                                             ),
@@ -570,7 +642,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 ),
                               ],
                             ),
-                            if (product.unit != null || product.category != null)
+                            if (product.unit != null ||
+                                product.category != null)
                               Container(
                                 padding: const EdgeInsets.only(top: 16),
                                 decoration: BoxDecoration(
@@ -588,18 +661,22 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         child: Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: appTheme.colorSecondary.withOpacity(0.15),
+                                            color: appTheme.colorSecondary
+                                                .withOpacity(0.15),
                                             border: Border.all(
-                                              color: appTheme.colorSecondary.withOpacity(0.5),
+                                              color: appTheme.colorSecondary
+                                                  .withOpacity(0.5),
                                               width: 1,
                                             ),
                                           ),
                                           child: Row(
                                             children: [
                                               Container(
-                                                padding: const EdgeInsets.all(8),
+                                                padding:
+                                                    const EdgeInsets.all(8),
                                                 decoration: BoxDecoration(
-                                                  color: appTheme.colorSecondary,
+                                                  color:
+                                                      appTheme.colorSecondary,
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Icon(
@@ -611,20 +688,26 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       'Danh mục',
-                                                      style: appTheme.textRegular12Default.copyWith(
-                                                        color: appTheme.colorTextSubtle,
+                                                      style: appTheme
+                                                          .textRegular12Default
+                                                          .copyWith(
+                                                        color: appTheme
+                                                            .colorTextSubtle,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       product.category!.name,
-                                                      style: appTheme.textMedium15Default,
+                                                      style: appTheme
+                                                          .textMedium15Default,
                                                       maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
                                                   ],
                                                 ),
@@ -634,24 +717,30 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         ),
                                       ),
                                     ],
-                                    if (product.unit != null && product.category != null) const SizedBox(width: 12),
+                                    if (product.unit != null &&
+                                        product.category != null)
+                                      const SizedBox(width: 12),
                                     if (product.unit != null) ...[
                                       Expanded(
                                         child: Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: appTheme.colorSecondary.withOpacity(0.15),
+                                            color: appTheme.colorSecondary
+                                                .withOpacity(0.15),
                                             border: Border.all(
-                                              color: appTheme.colorSecondary.withOpacity(0.5),
+                                              color: appTheme.colorSecondary
+                                                  .withOpacity(0.5),
                                               width: 1,
                                             ),
                                           ),
                                           child: Row(
                                             children: [
                                               Container(
-                                                padding: const EdgeInsets.all(8),
+                                                padding:
+                                                    const EdgeInsets.all(8),
                                                 decoration: BoxDecoration(
-                                                  color: appTheme.colorSecondary,
+                                                  color:
+                                                      appTheme.colorSecondary,
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Icon(
@@ -663,22 +752,30 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       'Đơn vị',
-                                                      style: appTheme.textRegular12Default.copyWith(
-                                                        color: appTheme.colorTextSubtle,
+                                                      style: appTheme
+                                                          .textRegular12Default
+                                                          .copyWith(
+                                                        color: appTheme
+                                                            .colorTextSubtle,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       product.unit!.name,
-                                                      style: appTheme.headingSemibold20Default.copyWith(
-                                                        color: appTheme.colorPrimary,
+                                                      style: appTheme
+                                                          .headingSemibold20Default
+                                                          .copyWith(
+                                                        color: appTheme
+                                                            .colorPrimary,
                                                       ),
                                                       maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                     ),
                                                   ],
                                                 ),
@@ -698,8 +795,33 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
                     const SizedBox(height: 16),
 
+                    if (product.enableExpiryTracking &&
+                        product.lots.isNotEmpty) ...[
+                      _ProductLotSection(
+                        lots: product.lots,
+                        unitName: product.unit?.name,
+                        dateFormat: dateFormat,
+                      ),
+                      const SizedBox(height: 16),
+                    ] else if (product.enableExpiryTracking) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: appTheme.colorBackgroundSurface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: appTheme.colorBorderSubtle),
+                        ),
+                        child: Text(
+                          'Sản phẩm đang bật quản lý hạn sử dụng nhưng chưa có lô hàng.',
+                          style: appTheme.textRegular15Subtle,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
                     // Description section if available
-                    if (product.description != null && product.description!.isNotEmpty) ...[
+                    if (product.description != null &&
+                        product.description!.isNotEmpty) ...[
                       Padding(
                         padding: const EdgeInsets.only(top: 24, bottom: 8),
                         child: Row(
@@ -707,13 +829,15 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             Icon(
                               Icons.description_outlined,
                               size: 20,
-                              color: appTheme.colorPrimary, // was appTheme.primary
+                              color:
+                                  appTheme.colorPrimary, // was appTheme.primary
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'Mô tả',
                               style: appTheme.textMedium14Default.copyWith(
-                                color: appTheme.colorTextInverse, // was appTheme.onBackground
+                                color: appTheme
+                                    .colorTextInverse, // was appTheme.onBackground
                               ),
                             ),
                           ],
@@ -755,19 +879,23 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           Text(
                             'Lịch sử giao dịch',
                             style: appTheme.headingSemibold20Default.copyWith(
-                              color: appTheme.colorTextDefault, // correct property
+                              color:
+                                  appTheme.colorTextDefault, // correct property
                             ),
                           ),
                         ],
                       ),
                     ),
                     Consumer(
-                      builder: (BuildContext context, WidgetRef ref, Widget? child) {
-                        final transactionRepo = ref.watch(getTransactionsByProductIdProvider(productId));
+                      builder:
+                          (BuildContext context, WidgetRef ref, Widget? child) {
+                        final transactionRepo = ref.watch(
+                            getTransactionsByProductIdProvider(productId));
                         return transactionRepo.map(
                             data: (AsyncData<List<Transaction>> data) {
                               if (data.value.isEmpty) {
-                                return const Center(child: Text('Chưa có giao dịch nào'));
+                                return const Center(
+                                    child: Text('Chưa có giao dịch nào'));
                               }
 
                               final transactions = data.value!;
@@ -775,25 +903,30 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: transactions.length,
-                                padding: const EdgeInsets.symmetric(horizontal: 0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 0),
                                 itemBuilder: (context, index) {
                                   final transaction = transactions[index];
                                   return ColoredBox(
                                     color: appTheme.colorBackgroundSurface,
                                     child: ListTile(
-                                      leading: getTransactionIcon(transaction.type, appTheme),
+                                      leading: getTransactionIcon(
+                                          transaction.type, appTheme),
                                       title: Text(
                                         '${transaction.category.displayName}',
-                                        style: appTheme.textRegular14Default.copyWith(
+                                        style: appTheme.textRegular14Default
+                                            .copyWith(
                                           color: appTheme.colorTextDefault,
                                         ),
                                       ),
                                       subtitle: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             '${transaction.timestamp.timeAgo}',
-                                            style: appTheme.textRegular12Default.copyWith(
+                                            style: appTheme.textRegular12Default
+                                                .copyWith(
                                               color: appTheme.colorTextSubtle,
                                             ),
                                           ),
@@ -803,17 +936,23 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         constraints: BoxConstraints(
                                           maxWidth: 100,
                                         ),
-                                        child: QuantityWidget(quantity: transaction.quantity),
+                                        child: QuantityWidget(
+                                            quantity: transaction.quantity),
                                       ),
                                     ),
                                   );
                                 },
-                                separatorBuilder: (BuildContext context, int index) => AppDivider(),
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        AppDivider(),
                               );
                             },
-                            error: (AsyncError<List<Transaction>> error) => Center(child: Text('Lỗi: ${error.error}')),
-                            loading: (AsyncLoading<List<Transaction>> loading) =>
-                                const Center(child: CircularProgressIndicator()));
+                            error: (AsyncError<List<Transaction>> error) =>
+                                Center(child: Text('Lỗi: ${error.error}')),
+                            loading:
+                                (AsyncLoading<List<Transaction>> loading) =>
+                                    const Center(
+                                        child: CircularProgressIndicator()));
                       },
                     ),
 
@@ -828,7 +967,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     );
   }
 
-  Widget getTransactionIcon(TransactionType transaction, AppThemeData appTheme) {
+  Widget getTransactionIcon(
+      TransactionType transaction, AppThemeData appTheme) {
     switch (transaction) {
       case TransactionType.increase:
         return Icon(
@@ -846,5 +986,162 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
           color: appTheme.colorTextSupportBlue,
         );
     }
+  }
+}
+
+class _ProductLotSection extends StatelessWidget {
+  const _ProductLotSection({
+    required this.lots,
+    required this.dateFormat,
+    this.unitName,
+  });
+
+  final List<InventoryLot> lots;
+  final DateFormat dateFormat;
+  final String? unitName;
+
+  @override
+  Widget build(BuildContext context) {
+    if (lots.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = context.appTheme;
+    final sortedLots = [...lots]
+      ..sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorBackgroundSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorBorderSubtle),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.inventory_2_outlined, color: theme.colorPrimary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Lô hàng theo hạn sử dụng',
+                  style: theme.textMedium16Default,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...List.generate(sortedLots.length, (index) {
+            final lot = sortedLots[index];
+            return Padding(
+              padding: EdgeInsets.only(
+                  bottom: index == sortedLots.length - 1 ? 0 : 12),
+              child: _LotListTile(
+                lot: lot,
+                dateFormat: dateFormat,
+                unitName: unitName,
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _LotListTile extends StatelessWidget {
+  const _LotListTile({
+    required this.lot,
+    required this.dateFormat,
+    this.unitName,
+  });
+
+  final InventoryLot lot;
+  final DateFormat dateFormat;
+  final String? unitName;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final expiryDate =
+        DateTime(lot.expiryDate.year, lot.expiryDate.month, lot.expiryDate.day);
+    final daysDifference = expiryDate.difference(today).inDays;
+    final isExpired = daysDifference < 0;
+
+    final statusText = isExpired
+        ? 'Đã hết hạn'
+        : daysDifference == 0
+            ? 'Hết hạn hôm nay'
+            : 'Còn $daysDifference ngày';
+    final statusColor =
+        isExpired ? theme.colorTextSupportRed : theme.colorTextSupportGreen;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorBorderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.calendar_month, size: 18, color: theme.colorPrimary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Hết hạn: ${dateFormat.format(lot.expiryDate)}',
+                  style: theme.textMedium15Default,
+                ),
+              ),
+              Text(
+                '${lot.quantity}',
+                style: theme.headingSemibold20Default,
+              ),
+              if (unitName != null)
+                Text(
+                  ' $unitName',
+                  style: theme.textMedium14Subtle,
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  statusText,
+                  style:
+                      theme.textRegular12Default.copyWith(color: statusColor),
+                ),
+              ),
+              if (lot.manufactureDate != null) ...[
+                const SizedBox(width: 12),
+                Icon(Icons.factory_outlined,
+                    size: 16, color: theme.colorIconSubtle),
+                const SizedBox(width: 4),
+                Text(
+                  'SX: ${dateFormat.format(lot.manufactureDate!)}',
+                  style: theme.textRegular13Subtle,
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

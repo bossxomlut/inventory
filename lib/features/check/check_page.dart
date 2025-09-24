@@ -36,7 +36,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
         );
   }
 
-  bool get _canModifySession => !isDone && _hasPermission(PermissionKey.inventoryCreateSession);
+  bool get _canModifySession =>
+      !isDone && _hasPermission(PermissionKey.inventoryCreateSession);
 
   void _openProductDetailBTS(
     Product product, {
@@ -49,7 +50,9 @@ class _CheckPageState extends ConsumerState<CheckPage> {
       product: product,
       currentQuantity: currentCheck?.actualQuantity,
       note: currentCheck?.note,
-      onSave: (int quantity, [String? note]) async {
+      currentCheck: currentCheck,
+      onSave: (int quantity, List<CheckedInventoryLot> lots,
+          [String? note]) async {
         try {
           // Thêm sản phẩm vào session thông qua repository
           final checkRepo = ref.read(checkedListProvider(session).notifier);
@@ -58,6 +61,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
             await checkRepo.updateCheck(
               checkedProduct: currentCheck,
               checkQuantity: quantity,
+              lots: lots,
               note: note,
             );
           } else {
@@ -65,6 +69,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
             await checkRepo.addCheck(
               product: product,
               checkQuantity: quantity,
+              lots: lots,
               note: note,
             );
           }
@@ -82,7 +87,9 @@ class _CheckPageState extends ConsumerState<CheckPage> {
 
     if (product != null) {
       //search for current list of checked products
-      final existingCheck = ref.read(checkedListProvider(session).notifier).checkExistProduct(product: product);
+      final existingCheck = ref
+          .read(checkedListProvider(session).notifier)
+          .checkExistProduct(product: product);
 
       if (existingCheck != null) {
         // Nếu sản phẩm đã được kiểm kê, mở chi tiết kiểm kê hiện tại
@@ -100,7 +107,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
 
     try {
       final searchProductRepo = ref.read(searchProductRepositoryProvider);
-      final product = await searchProductRepo.searchByBarcode(barcode.rawValue ?? '');
+      final product =
+          await searchProductRepo.searchByBarcode(barcode.rawValue ?? '');
       _onSearchProductResult(product);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -152,7 +160,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const Icon(Icons.warning_amber,
+                    size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
                   'Không thể tải quyền truy cập',
@@ -173,9 +182,14 @@ class _CheckPageState extends ConsumerState<CheckPage> {
       ),
       data: (permissions) {
         final theme = context.appTheme;
-        final canViewSession = permissions.contains(PermissionKey.inventoryView);
-        final canModifySession = permissions.contains(PermissionKey.inventoryCreateSession) && !isDone;
-        final canFinalizeSession = permissions.contains(PermissionKey.inventoryFinalizeSession) && !isDone;
+        final canViewSession =
+            permissions.contains(PermissionKey.inventoryView);
+        final canModifySession =
+            permissions.contains(PermissionKey.inventoryCreateSession) &&
+                !isDone;
+        final canFinalizeSession =
+            permissions.contains(PermissionKey.inventoryFinalizeSession) &&
+                !isDone;
 
         if (!canViewSession) {
           return Scaffold(
@@ -204,7 +218,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.info_outline, color: Colors.white, size: 20),
+                  icon: const Icon(Icons.info_outline,
+                      color: Colors.white, size: 20),
                   onPressed: _showSessionInfo,
                 ),
               ),
@@ -246,7 +261,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                   ),
                 ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: theme.colorBackgroundSurface,
                   border: Border.all(
@@ -266,7 +282,9 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                         ),
                         const SizedBox(height: 4),
                         FutureBuilder(
-                          future: ref.read(checkRepositoryProvider).getChecksBySession(widget.session.id),
+                          future: ref
+                              .read(checkRepositoryProvider)
+                              .getChecksBySession(widget.session.id),
                           builder: (context, snapshot) {
                             final count = snapshot.data?.length ?? 0;
                             return Text(
@@ -307,7 +325,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
               Expanded(
                 child: Consumer(
                   builder: (context, ref, _) {
-                    final checks = ref.watch(checkedListProvider(session)).value;
+                    final checks =
+                        ref.watch(checkedListProvider(session)).value;
 
                     if (checks.isNullOrEmpty) {
                       return SingleChildScrollView(
@@ -362,7 +381,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: theme.colorPrimary.withOpacity(0.3),
+                                        color:
+                                            theme.colorPrimary.withOpacity(0.3),
                                         blurRadius: 8,
                                         offset: const Offset(0, 4),
                                       ),
@@ -373,15 +393,18 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.transparent,
                                       shadowColor: Colors.transparent,
-                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24, vertical: 12),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
-                                    icon: const Icon(Icons.search, color: Colors.white),
+                                    icon: const Icon(Icons.search,
+                                        color: Colors.white),
                                     label: Text(
                                       'Tìm sản phẩm',
-                                      style: theme.buttonSemibold14.copyWith(color: Colors.white),
+                                      style: theme.buttonSemibold14
+                                          .copyWith(color: Colors.white),
                                     ),
                                   ),
                                 ),
@@ -400,11 +423,13 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                         return CheckProductCard(
                           check: check,
                           onTap: canModifySession
-                              ? () => _openProductDetailBTS(check.product, currentCheck: check)
+                              ? () => _openProductDetailBTS(check.product,
+                                  currentCheck: check)
                               : null,
                         );
                       },
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
                     );
                   },
                 ),
@@ -414,27 +439,37 @@ class _CheckPageState extends ConsumerState<CheckPage> {
           bottomNavigationBar: canFinalizeSession
               ? Consumer(
                   builder: (context, ref, child) {
-                    final haveCheck = ref.watch(checkedListProvider(session)).value.isNotNullAndEmpty;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: theme.colorBackgroundSurface,
-                      ),
-                      child: AppButton.primary(
-                        title: 'Hoàn thành kiểm kê',
-                        onPressed: haveCheck
-                            ? () {
-                                try {
-                                  final notifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
-                                  notifier.updateStatus(widget.session, CheckSessionStatus.completed);
-                                  appRouter.popForced();
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Lỗi: $e')),
-                                  );
+                    final haveCheck = ref
+                        .watch(checkedListProvider(session))
+                        .value
+                        .isNotNullAndEmpty;
+                    return SafeArea(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: theme.colorBackgroundSurface,
+                        ),
+                        child: AppButton.primary(
+                          title: 'Hoàn thành kiểm kê',
+                          onPressed: haveCheck
+                              ? () {
+                                  try {
+                                    final notifier = ref.read(
+                                        loadCheckSessionProvider(
+                                                ActiveViewType.active)
+                                            .notifier);
+                                    notifier.updateStatus(widget.session,
+                                        CheckSessionStatus.completed);
+                                    appRouter.popForced();
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Lỗi: $e')),
+                                    );
+                                  }
                                 }
-                              }
-                            : null,
+                              : null,
+                        ),
                       ),
                     );
                   },
@@ -443,7 +478,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
           floatingActionButton: canModifySession
               ? FloatingActionButton(
                   onPressed: _onSearchProduct,
-                  child: const Icon(Icons.search, color: Colors.white, size: 28),
+                  child:
+                      const Icon(Icons.search, color: Colors.white, size: 28),
                 )
               : null,
         );
@@ -542,7 +578,8 @@ class CheckProductCard extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       check.note!,
-                                      style: theme.textRegular12Default.copyWith(
+                                      style:
+                                          theme.textRegular12Default.copyWith(
                                         color: theme.colorPrimary,
                                         fontStyle: FontStyle.italic,
                                       ),
@@ -560,12 +597,15 @@ class CheckProductCard extends StatelessWidget {
 
                     // Status Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(check.status, theme).withOpacity(0.1),
+                        color: _getStatusColor(check.status, theme)
+                            .withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _getStatusColor(check.status, theme).withOpacity(0.2),
+                          color: _getStatusColor(check.status, theme)
+                              .withOpacity(0.2),
                           width: 1,
                         ),
                       ),
@@ -597,7 +637,8 @@ class CheckProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildQuantityChip(dynamic theme, String label, String value, Color color) {
+  Widget _buildQuantityChip(
+      dynamic theme, String label, String value, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

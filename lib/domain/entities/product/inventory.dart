@@ -26,7 +26,8 @@ class Category with _$Category {
     DateTime? updatedDate, // Ngày cập nhật
   }) = _Category;
 
-  factory Category.fromJson(Map<String, dynamic> json) => _$CategoryFromJson(json);
+  factory Category.fromJson(Map<String, dynamic> json) =>
+      _$CategoryFromJson(json);
 }
 
 // Model cho Đơn vị (Unit)
@@ -55,9 +56,12 @@ class Product with _$Product {
     Unit? unit, // Đơn vị
     List<ImageStorageModel>? images, // URL ảnh (tùy chọn)
     String? description, // Mô tả (tùy chọn)
+    @Default(false) bool enableExpiryTracking, // Theo dõi theo hạn sử dụng
+    @Default(<InventoryLot>[]) List<InventoryLot> lots, // Danh sách lô hàng
   }) = _Product;
 
-  factory Product.fromJson(Map<String, dynamic> json) => _$ProductFromJson(json);
+  factory Product.fromJson(Map<String, dynamic> json) =>
+      _$ProductFromJson(json);
 }
 
 // Model cho Giao dịch (Transaction)
@@ -70,9 +74,28 @@ class Transaction with _$Transaction {
     required TransactionType type, // Loại giao dịch
     required TransactionCategory category, // Loại giao dịch
     required DateTime timestamp, // Thời gian giao dịch
+    int? inventoryLotId, // ID lô hàng liên quan (nếu có)
   }) = _Transaction;
 
-  factory Transaction.fromJson(Map<String, dynamic> json) => _$TransactionFromJson(json);
+  factory Transaction.fromJson(Map<String, dynamic> json) =>
+      _$TransactionFromJson(json);
+}
+
+// Model cho Lô hàng (InventoryLot)
+@freezed
+class InventoryLot with _$InventoryLot {
+  const factory InventoryLot({
+    required int id, // Mã lô hàng
+    required int productId, // Thuộc sản phẩm nào
+    required int quantity, // Số lượng của lô
+    required DateTime expiryDate, // Ngày hết hạn
+    DateTime? manufactureDate, // Ngày sản xuất (tùy chọn)
+    DateTime? createdAt, // Ngày tạo
+    DateTime? updatedAt, // Ngày cập nhật
+  }) = _InventoryLot;
+
+  factory InventoryLot.fromJson(Map<String, dynamic> json) =>
+      _$InventoryLotFromJson(json);
 }
 
 // Enum cho loại giao dịch
@@ -96,6 +119,7 @@ enum TransactionType {
 enum TransactionCategory {
   create, // Tạo mới
   update, // Cập nhật
+  lotUpdate, // Quản lý lô hàng
   stockIn, // Nhập kho
   stockOut, // Xuất kho
   check, // Kiểm kê
@@ -111,6 +135,8 @@ extension TransactionCategoryX on TransactionCategory {
         return 'Tạo mới';
       case TransactionCategory.update:
         return 'Cập nhật';
+      case TransactionCategory.lotUpdate:
+        return 'Điều chỉnh lô hàng';
       case TransactionCategory.stockIn:
         return 'Nhập kho';
       case TransactionCategory.stockOut:
@@ -135,11 +161,13 @@ class InventoryCheck with _$InventoryCheck {
     required DateTime checkDate, // Ngày kiểm kê
     required String createdBy, // Người tạo phiếu kiểm
     required String checkedBy, // Người kiểm kê
-    @Default(InventoryCheckStatus.inProgress) InventoryCheckStatus status, // Trạng thái
+    @Default(InventoryCheckStatus.inProgress)
+    InventoryCheckStatus status, // Trạng thái
     String? notes, // Ghi chú
   }) = _InventoryCheck;
 
-  factory InventoryCheck.fromJson(Map<String, dynamic> json) => _$InventoryCheckFromJson(json);
+  factory InventoryCheck.fromJson(Map<String, dynamic> json) =>
+      _$InventoryCheckFromJson(json);
 }
 
 // Model cho từng mục trong phiếu kiểm kê
@@ -156,5 +184,6 @@ class InventoryCheckItem with _$InventoryCheckItem {
     String? transactionId, // ID giao dịch nếu đã cập nhật
   }) = _InventoryCheckItem;
 
-  factory InventoryCheckItem.fromJson(Map<String, dynamic> json) => _$InventoryCheckItemFromJson(json);
+  factory InventoryCheckItem.fromJson(Map<String, dynamic> json) =>
+      _$InventoryCheckItemFromJson(json);
 }

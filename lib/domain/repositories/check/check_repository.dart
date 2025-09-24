@@ -16,13 +16,16 @@ CheckRepository checkRepository(Ref ref) => CheckRepositoryImpl(
     );
 
 @riverpod
-CheckSessionRepository checkSessionRepository(_) => CheckSessionRepositoryImpl();
+CheckSessionRepository checkSessionRepository(_) =>
+    CheckSessionRepositoryImpl();
 
 @riverpod
-CheckedProductRepository checkedProductRepository(_) => CheckedProductRepositoryImpl();
+CheckedProductRepository checkedProductRepository(_) =>
+    CheckedProductRepositoryImpl();
 
 abstract class CheckRepository {
-  Future<CheckSession> createSession(String name, String createdBy, {String? note});
+  Future<CheckSession> createSession(String name, String createdBy,
+      {String? note});
 
   Future<CheckSession> updateSession(CheckSession session);
 
@@ -32,7 +35,13 @@ abstract class CheckRepository {
 
   Future<List<CheckSession>> getDoneSessions();
 
-  Future<CheckedProduct> addProductToSession(CheckSession session, Product product, int actualQuantity, {String? note});
+  Future<CheckedProduct> addProductToSession(
+    CheckSession session,
+    Product product,
+    int actualQuantity,
+    List<CheckedInventoryLot> lots, {
+    String? note,
+  });
 
   Future<List<CheckedProduct>> getChecksBySession(int sessionId);
 
@@ -41,7 +50,8 @@ abstract class CheckRepository {
   Future<void> deleteInventoryCheck(CheckedProduct check);
 }
 
-abstract class CheckSessionRepository implements CrudRepository<CheckSession, int> {
+abstract class CheckSessionRepository
+    implements CrudRepository<CheckSession, int> {
   Future<List<CheckSession>> getActiveSessions();
 
   Future<List<CheckSession>> getDoneSessions();

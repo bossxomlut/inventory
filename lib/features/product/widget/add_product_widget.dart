@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:intl/intl.dart';
 import 'package:sample_app/shared_widgets/image/common_image_picker.dart';
 import 'package:sample_app/shared_widgets/index.dart';
 
@@ -38,6 +39,63 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
     final _unit = useState<Unit?>(null);
     final quantity = useState<int>(0);
     final images = useState<List<ImageStorageModel>>([]);
+    final enableExpiryTracking = useState<bool>(false);
+    final lotDrafts = useState<List<_LotDraft>>(<_LotDraft>[]);
+    final dateFormat = useMemoized(() => DateFormat('dd/MM/yyyy'));
+
+    int totalLotQuantity() =>
+        lotDrafts.value.fold<int>(0, (sum, lot) => sum + lot.quantity);
+
+    void _syncTrackedQuantity() {
+      quantity.value = totalLotQuantity();
+    }
+
+    void addLot() {
+      lotDrafts.value = [
+        ...lotDrafts.value,
+        const _LotDraft(id: undefinedId, quantity: 0),
+      ];
+      _syncTrackedQuantity();
+    }
+
+    void updateLot(int index, _LotDraft updated) {
+      if (index < 0 || index >= lotDrafts.value.length) {
+        return;
+      }
+      final updatedLots = [...lotDrafts.value];
+      updatedLots[index] = updated;
+      lotDrafts.value = updatedLots;
+      _syncTrackedQuantity();
+    }
+
+    void updateLotQuantity(int index, int value) {
+      updateLot(index, lotDrafts.value[index].copyWith(quantity: value));
+    }
+
+    void updateLotExpiry(int index, DateTime date) {
+      updateLot(
+          index,
+          lotDrafts.value[index]
+              .copyWith(expiryDate: date, clearExpiryDate: false));
+    }
+
+    void updateLotManufacture(int index, DateTime? date) {
+      updateLot(
+          index,
+          lotDrafts.value[index].copyWith(
+            manufactureDate: date,
+            clearManufactureDate: date == null,
+          ));
+    }
+
+    void removeLot(int index) {
+      if (index < 0 || index >= lotDrafts.value.length) {
+        return;
+      }
+      final updatedLots = [...lotDrafts.value]..removeAt(index);
+      lotDrafts.value = updatedLots;
+      _syncTrackedQuantity();
+    }
 
     final permissionsAsync = ref.watch(currentUserPermissionsProvider);
     final bool canCreateProduct = permissionsAsync.maybeWhen(
@@ -65,22 +123,41 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
         return;
       }
 
+      List<InventoryLot> inventoryLots = const [];
+      int finalQuantity = quantity.value;
+
+      if (enableExpiryTracking.value) {
+        final validationMessage = _validateLotDrafts(lotDrafts.value);
+        if (validationMessage != null) {
+          showError(message: validationMessage);
+          return;
+        }
+
+        inventoryLots = lotDrafts.value
+            .map(
+              (lot) => lot.toInventoryLot(productId: undefinedId),
+            )
+            .toList();
+        finalQuantity =
+            inventoryLots.fold<int>(0, (sum, lot) => sum + lot.quantity);
+      }
+
       final newProduct = Product(
         id: undefinedId,
-        // Generate unique ID
         name: name,
         description: note,
         images: [...images.value],
-        // Add image IDs if needed
-        quantity: quantity.value,
+        quantity: finalQuantity,
         category: _category.value,
         unit: _unit.value,
         barcode: sku,
+        enableExpiryTracking: enableExpiryTracking.value,
+        lots: inventoryLots,
       );
 
       ref.read(loadProductProvider.notifier).createProduct(newProduct);
     }
-    
+
     final Widget form = Scaffold(
       extendBody: true,
       resizeToAvoidBottomInset: true,
@@ -97,7 +174,8 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
             IconButton(
               icon: Text(
                 'Lưu',
-                style: context.appTheme.textMedium15Default.copyWith(color: Colors.white),
+                style: context.appTheme.textMedium15Default
+                    .copyWith(color: Colors.white),
               ),
               onPressed: onSave,
             ),
@@ -136,17 +214,51 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
                             separateGapItem, // Quantity
                             TitleBlockWidget(
-                              title: 'Số lượng',
+                              title: 'Tồn kho',
                               isRequired: true,
-                              child: PlusMinusInputView(
-                                initialValue: 0,
-                                onChanged: (int p0) {
-                                  quantity.value = p0;
-                                },
-                                minValue: 0,
-                              ),
+                              child: enableExpiryTracking.value
+                                  ? _LotQuantitySummary(
+                                      context,
+                                      totalLotQuantity(),
+                                    )
+                                  : PlusMinusInputView(
+                                      initialValue: 0,
+                                      onChanged: (int value) {
+                                        quantity.value = value;
+                                      },
+                                      minValue: 0,
+                                    ),
                             ),
                             separateGapItem,
+                            TitleBlockWidget(
+                              title: 'Hạn sử dụng',
+                              child: _ExpiryTrackingSwitch(
+                                value: enableExpiryTracking.value,
+                                onChanged: (value) {
+                                  enableExpiryTracking.value = value;
+                                  if (value) {
+                                    if (lotDrafts.value.isEmpty) {
+                                      addLot();
+                                    } else {
+                                      _syncTrackedQuantity();
+                                    }
+                                  }
+                                },
+                              ),
+                            ),
+                            if (enableExpiryTracking.value) ...[
+                              separateGapItem,
+                              _InventoryLotSection(
+                                lots: lotDrafts.value,
+                                dateFormat: dateFormat,
+                                onAddLot: addLot,
+                                onRemoveLot: removeLot,
+                                onQuantityChanged: updateLotQuantity,
+                                onExpiryChanged: updateLotExpiry,
+                                onManufactureChanged: updateLotManufacture,
+                              ),
+                              separateGapItem,
+                            ],
                             TitleBlockWidget(
                               title: 'Mã sản phẩm ',
                               child: AddSKUPlaceHolder(
@@ -195,7 +307,8 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                               images.value = value;
                             },
                             onImageRemoved: (ImageStorageModel file) {
-                              images.value = images.value.where((e) => e != file).toList();
+                              images.value =
+                                  images.value.where((e) => e != file).toList();
                             },
                           ),
                         ),
@@ -241,7 +354,8 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const Icon(Icons.warning_amber,
+                    size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
                   'Không thể tải quyền truy cập',
@@ -305,12 +419,81 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
   Widget build(BuildContext context, WidgetRef ref) {
     // Initialize controllers with existing product data
     final _nameController = useTextEditingController(text: product.name);
-    final _noteController = useTextEditingController(text: product.description ?? '');
+    final _noteController =
+        useTextEditingController(text: product.description ?? '');
     final _category = useState<Category?>(product.category);
     final _sku = useState<String?>(product.barcode);
     final _unit = useState<Unit?>(product.unit);
     final quantity = useState<int>(product.quantity);
     final images = useState<List<ImageStorageModel>>(product.images ?? []);
+    final enableExpiryTracking = useState<bool>(product.enableExpiryTracking);
+    final lotDrafts = useState<List<_LotDraft>>(
+      product.lots
+          .map(
+            (lot) => _LotDraft(
+              id: lot.id,
+              quantity: lot.quantity,
+              expiryDate: lot.expiryDate,
+              manufactureDate: lot.manufactureDate,
+            ),
+          )
+          .toList(),
+    );
+    final dateFormat = useMemoized(() => DateFormat('dd/MM/yyyy'));
+
+    int totalLotQuantity() =>
+        lotDrafts.value.fold<int>(0, (sum, lot) => sum + lot.quantity);
+
+    void _syncTrackedQuantity() {
+      quantity.value = totalLotQuantity();
+    }
+
+    void addLot() {
+      lotDrafts.value = [
+        ...lotDrafts.value,
+        const _LotDraft(id: undefinedId, quantity: 0),
+      ];
+      _syncTrackedQuantity();
+    }
+
+    void updateLot(int index, _LotDraft updated) {
+      if (index < 0 || index >= lotDrafts.value.length) {
+        return;
+      }
+      final updatedLots = [...lotDrafts.value];
+      updatedLots[index] = updated;
+      lotDrafts.value = updatedLots;
+      _syncTrackedQuantity();
+    }
+
+    void updateLotQuantity(int index, int value) {
+      updateLot(index, lotDrafts.value[index].copyWith(quantity: value));
+    }
+
+    void updateLotExpiry(int index, DateTime date) {
+      updateLot(
+          index,
+          lotDrafts.value[index]
+              .copyWith(expiryDate: date, clearExpiryDate: false));
+    }
+
+    void updateLotManufacture(int index, DateTime? date) {
+      updateLot(
+          index,
+          lotDrafts.value[index].copyWith(
+            manufactureDate: date,
+            clearManufactureDate: date == null,
+          ));
+    }
+
+    void removeLot(int index) {
+      if (index < 0 || index >= lotDrafts.value.length) {
+        return;
+      }
+      final updatedLots = [...lotDrafts.value]..removeAt(index);
+      lotDrafts.value = updatedLots;
+      _syncTrackedQuantity();
+    }
 
     bool isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
 
@@ -328,19 +511,41 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
         return;
       }
 
+      List<InventoryLot> inventoryLots = const [];
+      int finalQuantity = quantity.value;
+
+      if (enableExpiryTracking.value) {
+        final validationMessage = _validateLotDrafts(lotDrafts.value);
+        if (validationMessage != null) {
+          showError(message: validationMessage);
+          return;
+        }
+
+        inventoryLots = lotDrafts.value
+            .map(
+              (lot) => lot.toInventoryLot(productId: product.id),
+            )
+            .toList();
+        finalQuantity =
+            inventoryLots.fold<int>(0, (sum, lot) => sum + lot.quantity);
+      }
+
       final updatedProduct = Product(
-        id: product.id, // Keep the same ID
+        id: product.id,
         name: name,
         description: note,
         images: [...images.value],
-        quantity: quantity.value,
-        category: _category.value, // Can be null, we'll handle it in the repository
-        unit: _unit.value, // Can be null, we'll handle it in the repository
+        quantity: finalQuantity,
+        category: _category.value,
+        unit: _unit.value,
         barcode: sku,
+        enableExpiryTracking: enableExpiryTracking.value,
+        lots: inventoryLots,
       );
 
-      // Update product in the provider
-      await ref.read(loadProductProvider.notifier).updateProduct(updatedProduct, product.quantity);
+      await ref
+          .read(loadProductProvider.notifier)
+          .updateProduct(updatedProduct, product.quantity);
 
       // Close the form
       Navigator.pop(context);
@@ -363,7 +568,8 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
               : IconButton(
                   icon: Text(
                     'Lưu',
-                    style: context.appTheme.textMedium15Default.copyWith(color: Colors.white),
+                    style: context.appTheme.textMedium15Default
+                        .copyWith(color: Colors.white),
                   ),
                   onPressed: onSave,
                 ),
@@ -401,17 +607,51 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
                             separateGapItem, // Quantity
                             TitleBlockWidget(
-                              title: 'Số lượng',
+                              title: 'Tồn kho',
                               isRequired: true,
-                              child: PlusMinusInputView(
-                                initialValue: quantity.value,
-                                onChanged: (int p0) {
-                                  quantity.value = p0;
+                              child: enableExpiryTracking.value
+                                  ? _LotQuantitySummary(
+                                      context,
+                                      totalLotQuantity(),
+                                    )
+                                  : PlusMinusInputView(
+                                      initialValue: quantity.value,
+                                      onChanged: (int value) {
+                                        quantity.value = value;
+                                      },
+                                      minValue: 0,
+                                    ),
+                            ),
+                            separateGapItem,
+                            TitleBlockWidget(
+                              title: 'Hạn sử dụng',
+                              child: _ExpiryTrackingSwitch(
+                                value: enableExpiryTracking.value,
+                                onChanged: (value) {
+                                  enableExpiryTracking.value = value;
+                                  if (value) {
+                                    if (lotDrafts.value.isEmpty) {
+                                      addLot();
+                                    } else {
+                                      _syncTrackedQuantity();
+                                    }
+                                  }
                                 },
-                                minValue: 0,
                               ),
                             ),
                             separateGapItem,
+                            if (enableExpiryTracking.value) ...[
+                              _InventoryLotSection(
+                                lots: lotDrafts.value,
+                                dateFormat: dateFormat,
+                                onAddLot: addLot,
+                                onRemoveLot: removeLot,
+                                onQuantityChanged: updateLotQuantity,
+                                onExpiryChanged: updateLotExpiry,
+                                onManufactureChanged: updateLotManufacture,
+                              ),
+                              separateGapItem,
+                            ],
                             TitleBlockWidget(
                               title: 'Mã sản phẩm ',
                               child: AddSKUPlaceHolder(
@@ -460,7 +700,8 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                               images.value = value;
                             },
                             onImageRemoved: (ImageStorageModel file) {
-                              images.value = images.value.where((e) => e != file).toList();
+                              images.value =
+                                  images.value.where((e) => e != file).toList();
                             },
                           ),
                         ),
@@ -495,6 +736,390 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
       ),
     );
   }
+}
+
+class _ExpiryTrackingSwitch extends StatelessWidget {
+  const _ExpiryTrackingSwitch({
+    required this.value,
+    required this.onChanged,
+  });
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorBackgroundField,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorBorderSubtle),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Theo dõi theo lô',
+                  style: theme.textMedium15Default,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Quản lý tồn theo hạn',
+                  style: theme.textRegular12Subtle,
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: value,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Widget _LotQuantitySummary(BuildContext context, int totalQuantity) {
+  final appTheme = context.appTheme;
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    decoration: BoxDecoration(
+      color: appTheme.colorBackgroundField,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: appTheme.colorBorderSubtle),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            'Tổng số lượng lô',
+            style: appTheme.textRegular14Subtle,
+          ),
+        ),
+        Text(
+          '$totalQuantity',
+          style: appTheme.headingSemibold24Default,
+        ),
+      ],
+    ),
+  );
+}
+
+class _InventoryLotSection extends StatelessWidget {
+  const _InventoryLotSection({
+    required this.lots,
+    required this.dateFormat,
+    required this.onAddLot,
+    required this.onRemoveLot,
+    required this.onQuantityChanged,
+    required this.onExpiryChanged,
+    required this.onManufactureChanged,
+  });
+
+  final List<_LotDraft> lots;
+  final DateFormat dateFormat;
+  final VoidCallback onAddLot;
+  final void Function(int index) onRemoveLot;
+  final void Function(int index, int quantity) onQuantityChanged;
+  final void Function(int index, DateTime date) onExpiryChanged;
+  final void Function(int index, DateTime? date) onManufactureChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+
+    Future<void> pickExpiryDate(int index) async {
+      final lot = lots[index];
+      final initial = lot.expiryDate ?? DateTime.now();
+      final picked = await showDatePicker(
+        context: context,
+        initialDate: initial,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100),
+      );
+
+      if (picked != null) {
+        onExpiryChanged(index, picked);
+      }
+    }
+
+    Future<void> pickManufactureDate(int index) async {
+      final lot = lots[index];
+      final initial = lot.manufactureDate ?? DateTime.now();
+      final lastDate = lot.expiryDate ?? DateTime(2100);
+
+      final picked = await showDatePicker(
+        context: context,
+        initialDate: initial.isAfter(lastDate) ? lastDate : initial,
+        firstDate: DateTime(2000),
+        lastDate: lastDate,
+      );
+
+      if (picked != null) {
+        onManufactureChanged(index, picked);
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (lots.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorBackgroundField,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.colorBorderSubtle),
+            ),
+            child: Text(
+              'Chưa có lô. Thêm mới để bắt đầu.',
+              style: theme.textRegular14Subtle,
+            ),
+          ),
+        ...lots.asMap().entries.map((entry) {
+          final index = entry.key;
+          final lot = entry.value;
+          return Padding(
+            padding: EdgeInsets.only(bottom: index == lots.length - 1 ? 0 : 12),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: theme.colorBorderSubtle),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Lô ${index + 1}',
+                        style: theme.textMedium15Default,
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        tooltip: 'Xoá lô',
+                        onPressed: () => onRemoveLot(index),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text('Số lượng', style: theme.textRegular12Subtle),
+                  const SizedBox(height: 8),
+                  PlusMinusInputView(
+                    initialValue: lot.quantity,
+                    minValue: 0,
+                    onChanged: (value) => onQuantityChanged(index, value),
+                  ),
+                  const SizedBox(height: 16),
+                  _DatePickerField(
+                    label: 'Hết hạn',
+                    value: lot.expiryDate,
+                    dateFormat: dateFormat,
+                    onTap: () => pickExpiryDate(index),
+                    isRequired: true,
+                  ),
+                  const SizedBox(height: 12),
+                  _DatePickerField(
+                    label: 'Sản xuất (tuỳ chọn)',
+                    value: lot.manufactureDate,
+                    dateFormat: dateFormat,
+                    onTap: () => pickManufactureDate(index),
+                    onClear: lot.manufactureDate != null
+                        ? () => onManufactureChanged(index, null)
+                        : null,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: onAddLot,
+          icon: const Icon(Icons.add),
+          label: const Text('Thêm lô'),
+        ),
+      ],
+    );
+  }
+}
+
+class _DatePickerField extends StatelessWidget {
+  const _DatePickerField({
+    required this.label,
+    required this.value,
+    required this.dateFormat,
+    this.onTap,
+    this.onClear,
+    this.isRequired = false,
+    this.readOnly = false,
+  });
+
+  final String label;
+  final DateTime? value;
+  final DateFormat dateFormat;
+  final VoidCallback? onTap;
+  final VoidCallback? onClear;
+  final bool isRequired;
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+    final text = value != null ? dateFormat.format(value!) : 'Chọn ngày';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Flexible(
+              child: Text(
+                label,
+                style: theme.textRegular12Subtle,
+              ),
+            ),
+            if (isRequired)
+              Text(
+                '*',
+                style: theme.textRegular12Subtle
+                    .copyWith(color: theme.colorTextSupportRed),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: readOnly ? null : onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.colorBorderSubtle),
+              color: theme.colorBackgroundField,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    text,
+                    style: value != null
+                        ? theme.textRegular15Default
+                        : theme.textRegular15Subtle,
+                  ),
+                ),
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: (!readOnly && value != null && onClear != null)
+                      ? IconButton(
+                          icon: const Icon(Icons.close, size: 18),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: onClear,
+                          splashRadius: 18,
+                        )
+                      : null,
+                ),
+                Icon(
+                  Icons.calendar_today,
+                  size: 18,
+                  color:
+                      readOnly ? theme.colorIconDisable : theme.colorIconSubtle,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LotDraft {
+  const _LotDraft({
+    required this.id,
+    required this.quantity,
+    this.expiryDate,
+    this.manufactureDate,
+  });
+
+  final int id;
+  final int quantity;
+  final DateTime? expiryDate;
+  final DateTime? manufactureDate;
+
+  _LotDraft copyWith({
+    int? id,
+    int? quantity,
+    DateTime? expiryDate,
+    bool clearExpiryDate = false,
+    DateTime? manufactureDate,
+    bool clearManufactureDate = false,
+  }) {
+    return _LotDraft(
+      id: id ?? this.id,
+      quantity: quantity ?? this.quantity,
+      expiryDate: clearExpiryDate ? null : (expiryDate ?? this.expiryDate),
+      manufactureDate: clearManufactureDate
+          ? null
+          : (manufactureDate ?? this.manufactureDate),
+    );
+  }
+
+  InventoryLot toInventoryLot({required int productId}) {
+    return InventoryLot(
+      id: id,
+      productId: productId,
+      quantity: quantity,
+      expiryDate: expiryDate!,
+      manufactureDate: manufactureDate,
+      createdAt: null,
+      updatedAt: null,
+    );
+  }
+}
+
+String? _validateLotDrafts(List<_LotDraft> lots) {
+  if (lots.isEmpty) {
+    return 'Vui lòng thêm ít nhất một lô hàng.';
+  }
+
+  final keys = <String>{};
+
+  for (final lot in lots) {
+    if (lot.expiryDate == null) {
+      return 'Vui lòng chọn ngày hết hạn cho từng lô hàng.';
+    }
+
+    if (lot.quantity <= 0) {
+      return 'Số lượng mỗi lô phải lớn hơn 0.';
+    }
+
+    if (lot.manufactureDate != null &&
+        lot.expiryDate != null &&
+        lot.manufactureDate!.isAfter(lot.expiryDate!)) {
+      return 'Ngày sản xuất không được sau ngày hết hạn.';
+    }
+
+    final key =
+        '${lot.expiryDate!.toIso8601String()}|${lot.manufactureDate?.toIso8601String() ?? 'null'}';
+    if (!keys.add(key)) {
+      return 'Không thể có hai lô trùng cả ngày sản xuất và ngày hết hạn.';
+    }
+  }
+
+  return null;
 }
 
 class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
@@ -533,7 +1158,8 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                     textAlignVertical: TextAlignVertical.center,
                     decoration: InputDecoration(
                       hintText: 'Nhập mã SKU',
-                      hintStyle: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                      hintStyle:
+                          TextStyle(fontSize: 16, color: Colors.grey.shade600),
                       border: InputBorder.none,
                     ),
                   ),
@@ -549,7 +1175,8 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                   },
                   child: Text(
                     'Lưu',
-                    style: theme.textMedium15Default.copyWith(color: theme.colorPrimary),
+                    style: theme.textMedium15Default
+                        .copyWith(color: theme.colorPrimary),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -599,7 +1226,8 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                     child: InkWell(
                       onTap: () {
                         // Generate a random SKU code
-                        final randomSKU = 'SKU-${DateTime.now().millisecondsSinceEpoch}';
+                        final randomSKU =
+                            'SKU-${DateTime.now().millisecondsSinceEpoch}';
                         _skuController.text = randomSKU;
                       },
                       child: Container(
@@ -614,7 +1242,8 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                           children: [
                             const Icon(Icons.shuffle, size: 24),
                             const SizedBox(width: 10),
-                            Text('Tạo ngẫu nhiên', style: theme.textMedium15Subtle),
+                            Text('Tạo ngẫu nhiên',
+                                style: theme.textMedium15Subtle),
                           ],
                         ),
                       ),
@@ -662,7 +1291,8 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                                 width: 200,
                                 height: 200,
                                 fit: BoxFit.contain,
-                                placeholderBuilder: (context) => const CircularProgressIndicator(),
+                                placeholderBuilder: (context) =>
+                                    const CircularProgressIndicator(),
                               );
                             } catch (e) {
                               return const Text(
@@ -696,7 +1326,8 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                       onPressed: () {
                         final sku = _skuController.text.trim();
                         if (sku.isEmpty) {
-                          showError(message: 'Vui lòng nhập mã SKU để tải mã QR.');
+                          showError(
+                              message: 'Vui lòng nhập mã SKU để tải mã QR.');
                           return;
                         }
                         Barcode dm = Barcode.fromType(barcodeType.value);
@@ -709,7 +1340,8 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                       icon: const Icon(Icons.download),
                       label: const Text('Lưu vào thiết bị'),
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                       ),
                     ),
                   ],
@@ -724,7 +1356,8 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
   }
 }
 
-class SelectImageOptionWidget extends StatelessWidget with ShowBottomSheet<List<ImageStorageModel>> {
+class SelectImageOptionWidget extends StatelessWidget
+    with ShowBottomSheet<List<ImageStorageModel>> {
   const SelectImageOptionWidget({super.key});
 
   @override

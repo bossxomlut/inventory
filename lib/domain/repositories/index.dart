@@ -4,3 +4,4 @@ export 'crud_repository.dart';
 export 'image_storage_repository.dart';
 export 'user/user_repository.dart';
 export 'user/user_permission_repository.dart';
+export 'product/inventory_lot_repository.dart';

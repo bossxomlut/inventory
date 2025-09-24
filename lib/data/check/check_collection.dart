@@ -25,6 +25,23 @@ class CheckedProductCollection {
   late DateTime checkDate;
   String? note;
 
-  final IsarLink<CheckSessionCollection> session = IsarLink<CheckSessionCollection>();
+  final IsarLink<CheckSessionCollection> session =
+      IsarLink<CheckSessionCollection>();
   final IsarLink<ProductCollection> product = IsarLink<ProductCollection>();
+  @Backlink(to: 'checkedProduct')
+  final IsarLinks<CheckedInventoryLotCollection> lots =
+      IsarLinks<CheckedInventoryLotCollection>();
+}
+
+@collection
+class CheckedInventoryLotCollection {
+  Id id = Isar.autoIncrement;
+  int? inventoryLotId;
+  late DateTime expiryDate;
+  DateTime? manufactureDate;
+  late int expectedQuantity;
+  late int actualQuantity;
+
+  final IsarLink<CheckedProductCollection> checkedProduct =
+      IsarLink<CheckedProductCollection>();
 }

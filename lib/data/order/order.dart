@@ -32,3 +32,16 @@ class OrderItemCollection {
   late int quantity; // Quantity of the product ordered
   late double price; // Price of the product at the time of order
 }
+
+@collection
+class OrderLotAllocationCollection {
+  Id id = Isar.autoIncrement;
+  late int orderId;
+  late int productId;
+  late int lotId;
+  late int quantity;
+  late DateTime expiryDate;
+  DateTime? manufactureDate;
+  DateTime? lotCreatedAt;
+  DateTime? lotUpdatedAt;
+}

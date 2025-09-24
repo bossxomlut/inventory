@@ -22,7 +22,8 @@ class CategoryMapping extends Mapping<Category?, CategoryCollection?> {
   }
 }
 
-class CategoryCollectionMapping extends Mapping<CategoryCollection?, Category?> {
+class CategoryCollectionMapping
+    extends Mapping<CategoryCollection?, Category?> {
   @override
   CategoryCollection? from(Category? input) {
     if (input == null) {
@@ -94,7 +95,11 @@ class ProductMapping extends Mapping<Product, ProductCollection> {
       category: CategoryMapping().from(input.category.value),
       unit: unit,
       barcode: input.barcode,
-      images: input.images.map((image) => ImageStorageModelMapping().from(image)).toList(),
+      images: input.images
+          .map((image) => ImageStorageModelMapping().from(image))
+          .toList(),
+      enableExpiryTracking: input.enableExpiryTracking,
+      lots: input.lots.map((lot) => InventoryLotMapping().from(lot)).toList(),
     );
   }
 }
@@ -107,13 +112,47 @@ class ProductCollectionMapping extends Mapping<ProductCollection, Product> {
       ..name = input.name
       ..description = input.description
       ..quantity = input.quantity
+      ..enableExpiryTracking = input.enableExpiryTracking
       ..category.value = CategoryCollectionMapping().from(input.category)
       ..barcode = input.barcode
-      ..images.addAll(input.images?.map((e) => ImageStorageCollectionMapping().from(e)) ?? []);
+      ..images.addAll(
+          input.images?.map((e) => ImageStorageCollectionMapping().from(e)) ??
+              []);
 
     // We don't set the unit link here because it requires async operations
     // The unit link will be set in the repository's create/update methods
 
     return collection;
+  }
+}
+
+class InventoryLotMapping
+    extends Mapping<InventoryLot, InventoryLotCollection> {
+  @override
+  InventoryLot from(InventoryLotCollection input) {
+    return InventoryLot(
+      id: input.id,
+      productId: input.productId,
+      quantity: input.quantity,
+      expiryDate: input.expiryDate,
+      manufactureDate: input.manufactureDate,
+      createdAt: input.createdAt,
+      updatedAt: input.updatedAt,
+    );
+  }
+}
+
+class InventoryLotCollectionMapping
+    extends Mapping<InventoryLotCollection, InventoryLot> {
+  @override
+  InventoryLotCollection from(InventoryLot input) {
+    return InventoryLotCollection()
+      ..id = input.id
+      ..productId = input.productId
+      ..quantity = input.quantity
+      ..expiryDate = input.expiryDate
+      ..manufactureDate = input.manufactureDate
+      ..createdAt = input.createdAt ?? DateTime.now()
+      ..updatedAt = input.updatedAt ?? DateTime.now();
   }
 }

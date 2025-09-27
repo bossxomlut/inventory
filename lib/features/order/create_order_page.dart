@@ -16,6 +16,7 @@ import '../product/widget/index.dart';
 import 'provider/order_action_confirm_provider.dart';
 import 'provider/order_action_handler.dart';
 import 'provider/order_provider.dart';
+import 'widget/confirm_order_badge.dart';
 
 @RoutePage()
 class CreateOrderPage extends HookConsumerWidget {
@@ -73,7 +74,27 @@ class CreateOrderPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Tạo đơn'),
+      appBar: CustomAppBar(
+        title: 'Tạo đơn',
+        actions: [
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.assignment_turned_in),
+                color: Colors.white,
+                tooltip: 'Danh sách đơn hàng',
+                onPressed: () {
+                  appRouter.goToOrderStatusList();
+                },
+              ),
+              const Positioned(
+                right: 4,
+                child: ConfirmOrderBadge(),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,8 +245,7 @@ class CreateOrderPage extends HookConsumerWidget {
                           Text(
                             'Khách hàng',
                             style: theme.textMedium16Default,
-                          ),
-                          //icon next
+                          ), //icon next
                           const Spacer(),
                           const Icon(
                             Icons.arrow_forward_ios,
@@ -428,26 +448,29 @@ class OrderItemWidget extends HookConsumerWidget {
               //check box here
               Checkbox(
                 value: isSelected,
-                onChanged: !haveStock ? null : (value) {
-                  // Xử lý thay đổi trạng thái checkbox
-                  if (value == false) {
-                    // Nếu bỏ chọn, xóa sản phẩm khỏi đơn hàng
-                    ref.read(orderCreationProvider.notifier).remove(product);
-                  } else {
-                    // Nếu chọn, thêm sản phẩm vào đơn hàng
-                    ref.read(orderCreationProvider.notifier).addOrderItem(
-                          product,
-                          OrderItem(
-                            id: undefinedId,
-                            orderId: undefinedId,
-                            productId: product.id,
-                            productName: product.name,
-                            quantity: 1, // Mặc định số lượng là 1
-                            price: productPrice.valueOrNull?.sellingPrice ?? 0,
-                          ),
-                        );
-                  }
-                },
+                onChanged: !haveStock
+                    ? null
+                    : (value) {
+                        // Xử lý thay đổi trạng thái checkbox
+                        if (value == false) {
+                          // Nếu bỏ chọn, xóa sản phẩm khỏi đơn hàng
+                          ref.read(orderCreationProvider.notifier).remove(product);
+                        } else {
+                          // Nếu chọn, thêm sản phẩm vào đơn hàng
+                          ref.read(orderCreationProvider.notifier).addOrderItem(
+                                product,
+                                OrderItem(
+                                  id: undefinedId,
+                                  orderId: undefinedId,
+                                  productId: product.id,
+                                  productName: product.name,
+                                  quantity: 1,
+                                  // Mặc định số lượng là 1
+                                  price: productPrice.valueOrNull?.sellingPrice ?? 0,
+                                ),
+                              );
+                        }
+                      },
               ),
               //Tồn
               Padding(
@@ -496,6 +519,7 @@ class OrderItemSelectionWidget extends HookConsumerWidget {
 
 class CustomerInforWidget extends HookWidget with ShowBottomSheet {
   const CustomerInforWidget({super.key, this.customerName, this.customerContact, required this.onSave});
+
   final String? customerName;
   final String? customerContact;
 
@@ -546,7 +570,7 @@ class CustomerInforWidget extends HookWidget with ShowBottomSheet {
 
           // Add yo
           BottomButtonBar(
-            padding: EdgeInsets.only(top: 16),
+            padding: const EdgeInsets.only(top: 16),
             onSave: () async {
               // Lấy thông tin từ các TextField và gọi onSave
               final name = nameController.text.trim();
@@ -910,6 +934,7 @@ class OrderStatusTag extends StatelessWidget {
 
 class _OrderItem extends StatelessWidget {
   const _OrderItem({super.key, required this.product, this.orderItem});
+
   final Product product;
   final OrderItem? orderItem;
   @override
@@ -1083,9 +1108,7 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<voi
               style: context.appTheme.textRegular13Subtle,
             ),
             child: PlusMinusInputView(
-              initialValue: quantity.value,
-              minValue: 1,
-              maxValue: product.quantity, // Limit to available stock
+              initialValue: quantity.value, minValue: 1, maxValue: product.quantity, // Limit to available stock
               onChanged: (val) => quantity.value = val,
             ),
           ),
@@ -1104,8 +1127,6 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<voi
               Navigator.pop(context);
             },
           ),
-
-
         ],
       ),
     );

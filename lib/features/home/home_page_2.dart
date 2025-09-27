@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/ads/ad_banner_widget.dart';
 import '../../core/helpers/scaffold_utils.dart';
-import '../../domain/entities/permission/permission.dart';
 import '../../domain/index.dart';
 import '../../provider/permissions.dart';
 import '../../provider/theme.dart';
@@ -12,6 +11,7 @@ import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../../shared_widgets/button/bottom_button_bar.dart';
 import '../authentication/provider/auth_provider.dart';
+import '../order/widget/confirm_order_badge.dart';
 import 'menu_manager.dart';
 import 'provider/menu_group_order_provider.dart';
 
@@ -38,8 +38,7 @@ class HomePage2 extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.warning_amber,
-                          size: 40, color: Colors.redAccent),
+                      const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
                       const SizedBox(height: 12),
                       Text(
                         'Không thể tải quyền truy cập',
@@ -50,8 +49,7 @@ class HomePage2 extends ConsumerWidget {
                       Text('$error', textAlign: TextAlign.center),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () =>
-                            ref.refresh(currentUserPermissionsProvider),
+                        onPressed: () => ref.refresh(currentUserPermissionsProvider),
                         child: const Text('Thử lại'),
                       ),
                     ],
@@ -76,8 +74,7 @@ class HomePage2 extends ConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.lock_outline,
-                              size: 48, color: Colors.grey),
+                          const Icon(Icons.lock_outline, size: 48, color: Colors.grey),
                           const SizedBox(height: 16),
                           Text(
                             'Tài khoản của bạn chưa được cấp quyền truy cập tính năng nào. Vui lòng liên hệ quản trị viên.',
@@ -93,14 +90,12 @@ class HomePage2 extends ConsumerWidget {
 
               return Scaffold(
                 backgroundColor: Colors.white,
-                bottomNavigationBar:
-                    const SafeArea(child: AdBannerSmallWidget()),
+                bottomNavigationBar: const SafeArea(child: AdBannerSmallWidget()),
                 body: SafeArea(
                   child: CustomScrollView(
                     slivers: [
                       SliverPadding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
                             // Modern header with greeting
@@ -138,8 +133,7 @@ class HomePage2 extends ConsumerWidget {
                                       borderRadius: BorderRadius.circular(16),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: theme.colorPrimary
-                                              .withOpacity(0.3),
+                                          color: theme.colorPrimary.withOpacity(0.3),
                                           blurRadius: 8,
                                           offset: const Offset(0, 2),
                                         ),
@@ -154,8 +148,7 @@ class HomePage2 extends ConsumerWidget {
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Xin chào,',
@@ -176,8 +169,7 @@ class HomePage2 extends ConsumerWidget {
                                           context,
                                           icon: Icons.swap_vert,
                                           tooltip: 'Sắp xếp nhóm menu',
-                                          onTap: () =>
-                                              _openMenuReorderSheet(context, ref, menuGroups),
+                                          onTap: () => _openMenuReorderSheet(context, ref, menuGroups),
                                         ),
                                       const SizedBox(width: 12),
                                       _buildHeaderIcon(
@@ -206,8 +198,7 @@ class HomePage2 extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 4, bottom: 10),
+                                  padding: const EdgeInsets.only(left: 4, bottom: 10),
                                   child: Text(
                                     group.title,
                                     style: theme.headingSemibold20Primary,
@@ -216,8 +207,7 @@ class HomePage2 extends ConsumerWidget {
                                 GridView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
                                     crossAxisSpacing: 12,
                                     mainAxisSpacing: 12,
@@ -232,23 +222,20 @@ class HomePage2 extends ConsumerWidget {
                                       child: Container(
                                         decoration: BoxDecoration(
                                           color: theme.colorBackground,
-                                          borderRadius:
-                                              BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(20),
                                           border: Border.all(
                                             color: theme.colorBorderSublest,
                                             width: 1,
                                           ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: theme.colorPrimary
-                                                  .withOpacity(0.06),
+                                              color: theme.colorPrimary.withOpacity(0.06),
                                               blurRadius: 16,
                                               offset: const Offset(0, 4),
                                               spreadRadius: 0,
                                             ),
                                             BoxShadow(
-                                              color: Colors.black
-                                                  .withOpacity(0.02),
+                                              color: Colors.black.withOpacity(0.02),
                                               blurRadius: 4,
                                               offset: const Offset(0, 2),
                                               spreadRadius: 0,
@@ -258,48 +245,53 @@ class HomePage2 extends ConsumerWidget {
                                         child: Padding(
                                           padding: const EdgeInsets.all(16),
                                           child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                            mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              Container(
-                                                width: 48,
-                                                height: 48,
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    colors: [
-                                                      theme.colorPrimary
-                                                          .withOpacity(0.1),
-                                                      theme.colorPrimary
-                                                          .withOpacity(0.05),
-                                                    ],
-                                                    begin: Alignment.topLeft,
-                                                    end: Alignment.bottomRight,
+                                              Stack(
+                                                clipBehavior: Clip.none,
+                                                children: [
+                                                  Container(
+                                                    width: 48,
+                                                    height: 48,
+                                                    decoration: BoxDecoration(
+                                                      gradient: LinearGradient(
+                                                        colors: [
+                                                          theme.colorPrimary.withOpacity(0.1),
+                                                          theme.colorPrimary.withOpacity(0.05),
+                                                        ],
+                                                        begin: Alignment.topLeft,
+                                                        end: Alignment.bottomRight,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(14),
+                                                      border: Border.all(
+                                                        color: theme.colorPrimary.withOpacity(0.1),
+                                                        width: 1,
+                                                      ),
+                                                    ),
+                                                    child: Icon(
+                                                      item.icon,
+                                                      size: 24,
+                                                      color: theme.colorPrimary,
+                                                    ),
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(14),
-                                                  border: Border.all(
-                                                    color: theme.colorPrimary
-                                                        .withOpacity(0.1),
-                                                    width: 1,
-                                                  ),
-                                                ),
-                                                child: Icon(
-                                                  item.icon,
-                                                  size: 24,
-                                                  color: theme.colorPrimary,
-                                                ),
+                                                  // Show badge only for the order list menu item
+                                                  if (item.title == 'Danh sách đơn hàng')
+                                                    const Positioned(
+                                                      right: -8,
+                                                      top: -8,
+                                                      child: ConfirmOrderBadge(),
+                                                    ),
+                                                ],
                                               ),
                                               const SizedBox(height: 10),
                                               Flexible(
                                                 child: FittedBox(
                                                   child: Text(
                                                     item.title,
-                                                    style: theme
-                                                        .textMedium16Default,
+                                                    style: theme.textMedium16Default,
                                                     textAlign: TextAlign.center,
                                                     maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ),
@@ -315,8 +307,7 @@ class HomePage2 extends ConsumerWidget {
                             ),
                           );
                         },
-                        separatorBuilder: (BuildContext context, int index) =>
-                            const SizedBox(
+                        separatorBuilder: (BuildContext context, int index) => const SizedBox(
                           height: 12,
                         ),
                         itemCount: menuGroups.length,
@@ -425,8 +416,7 @@ class HomePage2 extends ConsumerWidget {
                               ? null
                               : () {
                                   setState(() {
-                                    tempOrder =
-                                        List<MenuGroupId>.from(initialOrder);
+                                    tempOrder = List<MenuGroupId>.from(initialOrder);
                                   });
                                 },
                           icon: const Icon(Icons.undo),
@@ -448,10 +438,7 @@ class HomePage2 extends ConsumerWidget {
                     Flexible(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceVariant
-                              .withOpacity(0.3),
+                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: ReorderableListView.builder(
@@ -484,34 +471,25 @@ class HomePage2 extends ConsumerWidget {
                                     children: [
                                       CircleAvatar(
                                         radius: 22,
-                                        backgroundColor: Theme.of(context)
-                                            .colorScheme
-                                            .primaryContainer,
+                                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                                         child: Icon(
                                           Icons.drag_indicator,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onPrimaryContainer,
+                                          color: Theme.of(context).colorScheme.onPrimaryContainer,
                                         ),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               MenuManager.titleFor(id),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .titleMedium,
+                                              style: Theme.of(context).textTheme.titleMedium,
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
                                               'Vị trí hiện tại: ${index + 1}',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
+                                              style: Theme.of(context).textTheme.bodySmall,
                                             ),
                                           ],
                                         ),
@@ -519,9 +497,7 @@ class HomePage2 extends ConsumerWidget {
                                       const SizedBox(width: 12),
                                       Icon(
                                         Icons.reorder,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .outline,
+                                        color: Theme.of(context).colorScheme.outline,
                                         size: 28,
                                       ),
                                     ],

@@ -215,6 +215,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
             actions: [
               IconButton(
                 icon: const Icon(Icons.tune),
+                color: Colors.white,
                 tooltip: 'Thiết lập xác nhận hành động',
                 onPressed: () => _openConfirmSettingsDialog(context),
               ),

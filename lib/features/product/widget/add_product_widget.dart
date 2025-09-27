@@ -257,8 +257,8 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                                 onExpiryChanged: updateLotExpiry,
                                 onManufactureChanged: updateLotManufacture,
                               ),
-                              separateGapItem,
                             ],
+                            separateGapItem,
                             TitleBlockWidget(
                               title: 'Mã sản phẩm ',
                               child: AddSKUPlaceHolder(

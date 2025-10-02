@@ -115,6 +115,13 @@ class SettingPage extends WidgetByDeviceTemplate {
                   onTap: () {},
                 ),
                 const _Divider(),
+                ListTile(
+                  leading: const Icon(Icons.email_outlined),
+                  title: const Text('Gửi phản hồi'),
+                  subtitle: const Text('Báo lỗi hoặc đề xuất tính năng mới'),
+                  onTap: () => appRouter.push(const FeedbackRoute()),
+                ),
+                const _Divider(),
                 Builder(builder: (context) {
                   final inAppReviewUtil =
                       InAppReviewUtil(ref.read(simpleStorageProvider));

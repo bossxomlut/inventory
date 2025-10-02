@@ -37,6 +37,7 @@ class AppRouter extends $AppRouter {
             // AdminGuard(),
           ],
         ),
+        AutoRoute(page: FeedbackRoute.page),
 
         //home routes
         AutoRoute(

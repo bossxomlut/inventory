@@ -40,7 +40,12 @@ class _AddCategoryState extends State<AddCategory> {
               children: [
                 const Icon(Icons.warning_amber, size: 32, color: Colors.redAccent),
                 const SizedBox(height: 12),
-                Text('Không thể tải quyền thao tác: $error'),
+                Text(
+                  LKey.permissionsLoadFailedWithError.tr(
+                    context: context,
+                    namedArgs: {'error': '$error'},
+                  ),
+                ),
               ],
             ),
           ),
@@ -70,20 +75,21 @@ class _AddCategoryState extends State<AddCategory> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         TitleBlockWidget(
-                          title: 'Tên',
+                          title: LKey.categoryFormNameLabel.tr(context: context),
                           isRequired: true,
                           child: CustomTextField.multiLines(
                             controller: nameController,
-                            hint: 'Tên danh mục',
+                            hint: LKey.categoryFormNameHint.tr(context: context),
                             maxLines: 3,
                           ),
                         ),
                         separateGapItem,
                         TitleBlockWidget(
-                          title: 'Ghi chú',
+                          title:
+                              LKey.categoryFormDescriptionLabel.tr(context: context),
                           child: CustomTextField.multiLines(
                             controller: descriptionController,
-                            hint: 'Ghi chú',
+                            hint: LKey.categoryFormDescriptionHint.tr(context: context),
                             maxLines: 3,
                           ),
                         ),
@@ -100,7 +106,10 @@ class _AddCategoryState extends State<AddCategory> {
                             final description = descriptionController.text.trim();
 
                             if (name.isEmpty) {
-                              showError(message: 'Vui lòng nhập tên danh mục.');
+                              showError(
+                                message: LKey.categoryFormNameRequired
+                                    .tr(context: context),
+                              );
                               return;
                             }
 
@@ -111,7 +120,12 @@ class _AddCategoryState extends State<AddCategory> {
                                 await ref.read(loadCategoryProvider.notifier).updateCategory(category);
                                 Navigator.pop(context);
                               } catch (error) {
-                                showError(message: 'Không thể cập nhật danh mục: $error');
+                                showError(
+                                  message: LKey.categoryFormUpdateError.tr(
+                                    context: context,
+                                    namedArgs: {'error': '$error'},
+                                  ),
+                                );
                               }
                             } else {
                               final category =

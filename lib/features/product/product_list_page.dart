@@ -8,6 +8,7 @@ import 'package:hugeicons/hugeicons.dart';
 import '../../domain/index.dart';
 import '../../provider/index.dart';
 import '../../provider/load_list.dart';
+import '../../resources/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/app_filter_chip.dart';
 import '../../shared_widgets/index.dart';
@@ -37,10 +38,11 @@ class ProductListPage extends HookConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const Icon(Icons.warning_amber,
+                    size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
-                  'Không thể tải quyền truy cập',
+                  LKey.permissionsLoadFailed.tr(context: context),
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -49,7 +51,7 @@ class ProductListPage extends HookConsumerWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref.refresh(currentUserPermissionsProvider),
-                  child: const Text('Thử lại'),
+                  child: Text(LKey.buttonRetry.tr(context: context)),
                 ),
               ],
             ),
@@ -59,12 +61,12 @@ class ProductListPage extends HookConsumerWidget {
       data: (permissions) {
         final canView = permissions.contains(PermissionKey.productView);
         if (!canView) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Bạn không có quyền xem danh sách sản phẩm.',
+                  LKey.productListPermissionDenied.tr(context: context),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -111,7 +113,8 @@ class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
 
     // Trigger search when debounced text changes
     useEffect(() {
-      Future(() => ref.read(textSearchProvider.notifier).state = debouncedSearchText);
+      Future(() =>
+          ref.read(textSearchProvider.notifier).state = debouncedSearchText);
       return null; // No cleanup needed for search call
     }, [debouncedSearchText]);
 
@@ -147,7 +150,7 @@ class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
               style: const TextStyle(color: Colors.white),
               cursorColor: Colors.white,
               decoration: InputDecoration(
-                  hintText: 'Tìm kiếm sản phẩm...',
+                  hintText: LKey.productListSearchHint.tr(context: context),
                   hintStyle: const TextStyle(color: Colors.white70),
                   border: InputBorder.none,
                   suffix: AnimatedBuilder(
@@ -191,12 +194,12 @@ class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
                   context.hideKeyboard();
                   Scaffold.of(context).openEndDrawer();
                 },
-                tooltip: 'Lọc sản phẩm',
+                tooltip: LKey.productListFilterTooltip.tr(context: context),
               ),
             ],
           )
         : CustomAppBar(
-            title: 'Sản phẩm',
+            title: LKey.productListTitle.tr(context: context),
             actions: [
               IconButton(
                 icon: const Icon(Icons.search, color: Colors.white),
@@ -207,7 +210,7 @@ class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
                     FocusScope.of(context).requestFocus(searchFocusNode);
                   });
                 },
-                tooltip: 'Tìm kiếm',
+                tooltip: LKey.productListSearchTooltip.tr(context: context),
               ),
               Builder(builder: (context) {
                 return IconButton(
@@ -218,7 +221,7 @@ class ProductAppBar extends HookConsumerWidget implements PreferredSizeWidget {
                   onPressed: () {
                     Scaffold.of(context).openEndDrawer();
                   },
-                  tooltip: 'Lọc sản phẩm',
+                  tooltip: LKey.productListFilterTooltip.tr(context: context),
                 );
               }),
             ],
@@ -262,23 +265,30 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
     }
 
     // Get created time filter display text
-    String getCreatedTimeFilterText() {
-      if (createdTimeFilter == TimeFilterType.custom && createdTimeCustomRange != null) {
-        return 'Thêm: ${formatDateRange(createdTimeCustomRange.start, createdTimeCustomRange.end)}';
-      } else if (createdTimeFilter != TimeFilterType.none) {
-        return 'Thêm: ${createdTimeFilter.displayName}';
-      }
-      return '';
+    String? createdFilterText;
+    if (createdTimeFilter != TimeFilterType.none) {
+      final value = createdTimeFilter == TimeFilterType.custom &&
+              createdTimeCustomRange != null
+          ? formatDateRange(
+              createdTimeCustomRange.start, createdTimeCustomRange.end)
+          : createdTimeFilter.displayName;
+      createdFilterText = LKey.productListCreatedFilter.tr(
+        context: context,
+        namedArgs: {'value': value},
+      );
     }
 
-    // Get updated time filter display text
-    String getUpdatedTimeFilterText() {
-      if (updatedTimeFilter == TimeFilterType.custom && updatedTimeCustomRange != null) {
-        return 'Thay đổi: ${formatDateRange(updatedTimeCustomRange.start, updatedTimeCustomRange.end)}';
-      } else if (updatedTimeFilter != TimeFilterType.none) {
-        return 'Thay đổi: ${updatedTimeFilter.displayName}';
-      }
-      return '';
+    String? updatedFilterText;
+    if (updatedTimeFilter != TimeFilterType.none) {
+      final value = updatedTimeFilter == TimeFilterType.custom &&
+              updatedTimeCustomRange != null
+          ? formatDateRange(
+              updatedTimeCustomRange.start, updatedTimeCustomRange.end)
+          : updatedTimeFilter.displayName;
+      updatedFilterText = LKey.productListUpdatedFilter.tr(
+        context: context,
+        namedArgs: {'value': value},
+      );
     }
 
     final theme = context.appTheme;
@@ -301,7 +311,8 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
                     if (sortType != ProductSortType.none)
@@ -309,7 +320,10 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                         padding: const EdgeInsets.only(right: 8),
                         child: AppFilterChip(
                           label: Text(
-                            'Sắp xếp: ${sortType.displayName}',
+                            LKey.productListSortLabel.tr(
+                              context: context,
+                              namedArgs: {'value': sortType.displayName},
+                            ),
                             style: theme.textRegular13Subtle,
                           ),
                           avatar: Icon(
@@ -320,16 +334,17 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                           backgroundColor: theme.colorBackground,
                           borderColor: colorScheme.outline.withOpacity(0.3),
                           onDeleted: () {
-                            ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
+                            ref.read(productSortTypeProvider.notifier).state =
+                                ProductSortType.none;
                           },
                         ),
                       ),
-                    if (createdTimeFilter != TimeFilterType.none)
+                    if (createdFilterText != null)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: AppFilterChip(
                           label: Text(
-                            getCreatedTimeFilterText(),
+                            createdFilterText,
                             style: theme.textRegular13Subtle,
                           ),
                           avatar: Icon(
@@ -340,19 +355,24 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                           backgroundColor: theme.colorBackground,
                           borderColor: colorScheme.outline.withOpacity(0.3),
                           onDeleted: () {
-                            ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
-                            if (ref.read(activeTimeFilterTypeProvider) == 'created') {
-                              ref.read(activeTimeFilterTypeProvider.notifier).state = null;
+                            ref
+                                .read(createdTimeFilterTypeProvider.notifier)
+                                .state = TimeFilterType.none;
+                            if (ref.read(activeTimeFilterTypeProvider) ==
+                                'created') {
+                              ref
+                                  .read(activeTimeFilterTypeProvider.notifier)
+                                  .state = null;
                             }
                           },
                         ),
                       ),
-                    if (updatedTimeFilter != TimeFilterType.none)
+                    if (updatedFilterText != null)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: AppFilterChip(
                           label: Text(
-                            getUpdatedTimeFilterText(),
+                            updatedFilterText,
                             style: TextStyle(
                               color: colorScheme.onSurfaceVariant,
                               fontSize: 13,
@@ -366,9 +386,14 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                           backgroundColor: colorScheme.surfaceVariant,
                           borderColor: colorScheme.outline.withOpacity(0.3),
                           onDeleted: () {
-                            ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
-                            if (ref.read(activeTimeFilterTypeProvider) == 'updated') {
-                              ref.read(activeTimeFilterTypeProvider.notifier).state = null;
+                            ref
+                                .read(updatedTimeFilterTypeProvider.notifier)
+                                .state = TimeFilterType.none;
+                            if (ref.read(activeTimeFilterTypeProvider) ==
+                                'updated') {
+                              ref
+                                  .read(activeTimeFilterTypeProvider.notifier)
+                                  .state = null;
                             }
                           },
                         ),
@@ -390,10 +415,13 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                                 fontSize: 13,
                               ),
                             ),
-                            backgroundColor: colorScheme.secondaryContainer.withOpacity(0.3),
+                            backgroundColor:
+                                colorScheme.secondaryContainer.withOpacity(0.3),
                             borderColor: colorScheme.secondaryContainer,
                             onDeleted: () {
-                              ref.read(multiSelectCategoryProvider.notifier).toggle(category);
+                              ref
+                                  .read(multiSelectCategoryProvider.notifier)
+                                  .toggle(category);
                             },
                           ),
                         ),
@@ -415,10 +443,13 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                                 fontSize: 13,
                               ),
                             ),
-                            backgroundColor: colorScheme.primaryContainer.withOpacity(0.3),
+                            backgroundColor:
+                                colorScheme.primaryContainer.withOpacity(0.3),
                             borderColor: colorScheme.primaryContainer,
                             onDeleted: () {
-                              ref.read(multiSelectUnitProvider.notifier).toggle(unit);
+                              ref
+                                  .read(multiSelectUnitProvider.notifier)
+                                  .toggle(unit);
                             },
                           ),
                         ),
@@ -431,11 +462,14 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
               padding: const EdgeInsets.only(right: 8),
               child: TextButton.icon(
                 onPressed: () {
-                  ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
+                  ref.read(productSortTypeProvider.notifier).state =
+                      ProductSortType.none;
                   ref.read(multiSelectCategoryProvider.notifier).clear();
                   ref.read(multiSelectUnitProvider.notifier).clear();
-                  ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
-                  ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
+                  ref.read(createdTimeFilterTypeProvider.notifier).state =
+                      TimeFilterType.none;
+                  ref.read(updatedTimeFilterTypeProvider.notifier).state =
+                      TimeFilterType.none;
                   ref.read(activeTimeFilterTypeProvider.notifier).state = null;
                 },
                 icon: Icon(
@@ -444,7 +478,7 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                   color: colorScheme.primary,
                 ),
                 label: Text(
-                  'Xóa tất cả',
+                  LKey.productListClearFilters.tr(context: context),
                   style: TextStyle(
                     fontSize: 13,
                     color: colorScheme.primary,
@@ -452,7 +486,8 @@ class ProductFilterDisplayWidget extends ConsumerWidget {
                 ),
                 style: TextButton.styleFrom(
                   shape: RoundedRectangleBorder(),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   visualDensity: VisualDensity.compact,
                 ),
               ),
@@ -473,7 +508,14 @@ class ProductListView extends HookConsumerWidget {
     final products = ref.watch(loadProductProvider);
 
     if (products.hasError) {
-      return Center(child: Text('Error: ${products.error}'));
+      return Center(
+        child: Text(
+          LKey.commonErrorWithMessage.tr(
+            context: context,
+            namedArgs: {'error': '${products.error}'},
+          ),
+        ),
+      );
     } else if (products.isEmpty) {
       return const EmptyItemWidget();
     } else {
@@ -482,7 +524,15 @@ class ProductListView extends HookConsumerWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             alignment: Alignment.centerLeft,
-            child: Text('Đã tải ${products.data.length}/${products.totalCount} sản phẩm'),
+            child: Text(
+              LKey.productListLoadedStatus.tr(
+                context: context,
+                namedArgs: {
+                  'loaded': '${products.data.length}',
+                  'total': '${products.totalCount}',
+                },
+              ),
+            ),
           ),
           Expanded(
             child: LoadMoreList<Product>(
@@ -529,7 +579,7 @@ class EmptyItemWidget extends StatelessWidget {
           const Icon(Icons.search_off, size: 48, color: Colors.grey),
           const SizedBox(height: 16),
           Text(
-            'Không tìm thấy sản phẩm nào',
+            LKey.productListEmpty.tr(context: context),
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ],

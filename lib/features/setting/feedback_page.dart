@@ -22,19 +22,13 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
   final _contentController = TextEditingController();
   final _contactController = TextEditingController();
   final _typeController = TextEditingController();
-  final _feedbackTypes = const [
-    'Báo lỗi',
-    'Đề xuất tính năng',
-    'Khác',
+  static const List<_FeedbackTypeOption> _feedbackTypes = <_FeedbackTypeOption>[
+    _FeedbackTypeOption(LKey.feedbackTypeBug),
+    _FeedbackTypeOption(LKey.feedbackTypeFeature),
+    _FeedbackTypeOption(LKey.feedbackTypeOther),
   ];
-  String _selectedType = 'Báo lỗi';
+  String _selectedTypeKey = LKey.feedbackTypeBug;
   bool _isSending = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _typeController.text = _selectedType;
-  }
 
   @override
   void dispose() {
@@ -48,10 +42,16 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
+    final _FeedbackTypeOption selectedOption =
+        _feedbackTypes.firstWhere((option) => option.key == _selectedTypeKey);
+    final String selectedLabel = selectedOption.label(context);
+    if (_typeController.text != selectedLabel) {
+      _typeController.text = selectedLabel;
+    }
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Gửi phản hồi',
+        title: LKey.feedbackTitle.tr(context: context),
       ),
       body: GestureDetector(
         onTap: () => context.hideKeyboard(),
@@ -59,7 +59,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           children: [
             Text(
-              'Chúng tôi luôn lắng nghe ý kiến của bạn. Vui lòng điền thông tin dưới đây để phản hồi lỗi hoặc đề xuất tính năng mới.',
+              LKey.feedbackDescription.tr(context: context),
               style: theme.textRegular14Subtle,
             ),
             const SizedBox(height: 16),
@@ -70,11 +70,11 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TitleBlockWidget(
-                    title: 'Loại phản hồi',
+                    title: LKey.feedbackTypeLabel.tr(context: context),
                     isRequired: true,
                     child: CustomTextField(
                       controller: _typeController,
-                      hint: 'Chọn loại phản hồi',
+                      hint: LKey.feedbackTypeHint.tr(context: context),
                       isReadOnly: true,
                       onTap: _showTypePicker,
                       suffixIcon: const Icon(Icons.keyboard_arrow_down),
@@ -82,19 +82,19 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
                   ),
                   separateGapItem,
                   TitleBlockWidget(
-                    title: 'Tiêu đề',
+                    title: LKey.feedbackTitleLabel.tr(context: context),
                     child: CustomTextField(
                       controller: _titleController,
-                      hint: 'Ví dụ: Lỗi không thể đăng nhập',
+                      hint: LKey.feedbackTitleHint.tr(context: context),
                       textInputAction: TextInputAction.next,
                     ),
                   ),
                   separateGapItem,
                   TitleBlockWidget(
-                    title: 'Thông tin liên hệ (tuỳ chọn)',
+                    title: LKey.feedbackContactLabel.tr(context: context),
                     child: CustomTextField(
                       controller: _contactController,
-                      hint: 'Email hoặc số điện thoại',
+                      hint: LKey.feedbackContactHint.tr(context: context),
                       textInputAction: TextInputAction.next,
                     ),
                   ),
@@ -106,11 +106,11 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
               padding: const EdgeInsets.all(16),
               color: Colors.white,
               child: TitleBlockWidget(
-                title: 'Nội dung chi tiết',
+                title: LKey.feedbackContentLabel.tr(context: context),
                 isRequired: true,
                 child: CustomTextField.multiLines(
                   controller: _contentController,
-                  hint: 'Mô tả chi tiết về lỗi hoặc đề xuất của bạn',
+                  hint: LKey.feedbackContentHint.tr(context: context),
                   minLines: 5,
                   maxLines: 10,
                 ),
@@ -123,7 +123,9 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
       bottomNavigationBar: BottomButtonBar(
         onCancel: () => Navigator.pop(context),
         onSave: _isSending ? null : _onSubmit,
-        saveButtonText: _isSending ? 'Đang gửi...' : 'Gửi phản hồi',
+        saveButtonText: _isSending
+            ? LKey.feedbackSubmitting.tr(context: context)
+            : LKey.feedbackSubmit.tr(context: context),
         showCancelButton: true,
         isListenKeyboardVisibility: true,
       ),
@@ -136,7 +138,10 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
     }
     final content = _contentController.text.trim();
     if (content.isEmpty) {
-      showError(context: context, message: 'Vui lòng nhập nội dung phản hồi.');
+      showError(
+        context: context,
+        message: LKey.feedbackErrorEmptyContent.tr(context: context),
+      );
       return;
     }
 
@@ -148,51 +153,66 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
 
     try {
       final packageInfo = await PackageInfo.fromPlatform();
-      final version = packageInfo.version;
-      final formattedDate =
+      final String version = packageInfo.version;
+      final String formattedDate =
           DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
-      final title = _titleController.text.trim();
-      final contact = _contactController.text.trim();
+      if (!mounted) {
+        return;
+      }
+      final String title = _titleController.text.trim();
+      final String contact = _contactController.text.trim();
+      final String typeLabel = _feedbackTypes
+          .firstWhere((o) => o.key == _selectedTypeKey)
+          .label(context);
 
-      final subjectSuffix = title.isNotEmpty ? ' - $title' : '';
-      final subject = '[Đơn và kho hàng] Phản hồi ứng dụng';
+      final String subjectSuffix = title.isNotEmpty ? ' - $title' : '';
+      final String subject = LKey.feedbackMailSubject.tr(context: context);
 
-      final bodyBuffer = StringBuffer()
-        ..writeln('Ngày gửi: $formattedDate')
-        ..writeln('Phiên bản: $version')
-        ..writeln('Loại phản hồi: $_selectedType')
-        ..writeln('Tiêu đề: ${title.isNotEmpty ? title : '---'}')
-        ..writeln('Thông tin liên hệ: ${contact.isNotEmpty ? contact : '---'}')
+      final StringBuffer bodyBuffer = StringBuffer()
+        ..writeln(
+            '${LKey.feedbackMailSendDate.tr(context: context)}: $formattedDate')
+        ..writeln('${LKey.feedbackMailVersion.tr(context: context)}: $version')
+        ..writeln('${LKey.feedbackMailType.tr(context: context)}: $typeLabel')
+        ..writeln(
+            '${LKey.feedbackMailTitle.tr(context: context)}: ${title.isNotEmpty ? title : '---'}')
+        ..writeln(
+            '${LKey.feedbackMailContact.tr(context: context)}: ${contact.isNotEmpty ? contact : '---'}')
         ..writeln()
-        ..writeln('Nội dung:')
+        ..writeln('${LKey.feedbackMailContent.tr(context: context)}:')
         ..writeln(content);
 
-      final encodedSubject = Uri.encodeComponent('$subject - v$version');
-      final encodedBody = Uri.encodeComponent(bodyBuffer.toString());
-      final feedbackUri = Uri.parse(
+      final String subjectWithTitle = subject + subjectSuffix;
+      final String encodedSubject =
+          Uri.encodeComponent('$subjectWithTitle - v$version');
+      final String encodedBody = Uri.encodeComponent(bodyBuffer.toString());
+      final Uri feedbackUri = Uri.parse(
         'mailto:bossxomlut@gmail.com?subject=$encodedSubject&body=$encodedBody',
       );
 
-      final launched = await launchUrl(
+      final bool launched = await launchUrl(
         feedbackUri,
         mode: LaunchMode.externalApplication,
       );
 
+      if (!mounted) {
+        return;
+      }
+
       if (!launched) {
         showError(
           context: context,
-          message: 'Không thể mở ứng dụng email trên thiết bị này.',
+          message: LKey.feedbackEmailOpenError.tr(context: context),
         );
       } else {
         showSuccess(
           context: context,
-          message: 'Đang mở ứng dụng email để gửi phản hồi.',
+          message: LKey.feedbackEmailOpenSuccess.tr(context: context),
         );
       }
     } catch (_) {
       showError(
         context: context,
-        message: 'Có lỗi xảy ra khi chuẩn bị email phản hồi.',
+        message: LKey.feedbackPrepareError.tr(context: context),
       );
     } finally {
       if (mounted) {
@@ -204,9 +224,9 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
   }
 
   Future<void> _showTypePicker() async {
-    final result = await _FeedbackTypeSheet(
+    final String? result = await _FeedbackTypeSheet(
       options: _feedbackTypes,
-      selected: _selectedType,
+      selectedKey: _selectedTypeKey,
     ).show(context);
 
     if (!mounted || result == null) {
@@ -214,8 +234,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
     }
 
     setState(() {
-      _selectedType = result;
-      _typeController.text = result;
+      _selectedTypeKey = result;
     });
   }
 }
@@ -223,11 +242,11 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
 class _FeedbackTypeSheet extends StatelessWidget with ShowBottomSheet<String> {
   const _FeedbackTypeSheet({
     required this.options,
-    required this.selected,
+    required this.selectedKey,
   });
 
-  final List<String> options;
-  final String selected;
+  final List<_FeedbackTypeOption> options;
+  final String selectedKey;
 
   @override
   Widget build(BuildContext context) {
@@ -242,16 +261,17 @@ class _FeedbackTypeSheet extends StatelessWidget with ShowBottomSheet<String> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
-                'Chọn loại phản hồi',
+                LKey.feedbackTypePickerTitle.tr(context: context),
                 style: theme.headingSemibold20Default,
               ),
             ),
             const Divider(height: 0),
             ...options.map(
-              (type) => ListTile(
-                title: Text(type),
-                trailing: type == selected ? const Icon(Icons.check) : null,
-                onTap: () => Navigator.of(context).pop(type),
+              (option) => ListTile(
+                title: Text(option.label(context)),
+                trailing:
+                    option.key == selectedKey ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.of(context).pop(option.key),
               ),
             ),
             const SizedBox(height: 12),
@@ -260,4 +280,12 @@ class _FeedbackTypeSheet extends StatelessWidget with ShowBottomSheet<String> {
       ),
     );
   }
+}
+
+class _FeedbackTypeOption {
+  const _FeedbackTypeOption(this.key);
+
+  final String key;
+
+  String label(BuildContext context) => key.tr(context: context);
 }

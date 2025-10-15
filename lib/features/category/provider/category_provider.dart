@@ -4,6 +4,7 @@ import '../../../domain/index.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
+import '../../../resources/index.dart';
 import '../../../shared_widgets/toast.dart';
 
 part 'category_provider.g.dart';
@@ -29,11 +30,11 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       state = state.copyWith(
         data: state.data.where((c) => c.id != category.id).toList(),
       );
-      showSuccess(message: 'Xóa danh mục thành công');
+      showSuccess(message: LKey.categoryDeleteSuccess.tr());
     } catch (e) {
       // Handle error
       state = state.copyWith(error: e.toString());
-      showError(message: 'Xóa danh mục thất bại');
+      showError(message: LKey.categoryDeleteError.tr());
     }
   }
 
@@ -43,7 +44,7 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       List<Category> categories = ref.read(multiSelectCategoryProvider).data.toList();
 
       if (categories.isEmpty) {
-        showSimpleInfo(message: 'Chưa chọn danh mục nào');
+        showSimpleInfo(message: LKey.categoryNoSelection.tr());
         return;
       }
 
@@ -55,13 +56,13 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       state = state.copyWith(
         data: state.data.where((c) => !categories.any((cat) => cat.id == c.id)).toList(),
       );
-      showSuccess(message: 'Xóa các danh mục thành công');
+      showSuccess(message: LKey.categoryBulkDeleteSuccess.tr());
 
       ref.read(multiSelectCategoryProvider.notifier).clear();
     } catch (e) {
       // Handle error
       state = state.copyWith(error: e.toString());
-      showError(message: 'Xóa các danh mục thất bại');
+      showError(message: LKey.categoryBulkDeleteError.tr());
     }
   }
 
@@ -70,12 +71,12 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       final repo = ref.read(categoryRepositoryProvider);
       final newCategory = await repo.create(category);
       state = state.copyWith(data: [newCategory, ...state.data]);
-      showSuccess(message: 'Thêm danh mục thành công');
+      showSuccess(message: LKey.categoryCreateSuccess.tr());
       return newCategory;
     } catch (e) {
       // Handle error
       state = state.copyWith(error: e.toString());
-      showError(message: 'Thêm danh mục thất bại');
+      showError(message: LKey.categoryCreateError.tr());
     }
   }
 
@@ -86,11 +87,11 @@ class LoadCategory extends _$LoadCategory with LoadListController<Category> {
       state = state.copyWith(
         data: state.data.map((c) => c.id == updatedCategory.id ? updatedCategory : c).toList(),
       );
-      showSuccess(message: 'Cập nhật danh mục thành công');
+      showSuccess(message: LKey.categoryUpdateSuccess.tr());
     } catch (e) {
       // Handle error
       state = state.copyWith(error: e.toString());
-      showError(message: 'Cập nhật danh mục thất bại');
+      showError(message: LKey.categoryUpdateError.tr());
     }
   }
 }

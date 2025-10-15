@@ -6,7 +6,7 @@ import 'check_session.dart';
 part 'checked_product.freezed.dart';
 part 'checked_product.g.dart';
 
-// Model cho sản phẩm đã kiểm kê
+// Model representing an item included in a stocktake session.
 @freezed
 class CheckedProduct with _$CheckedProduct {
   const factory CheckedProduct({
@@ -39,26 +39,6 @@ class CheckedProduct with _$CheckedProduct {
   String get productName => product.name;
   int get difference => actualQuantity - expectedQuantity;
   bool get hasDiscrepancy => actualQuantity != expectedQuantity;
-
-  // Helper methods for UI display
-  String get statusText {
-    switch (status) {
-      case CheckStatus.match:
-        return 'Khớp';
-      case CheckStatus.surplus:
-        return 'Thừa';
-      case CheckStatus.shortage:
-        return 'Thiếu';
-      default:
-        return 'Không xác định';
-    }
-  }
-
-  String get differenceText {
-    if (difference == 0) return 'Khớp';
-    if (difference > 0) return '+$difference';
-    return '$difference';
-  }
 }
 
 @freezed

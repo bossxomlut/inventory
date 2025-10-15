@@ -4,6 +4,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'dart:io';
 
 import '../../provider/theme.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
 import 'services/data_export_service.dart';
 
@@ -14,10 +15,12 @@ class ExportDataPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Xuất dữ liệu',
+        title: t(LKey.dataManagementExportTitle),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -38,20 +41,20 @@ class ExportDataPage extends ConsumerWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Thông tin',
+                          t(LKey.dataManagementExportInfoTitle),
                           style: theme.headingSemibold20Default,
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Xuất dữ liệu ứng dụng ra file để backup hoặc chuyển sang thiết bị khác. Dữ liệu được xuất ra các định dạng:',
+                      t(LKey.dataManagementExportInfoDescription),
                       style: theme.textRegular14Default,
                     ),
                     const SizedBox(height: 8),
-                    _buildInfoItem('• JSONL: Định dạng JSON Lines, chứa đầy đủ thông tin chi tiết (cho developer)'),
-                    _buildInfoItem('• CSV: Định dạng Excel/Spreadsheet, dữ liệu đơn giản dễ đọc (cho user)'),
-                    _buildInfoItem('• Backup: File backup hoàn chỉnh định dạng JSON'),
+                    _buildInfoItem(t(LKey.dataManagementExportInfoJsonl)),
+                    _buildInfoItem(t(LKey.dataManagementExportInfoCsv)),
+                    _buildInfoItem(t(LKey.dataManagementExportInfoBackup)),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.all(8),
@@ -70,7 +73,7 @@ class ExportDataPage extends ConsumerWidget {
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              'CSV chỉ xuất tên danh mục/đơn vị, JSONL xuất toàn bộ thông tin object',
+                              t(LKey.dataManagementExportInfoTip),
                               style: theme.textRegular12Default.copyWith(
                                 color: Colors.amber.shade700,
                               ),
@@ -102,14 +105,16 @@ class ExportDataPage extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Vị trí lưu file:',
+                                  t(LKey.dataManagementExportInfoStorageTitle),
                                   style: theme.textMedium14Default.copyWith(
                                     color: Platform.isAndroid ? Colors.green.shade700 : Colors.blue.shade700,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  Platform.isAndroid ? 'Documents/Đơn_và_kho_hàng/' : 'Documents/[app_name]/',
+                                  Platform.isAndroid
+                                      ? t(LKey.dataManagementExportInfoStoragePathAndroid)
+                                      : t(LKey.dataManagementExportInfoStoragePathIos),
                                   style: theme.textRegular12Sublest,
                                 ),
                               ],
@@ -128,8 +133,8 @@ class ExportDataPage extends ConsumerWidget {
             _buildExportCard(
               context,
               icon: Icons.inventory,
-              title: 'Xuất dữ liệu sản phẩm',
-              description: 'CSV: tên sản phẩm, danh mục, đơn vị. JSONL: toàn bộ thông tin chi tiết',
+              title: t(LKey.dataManagementExportProductsTitle),
+              description: t(LKey.dataManagementExportProductsDescription),
               onExportJson: () => _exportProductsJsonl(context, ref),
               onExportCsv: () => _exportProductsCsv(context, ref),
             ),
@@ -137,8 +142,8 @@ class ExportDataPage extends ConsumerWidget {
             _buildExportCard(
               context,
               icon: Icons.category,
-              title: 'Xuất dữ liệu danh mục',
-              description: 'CSV: thông tin cơ bản. JSONL: đầy đủ metadata và timestamp',
+              title: t(LKey.dataManagementExportCategoriesTitle),
+              description: t(LKey.dataManagementExportCategoriesDescription),
               onExportJson: () => _exportCategoriesJsonl(context, ref),
               onExportCsv: () => _exportCategoriesCsv(context, ref),
             ),
@@ -146,8 +151,8 @@ class ExportDataPage extends ConsumerWidget {
             _buildExportCard(
               context,
               icon: Icons.straighten,
-              title: 'Xuất dữ liệu đơn vị',
-              description: 'CSV: thông tin cơ bản. JSONL: đầy đủ metadata và timestamp',
+              title: t(LKey.dataManagementExportUnitsTitle),
+              description: t(LKey.dataManagementExportUnitsDescription),
               onExportJson: () => _exportUnitsJsonl(context, ref),
               onExportCsv: () => _exportUnitsCsv(context, ref),
             ),
@@ -155,8 +160,8 @@ class ExportDataPage extends ConsumerWidget {
             _buildExportCard(
               context,
               icon: Icons.shopping_cart,
-              title: 'Xuất dữ liệu đơn hàng',
-              description: 'CSV: thông tin cơ bản dễ đọc. JSONL: toàn bộ chi tiết đơn hàng',
+              title: t(LKey.dataManagementExportOrdersTitle),
+              description: t(LKey.dataManagementExportOrdersDescription),
               onExportJson: () => _exportOrdersJsonl(context, ref),
               onExportCsv: () => _exportOrdersCsv(context, ref),
             ),
@@ -174,19 +179,19 @@ class ExportDataPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Backup toàn bộ dữ liệu',
+                      t(LKey.dataManagementExportBackupTitle),
                       style: theme.headingSemibold20Default,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Tạo file backup chứa toàn bộ dữ liệu ứng dụng',
+                      t(LKey.dataManagementExportBackupDescription),
                       style: theme.textRegular14Default,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     AppButton.primary(
-                      title: 'Tạo file backup',
+                      title: t(LKey.dataManagementExportBackupButton),
                       onPressed: () => _createFullBackup(context, ref),
                     ),
                   ],

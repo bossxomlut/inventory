@@ -7,8 +7,8 @@ part 'auth_state.freezed.dart';
 @freezed
 class AuthState with _$AuthState {
   const factory AuthState.authenticated({
-    required User user, // Thông tin người dùng
-    DateTime? lastLoginTime, // Thời gian đăng nhập gần nhất
+    required User user, // Authenticated user information
+    DateTime? lastLoginTime, // Timestamp of the last login
   }) = Authenticated;
 
   const factory AuthState.unauthenticated() = Unauthenticated;

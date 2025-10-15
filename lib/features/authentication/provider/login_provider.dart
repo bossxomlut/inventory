@@ -218,7 +218,7 @@ class ForgotPasswordController extends _$ForgotPasswordController with CommonPro
       if (isValidFromDb) {
         return true;
       } else {
-        showError('Not found');
+        showError(LKey.loginUserNotFound.tr());
       }
     } catch (e) {
       showError(e.toString());
@@ -325,7 +325,7 @@ class ResetPasswordController extends _$ResetPasswordController with CommonProvi
       if (isValidFromDb) {
         return true;
       } else {
-        showError('Not found');
+        showError(LKey.loginUserNotFound.tr());
       }
     } catch (e) {
       showError(e.toString());

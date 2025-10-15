@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/index.dart';
 import '../../../domain/repositories/index.dart';
+import '../../../resources/index.dart';
 import '../../../shared_widgets/toast.dart';
 
 part 'check_product_provider.g.dart';
@@ -35,7 +36,7 @@ class CheckedList extends _$CheckedList {
       note: note,
     );
 
-    showSuccess(message: 'Thêm sản phẩm vào kiểm kê thành công');
+    showSuccess(message: LKey.checkProductAddSuccess.tr());
     state = AsyncValue.data([
       checkedProduct,
       ...state.valueOrNull ?? [],
@@ -58,7 +59,7 @@ class CheckedList extends _$CheckedList {
       ),
     );
 
-    showSuccess(message: 'Cập nhật kiểm kê thành công');
+    showSuccess(message: LKey.checkProductUpdateSuccess.tr());
 
     state = AsyncValue.data([
       ...state.valueOrNull!

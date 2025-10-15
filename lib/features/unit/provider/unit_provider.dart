@@ -5,7 +5,7 @@ import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
 import '../../../provider/mixin.dart';
-import '../../../shared_widgets/toast.dart';
+import '../../../resources/index.dart';
 import 'unit_filter_provider.dart';
 
 part 'unit_provider.g.dart';
@@ -34,13 +34,13 @@ class LoadUnit extends _$LoadUnit with LoadListController<Unit>, CommonProvider<
       state = state.copyWith(
         data: updatedData,
       );
-      showSuccess(message: 'Thêm đơn vị thành công');
+      showSuccess(LKey.unitCreateSuccess.tr());
       return createdUnit;
     } catch (e) {
       state = state.copyWith(
         error: e.toString(),
       );
-      showError(message: 'Thêm đơn vị thất bại: ${e.toString()}');
+      showError('${LKey.unitCreateError.tr()}: ${e.toString()}');
       rethrow;
     } finally {
       hideLoading();
@@ -58,12 +58,12 @@ class LoadUnit extends _$LoadUnit with LoadListController<Unit>, CommonProvider<
       state = state.copyWith(
         data: updatedData,
       );
-      showSuccess(message: 'Cập nhật đơn vị thành công');
+      showSuccess(LKey.unitUpdateSuccess.tr());
     } catch (e) {
       state = state.copyWith(
         error: e.toString(),
       );
-      showError(message: 'Cập nhật đơn vị thất bại: ${e.toString()}');
+      showError('${LKey.unitUpdateError.tr()}: ${e.toString()}');
       rethrow;
     } finally {
       hideLoading();
@@ -82,17 +82,17 @@ class LoadUnit extends _$LoadUnit with LoadListController<Unit>, CommonProvider<
         state = state.copyWith(
           data: updatedData,
         );
-        showSuccess(message: 'Xóa đơn vị thành công');
+        showSuccess(LKey.unitDeleteSuccess.tr());
         return true;
       } else {
-        showError(message: 'Xóa đơn vị thất bại');
+        showError(LKey.unitDeleteError.tr());
         return false;
       }
     } catch (e) {
       state = state.copyWith(
         error: e.toString(),
       );
-      showError(message: 'Xóa đơn vị thất bại: ${e.toString()}');
+      showError('${LKey.unitDeleteError.tr()}: ${e.toString()}');
       return false;
     } finally {
       hideLoading();
@@ -106,7 +106,7 @@ class LoadUnit extends _$LoadUnit with LoadListController<Unit>, CommonProvider<
       final units = ref.read(multiSelectUnitProvider).data.toList();
 
       if (units.isEmpty) {
-        showError(message: 'Không có đơn vị nào được chọn');
+        showError(LKey.unitNoSelection.tr());
         return;
       }
 
@@ -119,11 +119,11 @@ class LoadUnit extends _$LoadUnit with LoadListController<Unit>, CommonProvider<
         data: state.data.where((u) => !units.contains(u)).toList(),
       );
 
-      showSuccess(message: 'Xóa đơn vị thành công');
+      showSuccess(LKey.unitDeleteSuccess.tr());
       ref.read(multiSelectUnitProvider.notifier).clear();
     } catch (e) {
       state = state.copyWith(error: e.toString());
-      showError(message: 'Xóa đơn vị thất bại: ${e.toString()}');
+      showError('${LKey.unitDeleteError.tr()}: ${e.toString()}');
     } finally {
       hideLoading();
     }
@@ -135,7 +135,7 @@ class LoadUnit extends _$LoadUnit with LoadListController<Unit>, CommonProvider<
       final repository = ref.read(unitRepositoryProvider);
       return repository.getAll();
     } catch (e) {
-      showError(message: 'Lấy danh sách đơn vị thất bại: ${e.toString()}');
+      showError('${LKey.unitFetchError.tr()}: ${e.toString()}');
       return [];
     }
   }

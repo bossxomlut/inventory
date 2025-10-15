@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 
 import '../../domain/entities/user/user.dart';
 import '../../provider/theme.dart';
+import '../../resources/index.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import 'provider/user_management_provider.dart';
@@ -19,12 +20,13 @@ class UserPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Quản lý người dùng',
+        title: LKey.userManagementTitle.tr(context: context),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.refresh(userListProvider),
-            tooltip: 'Làm mới danh sách',
+            tooltip:
+                LKey.userManagementRefreshTooltip.tr(context: context),
           ),
         ],
       ),
@@ -32,6 +34,9 @@ class UserPage extends ConsumerWidget {
         data: (userList) {
           final regularUsers =
               userList.where((user) => user.role == UserRole.user).toList();
+          final activeCount =
+              regularUsers.where((user) => user.isActive).length;
+          final lockedCount = regularUsers.length - activeCount;
 
           return Column(
             children: [
@@ -58,13 +63,23 @@ class UserPage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Tổng số người dùng: ${regularUsers.length}',
+                            LKey.userManagementStatsTotal.tr(
+                              context: context,
+                              namedArgs: {
+                                'count': '${regularUsers.length}',
+                              },
+                            ),
                             style: theme.textMedium16Default,
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Hoạt động: ${regularUsers.where((u) => u.isActive).length} | '
-                            'Bị khóa: ${regularUsers.where((u) => !u.isActive).length}',
+                            LKey.userManagementStatsActiveLocked.tr(
+                              context: context,
+                              namedArgs: {
+                                'active': '$activeCount',
+                                'locked': '$lockedCount',
+                              },
+                            ),
                             style: theme.textRegular14Subtle,
                           ),
                         ],
@@ -103,7 +118,7 @@ class UserPage extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Lỗi tải danh sách người dùng',
+                LKey.userManagementErrorLoad.tr(context: context),
                 style: theme.textMedium16Default,
               ),
               const SizedBox(height: 8),
@@ -115,7 +130,7 @@ class UserPage extends ConsumerWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.refresh(userListProvider),
-                child: const Text('Thử lại'),
+                child: Text(LKey.buttonRetry.tr(context: context)),
               ),
             ],
           ),
@@ -152,7 +167,7 @@ class UserEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Chưa có người dùng nào',
+              LKey.userManagementEmptyTitle.tr(context: context),
               style: theme.textMedium16Default.copyWith(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
@@ -161,13 +176,13 @@ class UserEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Danh sách người dùng sẽ xuất hiện ở đây sau khi họ đăng ký tài khoản.',
+              LKey.userManagementEmptyDescription.tr(context: context),
               style: theme.textRegular14Subtle,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Người dùng mới đăng ký sẽ cần được admin kích hoạt trước khi có thể sử dụng ứng dụng.',
+              LKey.userManagementEmptyHint.tr(context: context),
               style: theme.textRegular14Sublest,
               textAlign: TextAlign.center,
             ),
@@ -190,7 +205,7 @@ class UserEmptyState extends StatelessWidget {
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
-                      'Hướng dẫn người dùng đăng ký tài khoản để bắt đầu sử dụng',
+                      LKey.userManagementEmptyCta.tr(context: context),
                       style: theme.textRegular12Default.copyWith(
                         color: theme.colorPrimary,
                       ),
@@ -308,7 +323,11 @@ class UserCard extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            user.isActive ? 'Hoạt động' : 'Bị khóa',
+                            user.isActive
+                                ? LKey.userManagementStatusActive
+                                    .tr(context: context)
+                                : LKey.userManagementStatusLocked
+                                    .tr(context: context),
                             style: theme.textRegular12Default.copyWith(
                               color: user.isActive ? Colors.green : Colors.red,
                               fontWeight: FontWeight.w600,
@@ -327,7 +346,10 @@ class UserCard extends ConsumerWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'ID: ${user.id}',
+                          LKey.userManagementInfoId.tr(
+                            context: context,
+                            namedArgs: {'id': '${user.id}'},
+                          ),
                           style: theme.textRegular14Subtle,
                         ),
                         const SizedBox(width: 16),
@@ -354,7 +376,13 @@ class UserCard extends ConsumerWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Đăng nhập cuối: ${_formatDateTime(user.lastLoginAt!)}',
+                            LKey.userManagementInfoLastLogin.tr(
+                              context: context,
+                              namedArgs: {
+                                'datetime':
+                                    _formatDateTime(user.lastLoginAt!),
+                              },
+                            ),
                             style: theme.textRegular12Sublest,
                           ),
                         ],
@@ -371,7 +399,13 @@ class UserCard extends ConsumerWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Tạo: ${_formatDateTime(user.createdAt!)}',
+                            LKey.userManagementInfoCreatedAt.tr(
+                              context: context,
+                              namedArgs: {
+                                'datetime':
+                                    _formatDateTime(user.createdAt!),
+                              },
+                            ),
                             style: theme.textRegular12Sublest,
                           ),
                         ],
@@ -405,7 +439,10 @@ class UserCard extends ConsumerWidget {
                           size: 18,
                         ),
                   label: Text(
-                    user.isActive ? 'Khóa tài khoản' : 'Kích hoạt tài khoản',
+                    user.isActive
+                        ? LKey.userManagementActionLock.tr(context: context)
+                        : LKey.userManagementActionActivate
+                            .tr(context: context),
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -433,7 +470,11 @@ class UserCard extends ConsumerWidget {
                           }
                         : null,
                     icon: const Icon(Icons.shield_outlined),
-                    label: const Text('Phân quyền'),
+                    label: Text(
+                      LKey.userManagementActionPermissions.tr(
+                        context: context,
+                      ),
+                    ),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
@@ -460,7 +501,13 @@ class UserCard extends ConsumerWidget {
               size: 28,
             ),
             const SizedBox(width: 12),
-            Text(newValue ? 'Kích hoạt tài khoản' : 'Khóa tài khoản'),
+            Text(
+              newValue
+                  ? LKey.userManagementDialogActivateTitle
+                      .tr(context: context)
+                  : LKey.userManagementDialogLockTitle
+                      .tr(context: context),
+            ),
           ],
         ),
         content: Column(
@@ -501,7 +548,10 @@ class UserCard extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        'ID: ${user.id}',
+                        LKey.userManagementInfoId.tr(
+                          context: context,
+                          namedArgs: {'id': '${user.id}'},
+                        ),
                         style: TextStyle(
                           color: Colors.grey.shade600,
                           fontSize: 14,
@@ -515,10 +565,10 @@ class UserCard extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               newValue
-                  ? 'Bạn có chắc muốn kích hoạt quyền truy cập cho người dùng này? '
-                      'Sau khi kích hoạt, người dùng sẽ có thể đăng nhập vào ứng dụng.'
-                  : 'Bạn có chắc muốn khóa quyền truy cập cho người dùng này? '
-                      'Người dùng sẽ không thể đăng nhập vào ứng dụng cho đến khi được kích hoạt lại.',
+                  ? LKey.userManagementDialogActivateMessage
+                      .tr(context: context)
+                  : LKey.userManagementDialogLockMessage
+                      .tr(context: context),
               style: const TextStyle(fontSize: 14),
             ),
           ],
@@ -526,7 +576,7 @@ class UserCard extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            child: Text(LKey.buttonCancel.tr(context: context)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -540,7 +590,11 @@ class UserCard extends ConsumerWidget {
               foregroundColor: Colors.white,
             ),
             child: Text(
-              newValue ? 'Kích hoạt' : 'Khóa',
+              newValue
+                  ? LKey.userManagementDialogConfirmActivate
+                      .tr(context: context)
+                  : LKey.userManagementDialogConfirmLock
+                      .tr(context: context),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),

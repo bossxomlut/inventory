@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../provider/theme.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
 import 'services/index.dart';
+
+enum _DangerLevel { low, medium, high }
 
 @RoutePage()
 class DeleteDataPage extends ConsumerWidget {
@@ -12,10 +15,11 @@ class DeleteDataPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
+    String t(String key) => key.tr(context: context);
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Xóa dữ liệu',
+        title: t(LKey.dataManagementDeleteTitle),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
@@ -35,20 +39,20 @@ class DeleteDataPage extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Cảnh báo',
+                        t(LKey.dataManagementDeleteWarningTitle),
                         style: theme.headingSemibold20Default.copyWith(color: Colors.red),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Thao tác xóa dữ liệu không thể hoàn tác. Hãy chắc chắn rằng bạn đã backup dữ liệu trước khi thực hiện.',
+                    t(LKey.dataManagementDeleteWarningDescription),
                     style: theme.textRegular14Default.copyWith(color: Colors.red.shade700),
                   ),
                   const SizedBox(height: 8),
-                  _buildWarningItem('• Dữ liệu bị xóa sẽ không thể khôi phục'),
-                  _buildWarningItem('• Nên backup dữ liệu trước khi xóa'),
-                  _buildWarningItem('• Thao tác xóa có thể mất vài phút'),
+                  _buildWarningItem(t(LKey.dataManagementDeleteWarningIrreversible)),
+                  _buildWarningItem(t(LKey.dataManagementDeleteWarningBackup)),
+                  _buildWarningItem(t(LKey.dataManagementDeleteWarningDuration)),
                 ],
               ),
             ),
@@ -57,54 +61,54 @@ class DeleteDataPage extends ConsumerWidget {
           _buildDeleteCard(
             context,
             icon: Icons.inventory,
-            title: 'Xóa dữ liệu sản phẩm',
-            description: 'Xóa toàn bộ sản phẩm trong kho',
-            dangerLevel: 'Trung bình',
+            title: t(LKey.dataManagementDeleteProductsTitle),
+            description: t(LKey.dataManagementDeleteProductsDescription),
+            dangerLevel: _DangerLevel.medium,
             onPressed: () => _deleteProducts(context, ref),
           ),
           const SizedBox(height: 12),
           _buildDeleteCard(
             context,
             icon: Icons.category,
-            title: 'Xóa dữ liệu danh mục',
-            description: 'Xóa toàn bộ danh mục sản phẩm',
-            dangerLevel: 'Thấp',
+            title: t(LKey.dataManagementDeleteCategoriesTitle),
+            description: t(LKey.dataManagementDeleteCategoriesDescription),
+            dangerLevel: _DangerLevel.low,
             onPressed: () => _deleteCategories(context, ref),
           ),
           const SizedBox(height: 12),
           _buildDeleteCard(
             context,
             icon: Icons.straighten,
-            title: 'Xóa dữ liệu đơn vị',
-            description: 'Xóa toàn bộ đơn vị tính',
-            dangerLevel: 'Thấp',
+            title: t(LKey.dataManagementDeleteUnitsTitle),
+            description: t(LKey.dataManagementDeleteUnitsDescription),
+            dangerLevel: _DangerLevel.low,
             onPressed: () => _deleteUnits(context, ref),
           ),
           const SizedBox(height: 12),
           _buildDeleteCard(
             context,
             icon: Icons.shopping_cart,
-            title: 'Xóa dữ liệu đơn hàng',
-            description: 'Xóa toàn bộ đơn hàng và lịch sử',
-            dangerLevel: 'Cao',
+            title: t(LKey.dataManagementDeleteOrdersTitle),
+            description: t(LKey.dataManagementDeleteOrdersDescription),
+            dangerLevel: _DangerLevel.high,
             onPressed: () => _deleteOrders(context, ref),
           ),
           const SizedBox(height: 12),
           _buildDeleteCard(
             context,
             icon: Icons.fact_check,
-            title: 'Xóa dữ liệu kiểm kê',
-            description: 'Xóa toàn bộ phiên kiểm kê',
-            dangerLevel: 'Cao',
+            title: t(LKey.dataManagementDeleteStocktakeTitle),
+            description: t(LKey.dataManagementDeleteStocktakeDescription),
+            dangerLevel: _DangerLevel.high,
             onPressed: () => _deleteCheckSessions(context, ref),
           ),
           const SizedBox(height: 12),
           _buildDeleteCard(
             context,
             icon: Icons.history,
-            title: 'Xóa lịch sử giao dịch',
-            description: 'Xóa toàn bộ lịch sử thay đổi sản phẩm',
-            dangerLevel: 'Cao',
+            title: t(LKey.dataManagementDeleteTransactionsTitle),
+            description: t(LKey.dataManagementDeleteTransactionsDescription),
+            dangerLevel: _DangerLevel.high,
             onPressed: () => _deleteProductTransactions(context, ref),
           ),
           const SizedBox(height: 24),
@@ -121,13 +125,13 @@ class DeleteDataPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Xóa toàn bộ dữ liệu',
+                    t(LKey.dataManagementDeleteAllTitle),
                     style: theme.headingSemibold20Default.copyWith(color: Colors.red),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Xóa tất cả dữ liệu và reset ứng dụng về trạng thái ban đầu',
+                    t(LKey.dataManagementDeleteAllDescription),
                     style: theme.textRegular14Default.copyWith(color: Colors.red.shade700),
                     textAlign: TextAlign.center,
                   ),
@@ -140,7 +144,7 @@ class DeleteDataPage extends ConsumerWidget {
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text('XÓA TẤT CẢ DỮ LIỆU'),
+                      child: Text(t(LKey.dataManagementDeleteAllButton)),
                     ),
                   ),
                 ],
@@ -167,21 +171,33 @@ class DeleteDataPage extends ConsumerWidget {
     required IconData icon,
     required String title,
     required String description,
-    required String dangerLevel,
+    required _DangerLevel dangerLevel,
     required VoidCallback onPressed,
   }) {
     final theme = context.appTheme;
+    String t(String key) => key.tr(context: context);
 
     Color getLevelColor() {
       switch (dangerLevel) {
-        case 'Thấp':
+        case _DangerLevel.low:
           return Colors.orange;
-        case 'Trung bình':
+        case _DangerLevel.medium:
           return Colors.deepOrange;
-        case 'Cao':
+        case _DangerLevel.high:
           return Colors.red;
         default:
           return Colors.grey;
+      }
+    }
+
+    String getLevelLabel() {
+      switch (dangerLevel) {
+        case _DangerLevel.low:
+          return t(LKey.dataManagementDeleteLevelLow);
+        case _DangerLevel.medium:
+          return t(LKey.dataManagementDeleteLevelMedium);
+        case _DangerLevel.high:
+          return t(LKey.dataManagementDeleteLevelHigh);
       }
     }
 
@@ -224,7 +240,9 @@ class DeleteDataPage extends ConsumerWidget {
                     border: Border.all(color: getLevelColor().withOpacity(0.3)),
                   ),
                   child: Text(
-                    'Mức độ: $dangerLevel',
+                    LKey.dataManagementDeleteLevelLabel.tr(
+                      namedArgs: {'level': getLevelLabel()},
+                    ),
                     style: TextStyle(
                       fontSize: 12,
                       color: getLevelColor(),
@@ -240,7 +258,7 @@ class DeleteDataPage extends ConsumerWidget {
               child: OutlinedButton.icon(
                 onPressed: onPressed,
                 icon: const Icon(Icons.delete),
-                label: const Text('Xóa dữ liệu'),
+                label: Text(t(LKey.dataManagementDeleteActionButton)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.red,
                   side: const BorderSide(color: Colors.red),

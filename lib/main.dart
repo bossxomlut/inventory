@@ -26,7 +26,7 @@ void main() async {
   await Future.wait(<Future<void>>[
     EasyLocalization.ensureInitialized(),
     simpleStorage.init(),
-    AdMobService().initialize(), // Khởi tạo AdMob
+    AdMobService().initialize(), // Initialize AdMob
     // SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     //   DeviceOrientation.portraitUp,
     //   DeviceOrientation.portraitDown,
@@ -38,9 +38,11 @@ void main() async {
 
   // ThemeUtils.initThemeMode();
 
-  List<Locale> supportedLocales = <Locale>[
-    const Locale('vi', 'VN'),
+  const supportedLocales = <Locale>[
+    Locale('en', 'US'),
+    Locale('vi', 'VN'),
   ];
+  const fallbackLocale = Locale('en', 'US');
 
   if (showDevicePreview) {
     runApp(
@@ -50,7 +52,7 @@ void main() async {
             supportedLocales: supportedLocales,
             path: 'assets/translations',
             // <-- change the path of the translation files
-            fallbackLocale: supportedLocales.first,
+            fallbackLocale: fallbackLocale,
             child: const MyApp(),
           ),
         ),
@@ -61,8 +63,10 @@ void main() async {
       ProviderScope(
         child: EasyLocalization(
           supportedLocales: supportedLocales,
-          path: 'assets/translations', // <-- change the path of the translation files
-          fallbackLocale: supportedLocales.first, child: const MyApp(),
+          path:
+              'assets/translations', // <-- change the path of the translation files
+          fallbackLocale: fallbackLocale,
+          child: const MyApp(),
         ),
       ),
     );
@@ -114,14 +118,16 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
                   itemWidth: double.maxFinite,
                   animationDuration: const Duration(milliseconds: 300),
                   applyMediaQueryViewInsets: false,
-                  marginBuilder: (BuildContext context, AlignmentGeometry alignment) => EdgeInsets.zero,
+                  marginBuilder:
+                      (BuildContext context, AlignmentGeometry alignment) =>
+                          EdgeInsets.zero,
                 ),
                 child: Stack(
                   fit: StackFit.expand,
                   alignment: Alignment.topCenter,
                   children: [
                     MaterialApp.router(
-                      title: 'Đơn và kho hàng',
+                      // title: LKey.appTitle.tr(context: context),
                       routerConfig: appRouter.config(
                         navigatorObservers: () => <NavigatorObserver>[
                           RouteLoggerObserver(),

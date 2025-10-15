@@ -46,13 +46,16 @@ class CreateOrderPage extends HookConsumerWidget {
 
     Widget buildBottomButtonBar() {
       return BottomButtonBar(
-        cancelButtonText: 'Lưu nháp',
-        saveButtonText: 'Tạo đơn',
+        cancelButtonText: LKey.orderCreateSaveDraft.tr(context: context),
+        saveButtonText: LKey.orderCreateSubmit.tr(context: context),
         onCancel: orderStaste.isNotEmpty
             ? () async {
                 //set note
-                ref.read(orderCreationProvider.notifier).setNote(noteController.text.trim());
-                final isHaveInitialOrder = ref.read(orderCreationProvider.notifier).haveInitOrder;
+                ref
+                    .read(orderCreationProvider.notifier)
+                    .setNote(noteController.text.trim());
+                final isHaveInitialOrder =
+                    ref.read(orderCreationProvider.notifier).haveInitOrder;
                 await ref.read(orderCreationProvider.notifier).saveDraft();
                 if (isHaveInitialOrder) {
                   ref.invalidate(orderListProvider(OrderStatus.draft));
@@ -61,8 +64,11 @@ class CreateOrderPage extends HookConsumerWidget {
             : null,
         onSave: orderStaste.isNotEmpty
             ? () async {
-                ref.read(orderCreationProvider.notifier).setNote(noteController.text.trim());
-                final isHaveInitialOrder = ref.read(orderCreationProvider.notifier).haveInitOrder;
+                ref
+                    .read(orderCreationProvider.notifier)
+                    .setNote(noteController.text.trim());
+                final isHaveInitialOrder =
+                    ref.read(orderCreationProvider.notifier).haveInitOrder;
                 await ref.read(orderCreationProvider.notifier).createOrder();
                 if (isHaveInitialOrder) {
                   ref.invalidate(orderListProvider(OrderStatus.draft));
@@ -75,14 +81,14 @@ class CreateOrderPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Tạo đơn',
+        title: LKey.orderCreateTitle.tr(context: context),
         actions: [
           Stack(
             children: [
               IconButton(
                 icon: const Icon(Icons.assignment_turned_in),
                 color: Colors.white,
-                tooltip: 'Danh sách đơn hàng',
+                tooltip: LKey.orderCreateOrdersListTooltip.tr(context: context),
                 onPressed: () {
                   appRouter.goToOrderStatusList();
                 },
@@ -106,9 +112,10 @@ class CreateOrderPage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 16),
                     child: Text(
-                      'Sản phẩm',
+                      LKey.orderCreateProductsTitle.tr(context: context),
                       style: theme.textMedium16Default,
                     ),
                   ),
@@ -118,7 +125,7 @@ class CreateOrderPage extends HookConsumerWidget {
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
-                            'Chưa có sản phẩm nào trong đơn hàng',
+                            LKey.orderCreateProductsEmpty.tr(context: context),
                             style: theme.textRegular15Subtle,
                           ),
                         ),
@@ -131,8 +138,10 @@ class CreateOrderPage extends HookConsumerWidget {
                     itemCount: orderStaste.orderItems.length,
                     separatorBuilder: (context, index) => const AppDivider(),
                     itemBuilder: (context, index) {
-                      final product = orderStaste.orderItems.keys.elementAt(index);
-                      final orderItem = orderStaste.orderItems.values.elementAt(index);
+                      final product =
+                          orderStaste.orderItems.keys.elementAt(index);
+                      final orderItem =
+                          orderStaste.orderItems.values.elementAt(index);
                       return OrderItemWidget(
                         product: product,
                         orderItem: orderItem,
@@ -154,7 +163,7 @@ class CreateOrderPage extends HookConsumerWidget {
                               const Icon(Icons.add),
                               const SizedBox(width: 8),
                               Text(
-                                'Thêm sản phẩm',
+                                LKey.orderCreateAddProduct.tr(context: context),
                                 style: theme.textMedium15Default,
                               ),
                             ],
@@ -171,10 +180,14 @@ class CreateOrderPage extends HookConsumerWidget {
                               onBarcodeScanned: (value) async {
                                 //search product by barcode
                                 try {
-                                  final productRepo = ref.read(searchProductRepositoryProvider);
-                                  final product = await productRepo.searchByBarcode(value.displayValue ?? '');
+                                  final productRepo =
+                                      ref.read(searchProductRepositoryProvider);
+                                  final product =
+                                      await productRepo.searchByBarcode(
+                                          value.displayValue ?? '');
                                   final currentQuantity = ref
-                                      .read(orderCreationProvider.select((state) => state.orderItems[product]))
+                                      .read(orderCreationProvider.select(
+                                          (state) => state.orderItems[product]))
                                       ?.quantity;
 
                                   await OrderNumberInputWidget(
@@ -182,7 +195,9 @@ class CreateOrderPage extends HookConsumerWidget {
                                     currentQuantity: currentQuantity,
                                     onSave: (quantity, price) {
                                       //add order item
-                                      ref.read(orderCreationProvider.notifier).addOrderItem(
+                                      ref
+                                          .read(orderCreationProvider.notifier)
+                                          .addOrderItem(
                                             product,
                                             OrderItem(
                                               id: undefinedId,
@@ -193,11 +208,19 @@ class CreateOrderPage extends HookConsumerWidget {
                                               price: price,
                                             ),
                                           );
-                                      Navigator.pop(context); // Đóng bottom sheet sau khi thêm sản phẩm
+                                      Navigator.pop(
+                                          context); // Đóng bottom sheet sau khi thêm sản phẩm
                                     },
                                   ).show(context);
                                 } catch (e) {
-                                  showError(message: 'Không tìm thấy sản phẩm với mã vạch ${value.displayValue}');
+                                  showError(
+                                    message: LKey.orderCreateScanNotFound.tr(
+                                      context: context,
+                                      namedArgs: {
+                                        'barcode': value.displayValue ?? '',
+                                      },
+                                    ),
+                                  );
                                 }
                               },
                             );
@@ -208,7 +231,8 @@ class CreateOrderPage extends HookConsumerWidget {
                               const Icon(Icons.qr_code),
                               const SizedBox(width: 8),
                               Text(
-                                'Quét sản phẩm',
+                                LKey.orderCreateScanProduct
+                                    .tr(context: context),
                                 style: theme.textMedium15Default,
                               ),
                             ],
@@ -234,16 +258,19 @@ class CreateOrderPage extends HookConsumerWidget {
                         customerName: orderStaste.order?.customer,
                         customerContact: orderStaste.order?.customerContact,
                         onSave: (String name, String contact) {
-                          ref.read(orderCreationProvider.notifier).setCustomerInfo(name, contact);
+                          ref
+                              .read(orderCreationProvider.notifier)
+                              .setCustomerInfo(name, contact);
                         },
                       ).show(context);
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 16),
                       child: Row(
                         children: [
                           Text(
-                            'Khách hàng',
+                            LKey.orderCustomerSectionTitle.tr(context: context),
                             style: theme.textMedium16Default,
                           ), //icon next
                           const Spacer(),
@@ -261,11 +288,12 @@ class CreateOrderPage extends HookConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Tên khách hàng',
+                          LKey.orderCustomerName.tr(context: context),
                           style: theme.textRegular15Subtle,
                         ),
                         Text(
-                          orderStaste.order?.customer ?? 'Chưa có',
+                          orderStaste.order?.customer ??
+                              LKey.orderCommonNotSet.tr(context: context),
                           style: theme.textRegular15Default,
                         ),
                       ],
@@ -278,11 +306,12 @@ class CreateOrderPage extends HookConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Liên hệ',
+                          LKey.orderCustomerContact.tr(context: context),
                           style: theme.textRegular15Subtle,
                         ),
                         Text(
-                          orderStaste.order?.customerContact ?? 'Chưa có',
+                          orderStaste.order?.customerContact ??
+                              LKey.orderCommonNotSet.tr(context: context),
                           style: theme.textRegular15Default,
                         ),
                       ],
@@ -297,19 +326,20 @@ class CreateOrderPage extends HookConsumerWidget {
             ColoredBox(
               color: Colors.white,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ghi chú',
+                      LKey.orderNoteTitle.tr(context: context),
                       style: theme.textMedium16Default,
                     ),
                     const SizedBox(height: 8),
                     CustomTextField.multiLines(
                       controller: noteController,
                       minLines: 1,
-                      hint: 'Nhập ghi chú',
+                      hint: LKey.orderNotePlaceholder.tr(context: context),
                     ),
                   ],
                 ),
@@ -323,9 +353,10 @@ class CreateOrderPage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 16),
                     child: Text(
-                      'Thanh toán',
+                      LKey.orderPaymentTitle.tr(context: context),
                       style: theme.textMedium16Default,
                     ),
                   ),
@@ -335,7 +366,7 @@ class CreateOrderPage extends HookConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Tổng số lượng',
+                          LKey.orderPaymentTotalQuantity.tr(context: context),
                           style: theme.textRegular15Subtle,
                         ),
                         Text(
@@ -352,7 +383,7 @@ class CreateOrderPage extends HookConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Tổng tiền',
+                          LKey.orderPaymentTotalAmount.tr(context: context),
                           style: theme.textRegular15Subtle,
                         ),
                         Text(
@@ -368,7 +399,9 @@ class CreateOrderPage extends HookConsumerWidget {
             ),
             const SizedBox(height: 10),
 
-            isKeyboardVisible ? buildBottomButtonBar() : const SizedBox(height: 100),
+            isKeyboardVisible
+                ? buildBottomButtonBar()
+                : const SizedBox(height: 100),
 
             //Thanh toán
           ],
@@ -398,7 +431,8 @@ void showSelectOrderItem(BuildContext context, WidgetRef ref) {
       final products = await searchProductRepo.search(keyword, page, size);
       return products.data;
     },
-    itemBuilderWithIndex: (BuildContext context, int index) => const AppDivider(),
+    itemBuilderWithIndex: (BuildContext context, int index) =>
+        const AppDivider(),
     addItemWidget: Icon(
       Icons.close,
       size: 20,
@@ -433,7 +467,7 @@ class OrderItemWidget extends HookConsumerWidget {
               product: product,
               subtitleWidget: productPrice.when(
                 data: (price) => Text(
-                  'Giá bán: ${price.sellingPrice?.priceFormat()}',
+                  '${LKey.orderLabelPrice.tr(context: context)}${price.sellingPrice?.priceFormat()}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 loading: () => const SizedBox(),
@@ -454,7 +488,9 @@ class OrderItemWidget extends HookConsumerWidget {
                         // Xử lý thay đổi trạng thái checkbox
                         if (value == false) {
                           // Nếu bỏ chọn, xóa sản phẩm khỏi đơn hàng
-                          ref.read(orderCreationProvider.notifier).remove(product);
+                          ref
+                              .read(orderCreationProvider.notifier)
+                              .remove(product);
                         } else {
                           // Nếu chọn, thêm sản phẩm vào đơn hàng
                           ref.read(orderCreationProvider.notifier).addOrderItem(
@@ -466,7 +502,9 @@ class OrderItemWidget extends HookConsumerWidget {
                                   productName: product.name,
                                   quantity: 1,
                                   // Mặc định số lượng là 1
-                                  price: productPrice.valueOrNull?.sellingPrice ?? 0,
+                                  price:
+                                      productPrice.valueOrNull?.sellingPrice ??
+                                          0,
                                 ),
                               );
                         }
@@ -475,7 +513,9 @@ class OrderItemWidget extends HookConsumerWidget {
               //Tồn
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text('Tồn: ${product.quantity.displayFormat()}'),
+                child: Text(
+                  '${LKey.orderLabelInventory.tr(context: context)}${product.quantity.displayFormat()}',
+                ),
               ),
               if (isSelected)
                 // Hiển thị số lượng và nút cộng trừ
@@ -518,7 +558,11 @@ class OrderItemSelectionWidget extends HookConsumerWidget {
 }
 
 class CustomerInforWidget extends HookWidget with ShowBottomSheet {
-  const CustomerInforWidget({super.key, this.customerName, this.customerContact, required this.onSave});
+  const CustomerInforWidget(
+      {super.key,
+      this.customerName,
+      this.customerContact,
+      required this.onSave});
 
   final String? customerName;
   final String? customerContact;
@@ -529,7 +573,8 @@ class CustomerInforWidget extends HookWidget with ShowBottomSheet {
   Widget build(BuildContext context) {
     //controllers
     final nameController = useTextEditingController(text: customerName ?? '');
-    final contactController = useTextEditingController(text: customerContact ?? '');
+    final contactController =
+        useTextEditingController(text: customerContact ?? '');
     final theme = context.appTheme;
 
     return Padding(
@@ -541,7 +586,7 @@ class CustomerInforWidget extends HookWidget with ShowBottomSheet {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Thông tin khách hàng',
+                LKey.orderCustomerDialogTitle.tr(context: context),
                 style: theme.headingSemibold20Default,
               ),
             ],
@@ -550,20 +595,20 @@ class CustomerInforWidget extends HookWidget with ShowBottomSheet {
           const SizedBox(height: 16),
           //Gía bán
           TitleBlockWidget(
-            title: 'Tên khách hàng',
+            title: LKey.orderCustomerNameLabel.tr(context: context),
             child: CustomTextField(
               controller: nameController,
-              label: 'Tên khách hàng',
+              label: LKey.orderCustomerNameLabel.tr(context: context),
               textInputAction: TextInputAction.next,
             ),
           ),
           const SizedBox(height: 16),
           //Giá vốn
           TitleBlockWidget(
-            title: 'Liên hệ',
+            title: LKey.orderCustomerContactLabel.tr(context: context),
             child: CustomTextField(
               controller: contactController,
-              label: 'Liên hệ',
+              label: LKey.orderCustomerContactLabel.tr(context: context),
               textInputAction: TextInputAction.done,
             ),
           ),
@@ -579,7 +624,9 @@ class CustomerInforWidget extends HookWidget with ShowBottomSheet {
                 Navigator.of(context).pop(); // Đóng bottom sheet
                 onSave(name, contact);
               } else {
-                showError(message: 'Vui lòng nhập thông tin khách hàng');
+                showError(
+                  message: LKey.orderCustomerValidation.tr(context: context),
+                );
               }
             },
             onCancel: () {
@@ -614,10 +661,11 @@ class OrderDetailPage extends HookConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const Icon(Icons.warning_amber,
+                    size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
-                  'Không thể tải quyền truy cập',
+                  LKey.checkPermissionLoadFailed.tr(context: context),
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -626,7 +674,7 @@ class OrderDetailPage extends HookConsumerWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref.refresh(currentUserPermissionsProvider),
-                  child: const Text('Thử lại'),
+                  child: LText(LKey.buttonRetry),
                 ),
               ],
             ),
@@ -635,12 +683,16 @@ class OrderDetailPage extends HookConsumerWidget {
       ),
       data: (permissions) {
         final theme = context.appTheme;
-        final canCreateOrEditOrder = permissions.contains(PermissionKey.orderCreate);
-        final canCompleteOrder = permissions.contains(PermissionKey.orderComplete);
+        final canCreateOrEditOrder =
+            permissions.contains(PermissionKey.orderCreate);
+        final canCompleteOrder =
+            permissions.contains(PermissionKey.orderComplete);
         final canCancelOrder = permissions.contains(PermissionKey.orderCancel);
 
         return Scaffold(
-          appBar: const CustomAppBar(title: 'Chi tiết đơn hàng'),
+          appBar: CustomAppBar(
+            title: LKey.orderDetailTitle.tr(context: context),
+          ),
           body: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,12 +703,14 @@ class OrderDetailPage extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 16),
                         child: Row(
                           children: [
                             Flexible(
                               child: Text(
-                                'Thông tin đơn hàng',
+                                LKey.orderDetailInfoSectionTitle
+                                    .tr(context: context),
                                 style: theme.textMedium16Default,
                               ),
                             ),
@@ -675,11 +729,13 @@ class OrderDetailPage extends HookConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Mã đơn hàng',
+                              LKey.orderDetailCode.tr(context: context),
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
-                              '#${orderStaste.order?.id.toString() ?? 'Chưa có'}',
+                              orderStaste.order?.id != null
+                                  ? '#${orderStaste.order!.id}'
+                                  : LKey.orderCommonNotSet.tr(context: context),
                               style: theme.textRegular15Default,
                             ),
                           ],
@@ -692,7 +748,8 @@ class OrderDetailPage extends HookConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Tổng số lượng',
+                              LKey.orderDetailTotalQuantity
+                                  .tr(context: context),
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
@@ -709,7 +766,7 @@ class OrderDetailPage extends HookConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Tổng tiền',
+                              LKey.orderDetailTotalAmount.tr(context: context),
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
@@ -726,11 +783,12 @@ class OrderDetailPage extends HookConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Tên khách hàng',
+                              LKey.orderDetailCustomerName.tr(context: context),
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
-                              orderStaste.order?.customer ?? 'Chưa có',
+                              orderStaste.order?.customer ??
+                                  LKey.orderCommonNotSet.tr(context: context),
                               style: theme.textRegular15Default,
                             ),
                           ],
@@ -743,11 +801,13 @@ class OrderDetailPage extends HookConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Liên hệ',
+                              LKey.orderDetailCustomerContact
+                                  .tr(context: context),
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
-                              orderStaste.order?.customerContact ?? 'Chưa có',
+                              orderStaste.order?.customerContact ??
+                                  LKey.orderCommonNotSet.tr(context: context),
                               style: theme.textRegular15Default,
                             ),
                           ],
@@ -760,7 +820,7 @@ class OrderDetailPage extends HookConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Ghi chú',
+                              LKey.orderDetailNote.tr(context: context),
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
@@ -781,9 +841,10 @@ class OrderDetailPage extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 16),
                         child: Text(
-                          'Sản phẩm',
+                          LKey.orderDetailProductsTitle.tr(context: context),
                           style: theme.textMedium16Default,
                         ),
                       ),
@@ -791,10 +852,12 @@ class OrderDetailPage extends HookConsumerWidget {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: orderStaste.orderItems.length,
-                        separatorBuilder: (context, index) => const AppDivider(),
+                        separatorBuilder: (context, index) =>
+                            const AppDivider(),
                         itemBuilder: (context, index) => _OrderItem(
                           product: orderStaste.orderItems.keys.elementAt(index),
-                          orderItem: orderStaste.orderItems.values.elementAt(index),
+                          orderItem:
+                              orderStaste.orderItems.values.elementAt(index),
                         ),
                       ),
                     ],
@@ -840,8 +903,8 @@ class OrderDetailPage extends HookConsumerWidget {
           return const SizedBox.shrink();
         }
         return BottomButtonBar(
-          saveButtonText: 'Tạo đơn',
-          cancelButtonText: 'Chỉnh sửa',
+          saveButtonText: LKey.orderCreateSubmit.tr(context: context),
+          cancelButtonText: LKey.orderActionEdit.tr(context: context),
           showSaveButton: true,
           showCancelButton: true,
           onSave: () async {
@@ -853,7 +916,9 @@ class OrderDetailPage extends HookConsumerWidget {
             if (!confirmed) {
               return;
             }
-            await ref.read(orderDetailProvider(sourceOrder).notifier).createOrder();
+            await ref
+                .read(orderDetailProvider(sourceOrder).notifier)
+                .createOrder();
             ref.invalidate(orderListProvider(OrderStatus.draft));
             ref.invalidate(orderListProvider(OrderStatus.confirmed));
           },
@@ -868,8 +933,8 @@ class OrderDetailPage extends HookConsumerWidget {
           return const SizedBox.shrink();
         }
         return BottomButtonBar(
-          saveButtonText: 'Hoàn thành',
-          cancelButtonText: 'Huỷ đơn',
+          saveButtonText: LKey.orderActionComplete.tr(context: context),
+          cancelButtonText: LKey.orderActionCancel.tr(context: context),
           showSaveButton: allowComplete,
           showCancelButton: allowCancelOrder,
           onSave: allowComplete
@@ -882,7 +947,9 @@ class OrderDetailPage extends HookConsumerWidget {
                   if (!confirmed) {
                     return;
                   }
-                  await ref.read(orderDetailProvider(sourceOrder).notifier).completeOrder();
+                  await ref
+                      .read(orderDetailProvider(sourceOrder).notifier)
+                      .completeOrder();
                   ref.invalidate(orderListProvider(OrderStatus.confirmed));
                   ref.invalidate(orderListProvider(OrderStatus.done));
                 }
@@ -897,7 +964,9 @@ class OrderDetailPage extends HookConsumerWidget {
                   if (!confirmed) {
                     return;
                   }
-                  await ref.read(orderDetailProvider(sourceOrder).notifier).cancelOrder();
+                  await ref
+                      .read(orderDetailProvider(sourceOrder).notifier)
+                      .cancelOrder();
                   ref.invalidate(orderListProvider(OrderStatus.confirmed));
                   ref.invalidate(orderListProvider(OrderStatus.cancelled));
                 }
@@ -925,10 +994,23 @@ class OrderStatusTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        status.displayName,
+        _statusLabel(context),
         style: theme.textMedium16Default.copyWith(color: status.color),
       ),
     );
+  }
+
+  String _statusLabel(BuildContext context) {
+    switch (status) {
+      case OrderStatus.draft:
+        return LKey.orderStatusDraft.tr(context: context);
+      case OrderStatus.confirmed:
+        return LKey.orderStatusConfirmed.tr(context: context);
+      case OrderStatus.done:
+        return LKey.orderStatusDone.tr(context: context);
+      case OrderStatus.cancelled:
+        return LKey.orderStatusCancelled.tr(context: context);
+    }
   }
 }
 
@@ -962,7 +1044,7 @@ class _OrderItem extends StatelessWidget {
               ),
               // alignment: Alignment.center,
               child: Text(
-                'Giá: ${orderItem?.price.priceFormat() ?? '0'}',
+                '${LKey.orderLabelPrice.tr(context: context)}${orderItem?.price.priceFormat() ?? '0'}',
                 style: context.appTheme.textRegular14Default,
               ),
             ),
@@ -975,7 +1057,14 @@ class _OrderItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                'Tổng: ${((orderItem?.price ?? 0) * (orderItem?.quantity ?? 0)).priceFormat()}',
+                LKey.orderLabelLineTotal.tr(
+                  context: context,
+                  namedArgs: {
+                    'amount':
+                        ((orderItem?.price ?? 0) * (orderItem?.quantity ?? 0))
+                            .priceFormat(),
+                  },
+                ),
                 style: theme.textMedium15Default,
               ),
             ],
@@ -986,7 +1075,8 @@ class _OrderItem extends StatelessWidget {
   }
 }
 
-class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<void> {
+class OrderNumberInputWidget extends HookConsumerWidget
+    with ShowBottomSheet<void> {
   const OrderNumberInputWidget({
     super.key,
     required this.product,
@@ -1024,8 +1114,14 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<voi
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Số lượng vượt quá tồn kho (${product.quantity})',
-                      style: context.appTheme.textRegular12Default.copyWith(color: Colors.red),
+                      LKey.orderWarningQuantityExceedsStock.tr(
+                        context: context,
+                        namedArgs: {
+                          'stock': product.quantity.displayFormat(),
+                        },
+                      ),
+                      style: context.appTheme.textRegular12Default
+                          .copyWith(color: Colors.red),
                     ),
                   ),
                 ],
@@ -1052,12 +1148,13 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<voi
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Tồn kho: ',
+                  LKey.orderLabelInventory.tr(context: context),
                   style: context.appTheme.textRegular14Default,
                 ),
                 Text(
                   '${product.quantity}',
-                  style: context.appTheme.textMedium16Default.copyWith(color: Colors.green),
+                  style: context.appTheme.textMedium16Default
+                      .copyWith(color: Colors.green),
                 ),
               ],
             ),
@@ -1084,12 +1181,13 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<voi
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Giá bán: ',
+                          LKey.orderLabelPrice.tr(context: context),
                           style: context.appTheme.textRegular14Default,
                         ),
                         Text(
                           '${price.sellingPrice!.priceFormat()}',
-                          style: context.appTheme.textMedium16Default.copyWith(color: Colors.blue),
+                          style: context.appTheme.textMedium16Default
+                              .copyWith(color: Colors.blue),
                         ),
                       ],
                     ),
@@ -1099,16 +1197,21 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<voi
             error: (error, stack) => const SizedBox(),
           ),
 
-          if (productPrice.valueOrNull?.sellingPrice != null) const SizedBox(height: 16),
+          if (productPrice.valueOrNull?.sellingPrice != null)
+            const SizedBox(height: 16),
 
           // Quantity input
           TitleBlockWidget.widget(
             titleWidget: Text(
-              'Số lượng đặt hàng: ${quantity.value}',
+              LKey.orderLabelOrderQuantity.tr(
+                context: context,
+                namedArgs: {'quantity': '${quantity.value}'},
+              ),
               style: context.appTheme.textRegular13Subtle,
             ),
             child: PlusMinusInputView(
-              initialValue: quantity.value, minValue: 1, maxValue: product.quantity, // Limit to available stock
+              initialValue: quantity.value, minValue: 1,
+              maxValue: product.quantity, // Limit to available stock
               onChanged: (val) => quantity.value = val,
             ),
           ),
@@ -1120,7 +1223,13 @@ class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<voi
                 ? () {
                     final price = productPrice.valueOrNull?.sellingPrice ?? 0;
                     onSave(quantity.value, price);
-                    showSuccess(message: 'Đã thêm ${product.name} vào đơn hàng');
+                    showSuccess(
+                      context: context,
+                      message: LKey.orderProductsAddedSuccess.tr(
+                        context: context,
+                        namedArgs: {'name': product.name},
+                      ),
+                    );
                   }
                 : null, // Disable if quantity exceeds stock
             onCancel: () {

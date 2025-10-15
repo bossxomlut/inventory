@@ -165,20 +165,20 @@ class InventoryLotService {
     required TransactionCategory transactionCategory,
   }) async {
     if (quantity <= 0) {
-      throw ValidationException('Số lượng trừ phải lớn hơn 0.');
+      throw ValidationException('Quantity to deduct must be greater than 0.');
     }
 
     final lots = await _lotRepository.getLotsByProduct(product.id);
 
     if (lots.isEmpty) {
-      throw ValidationException('Sản phẩm không có lô tồn để trừ.');
+      throw ValidationException('No inventory lots available to deduct.');
     }
 
     final totalQuantity = lots.fold<int>(0, (sum, lot) => sum + lot.quantity);
 
     if (quantity > totalQuantity) {
       throw ValidationException(
-        'Số lượng cần trừ vượt quá tồn kho hiện có.',
+        'Requested deduction exceeds the current stock quantity.',
       );
     }
 

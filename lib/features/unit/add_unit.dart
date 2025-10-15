@@ -41,7 +41,12 @@ class _AddUnitState extends State<AddUnit> {
                 const Icon(Icons.warning_amber,
                     size: 32, color: Colors.redAccent),
                 const SizedBox(height: 12),
-                Text('Không thể tải quyền thao tác: $error'),
+                Text(
+                  LKey.permissionsLoadFailedWithError.tr(
+                    context: context,
+                    namedArgs: {'error': '$error'},
+                  ),
+                ),
               ],
             ),
           ),
@@ -73,20 +78,22 @@ class _AddUnitState extends State<AddUnit> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           TitleBlockWidget(
-                            title: 'Tên',
+                            title: LKey.unitFormNameLabel.tr(context: context),
                             isRequired: true,
                             child: CustomTextField.multiLines(
                               controller: nameController,
-                              hint: 'Tên đơn vị',
+                              hint: LKey.unitFormNameHint.tr(context: context),
                               maxLines: 3,
                             ),
                           ),
                           separateGapItem,
                           TitleBlockWidget(
-                            title: 'Ghi chú',
+                            title:
+                                LKey.unitFormDescriptionLabel.tr(context: context),
                             child: CustomTextField.multiLines(
                               controller: descriptionController,
-                              hint: 'Ghi chú',
+                              hint:
+                                  LKey.unitFormDescriptionHint.tr(context: context),
                               maxLines: 3,
                             ),
                           ),
@@ -104,7 +111,10 @@ class _AddUnitState extends State<AddUnit> {
                                   descriptionController.text.trim();
 
                               if (name.isEmpty) {
-                                showError(message: 'Vui lòng nhập tên đơn vị.');
+                                showError(
+                                  message: LKey.unitFormNameRequired
+                                      .tr(context: context),
+                                );
                                 return;
                               }
 
@@ -118,8 +128,11 @@ class _AddUnitState extends State<AddUnit> {
                                   Navigator.pop(context);
                                 } catch (error) {
                                   showError(
-                                      message:
-                                          'Không thể cập nhật đơn vị: $error');
+                                    message: LKey.unitFormUpdateError.tr(
+                                      context: context,
+                                      namedArgs: {'error': '$error'},
+                                    ),
+                                  );
                                 }
                               } else {
                                 final unit = Unit(

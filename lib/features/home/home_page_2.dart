@@ -10,6 +10,7 @@ import '../../provider/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../../shared_widgets/button/bottom_button_bar.dart';
+import '../../resources/index.dart';
 import '../authentication/provider/auth_provider.dart';
 import '../order/widget/confirm_order_badge.dart';
 import 'menu_manager.dart';
@@ -41,7 +42,7 @@ class HomePage2 extends ConsumerWidget {
                       const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
                       const SizedBox(height: 12),
                       Text(
-                        'Không thể tải quyền truy cập',
+                        LKey.homeMenuPermissionsError.tr(context: context),
                         style: Theme.of(context).textTheme.titleMedium,
                         textAlign: TextAlign.center,
                       ),
@@ -50,7 +51,7 @@ class HomePage2 extends ConsumerWidget {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => ref.refresh(currentUserPermissionsProvider),
-                        child: const Text('Thử lại'),
+                        child: Text(LKey.buttonRetry.tr(context: context)),
                       ),
                     ],
                   ),
@@ -61,6 +62,7 @@ class HomePage2 extends ConsumerWidget {
               final menuOrderState = ref.watch(menuGroupOrderControllerProvider);
               final preferredOrder = menuOrderState.value;
               final menuGroups = MenuManager.getMenuGroups(
+                context: context,
                 user: user,
                 permissions: grantedPermissions,
                 preferredOrder: preferredOrder,
@@ -77,7 +79,7 @@ class HomePage2 extends ConsumerWidget {
                           const Icon(Icons.lock_outline, size: 48, color: Colors.grey),
                           const SizedBox(height: 16),
                           Text(
-                            'Tài khoản của bạn chưa được cấp quyền truy cập tính năng nào. Vui lòng liên hệ quản trị viên.',
+                            LKey.homeMenuNoPermissionMessage.tr(context: context),
                             style: Theme.of(context).textTheme.bodyMedium,
                             textAlign: TextAlign.center,
                           ),
@@ -151,7 +153,7 @@ class HomePage2 extends ConsumerWidget {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Xin chào,',
+                                          LKey.homeMenuGreeting.tr(context: context),
                                           style: theme.textRegular14Sublest,
                                         ),
                                         const SizedBox(height: 2),
@@ -168,14 +170,14 @@ class HomePage2 extends ConsumerWidget {
                                         _buildHeaderIcon(
                                           context,
                                           icon: Icons.swap_vert,
-                                          tooltip: 'Sắp xếp nhóm menu',
+                                          tooltip: LKey.homeMenuReorderTooltip.tr(context: context),
                                           onTap: () => _openMenuReorderSheet(context, ref, menuGroups),
                                         ),
                                       const SizedBox(width: 12),
                                       _buildHeaderIcon(
                                         context,
                                         icon: Icons.settings_outlined,
-                                        tooltip: 'Cài đặt',
+                                        tooltip: LKey.setting.tr(context: context),
                                         onTap: () {
                                           appRouter.goToSetting();
                                         },
@@ -275,7 +277,7 @@ class HomePage2 extends ConsumerWidget {
                                                     ),
                                                   ),
                                                   // Show badge only for the order list menu item
-                                                  if (item.title == 'Danh sách đơn hàng')
+                                                  if (item.id == MenuItemId.orderList)
                                                     const Positioned(
                                                       right: -8,
                                                       top: -8,
@@ -321,19 +323,19 @@ class HomePage2 extends ConsumerWidget {
         },
         unauthenticated: () => Scaffold(
               appBar: AppBar(
-                title: const Text('Quản lý kho'),
+                title: Text(LKey.homeMenuUnauthenticatedTitle.tr(context: context)),
               ),
               body: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Vui lòng đăng nhập để sử dụng ứng dụng.'),
+                    Text(LKey.homeMenuUnauthenticatedMessage.tr(context: context)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         appRouter.goToLogin();
                       },
-                      child: const Text('Đăng nhập'),
+                      child: Text(LKey.login.tr(context: context)),
                     ),
                   ],
                 ),
@@ -395,7 +397,7 @@ class HomePage2 extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Sắp xếp nhóm chức năng',
+                            LKey.homeMenuReorderTitle.tr(context: context),
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ),
@@ -403,7 +405,7 @@ class HomePage2 extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Kéo thả để ưu tiên nhóm hiển thị. Cài đặt chỉ áp dụng cho tài khoản hiện tại.',
+                      LKey.homeMenuReorderDescription.tr(context: context),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(height: 16),
@@ -420,7 +422,7 @@ class HomePage2 extends ConsumerWidget {
                                   });
                                 },
                           icon: const Icon(Icons.undo),
-                          label: const Text('Hoàn tác'),
+                          label: Text(LKey.buttonUndo.tr(context: context)),
                         ),
                         OutlinedButton.icon(
                           onPressed: () async {
@@ -430,7 +432,7 @@ class HomePage2 extends ConsumerWidget {
                             }
                           },
                           icon: const Icon(Icons.restore),
-                          label: const Text('Mặc định'),
+                          label: Text(LKey.homeMenuReorderReset.tr(context: context)),
                         ),
                       ],
                     ),
@@ -483,12 +485,17 @@ class HomePage2 extends ConsumerWidget {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              MenuManager.titleFor(id),
+                                              MenuManager.titleFor(id, context),
                                               style: Theme.of(context).textTheme.titleMedium,
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Vị trí hiện tại: ${index + 1}',
+                                              LKey.homeMenuPositionLabel.tr(
+                                                context: context,
+                                                namedArgs: {
+                                                  'position': '${index + 1}',
+                                                },
+                                              ),
                                               style: Theme.of(context).textTheme.bodySmall,
                                             ),
                                           ],
@@ -527,8 +534,8 @@ class HomePage2 extends ConsumerWidget {
                       onSave: () {
                         Navigator.of(sheetContext).pop(tempOrder);
                       },
-                      cancelButtonText: 'Đóng',
-                      saveButtonText: 'Lưu',
+                      cancelButtonText: LKey.buttonClose.tr(context: context),
+                      saveButtonText: LKey.buttonSave.tr(context: context),
                     ),
                   ],
                 ),

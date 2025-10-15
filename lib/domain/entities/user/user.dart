@@ -28,11 +28,11 @@ extension UserRoleX on UserRole {
   String get displayName {
     switch (this) {
       case UserRole.admin:
-        return 'Quản trị viên';
+        return 'Administrator';
       case UserRole.user:
-        return 'Người dùng';
+        return 'User';
       case UserRole.guest:
-        return 'Khách';
+        return 'Guest';
     }
   }
 }

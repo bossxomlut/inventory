@@ -43,15 +43,25 @@
     "finish": "Hoàn tất",
     "add": "Thêm",
     "apply": "Áp dụng",
+    "reset": "Đặt lại",
     "accept": "Chấp nhận",
     "reject": "Từ chối",
     "retry": "Thử lại",
+    "save": "Lưu",
+    "close": "Đóng",
+    "undo": "Hoàn tác",
     "request": "Yêu cầu",
     "backToHome": "Quay về trang chủ",
     "dontAllow": "Không cho phép",
     "allow": "Cho phép",
     "oke": "OK",
+    "select": "Chọn",
+    "delete": "Xóa",
     "openSettings": "Mở cài đặt"
+  },
+  "permissions": {
+    "loadFailed": "Không thể tải quyền truy cập",
+    "loadFailedWithError": "Không thể tải quyền thao tác: {error}"
   },
   "message": {
     "defaultApiError": "Đã xảy ra lỗi, vui lòng thử lại",
@@ -75,6 +85,19 @@
     "withdrawSuccessfully": "Yêu cầu rút tiền thành công",
     "customerLocationNotFound": "Không tìm thấy vị trí khách hàng"
   },
+  "common": {
+    "errorWithMessage": "Lỗi: {error}"
+  },
+  "splash": {
+    "welcomeBack": "Chào mừng bạn quay trở lại",
+    "loading": "Đang tải..."
+  },
+  "imagePicker": {
+    "camera": "Máy ảnh",
+    "gallery": "Thư viện",
+    "product": "Sản phẩm",
+    "sourceTitle": "Chọn nguồn ảnh"
+  },
   "onBoarding": {
     "next": "Tiếp theo",
     "skip": "Bỏ qua",
@@ -86,17 +109,84 @@
     "title1": "Quản lý kho cá nhân",
     "content1": "Tùy chỉnh quản lý kho hàng của bạn để phù hợp với nhu cầu cụ thể, cho cá nhân hoặc doanh nghiệp.",
     "title2": "Thông tin thời gian thực",
-    "content2": "Nhận thông tin cập nhật tức thời và luôn cập nhật thông tin kho hàng của bạn thông qua hệ thống thời gian thực."
+    "content2": "Nhận thông tin cập nhật tức thời và luôn cập nhật thông tin kho hàng của bạn thông qua hệ thống thời gian thực.",
+    "slide": {
+      "welcome": {
+        "title": "Chào mừng đến với Đơn và kho hàng",
+        "description": "Ứng dụng quản lý kho thông minh giúp bạn theo dõi sản phẩm, quản lý tồn kho và kiểm soát đơn hàng hiệu quả trong một giao diện trực quan.",
+        "subtitle": "Quản lý kho hàng thông minh"
+      },
+      "features": {
+        "title": "Tính năng nổi bật",
+        "description": "• Quản lý sản phẩm và danh mục\n• Kiểm kê tự động bằng mã QR\n• Theo dõi đơn hàng và giao dịch\n• Báo cáo chi tiết và thống kê\n• Xuất nhập dữ liệu dễ dàng\n• Giao diện thân thiện, dễ sử dụng",
+        "subtitle": "Mọi thứ bạn cần trong một ứng dụng"
+      },
+      "data": {
+        "title": "Dữ liệu an toàn",
+        "description": "Dữ liệu của bạn được lưu cục bộ trên thiết bị, đảm bảo bảo mật tối đa. Bạn hoàn toàn kiểm soát việc xuất sao lưu hoặc xóa dữ liệu bất cứ lúc nào.",
+        "subtitle": "Bảo mật và kiểm soát hoàn toàn"
+      }
+    },
+    "previous": "Quay lại"
   },
   "user": {
     "role": {
       "client": "Khách hàng",
       "partner": "Đối tác"
+    },
+    "toast": {
+      "activateSuccess": "Đã kích hoạt tài khoản người dùng thành công",
+      "deactivateSuccess": "Đã khóa tài khoản người dùng thành công",
+      "actionActivate": "kích hoạt",
+      "actionDeactivate": "khóa",
+      "toggleError": "Có lỗi xảy ra khi {action} tài khoản: {error}"
+    },
+    "management": {
+      "title": "Quản lý người dùng",
+      "refresh": "Làm mới danh sách",
+      "stats": {
+        "total": "Tổng số người dùng: {count}",
+        "activeLocked": "Hoạt động: {active} | Bị khóa: {locked}"
+      },
+      "empty": {
+        "title": "Chưa có người dùng nào",
+        "description": "Danh sách người dùng sẽ xuất hiện ở đây sau khi họ đăng ký tài khoản.",
+        "hint": "Người dùng mới đăng ký sẽ cần được admin kích hoạt trước khi có thể sử dụng ứng dụng.",
+        "cta": "Hướng dẫn người dùng đăng ký tài khoản để bắt đầu sử dụng"
+      },
+      "status": {
+        "active": "Hoạt động",
+        "locked": "Bị khóa"
+      },
+      "info": {
+        "id": "ID: {id}",
+        "lastLogin": "Đăng nhập cuối: {datetime}",
+        "createdAt": "Tạo: {datetime}"
+      },
+      "actions": {
+        "lock": "Khóa tài khoản",
+        "activate": "Kích hoạt tài khoản",
+        "permissions": "Phân quyền"
+      },
+      "dialog": {
+        "activateTitle": "Kích hoạt tài khoản",
+        "lockTitle": "Khóa tài khoản",
+        "activateMessage": "Bạn có chắc muốn kích hoạt quyền truy cập cho người dùng này? Sau khi kích hoạt, người dùng sẽ có thể đăng nhập vào ứng dụng.",
+        "lockMessage": "Bạn có chắc muốn khóa quyền truy cập cho người dùng này? Người dùng sẽ không thể đăng nhập cho đến khi được kích hoạt lại.",
+        "confirmActivate": "Kích hoạt",
+        "confirmLock": "Khóa"
+      },
+      "error": {
+        "load": "Lỗi tải danh sách người dùng"
+      }
     }
   },
   "loginPage": {
     "message": {
       "loginFailed": "Đăng nhập thất bại, vui lòng thử lại hoặc sử dụng tài khoản khác"
+    },
+    "error": {
+      "userNotFound": "Không tìm thấy thông tin tài khoản"
     }
   },
   "signUp": {
@@ -172,6 +262,746 @@
     "language": "Ngôn ngữ",
     "changePassword": "Đổi mật khẩu",
     "logout": "Đăng xuất",
-    "account": "Tài khoản"
+    "account": "Tài khoản",
+    "dataManagement": "Quản lý dữ liệu",
+    "createFromSample": "Tạo từ dữ liệu mẫu",
+    "exportData": "Xuất dữ liệu",
+    "deleteData": "Xóa dữ liệu",
+    "aboutApp": "Về ứng dụng",
+    "userGuide": "Hướng dẫn sử dụng",
+    "feedback": "Gửi phản hồi",
+    "feedbackSubtitle": "Báo lỗi hoặc đề xuất tính năng mới",
+    "reviewApp": "Đánh giá ứng dụng",
+    "replayOnboarding": "Xem lại hướng dẫn",
+    "replayOnboardingSubtitle": "Hiển thị lại màn hình giới thiệu",
+    "resetOnboardingSuccess": "Đã reset thành công. Khởi động lại ứng dụng để xem lại hướng dẫn.",
+    "resetOnboardingError": "Có lỗi xảy ra khi reset hướng dẫn."
+  },
+  "languageName": {
+    "english": "Tiếng Anh",
+    "vietnamese": "Tiếng Việt"
+  },
+  "feedback": {
+    "title": "Gửi phản hồi",
+    "description": "Chúng tôi luôn lắng nghe ý kiến của bạn. Vui lòng cung cấp thông tin chi tiết để báo lỗi hoặc đề xuất tính năng mới.",
+    "type": {
+      "label": "Loại phản hồi",
+      "hint": "Chọn loại phản hồi",
+      "bug": "Báo lỗi",
+      "feature": "Đề xuất tính năng",
+      "other": "Khác",
+      "pickerTitle": "Chọn loại phản hồi"
+    },
+    "form": {
+      "titleLabel": "Tiêu đề",
+      "titleHint": "Ví dụ: Lỗi không thể đăng nhập",
+      "contactLabel": "Thông tin liên hệ (tuỳ chọn)",
+      "contactHint": "Email hoặc số điện thoại",
+      "contentLabel": "Nội dung chi tiết",
+      "contentHint": "Mô tả chi tiết về lỗi hoặc đề xuất của bạn",
+      "submit": "Gửi phản hồi",
+      "submitting": "Đang gửi..."
+    },
+    "error": {
+      "emptyContent": "Vui lòng nhập nội dung phản hồi."
+    },
+    "mail": {
+      "subject": "[Đơn và kho hàng] Phản hồi ứng dụng",
+      "sendDate": "Ngày gửi",
+      "version": "Phiên bản",
+      "type": "Loại phản hồi",
+      "title": "Tiêu đề",
+      "contact": "Thông tin liên hệ",
+      "content": "Nội dung"
+    },
+    "toast": {
+      "openEmailError": "Không thể mở ứng dụng email trên thiết bị này.",
+      "openEmailSuccess": "Đang mở ứng dụng email để gửi phản hồi.",
+      "prepareError": "Có lỗi xảy ra khi chuẩn bị email phản hồi."
+    }
+  },
+  "home": {
+    "menu": {
+      "permissionsError": "Không thể tải quyền truy cập",
+      "noPermissionMessage": "Tài khoản của bạn chưa được cấp quyền truy cập tính năng nào. Vui lòng liên hệ quản trị viên.",
+      "greeting": "Xin chào,",
+      "reorderTooltip": "Sắp xếp nhóm menu",
+      "reorderTitle": "Sắp xếp nhóm chức năng",
+      "reorderDescription": "Kéo thả để ưu tiên nhóm hiển thị. Cài đặt chỉ áp dụng cho tài khoản hiện tại.",
+      "reorderReset": "Mặc định",
+      "reorderSaved": "Đã lưu thứ tự hiển thị",
+      "reorderPositionLabel": "Vị trí hiện tại: {position}",
+      "group": {
+        "productManagement": "Quản lý sản phẩm",
+        "priceOrder": "Giá & Đơn hàng",
+        "systemAdministration": "Quản trị hệ thống",
+        "dataManagement": "Quản lý dữ liệu"
+      },
+      "item": {
+        "products": "Sản phẩm",
+        "inventory": "Kiểm kê",
+        "categories": "Danh mục",
+        "units": "Đơn vị/Quy cách",
+        "pricing": "Giá bán",
+        "createOrder": "Tạo đơn hàng",
+        "orderList": "Danh sách đơn hàng",
+        "userManagement": "Quản lý người dùng",
+        "reports": "Báo cáo thống kê",
+        "createSampleData": "Tạo dữ liệu mẫu",
+        "importData": "Nhập dữ liệu",
+        "exportData": "Xuất dữ liệu",
+        "deleteData": "Xóa dữ liệu"
+      },
+      "unauthenticatedTitle": "Quản lý kho",
+      "unauthenticatedMessage": "Vui lòng đăng nhập để sử dụng ứng dụng."
+    }
+  },
+  "auth": {
+    "defaultAdmin": {
+      "title": "Thông tin đăng nhập",
+      "welcome": "Chào mừng bạn đến với ứng dụng quản lý kho!",
+      "defaultAccount": "Tài khoản admin mặc định:",
+      "username": "Tên đăng nhập: {username}",
+      "password": "Mật khẩu: {password}",
+      "securityAnswer": "Câu trả lời bảo mật: {answer}",
+      "instruction": "Vui lòng đổi mật khẩu và cập nhật câu hỏi bảo mật sau khi đăng nhập lần đầu.",
+      "understood": "Đã hiểu",
+      "securityQuestion": "Câu hỏi bảo mật: {question}"
+    },
+    "guest": {
+      "importSuccess": "Đã tải {success} sản phẩm mẫu thành công!",
+      "importPartial": "Đã tải {success}/{total} sản phẩm. {failed} sản phẩm lỗi.",
+      "name": "Khách"
+    },
+    "restart": {
+      "title": "Đang khởi động lại ứng dụng",
+      "message": "Vui lòng chạm để mở lại ứng dụng."
+    }
+  },
+  "guard": {
+    "permissionDenied": "Bạn không có quyền truy cập vào trang này.",
+    "permissionCheckFailed": "Không thể kiểm tra quyền truy cập."
+  },
+  "product": {
+    "lot": {
+      "expired": "Đã hết hạn",
+      "expiresToday": "Hết hạn hôm nay",
+      "remainingDays": "Còn {days} ngày",
+      "expiryLabel": "Hết hạn: {date}",
+      "manufactureLabel": "SX: {date}"
+    },
+    "create": {
+      "success": "Thêm sản phẩm mới thành công",
+      "errorTitle": "Lỗi tạo sản phẩm",
+      "errorMessage": "Không thể tạo sản phẩm mới. Vui lòng thử lại.",
+      "errorFallback": "Thêm sản phẩm mới thất bại: {error}"
+    },
+    "update": {
+      "success": "Cập nhật sản phẩm thành công",
+      "errorTitle": "Lỗi cập nhật sản phẩm",
+      "errorMessage": "Không thể cập nhật sản phẩm. Vui lòng thử lại.",
+      "errorFallback": "Cập nhật sản phẩm thất bại: {error}"
+    },
+    "detail": {
+      "loadError": "Không thể tải thông tin sản phẩm: {error}"
+    },
+    "sort": {
+      "nameAsc": "Tên A-Z",
+      "nameDesc": "Tên Z-A",
+      "quantityAsc": "Số lượng tăng dần",
+      "quantityDesc": "Số lượng giảm dần",
+      "default": "Mặc định"
+    },
+    "time": {
+      "yesterday": "Hôm qua",
+      "today": "Hôm nay",
+      "last7Days": "7 ngày",
+      "last30Days": "30 ngày",
+      "last90Days": "90 ngày",
+      "custom": "Tùy chỉnh",
+      "none": "Không lọc"
+    },
+    "list": {
+      "title": "Sản phẩm",
+      "permissionDenied": "Bạn không có quyền xem danh sách sản phẩm.",
+      "searchHint": "Tìm kiếm sản phẩm...",
+      "searchTooltip": "Tìm kiếm",
+      "filterTooltip": "Lọc sản phẩm",
+      "sortLabel": "Sắp xếp: {value}",
+      "createdFilter": "Thêm: {value}",
+      "updatedFilter": "Thay đổi: {value}",
+      "clearFilters": "Xóa tất cả",
+      "loadedStatus": "Đã tải {loaded}/{total} sản phẩm",
+      "empty": "Không tìm thấy sản phẩm nào"
+    },
+    "filter": {
+      "title": "Bộ lọc sản phẩm",
+      "section": {
+        "sort": "Sắp xếp theo",
+        "time": "Thời gian",
+        "category": "Danh mục",
+        "unit": "Đơn vị"
+      },
+      "time": {
+        "createdTab": "Thời gian thêm",
+        "updatedTab": "Thời gian thay đổi",
+        "selectPrompt": "Chọn loại thời gian để lọc"
+      },
+      "category": {
+        "empty": "Không có danh mục nào",
+        "all": "Tất cả danh mục",
+        "error": "Lỗi tải danh mục: {error}"
+      },
+      "unit": {
+        "empty": "Không có đơn vị nào",
+        "all": "Tất cả đơn vị",
+        "error": "Lỗi tải đơn vị: {error}"
+      }
+    },
+    "form": {
+      "createTitle": "Thêm sản phẩm",
+      "editTitle": "Chỉnh sửa sản phẩm",
+      "validationRequired": "Vui lòng điền đầy đủ thông tin bắt buộc.",
+      "permissionDenied": "Bạn không có quyền tạo sản phẩm mới.",
+      "fields": {
+        "nameLabel": "Tên sản phẩm",
+        "nameHint": "Nhập tên sản phẩm",
+        "quantityLabel": "Tồn kho",
+        "expiryLabel": "Hạn sử dụng",
+        "skuLabel": "Mã sản phẩm (SKU)",
+        "categoryLabel": "Danh mục",
+        "unitLabel": "Đơn vị",
+        "imagesLabel": "Ảnh sản phẩm",
+        "imagesAdd": "Thêm ảnh",
+        "noteLabel": "Ghi chú",
+        "noteHint": "Nhập ghi chú"
+      },
+      "expiry": {
+        "trackingLabel": "Theo dõi theo lô",
+        "trackingDescription": "Quản lý tồn theo hạn"
+      },
+      "inventory": {
+        "totalLots": "Tổng số lượng lô",
+        "empty": "Chưa có lô. Thêm mới để bắt đầu.",
+        "lotTitle": "Lô {index}",
+        "removeLot": "Xoá lô",
+        "quantityLabel": "Số lượng",
+        "expiryLabel": "Hết hạn",
+        "manufactureLabel": "Sản xuất (tuỳ chọn)",
+        "chooseDate": "Chọn ngày",
+        "addLot": "Thêm lô"
+      },
+      "validation": {
+        "noLot": "Vui lòng thêm ít nhất một lô hàng.",
+        "missingExpiry": "Vui lòng chọn ngày hết hạn cho từng lô hàng.",
+        "lotQuantity": "Số lượng mỗi lô phải lớn hơn 0.",
+        "manufactureAfterExpiry": "Ngày sản xuất không được sau ngày hết hạn.",
+        "duplicateLot": "Không thể có hai lô trùng cả ngày sản xuất và ngày hết hạn."
+      },
+      "sku": {
+        "placeholderTitle": "Thêm mã sản phẩm (SKU)",
+        "inputHint": "Nhập mã SKU",
+        "scanBarcode": "Quét mã vạch",
+        "scanAction": "Quét mã",
+        "random": "Tạo ngẫu nhiên",
+        "qrPlaceholder": "Vui lòng nhập mã SKU để tạo mã QR",
+        "qrError": "Lỗi tạo mã QR",
+        "downloadError": "Vui lòng nhập mã SKU để tải mã QR.",
+        "downloadSuccess": "Tải mã QR thành công!",
+        "downloadButton": "Lưu vào thiết bị"
+      },
+      "media": {
+        "selectImageTitle": "Chọn ảnh"
+      },
+      "addCategory": "Thêm danh mục",
+      "addUnit": "Thêm đơn vị"
+    }
+  },
+  "category": {
+    "page": {
+      "title": "Danh mục",
+      "permissionDenied": "Bạn không có quyền xem danh sách danh mục.",
+      "empty": "Không tìm thấy danh mục nào."
+    },
+    "form": {
+      "nameLabel": "Tên",
+      "nameHint": "Tên danh mục",
+      "descriptionLabel": "Ghi chú",
+      "descriptionHint": "Ghi chú",
+      "nameRequired": "Vui lòng nhập tên danh mục.",
+      "updateError": "Không thể cập nhật danh mục: {error}"
+    },
+    "toast": {
+      "createSuccess": "Thêm danh mục thành công",
+      "createError": "Thêm danh mục thất bại",
+      "updateSuccess": "Cập nhật danh mục thành công",
+      "updateError": "Cập nhật danh mục thất bại",
+      "deleteSuccess": "Xóa danh mục thành công",
+      "deleteError": "Xóa danh mục thất bại",
+      "bulkDeleteSuccess": "Xóa các danh mục thành công",
+      "bulkDeleteError": "Xóa các danh mục thất bại",
+      "noSelection": "Chưa chọn danh mục nào"
+    }
+  },
+  "unit": {
+    "page": {
+      "title": "Đơn vị",
+      "permissionDenied": "Bạn không có quyền xem danh sách đơn vị.",
+      "empty": "Không tìm thấy đơn vị nào."
+    },
+    "form": {
+      "nameLabel": "Tên",
+      "nameHint": "Tên đơn vị",
+      "descriptionLabel": "Ghi chú",
+      "descriptionHint": "Ghi chú",
+      "nameRequired": "Vui lòng nhập tên đơn vị.",
+      "updateError": "Không thể cập nhật đơn vị: {error}"
+    },
+    "toast": {
+      "createSuccess": "Thêm đơn vị thành công",
+      "createError": "Thêm đơn vị thất bại",
+      "updateSuccess": "Cập nhật đơn vị thành công",
+      "updateError": "Cập nhật đơn vị thất bại",
+      "deleteSuccess": "Xóa đơn vị thành công",
+      "deleteError": "Xóa đơn vị thất bại",
+      "noSelection": "Không có đơn vị nào được chọn",
+      "fetchError": "Không thể tải danh sách đơn vị"
+    }
+  },
+  "notFound": {
+    "noData": "Không tìm thấy dữ liệu"
+  },
+  "check": {
+    "status": {
+      "match": "Khớp",
+      "surplus": "Thừa",
+      "shortage": "Thiếu",
+      "unknown": "Không xác định"
+    },
+    "product": {
+      "addSuccess": "Thêm sản phẩm vào kiểm kê thành công",
+      "updateSuccess": "Cập nhật kiểm kê thành công"
+    },
+    "session": {
+      "updateSuccess": "Cập nhật phiên kiểm kê thành công",
+      "updateError": "Cập nhật phiên kiểm kê thất bại",
+      "deleteSuccess": "Xóa phiên kiểm kê thành công",
+      "deleteError": "Xóa phiên kiểm kê thất bại"
+    },
+    "sessionList": {
+      "title": "Phiên kiểm kê",
+      "permissionDenied": "Bạn không có quyền xem danh sách phiên kiểm kê.",
+      "tab": {
+        "active": "Đang hoạt động",
+        "completed": "Đã hoàn thành"
+      },
+      "createdBy": "Kiểm kê bởi: {user}",
+      "date": "Ngày: {date}",
+      "deleteConfirmTitle": "Xác nhận xóa",
+      "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa phiên kiểm kê này?",
+      "emptyActive": "Không có phiên kiểm kê nào đang hoạt động",
+      "emptyCompleted": "Không có phiên kiểm kê nào đã hoàn thành",
+      "createError": "Lỗi tạo phiên: {error}"
+    },
+    "sessionCreate": {
+      "title": "Tạo phiên kiểm kê mới",
+      "defaultName": "Phiên kiểm kê {timestamp}",
+      "nameLabel": "Tên phiên *",
+      "nameHint": "VD: Kiểm kê tháng 06/2025",
+      "createdByLabel": "Người tạo *",
+      "createdByHint": "VD: Nguyễn Văn A",
+      "noteLabel": "Ghi chú",
+      "noteHint": "Mô tả ngắn về phiên kiểm kê",
+      "submit": "Tạo phiên",
+      "validationRequired": "Vui lòng nhập đầy đủ thông tin bắt buộc.",
+      "defaultCreator": "Người dùng"
+    },
+    "sessionDetail": {
+      "title": "Thông tin phiên kiểm kê",
+      "name": "Tên phiên",
+      "createdBy": "Người tạo",
+      "createdAt": "Ngày tạo",
+      "status": "Trạng thái",
+      "note": "Ghi chú"
+    },
+    "sessionStatus": {
+      "inProgress": "Đang tiến hành",
+      "completed": "Đã hoàn thành"
+    },
+    "inventory": {
+      "systemQuantityLabel": "Tồn hệ thống: {quantity}",
+      "countQuantity": "Số lượng kiểm kê",
+      "noteLabel": "Ghi chú",
+      "noteHint": "Nhập ghi chú",
+      "lotsEmpty": "Chưa có lô kiểm kê. Thêm mới để ghi nhận.",
+      "lotTitle": "Lô {index}",
+      "lotSystemTag": "Tồn hệ thống",
+      "lotRemoveTooltip": "Xóa lô",
+      "lotExpected": "Hệ thống: {quantity}",
+      "lotExpiry": "Ngày hết hạn: {date}",
+      "lotActualLabel": "Số lượng thực tế",
+      "lotExpiryLabel": "Hết hạn",
+      "lotManufactureLabel": "Sản xuất (tuỳ chọn)",
+      "lotAddButton": "Thêm lô kiểm kê",
+      "lotSummaryTitle": "Tổng số lượng lô",
+      "validation": {
+        "noLot": "Vui lòng thêm ít nhất một lô kiểm kê.",
+        "negative": "Số lượng thực tế không được âm.",
+        "duplicate": "Không thể có hai lô trùng cả ngày sản xuất và ngày hết hạn."
+      }
+    },
+    "permissionLoadFailed": "Không thể tải quyền truy cập.",
+    "permissionViewDenied": "Bạn không có quyền xem chi tiết phiên kiểm kê này.",
+    "checkedProductsTitle": "Sản phẩm đã kiểm kê",
+    "checkedProductsCount": "{count} sản phẩm",
+    "checkedProductsEmpty": "Chưa có sản phẩm nào được kiểm kê",
+    "checkedProductsScanPrompt": "Hãy quét mã vạch hoặc tìm kiếm sản phẩm để bắt đầu",
+    "checkedProductsNoEdit": "Bạn không có quyền chỉnh sửa phiên kiểm kê này.",
+    "searchProduct": "Tìm sản phẩm",
+    "completeSession": "Hoàn thành kiểm kê",
+    "scanError": "Lỗi quét mã vạch: {error}",
+    "genericError": "Lỗi: {error}",
+    "quantityExpected": "Hệ thống",
+    "quantityActual": "Thực tế"
+  },
+  "input": {
+    "enterQuantity": "Nhập số lượng"
+  },
+  "report": {
+    "page": {
+      "title": "Báo cáo",
+      "tab": {
+        "overview": "Tổng quan",
+        "orders": "Đơn hàng",
+        "inventory": "Tồn kho"
+      }
+    },
+    "summary": {
+      "revenue": "Doanh thu",
+      "totalOrders": "Tổng đơn hàng",
+      "productsSold": "Sản phẩm đã bán",
+      "quantitySold": "Số lượng đã bán"
+    },
+    "chart": {
+      "revenueByDay": "Doanh thu theo ngày",
+      "revenueByCategory": "Cơ cấu doanh thu theo nhóm hàng",
+      "topSellingProducts": "Top 5 sản phẩm bán chạy"
+    }
+  },
+  "configPrice": {
+    "error": {
+      "invalidNumber": "Vui lòng nhập đúng định dạng số",
+      "saveFailed": "Không thể lưu giá, vui lòng thử lại sau"
+    },
+    "list": {
+      "title": "Cấu hình giá sản phẩm",
+      "searchHint": "Tìm kiếm sản phẩm...",
+      "searchTooltip": "Tìm kiếm",
+      "loadedStatus": "Đã tải {loaded}/{total} sản phẩm",
+      "costLabel": "Giá vốn",
+      "sellingLabel": "Giá bán",
+      "notSet": "Chưa có",
+      "profitLabel": "Lợi nhuận:"
+    },
+    "form": {
+      "sellingPreview": "Giá bán: {price}",
+      "purchasePreview": "Giá vốn: {price}",
+      "sellingLabel": "Giá bán",
+      "purchaseLabel": "Giá vốn",
+      "saving": "Đang lưu..."
+    }
+  },
+  "dataManagement": {
+    "import": {
+      "title": "Nhập dữ liệu từ file",
+      "formatsTitle": "Các định dạng hỗ trợ:",
+      "formatJsonl": "- JSONL: Mỗi dòng là một object JSON đúng cấu trúc export từ ứng dụng.",
+      "formatCsv": "- CSV: File bảng với cột đúng như file xuất ra từ ứng dụng.",
+      "formatXlsx": "- XLSX: File Excel với sheet và cột giống hướng dẫn.",
+      "formatNote": "Lưu ý: Chỉ nhập file được xuất từ ứng dụng này hoặc có cấu trúc tương tự.",
+      "buttonSelect": "Chọn file để nhập dữ liệu",
+      "resultSuccess": "Nhập dữ liệu thành công!",
+      "resultInvalid": "File không đúng định dạng dữ liệu ứng dụng.",
+      "resultUnsupported": "Định dạng file không được hỗ trợ.",
+      "note": "Lưu ý: Chỉ nhập file được xuất từ ứng dụng này hoặc có định dạng tương tự."
+    },
+    "export": {
+      "title": "Xuất dữ liệu",
+      "infoTitle": "Thông tin",
+      "infoDescription": "Xuất dữ liệu ứng dụng ra file để backup hoặc chuyển sang thiết bị khác. Các định dạng hỗ trợ:",
+      "infoJsonl": "• JSONL: Định dạng dành cho developer với đầy đủ thông tin chi tiết.",
+      "infoCsv": "• CSV: Định dạng bảng dễ đọc dành cho người dùng.",
+      "infoBackup": "• Backup: File JSON backup toàn bộ dữ liệu.",
+      "infoTip": "CSV chỉ xuất tên danh mục/đơn vị, JSONL xuất toàn bộ thông tin object.",
+      "infoStorageTitle": "Vị trí lưu file:",
+      "infoStoragePathAndroid": "Documents/Đơn_và_kho_hàng/",
+      "infoStoragePathIos": "Files/Trên iPhone của tôi/[app_name]/",
+      "products": {
+        "title": "Xuất dữ liệu sản phẩm",
+        "description": "CSV: tên sản phẩm, danh mục, đơn vị. JSONL: toàn bộ thông tin chi tiết"
+      },
+      "categories": {
+        "title": "Xuất dữ liệu danh mục",
+        "description": "CSV: thông tin cơ bản. JSONL: đầy đủ metadata và thời gian"
+      },
+      "units": {
+        "title": "Xuất dữ liệu đơn vị",
+        "description": "CSV: thông tin cơ bản. JSONL: đầy đủ metadata và thời gian"
+      },
+      "orders": {
+        "title": "Xuất dữ liệu đơn hàng",
+        "description": "CSV: thông tin dễ đọc. JSONL: toàn bộ chi tiết đơn hàng"
+      },
+      "backup": {
+        "title": "Backup toàn bộ dữ liệu",
+        "description": "Tạo file backup chứa toàn bộ dữ liệu ứng dụng",
+        "button": "Tạo file backup"
+      }
+    },
+    "delete": {
+      "title": "Xóa dữ liệu",
+      "warningTitle": "Cảnh báo",
+      "warningDescription": "Thao tác xóa dữ liệu không thể hoàn tác. Hãy chắc chắn rằng bạn đã backup dữ liệu trước khi thực hiện.",
+      "warningBackup": "• Nên backup dữ liệu trước khi xóa",
+      "warningIrreversible": "• Dữ liệu bị xóa sẽ không thể khôi phục",
+      "warningDuration": "• Thao tác xóa có thể mất vài phút",
+      "level": {
+        "low": "Thấp",
+        "medium": "Trung bình",
+        "high": "Cao",
+        "label": "Mức độ: {level}"
+      },
+      "products": {
+        "title": "Xóa dữ liệu sản phẩm",
+        "description": "Xóa toàn bộ sản phẩm trong kho"
+      },
+      "categories": {
+        "title": "Xóa dữ liệu danh mục",
+        "description": "Xóa toàn bộ danh mục sản phẩm"
+      },
+      "units": {
+        "title": "Xóa dữ liệu đơn vị",
+        "description": "Xóa toàn bộ đơn vị tính"
+      },
+      "orders": {
+        "title": "Xóa dữ liệu đơn hàng",
+        "description": "Xóa toàn bộ đơn hàng và lịch sử"
+      },
+      "stocktake": {
+        "title": "Xóa dữ liệu kiểm kê",
+        "description": "Xóa toàn bộ phiên kiểm kê"
+      },
+      "transactions": {
+        "title": "Xóa lịch sử giao dịch",
+        "description": "Xóa toàn bộ lịch sử thay đổi sản phẩm"
+      },
+      "actionButton": "Xóa dữ liệu",
+      "all": {
+        "title": "Xóa toàn bộ dữ liệu",
+        "description": "Xóa tất cả dữ liệu và reset ứng dụng về trạng thái ban đầu",
+        "button": "XÓA TẤT CẢ DỮ LIỆU"
+      }
+    },
+    "sample": {
+      "title": "Tạo dữ liệu mẫu",
+      "testTooltip": "Test giao diện nhập dữ liệu",
+      "chooseTitle": "Chọn loại cửa hàng",
+      "chooseDescription": "Chọn loại cửa hàng phù hợp để tạo dữ liệu mẫu tương ứng."
+    },
+    "productSelection": {
+      "errorNone": "Vui lòng chọn ít nhất một sản phẩm",
+      "loadingErrorTitle": "Có lỗi xảy ra",
+      "retry": "Thử lại",
+      "statsProducts": "Tổng SP",
+      "statsSelected": "Đã chọn",
+      "statsQuantity": "Tổng SL",
+      "tooltipSelectAll": "Chọn tất cả",
+      "tooltipDeselectAll": "Bỏ chọn tất cả",
+      "buttonEmpty": "Chọn ít nhất 1 sản phẩm",
+      "buttonSelected": "Hoàn thành ({count})"
+    },
+    "test": {
+      "title": "Quản lý dữ liệu",
+      "sectionTitle": "Test giao diện mới",
+      "sectionDescription": "Thử nghiệm các giao diện thông báo mới cho quá trình nhập dữ liệu:",
+      "successFull": "Test thành công hoàn toàn",
+      "successFullDescription": "Hiển thị kết quả import thành công 100%",
+      "partial": "Test thành công một phần",
+      "partialDescription": "Hiển thị kết quả import một phần có lỗi",
+      "failed": "Test thất bại hoàn toàn",
+      "failedDescription": "Hiển thị kết quả import thất bại",
+      "validationSuccess": "Test validation thành công",
+      "validationSuccessDescription": "Hiển thị validation thành công",
+      "validationWarning": "Test validation có cảnh báo",
+      "validationWarningDescription": "Hiển thị validation có warnings",
+      "validationError": "Test validation có lỗi",
+      "validationErrorDescription": "Hiển thị validation thất bại",
+      "flow": "Test import với validation",
+      "flowDescription": "Test toàn bộ flow từ validation đến import",
+      "deleteTitle": "Quản lý xóa dữ liệu",
+      "deleteDescription": "Chức năng xóa dữ liệu với xác nhận và thông báo:",
+      "deleteNavigation": "Xem giao diện xóa dữ liệu",
+      "deleteNavigationDescription": "Chuyển đến trang quản lý xóa dữ liệu"
+    },
+    "validation": {
+      "title": "Kiểm tra dữ liệu",
+      "statusSuccess": "Dữ liệu sẵn sàng để nhập",
+      "statusWarning": "Dữ liệu có cảnh báo",
+      "statusError": "Dữ liệu có lỗi",
+      "summaryTitle": "Tổng quan",
+      "summaryTotal": "Tổng dòng",
+      "summaryValid": "Hợp lệ",
+      "summaryWarnings": "Cảnh báo",
+      "summaryErrors": "Lỗi",
+      "errorsTitle": "Danh sách lỗi",
+      "warningsTitle": "Danh sách cảnh báo",
+      "cancel": "Hủy",
+      "proceed": "Tiếp tục nhập",
+      "hasErrors": "Không thể tiếp tục khi vẫn còn lỗi"
+    },
+    "importResult": {
+      "title": "Kết quả nhập dữ liệu",
+      "summaryTitle": "Tổng quan",
+      "summaryTotal": "Tổng dòng: {count}",
+      "summarySuccess": "Nhập thành công: {count}",
+      "summaryFailed": "Thất bại: {count}",
+      "summaryDuration": "Thời gian: {seconds}s",
+      "errorsTitle": "Danh sách lỗi",
+      "warningsTitle": "Danh sách cảnh báo",
+      "close": "Đóng",
+      "retry": "Thử lại"
+    }
+  },
+  "search": {
+    "placeholder": "Tìm kiếm...",
+    "noResults": "Không có kết quả nào",
+    "addNew": "Thêm mới"
+  },
+  "userAccessBlocked": {
+    "registrationSuccessTitle": "Đăng ký thành công",
+    "blockedTitle": "Tài khoản bị khóa",
+    "registrationDescription": "Tài khoản của bạn cần được admin kích hoạt trước khi sử dụng.",
+    "blockedDescription": "Tài khoản chưa được kích hoạt hoặc đã bị admin khóa.",
+    "contactAdmin": "Vui lòng liên hệ với quản trị viên để được hỗ trợ.",
+    "understood": "Đã hiểu"
+  },
+  "appTitle": "Đơn và kho hàng",
+  "order": {
+    "create": {
+      "title": "Tạo đơn",
+      "saveDraft": "Lưu nháp",
+      "submit": "Tạo đơn",
+      "ordersListTooltip": "Danh sách đơn hàng",
+      "productsTitle": "Sản phẩm",
+      "productsEmpty": "Chưa có sản phẩm nào trong đơn hàng",
+      "addProduct": "Thêm sản phẩm",
+      "scanProduct": "Quét sản phẩm",
+      "scanNotFound": "Không tìm thấy sản phẩm với mã vạch {barcode}"
+    },
+    "customer": {
+      "sectionTitle": "Khách hàng",
+      "name": "Tên khách hàng",
+      "contact": "Liên hệ",
+      "dialogTitle": "Thông tin khách hàng",
+      "nameLabel": "Tên khách hàng",
+      "contactLabel": "Liên hệ",
+      "validation": "Vui lòng nhập thông tin khách hàng"
+    },
+    "note": {
+      "title": "Ghi chú",
+      "placeholder": "Nhập ghi chú"
+    },
+    "payment": {
+      "title": "Thanh toán",
+      "totalQuantity": "Tổng số lượng",
+      "totalAmount": "Tổng tiền"
+    },
+    "products": {
+      "addedSuccess": "Đã thêm {name} vào đơn hàng"
+    },
+    "detail": {
+      "title": "Chi tiết đơn hàng",
+      "infoSectionTitle": "Thông tin đơn hàng",
+      "code": "Mã đơn hàng",
+      "totalQuantity": "Tổng số lượng",
+      "totalAmount": "Tổng tiền",
+      "customerName": "Tên khách hàng",
+      "customerContact": "Liên hệ",
+      "note": "Ghi chú",
+      "productsTitle": "Sản phẩm"
+    },
+    "status": {
+      "draft": "Nháp",
+      "confirmed": "Đã xác nhận",
+      "done": "Hoàn thành",
+      "cancelled": "Đã hủy"
+    },
+    "list": {
+      "title": "Danh sách đơn hàng",
+      "permissionDenied": "Bạn không có quyền xem bất kỳ trạng thái đơn hàng nào.",
+      "settingsTooltip": "Thiết lập xác nhận hành động",
+      "settingsTitle": "Thiết lập xác nhận hành động",
+      "settingsLoadError": "Không thể tải cấu hình: {error}",
+      "toggle": {
+        "confirmTitle": "Xác nhận/Hoàn thành đơn",
+        "confirmDescription": "Bật: Hiển thị hộp thoại xác nhận trước khi đánh dấu đơn hàng đã hoàn thành.\nTắt: Thực hiện ngay không cần xác nhận.",
+        "cancelTitle": "Huỷ đơn hàng",
+        "cancelDescription": "Bật: Hiển thị hộp thoại xác nhận trước khi huỷ đơn hàng.\nTắt: Huỷ ngay lập tức.",
+        "deleteTitle": "Xoá đơn hàng",
+        "deleteDescription": "Bật: Yêu cầu xác nhận trước khi xoá đơn hàng khỏi danh sách.\nTắt: Xoá ngay lập tức."
+      },
+      "settingsReset": "Khôi phục mặc định",
+      "orderCode": "Mã đơn hàng: #{id}",
+      "customer": "Khách hàng: {name}",
+      "contact": "Liên hệ: {contact}",
+      "productsLabel": "Sản phẩm:",
+      "quantityLabel": "Số lượng:",
+      "totalLabel": "Tổng tiền:",
+      "noteLabel": "Ghi chú: {note}",
+      "action": {
+        "complete": "Hoàn thành",
+        "cancel": "Huỷ",
+        "delete": "Xoá"
+      },
+      "empty": {
+        "draft": "Chưa có đơn hàng nháp nào",
+        "confirmed": "Chưa có đơn hàng đã xác nhận",
+        "done": "Chưa có đơn hàng hoàn thành",
+        "cancelled": "Chưa có đơn hàng bị hủy"
+      },
+      "createHint": "Nhấn nút + để tạo đơn hàng mới",
+      "contactAdmin": "Liên hệ quản trị viên để được cấp quyền tạo đơn hàng."
+    },
+    "action": {
+      "edit": "Chỉnh sửa",
+      "complete": "Hoàn thành",
+      "cancel": "Huỷ đơn",
+      "confirmTitle": "Xác nhận hành động",
+      "cancelTitle": "Huỷ đơn hàng",
+      "deleteTitle": "Xoá đơn hàng",
+      "confirmMessage": "Bạn có chắc chắn muốn hoàn thành đơn hàng #{orderId}?",
+      "cancelMessage": "Bạn có chắc chắn muốn huỷ đơn hàng #{orderId}?",
+      "deleteMessage": "Bạn có chắc chắn muốn xoá đơn hàng #{orderId}?"
+    },
+    "warning": {
+      "quantityExceedsStock": "Số lượng vượt quá tồn kho ({stock})"
+    },
+    "label": {
+      "inventory": "Tồn kho: ",
+      "price": "Giá bán: ",
+      "orderQuantity": "Số lượng đặt hàng: {quantity}",
+      "lineTotal": "Tổng: {amount}"
+    },
+    "toast": {
+      "createSuccess": "Tạo đơn hàng thành công",
+      "draftSuccess": "Lưu nháp đơn hàng thành công",
+      "draftError": "Lỗi khi lưu nháp đơn hàng",
+      "completeSuccess": "Chúc mừng bạn đã hoàn thành đơn hàng #{orderId}",
+      "cancelSuccess": "Huỷ đơn hàng thành công đơn #{orderId}",
+      "deleteSuccess": "Xóa đơn hàng thành công đơn #{orderId}"
+    },
+    "common": {
+      "notSet": "Chưa có"
+    }
   }
 }

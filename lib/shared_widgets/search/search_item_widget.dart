@@ -9,7 +9,8 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
   final Widget Function(BuildContext context, T, int) itemBuilder;
 
   // Callback for filtering items based on search query
-  final Future<List<T>> Function(String keyword, int page, int size) searchItems;
+  final Future<List<T>> Function(String keyword, int page, int size)
+      searchItems;
 
   // Callback for handling new item addition
   final VoidCallback? onAddItem;
@@ -43,8 +44,10 @@ class SearchItemWidget<T> extends StatefulWidget with ShowBottomSheet<T> {
   State<SearchItemWidget<T>> createState() => _SearchItemWidgetState<T>();
 }
 
-class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with SkeletonLoadingState<SearchItemWidget<T>> {
-  late final TextEditingController _searchController = widget.textEditingController ?? TextEditingController();
+class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>>
+    with SkeletonLoadingState<SearchItemWidget<T>> {
+  late final TextEditingController _searchController =
+      widget.textEditingController ?? TextEditingController();
 
   List<T> items = <T>[];
 
@@ -111,7 +114,9 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Search bar
-                IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.arrow_back, size: 18)),
+                IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.arrow_back, size: 18)),
                 Expanded(
                   child: TextField(
                     controller: _searchController,
@@ -119,7 +124,8 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
                     textAlignVertical: TextAlignVertical.center,
                     decoration: InputDecoration(
                       // contentPadding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
-                      hintText: widget.title ?? 'Tìm kiếm...',
+                      hintText: widget.title ??
+                          LKey.searchPlaceholder.tr(context: context),
                       hintStyle: theme.textMedium15Subtle,
                       border: InputBorder.none,
                     ),
@@ -159,8 +165,8 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 40),
-          Text(
-            'Không có kết quả nào',
+          LText(
+            LKey.searchNoResults,
             style: context.appTheme.textMedium15Subtle,
           ),
           const SizedBox(height: 16),
@@ -170,7 +176,7 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
                 ElevatedButton.icon(
                   onPressed: widget.onAddItem,
                   icon: const Icon(Icons.add),
-                  label: const Text('Thêm mới'),
+                  label: LText(LKey.searchAddNew),
                 ),
           const SizedBox(height: 40),
         ],
@@ -179,8 +185,10 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
 
     return LoadMoreList<T>(
       items: items,
-      itemBuilder: (context, index) => widget.itemBuilder(context, items[index], index),
-      separatorBuilder: (context, index) => widget.itemBuilderWithIndex?.call(context, index) ?? const SizedBox(),
+      itemBuilder: (context, index) =>
+          widget.itemBuilder(context, items[index], index),
+      separatorBuilder: (context, index) =>
+          widget.itemBuilderWithIndex?.call(context, index) ?? const SizedBox(),
       onLoadMore: () async {
         // Implement load more logic if needed
         page = page + 1;
@@ -192,13 +200,14 @@ class _SearchItemWidgetState<T> extends State<SearchItemWidget<T>> with Skeleton
         }
         setState(() {});
       },
-      isCanLoadMore:
-          widget.enableLoadMore && !_endOfList, // Set to true if you want to implement load more functionality
+      isCanLoadMore: widget.enableLoadMore &&
+          !_endOfList, // Set to true if you want to implement load more functionality
       padding: padding,
     );
   }
 
-  EdgeInsets get padding => const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0);
+  EdgeInsets get padding =>
+      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0);
 }
 
 class SearchAndConfirmItemWidget<T> extends SearchItemWidget<T> {
@@ -221,7 +230,8 @@ class SearchAndConfirmItemWidget<T> extends SearchItemWidget<T> {
   final VoidCallback onConfirm;
 
   @override
-  State<SearchItemWidget<T>> createState() => _SearchAndConfirmItemWidgetState<T>();
+  State<SearchItemWidget<T>> createState() =>
+      _SearchAndConfirmItemWidgetState<T>();
 }
 
 class _SearchAndConfirmItemWidgetState<T> extends _SearchItemWidgetState<T> {

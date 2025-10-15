@@ -5,6 +5,7 @@ import '../../../domain/entities/order/price.dart';
 import '../../../domain/entities/product/inventory.dart';
 import '../../../domain/repositories/order/price_repository.dart';
 import '../../../logger.dart';
+import '../../../resources/index.dart';
 import '../../product/provider/product_provider.dart';
 
 final configPriceFormControllerProvider =
@@ -74,15 +75,15 @@ class ConfigPriceFormController extends StateNotifier<ConfigPriceFormState> {
   }) async {
     final sellingParse = _parsePrice(sellingText);
     if (sellingParse == null && sellingText.trim().isNotEmpty) {
-      const message = 'Vui lòng nhập đúng định dạng số';
-      state = const ConfigPriceFormState(errorMessage: message);
+      final message = LKey.configPriceInvalidNumber.tr();
+      state = ConfigPriceFormState(errorMessage: message);
       return ConfigPriceFormResult.validationError(message);
     }
 
     final purchaseParse = _parsePrice(purchaseText);
     if (purchaseParse == null && purchaseText.trim().isNotEmpty) {
-      const message = 'Vui lòng nhập đúng định dạng số';
-      state = const ConfigPriceFormState(errorMessage: message);
+      final message = LKey.configPriceInvalidNumber.tr();
+      state = ConfigPriceFormState(errorMessage: message);
       return ConfigPriceFormResult.validationError(message);
     }
 
@@ -110,8 +111,8 @@ class ConfigPriceFormController extends StateNotifier<ConfigPriceFormState> {
         error: error,
         stackTrace: stackTrace,
       );
-      const message = 'Không thể lưu giá, vui lòng thử lại sau';
-      state = const ConfigPriceFormState(errorMessage: message);
+      final message = LKey.configPriceSaveError.tr();
+      state = ConfigPriceFormState(errorMessage: message);
       return ConfigPriceFormResult.failure(message);
     }
   }

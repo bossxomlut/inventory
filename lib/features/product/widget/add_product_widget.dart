@@ -42,6 +42,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
     final enableExpiryTracking = useState<bool>(false);
     final lotDrafts = useState<List<_LotDraft>>(<_LotDraft>[]);
     final dateFormat = useMemoized(() => DateFormat('dd/MM/yyyy'));
+    String t(String key) => key.tr(context: context);
 
     int totalLotQuantity() =>
         lotDrafts.value.fold<int>(0, (sum, lot) => sum + lot.quantity);
@@ -119,7 +120,9 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
       // Validate inputs
       if (name.isEmpty) {
-        showError(message: 'Vui lòng điền đầy đủ thông tin bắt buộc.');
+        showError(
+          message: t(LKey.productFormValidationRequired),
+        );
         return;
       }
 
@@ -127,7 +130,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
       int finalQuantity = quantity.value;
 
       if (enableExpiryTracking.value) {
-        final validationMessage = _validateLotDrafts(lotDrafts.value);
+        final validationMessage = _validateLotDrafts(context, lotDrafts.value);
         if (validationMessage != null) {
           showError(message: validationMessage);
           return;
@@ -162,7 +165,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
       extendBody: true,
       resizeToAvoidBottomInset: true,
       appBar: CustomAppBar(
-        title: 'Thêm sản phẩm',
+        title: t(LKey.productFormCreateTitle),
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () {
@@ -173,7 +176,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
           if (isKeyboardVisible && canCreateProduct)
             IconButton(
               icon: Text(
-                'Lưu',
+                t(LKey.buttonSave),
                 style: context.appTheme.textMedium15Default
                     .copyWith(color: Colors.white),
               ),
@@ -203,9 +206,9 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                           children: [
                             TitleBlockWidget(
                               isRequired: true,
-                              title: 'Tên sản phẩm ',
+                              title: t(LKey.productFormFieldNameLabel),
                               child: CustomTextField.multiLines(
-                                hint: 'Nhập tên sản phẩm',
+                                hint: t(LKey.productFormFieldNameHint),
                                 controller: _nameController,
                                 minLines: 3,
                                 autofocus: true,
@@ -214,7 +217,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
                             separateGapItem, // Quantity
                             TitleBlockWidget(
-                              title: 'Tồn kho',
+                              title: t(LKey.productFormFieldQuantityLabel),
                               isRequired: true,
                               child: enableExpiryTracking.value
                                   ? _LotQuantitySummary(
@@ -231,7 +234,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                             ),
                             separateGapItem,
                             TitleBlockWidget(
-                              title: 'Hạn sử dụng',
+                              title: t(LKey.productFormFieldExpiryLabel),
                               child: _ExpiryTrackingSwitch(
                                 value: enableExpiryTracking.value,
                                 onChanged: (value) {
@@ -260,7 +263,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                             ],
                             separateGapItem,
                             TitleBlockWidget(
-                              title: 'Mã sản phẩm ',
+                              title: t(LKey.productFormFieldSkuLabel),
                               child: AddSKUPlaceHolder(
                                 value: _sku.value,
                                 onSelected: (String? value) {
@@ -270,7 +273,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                             ),
                             separateGapItem,
                             TitleBlockWidget(
-                              title: 'Danh mục',
+                              title: t(LKey.productFormFieldCategoryLabel),
                               child: AddCategoryPlaceHolder(
                                 value: _category.value,
                                 onSelected: (Category? value) {
@@ -280,7 +283,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                             ),
                             separateGapItem,
                             TitleBlockWidget(
-                              title: 'Đơn vị',
+                              title: t(LKey.productFormFieldUnitLabel),
                               child: AddUnitPlaceHolder(
                                 value: _unit.value,
                                 onSelected: (Unit? value) {
@@ -296,9 +299,9 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                         color: Colors.white,
                         padding: const EdgeInsets.all(16),
                         child: TitleBlockWidget(
-                          title: 'Ảnh sản phẩm',
+                          title: t(LKey.productFormFieldImagesLabel),
                           child: CommonImagePicker(
-                            title: 'Thêm ảnh',
+                            title: t(LKey.productFormFieldImagesAdd),
                             images: images.value,
                             onImagesSelected: (List<ImageStorageModel> value) {
                               images.value = [...images.value, ...value];
@@ -318,9 +321,10 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                         color: Colors.white,
                         padding: const EdgeInsets.all(16),
                         child: TitleBlockWidget(
-                          title: 'Ghi chú',
+                          title: t(LKey.productFormFieldNoteLabel),
                           child: CustomTextField(
-                            hint: 'Nhập ghi chú',
+                            controller: _noteController,
+                            hint: t(LKey.productFormFieldNoteHint),
                           ),
                         ),
                       ),
@@ -358,7 +362,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                     size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
-                  'Không thể tải quyền truy cập',
+                  LKey.permissionsLoadFailed.tr(context: context),
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -367,7 +371,7 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref.refresh(currentUserPermissionsProvider),
-                  child: const Text('Thử lại'),
+                  child: Text(LKey.buttonRetry.tr(context: context)),
                 ),
               ],
             ),
@@ -378,17 +382,17 @@ class AddProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
         if (!permissions.contains(PermissionKey.productCreate)) {
           return Scaffold(
             appBar: CustomAppBar(
-              title: 'Thêm sản phẩm',
+              title: t(LKey.productFormCreateTitle),
               leading: IconButton(
                 icon: const Icon(Icons.close, color: Colors.white),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
-            body: const Center(
+            body: Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Bạn không có quyền tạo sản phẩm mới.',
+                  t(LKey.productFormPermissionDenied),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -440,6 +444,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
           .toList(),
     );
     final dateFormat = useMemoized(() => DateFormat('dd/MM/yyyy'));
+    String t(String key) => key.tr(context: context);
 
     int totalLotQuantity() =>
         lotDrafts.value.fold<int>(0, (sum, lot) => sum + lot.quantity);
@@ -507,7 +512,9 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
       // Validate inputs
       if (name.isEmpty) {
-        showError(message: 'Vui lòng điền đầy đủ thông tin bắt buộc.');
+        showError(
+          message: t(LKey.productFormValidationRequired),
+        );
         return;
       }
 
@@ -515,7 +522,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
       int finalQuantity = quantity.value;
 
       if (enableExpiryTracking.value) {
-        final validationMessage = _validateLotDrafts(lotDrafts.value);
+        final validationMessage = _validateLotDrafts(context, lotDrafts.value);
         if (validationMessage != null) {
           showError(message: validationMessage);
           return;
@@ -555,7 +562,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
       extendBody: true,
       resizeToAvoidBottomInset: true,
       appBar: CustomAppBar(
-        title: 'Chỉnh sửa sản phẩm',
+        title: t(LKey.productFormEditTitle),
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () {
@@ -567,7 +574,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
               ? const SizedBox()
               : IconButton(
                   icon: Text(
-                    'Lưu',
+                    t(LKey.buttonSave),
                     style: context.appTheme.textMedium15Default
                         .copyWith(color: Colors.white),
                   ),
@@ -596,9 +603,9 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                           children: [
                             TitleBlockWidget(
                               isRequired: true,
-                              title: 'Tên sản phẩm ',
+                              title: t(LKey.productFormFieldNameLabel),
                               child: CustomTextField.multiLines(
-                                hint: 'Nhập tên sản phẩm',
+                                hint: t(LKey.productFormFieldNameHint),
                                 controller: _nameController,
                                 minLines: 3,
                                 autofocus: false,
@@ -607,7 +614,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
 
                             separateGapItem, // Quantity
                             TitleBlockWidget(
-                              title: 'Tồn kho',
+                              title: t(LKey.productFormFieldQuantityLabel),
                               isRequired: true,
                               child: enableExpiryTracking.value
                                   ? _LotQuantitySummary(
@@ -624,7 +631,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                             ),
                             separateGapItem,
                             TitleBlockWidget(
-                              title: 'Hạn sử dụng',
+                              title: t(LKey.productFormFieldExpiryLabel),
                               child: _ExpiryTrackingSwitch(
                                 value: enableExpiryTracking.value,
                                 onChanged: (value) {
@@ -653,7 +660,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                               separateGapItem,
                             ],
                             TitleBlockWidget(
-                              title: 'Mã sản phẩm ',
+                              title: t(LKey.productFormFieldSkuLabel),
                               child: AddSKUPlaceHolder(
                                 value: _sku.value,
                                 onSelected: (String? value) {
@@ -663,7 +670,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                             ),
                             separateGapItem,
                             TitleBlockWidget(
-                              title: 'Danh mục',
+                              title: t(LKey.productFormFieldCategoryLabel),
                               child: AddCategoryPlaceHolder(
                                 value: _category.value,
                                 onSelected: (Category? value) {
@@ -673,7 +680,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                             ),
                             separateGapItem,
                             TitleBlockWidget(
-                              title: 'Đơn vị',
+                              title: t(LKey.productFormFieldUnitLabel),
                               child: AddUnitPlaceHolder(
                                 value: _unit.value,
                                 onSelected: (Unit? value) {
@@ -689,9 +696,9 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                         color: Colors.white,
                         padding: const EdgeInsets.all(16),
                         child: TitleBlockWidget(
-                          title: 'Ảnh sản phẩm',
+                          title: t(LKey.productFormFieldImagesLabel),
                           child: CommonImagePicker(
-                            title: 'Thêm ảnh',
+                            title: t(LKey.productFormFieldImagesAdd),
                             images: images.value,
                             onImagesSelected: (List<ImageStorageModel> value) {
                               images.value = [...images.value, ...value];
@@ -711,9 +718,9 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                         color: Colors.white,
                         padding: const EdgeInsets.all(16),
                         child: TitleBlockWidget(
-                          title: 'Ghi chú',
+                          title: t(LKey.productFormFieldNoteLabel),
                           child: CustomTextField(
-                            hint: 'Nhập ghi chú',
+                            hint: t(LKey.productFormFieldNoteHint),
                             controller: _noteController,
                           ),
                         ),
@@ -764,12 +771,13 @@ class _ExpiryTrackingSwitch extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Theo dõi theo lô',
+                  LKey.productFormExpiryTrackingLabel.tr(context: context),
                   style: theme.textMedium15Default,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Quản lý tồn theo hạn',
+                  LKey.productFormExpiryTrackingDescription
+                      .tr(context: context),
                   style: theme.textRegular12Subtle,
                 ),
               ],
@@ -799,7 +807,7 @@ Widget _LotQuantitySummary(BuildContext context, int totalQuantity) {
       children: [
         Expanded(
           child: Text(
-            'Tổng số lượng lô',
+            LKey.productFormInventoryTotalLots.tr(context: context),
             style: appTheme.textRegular14Subtle,
           ),
         ),
@@ -880,7 +888,7 @@ class _InventoryLotSection extends StatelessWidget {
               border: Border.all(color: theme.colorBorderSubtle),
             ),
             child: Text(
-              'Chưa có lô. Thêm mới để bắt đầu.',
+              LKey.productFormInventoryEmpty.tr(context: context),
               style: theme.textRegular14Subtle,
             ),
           ),
@@ -902,19 +910,29 @@ class _InventoryLotSection extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'Lô ${index + 1}',
+                        LKey.productFormInventoryLotTitle.tr(
+                          context: context,
+                          namedArgs: {
+                            'index': '${index + 1}',
+                          },
+                        ),
                         style: theme.textMedium15Default,
                       ),
                       const Spacer(),
                       IconButton(
-                        tooltip: 'Xoá lô',
+                        tooltip: LKey.productFormInventoryRemoveLot
+                            .tr(context: context),
                         onPressed: () => onRemoveLot(index),
                         icon: const Icon(Icons.close),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Text('Số lượng', style: theme.textRegular12Subtle),
+                  Text(
+                    LKey.productFormInventoryQuantityLabel
+                        .tr(context: context),
+                    style: theme.textRegular12Subtle,
+                  ),
                   const SizedBox(height: 8),
                   PlusMinusInputView(
                     initialValue: lot.quantity,
@@ -923,7 +941,8 @@ class _InventoryLotSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _DatePickerField(
-                    label: 'Hết hạn',
+                    label: LKey.productFormInventoryExpiryLabel
+                        .tr(context: context),
                     value: lot.expiryDate,
                     dateFormat: dateFormat,
                     onTap: () => pickExpiryDate(index),
@@ -931,7 +950,8 @@ class _InventoryLotSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _DatePickerField(
-                    label: 'Sản xuất (tuỳ chọn)',
+                    label: LKey.productFormInventoryManufactureLabel
+                        .tr(context: context),
                     value: lot.manufactureDate,
                     dateFormat: dateFormat,
                     onTap: () => pickManufactureDate(index),
@@ -948,7 +968,9 @@ class _InventoryLotSection extends StatelessWidget {
         OutlinedButton.icon(
           onPressed: onAddLot,
           icon: const Icon(Icons.add),
-          label: const Text('Thêm lô'),
+          label: Text(
+            LKey.productFormInventoryAddLot.tr(context: context),
+          ),
         ),
       ],
     );
@@ -977,7 +999,9 @@ class _DatePickerField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
-    final text = value != null ? dateFormat.format(value!) : 'Chọn ngày';
+    final text = value != null
+        ? dateFormat.format(value!)
+        : LKey.productFormInventoryChooseDate.tr(context: context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1090,32 +1114,34 @@ class _LotDraft {
   }
 }
 
-String? _validateLotDrafts(List<_LotDraft> lots) {
+String? _validateLotDrafts(BuildContext context, List<_LotDraft> lots) {
   if (lots.isEmpty) {
-    return 'Vui lòng thêm ít nhất một lô hàng.';
+    return LKey.productFormValidationNoLot.tr(context: context);
   }
 
   final keys = <String>{};
 
   for (final lot in lots) {
     if (lot.expiryDate == null) {
-      return 'Vui lòng chọn ngày hết hạn cho từng lô hàng.';
+      return LKey.productFormValidationMissingExpiry.tr(context: context);
     }
 
     if (lot.quantity <= 0) {
-      return 'Số lượng mỗi lô phải lớn hơn 0.';
+      return LKey.productFormValidationLotQuantity.tr(context: context);
     }
 
     if (lot.manufactureDate != null &&
         lot.expiryDate != null &&
         lot.manufactureDate!.isAfter(lot.expiryDate!)) {
-      return 'Ngày sản xuất không được sau ngày hết hạn.';
+      return LKey.productFormValidationManufactureAfterExpiry
+          .tr(context: context);
     }
 
     final key =
         '${lot.expiryDate!.toIso8601String()}|${lot.manufactureDate?.toIso8601String() ?? 'null'}';
     if (!keys.add(key)) {
-      return 'Không thể có hai lô trùng cả ngày sản xuất và ngày hết hạn.';
+      return LKey.productFormValidationDuplicateLot
+          .tr(context: context);
     }
   }
 
@@ -1134,6 +1160,7 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
     final theme = context.appTheme;
     //barcode type state
     final barcodeType = useState<BarcodeType>(BarcodeType.QrCode);
+    String t(String key) => key.tr(context: context);
     // Get the barcode based on the selected type
     // Function to get the barcode based on the selected type
 
@@ -1157,7 +1184,7 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                     textInputAction: TextInputAction.search,
                     textAlignVertical: TextAlignVertical.center,
                     decoration: InputDecoration(
-                      hintText: 'Nhập mã SKU',
+                      hintText: t(LKey.productFormSkuInputHint),
                       hintStyle:
                           TextStyle(fontSize: 16, color: Colors.grey.shade600),
                       border: InputBorder.none,
@@ -1174,7 +1201,7 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                     onSelected(sku);
                   },
                   child: Text(
-                    'Lưu',
+                    t(LKey.buttonSave),
                     style: theme.textMedium15Default
                         .copyWith(color: theme.colorPrimary),
                   ),
@@ -1196,7 +1223,9 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                     child: InkWell(
                       onTap: () async {
                         await InnerScannerPage(
-                          child: const Text('Quét mã vạch'),
+                          child: Text(
+                            t(LKey.productFormSkuScanBarcode),
+                          ),
                           onBarcodeScanned: (value) {
                             final scannedValue = value.displayValue ?? '';
                             _skuController.text = scannedValue;
@@ -1215,7 +1244,10 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                           children: [
                             const Icon(Icons.camera_alt_outlined, size: 24),
                             const SizedBox(width: 10),
-                            Text('Quét mã', style: theme.textMedium15Subtle),
+                            Text(
+                              t(LKey.productFormSkuScanAction),
+                              style: theme.textMedium15Subtle,
+                            ),
                           ],
                         ),
                       ),
@@ -1242,8 +1274,10 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                           children: [
                             const Icon(Icons.shuffle, size: 24),
                             const SizedBox(width: 10),
-                            Text('Tạo ngẫu nhiên',
-                                style: theme.textMedium15Subtle),
+                            Text(
+                              t(LKey.productFormSkuRandom),
+                              style: theme.textMedium15Subtle,
+                            ),
                           ],
                         ),
                       ),
@@ -1271,9 +1305,9 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                               height: 200,
                               alignment: Alignment.center,
                               color: Colors.grey.shade200,
-                              child: const Text(
-                                'Vui lòng nhập mã SKU để tạo mã QR',
-                                style: TextStyle(color: Colors.grey),
+                              child: Text(
+                                t(LKey.productFormSkuQrPlaceholder),
+                                style: const TextStyle(color: Colors.grey),
                               ),
                             );
                           }
@@ -1295,9 +1329,9 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                                     const CircularProgressIndicator(),
                               );
                             } catch (e) {
-                              return const Text(
-                                'Lỗi tạo mã QR',
-                                style: TextStyle(color: Colors.red),
+                              return Text(
+                                t(LKey.productFormSkuQrError),
+                                style: const TextStyle(color: Colors.red),
                               );
                             }
                           });
@@ -1327,7 +1361,9 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                         final sku = _skuController.text.trim();
                         if (sku.isEmpty) {
                           showError(
-                              message: 'Vui lòng nhập mã SKU để tải mã QR.');
+                            message:
+                                t(LKey.productFormSkuDownloadError),
+                          );
                           return;
                         }
                         Barcode dm = Barcode.fromType(barcodeType.value);
@@ -1335,10 +1371,12 @@ class AddSKUWidget extends HookWidget with ShowBottomSheet<void> {
                         dm.toSvg(sku, width: 200, height: 200);
                         // Save the SVG to a file or show a dialog to download
                         // For simplicity, we will just show a success message
-                        showSuccess(message: 'Tải mã QR thành công!');
+                        showSuccess(
+                          message: t(LKey.productFormSkuDownloadSuccess),
+                        );
                       },
                       icon: const Icon(Icons.download),
-                      label: const Text('Lưu vào thiết bị'),
+                      label: Text(t(LKey.productFormSkuDownloadButton)),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
@@ -1362,6 +1400,7 @@ class SelectImageOptionWidget extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
+    String t(String key) => key.tr(context: context);
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1371,7 +1410,7 @@ class SelectImageOptionWidget extends StatelessWidget
             children: [
               Expanded(
                 child: CommonImagePicker(
-                  title: 'Chọn ảnh',
+                  title: t(LKey.productFormMediaSelectImageTitle),
                   onImagesSelected: (List<ImageStorageModel> images) {
                     Navigator.pop(context, images);
                   },
@@ -1404,7 +1443,7 @@ class AddSKUPlaceHolder extends CommonAddPlaceHolder<String> {
           },
           value: value,
           getName: (String? value) => value ?? '',
-          title: 'Thêm mã sản phẩm (SKU)',
+          titleKey: LKey.productFormSkuPlaceholderTitle,
         );
 }
 
@@ -1426,7 +1465,7 @@ class AddCategoryPlaceHolder extends CommonAddPlaceHolder<Category> {
           },
           value: value,
           getName: (Category? value) => value?.name ?? '',
-          title: 'Thêm danh mục',
+          titleKey: LKey.productFormAddCategory,
         );
 }
 
@@ -1435,12 +1474,12 @@ class CommonAddPlaceHolder<T> extends StatelessWidget {
     super.key,
     required this.value,
     this.onSelected,
-    required this.title,
+    required this.titleKey,
     required this.getName,
     required this.onTap,
   });
 
-  final String title;
+  final String titleKey;
   final T? value;
   final String Function(T? value) getName;
   final ValueChanged<T?>? onSelected;
@@ -1449,6 +1488,7 @@ class CommonAddPlaceHolder<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
+    final displayTitle = titleKey.tr(context: context);
     if (value != null) {
       return CustomTextField(
         key: ObjectKey(value),
@@ -1489,7 +1529,7 @@ class CommonAddPlaceHolder<T> extends StatelessWidget {
               ),
               const Gap(10),
               Text(
-                title,
+                displayTitle,
                 style: theme.textMedium13Subtle,
               ),
             ],

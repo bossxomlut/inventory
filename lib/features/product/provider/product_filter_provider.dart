@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../provider/text_search.dart';
+import '../../../resources/index.dart';
 import '../../category/provider/category_provider.dart';
 import '../../unit/provider/unit_filter_provider.dart';
 
@@ -13,15 +14,15 @@ extension ProductSortTypeExtension on ProductSortType {
   String get displayName {
     switch (this) {
       case ProductSortType.nameAsc:
-        return 'Tên A-Z';
+        return LKey.productSortNameAsc.tr();
       case ProductSortType.nameDesc:
-        return 'Tên Z-A';
+        return LKey.productSortNameDesc.tr();
       case ProductSortType.quantityAsc:
-        return 'Số lượng tăng dần';
+        return LKey.productSortQuantityAsc.tr();
       case ProductSortType.quantityDesc:
-        return 'Số lượng giảm dần';
+        return LKey.productSortQuantityDesc.tr();
       case ProductSortType.none:
-        return 'Mặc định';
+        return LKey.productSortDefault.tr();
     }
   }
 
@@ -53,19 +54,19 @@ extension TimeFilterTypeExtension on TimeFilterType {
   String get displayName {
     switch (this) {
       case TimeFilterType.yesterday:
-        return 'Hôm qua';
+        return LKey.productTimeYesterday.tr();
       case TimeFilterType.today:
-        return 'Hôm nay';
+        return LKey.productTimeToday.tr();
       case TimeFilterType.last7Days:
-        return '7 ngày';
+        return LKey.productTimeLast7Days.tr();
       case TimeFilterType.last1Month:
-        return '30 ngày';
+        return LKey.productTimeLast30Days.tr();
       case TimeFilterType.last3Months:
-        return '90 ngày';
+        return LKey.productTimeLast90Days.tr();
       case TimeFilterType.custom:
-        return 'Tùy chỉnh';
+        return LKey.productTimeCustom.tr();
       case TimeFilterType.none:
-        return 'Không lọc';
+        return LKey.productTimeNone.tr();
     }
   }
 

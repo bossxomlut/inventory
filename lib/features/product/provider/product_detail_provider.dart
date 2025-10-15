@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/product/inventory.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/notification.dart';
+import '../../../resources/index.dart';
 //
 // /// Provider quản lý thông tin chi tiết của sản phẩm
 // final productDetailProvider = AutoDisposeNotifierProviderFamily<ProductDetailNotifier, Product?, int>(
@@ -21,7 +22,11 @@ class ProductDetailNotifier extends AutoDisposeFamilyNotifier<Product?, int> {
       final product = await productRepo.read(arg);
       state = product;
     } catch (e) {
-      ref.read(notificationProvider.notifier).showError('Không thể tải thông tin sản phẩm: ${e.toString()}');
+      ref.read(notificationProvider.notifier).showError(
+            LKey.productDetailLoadError.tr(
+              namedArgs: {'error': e.toString()},
+            ),
+          );
     } finally {}
   }
 

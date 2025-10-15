@@ -7,6 +7,6 @@ class ProductPriceCollection {
   Id id = Isar.autoIncrement;
   late int productId;
   late String productName;
-  double? purchasePrice; // Giá mua
+  double? purchasePrice; // Purchase price
   double? sellingPrice;
 }

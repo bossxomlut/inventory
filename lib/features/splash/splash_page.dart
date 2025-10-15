@@ -19,6 +19,8 @@ class SplashPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
     useEffect(() {
       // Initialize app and check onboarding/auth flow
       _initializeApp(ref);
@@ -41,14 +43,14 @@ class SplashPage extends HookConsumerWidget {
             ),
             //Chào mừng bạn quay trờ lại
             Text(
-              'Chào mừng bạn quay trở lại',
+              t(LKey.splashWelcomeBack),
               style: theme.textMedium16Default,
             ),
             const SizedBox(height: 20),
             const CircularProgressIndicator(),
             const SizedBox(height: 20),
             Text(
-              'Đang tải...',
+              t(LKey.splashLoading),
               style: theme.textRegular13Subtle,
             ),
           ],

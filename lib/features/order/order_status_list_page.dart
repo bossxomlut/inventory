@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../domain/entities/order/order.dart';
 import '../../core/helpers/double_utils.dart';
@@ -8,6 +9,7 @@ import '../../core/index.dart';
 import '../../domain/index.dart';
 import '../../provider/index.dart';
 import '../../provider/permissions.dart';
+import '../../resources/index.dart';
 import '../../resources/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
@@ -20,12 +22,10 @@ class OrderStatusListPage extends ConsumerStatefulWidget {
   const OrderStatusListPage({super.key});
 
   @override
-  ConsumerState<OrderStatusListPage> createState() =>
-      _OrderStatusListPageState();
+  ConsumerState<OrderStatusListPage> createState() => _OrderStatusListPageState();
 }
 
-class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
-    with TickerProviderStateMixin {
+class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with TickerProviderStateMixin {
   late TabController _tabController;
   List<OrderStatus> _visibleStatuses = const [];
   final List<OrderStatus> statuses = [
@@ -57,18 +57,14 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
     }
 
     OrderStatus? previousStatus;
-    if (_visibleStatuses.isNotEmpty &&
-        _tabController.index < _visibleStatuses.length) {
+    if (_visibleStatuses.isNotEmpty && _tabController.index < _visibleStatuses.length) {
       previousStatus = _visibleStatuses[_tabController.index];
     }
 
-    final fallbackStatus = visibleStatuses.contains(OrderStatus.confirmed)
-        ? OrderStatus.confirmed
-        : visibleStatuses.first;
+    final fallbackStatus =
+        visibleStatuses.contains(OrderStatus.confirmed) ? OrderStatus.confirmed : visibleStatuses.first;
     final targetStatus =
-        previousStatus != null && visibleStatuses.contains(previousStatus)
-            ? previousStatus
-            : fallbackStatus;
+        previousStatus != null && visibleStatuses.contains(previousStatus) ? previousStatus : fallbackStatus;
     final targetIndex = visibleStatuses.indexOf(targetStatus);
 
     _tabController.dispose();
@@ -94,21 +90,15 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
     switch (status) {
       case OrderStatus.draft:
         return () async {
-          await ref
-              .read(orderActionHandlerProvider)
-              .deleteOrder(context, OrderStatus.draft, order);
+          await ref.read(orderActionHandlerProvider).deleteOrder(context, OrderStatus.draft, order);
         };
       case OrderStatus.done:
         return () async {
-          await ref
-              .read(orderActionHandlerProvider)
-              .deleteOrder(context, OrderStatus.done, order);
+          await ref.read(orderActionHandlerProvider).deleteOrder(context, OrderStatus.done, order);
         };
       case OrderStatus.cancelled:
         return () async {
-          await ref
-              .read(orderActionHandlerProvider)
-              .deleteOrder(context, OrderStatus.cancelled, order);
+          await ref.read(orderActionHandlerProvider).deleteOrder(context, OrderStatus.cancelled, order);
         };
       case OrderStatus.confirmed:
         return null;
@@ -137,10 +127,24 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
     };
   }
 
+  String _statusLabel(BuildContext context, OrderStatus status) {
+    switch (status) {
+      case OrderStatus.draft:
+        return LKey.orderStatusDraft.tr(context: context);
+      case OrderStatus.confirmed:
+        return LKey.orderStatusConfirmed.tr(context: context);
+      case OrderStatus.done:
+        return LKey.orderStatusDone.tr(context: context);
+      case OrderStatus.cancelled:
+        return LKey.orderStatusCancelled.tr(context: context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
     final permissionsAsync = ref.watch(currentUserPermissionsProvider);
+    String t(String key) => key.tr(context: context);
 
     return permissionsAsync.when(
       loading: () => const Scaffold(
@@ -153,11 +157,10 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.warning_amber,
-                    size: 40, color: Colors.redAccent),
+                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
-                  'Không thể tải quyền truy cập',
+                  t(LKey.permissionsLoadFailed),
                   style: theme.textMedium16Default,
                   textAlign: TextAlign.center,
                 ),
@@ -166,7 +169,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref.refresh(currentUserPermissionsProvider),
-                  child: const Text('Thử lại'),
+                  child: Text(t(LKey.buttonRetry)),
                 ),
               ],
             ),
@@ -175,11 +178,9 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
       ),
       data: (permissions) {
         final canViewDraft = permissions.contains(PermissionKey.orderViewDraft);
-        final canViewConfirmed =
-            permissions.contains(PermissionKey.orderViewConfirmed);
+        final canViewConfirmed = permissions.contains(PermissionKey.orderViewConfirmed);
         final canViewDone = permissions.contains(PermissionKey.orderViewDone);
-        final canViewCancelled =
-            permissions.contains(PermissionKey.orderViewCancelled);
+        final canViewCancelled = permissions.contains(PermissionKey.orderViewCancelled);
         final canCreate = permissions.contains(PermissionKey.orderCreate);
         final canDelete = permissions.contains(PermissionKey.orderDelete);
         final canComplete = permissions.contains(PermissionKey.orderComplete);
@@ -194,12 +195,12 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
 
         if (visibleStatuses.isEmpty) {
           return Scaffold(
-            appBar: const CustomAppBar(title: 'Danh sách đơn hàng'),
-            body: const Center(
+            appBar: CustomAppBar(title: t(LKey.orderListTitle)),
+            body: Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Bạn không có quyền xem bất kỳ trạng thái đơn hàng nào.',
+                  t(LKey.orderListPermissionDenied),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -211,18 +212,17 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
 
         return Scaffold(
           appBar: CustomAppBar(
-            title: 'Danh sách dơn hàng',
+            title: t(LKey.orderListTitle),
             actions: [
               IconButton(
                 icon: const Icon(Icons.tune),
                 color: Colors.white,
-                tooltip: 'Thiết lập xác nhận hành động',
+                tooltip: t(LKey.orderListSettingsTooltip),
                 onPressed: () => _openConfirmSettingsDialog(context),
               ),
             ],
             bottom: TabBar(
-              labelStyle:
-                  theme.textMedium15Default.copyWith(color: Colors.white),
+              labelStyle: theme.textMedium15Default.copyWith(color: Colors.white),
               labelColor: Colors.white,
               unselectedLabelColor: Colors.white70,
               controller: _tabController,
@@ -232,7 +232,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
                     final orders = ref.watch(orderListProvider(status));
                     final count = orders.data.length;
                     return Tab(
-                      text: '${status.displayName} ($count)',
+                      text: '${_statusLabel(context, status)} ($count)',
                     );
                   },
                 );
@@ -249,12 +249,9 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
                 itemBuilder: (BuildContext context, Order order, int index) {
                   return OrderCard(
                     order: order,
-                    onRemove:
-                        _buildRemoveCallback(context, ref, status, order, canDelete),
-                    onComplete: _buildCompleteCallback(
-                        context, ref, status, order, canComplete),
-                    onCancel: _buildCancelCallback(
-                        context, ref, status, order, canCancel),
+                    onRemove: _buildRemoveCallback(context, ref, status, order, canDelete),
+                    onComplete: _buildCompleteCallback(context, ref, status, order, canComplete),
+                    onCancel: _buildCancelCallback(context, ref, status, order, canCancel),
                   );
                 },
                 canCreateOrder: canCreate,
@@ -270,8 +267,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
                           return;
                         }
                         ref.invalidate(orderListProvider(OrderStatus.draft));
-                        ref.invalidate(
-                            orderListProvider(OrderStatus.confirmed));
+                        ref.invalidate(orderListProvider(OrderStatus.confirmed));
                       },
                     );
                   },
@@ -289,6 +285,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
       builder: (dialogContext) => Consumer(
         builder: (context, ref, _) {
           final settingsAsync = ref.watch(orderActionConfirmControllerProvider);
+          String t(String key) => key.tr(context: context);
           return settingsAsync.when(
             loading: () => const AlertDialog(
               content: SizedBox(
@@ -297,49 +294,46 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
               ),
             ),
             error: (error, stack) => AlertDialog(
-              title: const Text('Thiết lập xác nhận hành động'),
-              content: Text('Không thể tải cấu hình: $error'),
+              title: Text(t(LKey.orderListSettingsTitle)),
+              content: Text(
+                LKey.orderListSettingsLoadError.tr(
+                  namedArgs: {'error': '$error'},
+                ),
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Đóng'),
+                  child: Text(t(LKey.buttonClose)),
                 ),
               ],
             ),
             data: (settings) {
-              final notifier =
-                  ref.read(orderActionConfirmControllerProvider.notifier);
+              final notifier = ref.read(orderActionConfirmControllerProvider.notifier);
               return AlertDialog(
-                title: const Text('Thiết lập xác nhận hành động'),
+                title: Text(t(LKey.orderListSettingsTitle)),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildActionToggle(
                       context,
-                      title: 'Xác nhận/Hoàn thành đơn',
-                      description:
-                          'Bật: Hiển thị hộp thoại xác nhận trước khi đánh dấu đơn hàng đã hoàn thành.\nTắt: Thực hiện ngay không cần xác nhận.',
+                      title: t(LKey.orderListToggleConfirmTitle),
+                      description: t(LKey.orderListToggleConfirmDescription),
                       value: settings.confirm,
-                      onChanged: (value) =>
-                          notifier.setActionEnabled(OrderActionType.confirm, value),
+                      onChanged: (value) => notifier.setActionEnabled(OrderActionType.confirm, value),
                     ),
                     _buildActionToggle(
                       context,
-                      title: 'Huỷ đơn hàng',
-                      description:
-                          'Bật: Hiển thị hộp thoại xác nhận trước khi huỷ đơn hàng.\nTắt: Huỷ ngay lập tức.',
+                      title: t(LKey.orderListToggleCancelTitle),
+                      description: t(LKey.orderListToggleCancelDescription),
                       value: settings.cancel,
-                      onChanged: (value) =>
-                          notifier.setActionEnabled(OrderActionType.cancel, value),
+                      onChanged: (value) => notifier.setActionEnabled(OrderActionType.cancel, value),
                     ),
                     _buildActionToggle(
                       context,
-                      title: 'Xoá đơn hàng',
-                      description:
-                          'Bật: Yêu cầu xác nhận trước khi xoá đơn hàng khỏi danh sách.\nTắt: Xoá ngay lập tức.',
+                      title: t(LKey.orderListToggleDeleteTitle),
+                      description: t(LKey.orderListToggleDeleteDescription),
                       value: settings.delete,
-                      onChanged: (value) =>
-                          notifier.setActionEnabled(OrderActionType.delete, value),
+                      onChanged: (value) => notifier.setActionEnabled(OrderActionType.delete, value),
                     ),
                   ],
                 ),
@@ -348,11 +342,11 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
                     onPressed: () async {
                       await notifier.reset();
                     },
-                    child: const Text('Khôi phục mặc định'),
+                    child: Text(t(LKey.orderListSettingsReset)),
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('Đóng'),
+                    child: Text(t(LKey.buttonClose)),
                   ),
                 ],
               );
@@ -392,8 +386,7 @@ class OrderListView extends ConsumerWidget {
   });
 
   final OrderStatus status;
-  final Widget Function(BuildContext context, Order oder, int index)
-      itemBuilder;
+  final Widget Function(BuildContext context, Order oder, int index) itemBuilder;
   final bool canCreateOrder;
 
   @override
@@ -440,6 +433,10 @@ class OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
+    String t(String key) => key.tr(context: context);
+    final notSet = t(LKey.orderCommonNotSet);
+    final customerName = order.customer.isNotNullOrEmpty ? order.customer! : notSet;
+    final contactName = order.customerContact.isNotNullOrEmpty ? order.customerContact! : notSet;
 
     return InkWell(
       onTap: () {
@@ -460,7 +457,9 @@ class OrderCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Mã đơn hàng: #${order.id}',
+                        LKey.orderListOrderCode.tr(
+                          namedArgs: {'id': '${order.id}'},
+                        ),
                         style: theme.textMedium15Default,
                       ),
                       Text(
@@ -474,13 +473,16 @@ class OrderCard extends StatelessWidget {
                     children: [
                       //Tên khách hàng
                       Text(
-                        'Khách hàng: ${order.customer.isNotNullOrEmpty ? order.customer : 'Chưa có'}',
+                        LKey.orderListCustomer.tr(
+                          namedArgs: {'name': customerName},
+                        ),
                         style: theme.textRegular15Default,
                       ),
-                      VerticalDivider(),
-                      //contact
+                      VerticalDivider(), //contact
                       Text(
-                        'Liên hệ: ${order.customerContact.isNotNullOrEmpty ? order.customerContact : 'Chưa có'}',
+                        LKey.orderListContact.tr(
+                          namedArgs: {'contact': contactName},
+                        ),
                         style: theme.textRegular14Sublest,
                       ),
                     ],
@@ -497,7 +499,7 @@ class OrderCard extends StatelessWidget {
                             //Sản phẩm
                             //Số sản phẩm
                             Text(
-                              'Sản phẩm:',
+                              t(LKey.orderListProductsLabel),
                               style: theme.textRegular13Subtle,
                             ),
                             Gap(4),
@@ -514,7 +516,7 @@ class OrderCard extends StatelessWidget {
                             //Sản phẩm
                             //Số sản phẩm
                             Text(
-                              'Số lượng:',
+                              t(LKey.orderListQuantityLabel),
                               style: theme.textRegular13Subtle,
                             ),
                             Gap(4),
@@ -531,15 +533,14 @@ class OrderCard extends StatelessWidget {
                             //Sản phẩm
                             //Số sản phẩm
                             Text(
-                              'Tổng tiền: ',
+                              t(LKey.orderListTotalLabel),
                               style: theme.textRegular13Subtle,
                             ),
                             Gap(4),
                             Text(
                               '${order.totalPrice.priceFormat()}',
                               style: theme.textRegular15Default,
-                            ),
-                            //Tổng tiền
+                            ), //Tổng tiền
                           ],
                         ),
                       ],
@@ -550,7 +551,7 @@ class OrderCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
-                        'Ghi chú: ${order.note!}',
+                        LKey.orderListNoteLabel.tr(namedArgs: {'note': order.note!}),
                         style: theme.textRegular15Subtle,
                       ),
                     ),
@@ -569,8 +570,8 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  Widget buildTrailing(
-      BuildContext context, OrderStatus status, AppThemeData theme) {
+  Widget buildTrailing(BuildContext context, OrderStatus status, AppThemeData theme) {
+    String t(String key) => key.tr(context: context);
     switch (status) {
       case OrderStatus.confirmed:
         final bool canComplete = onComplete != null;
@@ -590,7 +591,7 @@ class OrderCard extends StatelessWidget {
                   backgroundColor: Colors.green.withOpacity(0.1),
                 ),
                 child: Text(
-                  'Hoàn thành',
+                  t(LKey.orderListActionComplete),
                   style: theme.textRegular15Default.copyWith(color: Colors.green),
                 ),
               ),
@@ -604,7 +605,7 @@ class OrderCard extends StatelessWidget {
                   backgroundColor: Colors.red.withOpacity(0.1),
                 ),
                 child: Text(
-                  'Hủy',
+                  t(LKey.orderListActionCancel),
                   style: theme.textRegular15Default.copyWith(color: Colors.red),
                 ),
               ),
@@ -626,7 +627,7 @@ class OrderCard extends StatelessWidget {
                 backgroundColor: Colors.red.withOpacity(0.1),
               ),
               child: Text(
-                'Xoá',
+                t(LKey.buttonDelete),
                 style: theme.textRegular15Default.copyWith(color: Colors.red),
               ),
             ),
@@ -649,17 +650,18 @@ class OrderEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
+    String t(String key) => key.tr(context: context);
 
     String getMessage() {
       switch (status) {
         case OrderStatus.draft:
-          return 'Chưa có đơn hàng nháp nào';
+          return t(LKey.orderListEmptyDraft);
         case OrderStatus.confirmed:
-          return 'Chưa có đơn hàng đã xác nhận';
+          return t(LKey.orderListEmptyConfirmed);
         case OrderStatus.done:
-          return 'Chưa có đơn hàng hoàn thành';
+          return t(LKey.orderListEmptyDone);
         case OrderStatus.cancelled:
-          return 'Chưa có đơn hàng bị hủy';
+          return t(LKey.orderListEmptyCancelled);
       }
     }
 
@@ -707,13 +709,13 @@ class OrderEmptyState extends StatelessWidget {
           const SizedBox(height: 8),
           if (canCreateOrder)
             Text(
-              'Nhấn nút + để tạo đơn hàng mới',
+              t(LKey.orderListCreateHint),
               style: theme.textRegular14Sublest,
               textAlign: TextAlign.center,
             )
           else
             Text(
-              'Liên hệ quản trị viên để được cấp quyền tạo đơn hàng.',
+              t(LKey.orderListContactAdmin),
               style: theme.textRegular14Sublest,
               textAlign: TextAlign.center,
             ),

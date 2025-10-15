@@ -10,6 +10,7 @@ import '../../domain/repositories/order/price_repository.dart';
 import '../../provider/index.dart';
 import '../../provider/load_list.dart';
 import '../../provider/text_search.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
 import '../../shared_widgets/toast.dart';
 import '../../shared_widgets/hook/text_controller_hook.dart';
@@ -48,6 +49,7 @@ class ConfigPriceAppBar extends HookConsumerWidget implements PreferredSizeWidge
     final searchFocusNode = useFocusNode();
     final searchController = useTextEditingController();
     final debouncedSearchText = useDebouncedText(searchController);
+    String t(String key) => key.tr(context: context);
 
     // Trigger search when debounced text changes
     useEffect(() {
@@ -77,7 +79,7 @@ class ConfigPriceAppBar extends HookConsumerWidget implements PreferredSizeWidge
               style: const TextStyle(color: Colors.white),
               cursorColor: Colors.white,
               decoration: InputDecoration(
-                  hintText: 'Tìm kiếm sản phẩm...',
+                  hintText: t(LKey.configPriceListSearchHint),
                   hintStyle: const TextStyle(color: Colors.white70),
                   border: InputBorder.none,
                   suffix: Padding(
@@ -116,7 +118,7 @@ class ConfigPriceAppBar extends HookConsumerWidget implements PreferredSizeWidge
             ),
           )
         : CustomAppBar(
-            title: 'Cấu hình giá sản phẩm',
+            title: t(LKey.configPriceListTitle),
             actions: [
               IconButton(
                 icon: const Icon(Icons.search, color: Colors.white),
@@ -127,7 +129,7 @@ class ConfigPriceAppBar extends HookConsumerWidget implements PreferredSizeWidge
                     FocusScope.of(context).requestFocus(searchFocusNode);
                   });
                 },
-                tooltip: 'Tìm kiếm',
+                tooltip: t(LKey.configPriceListSearchTooltip),
               ),
             ],
           );
@@ -145,9 +147,17 @@ class ProductListView extends HookConsumerWidget {
     // Use loadProductProvider which already has productFilterProvider inside
     final products = ref.watch(loadProductProvider);
     final theme = context.appTheme;
+    String t(String key) => key.tr(context: context);
 
     if (products.hasError) {
-      return Center(child: Text('Lỗi: ${products.error}'));
+      return Center(
+        child: Text(
+          LKey.commonErrorWithMessage.tr(
+            context: context,
+            namedArgs: {'error': '${products.error}'},
+          ),
+        ),
+      );
     } else if (products.isEmpty) {
       return const EmptyItemWidget();
     } else {
@@ -156,7 +166,16 @@ class ProductListView extends HookConsumerWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             alignment: Alignment.centerLeft,
-            child: Text('Đã tải ${products.data.length}/${products.totalCount} sản phẩm'),
+            child: Text(
+              t(
+                LKey.configPriceListLoadedStatus.tr(
+                  namedArgs: {
+                    'loaded': '${products.data.length}',
+                    'total': '${products.totalCount}',
+                  },
+                ),
+              ),
+            ),
           ),
           Expanded(
             child: LoadMoreList<Product>(
@@ -192,22 +211,24 @@ class ProductListView extends HookConsumerWidget {
                                   children: [
                                     //giá vốn
                                     Text(
-                                      'Giá vốn',
+                                      t(LKey.configPriceListCostLabel),
                                       style: theme.textRegular13Subtle,
                                     ),
                                     Text(
-                                      '${price.purchasePrice?.priceFormat() ?? 'Chưa có'}',
+                                      price.purchasePrice?.priceFormat() ??
+                                          t(LKey.configPriceListNotSet),
                                       style: theme.textMedium16Default,
                                       textAlign: TextAlign.end,
                                     ),
                                     const SizedBox(height: 8),
 
                                     Text(
-                                      'Giá bán',
+                                      t(LKey.configPriceListSellingLabel),
                                       style: theme.textRegular13Subtle,
                                     ),
                                     Text(
-                                      '${price.sellingPrice?.priceFormat() ?? 'Chưa có'}',
+                                      price.sellingPrice?.priceFormat() ??
+                                          t(LKey.configPriceListNotSet),
                                       style: theme.textMedium16Default,
                                       textAlign: TextAlign.end,
                                     ),
@@ -355,9 +376,10 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Lợi nhuận: ',
+                      LKey.configPriceListProfitLabel.tr(),
                       style: context.appTheme.textRegular14Default,
                     ),
+                    const SizedBox(width: 4),
                     Text(
                       '${prefix}${profitPercentage.displayFormat()}%',
                       style: context.appTheme.textMedium16Default.copyWith(color: color),
@@ -379,15 +401,20 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
             titleWidget: AnimatedBuilder(
               animation: sellPriceController,
               builder: (BuildContext context, Widget? child) {
+                final value = sellingPrice() != null
+                    ? sellingPrice()?.priceFormat() ?? ''
+                    : '';
                 return Text(
-                  'Giá bán: ${sellingPrice() != null ? sellingPrice()?.priceFormat() : ''}',
+                  LKey.configPriceFormSellingPreview.tr(
+                    namedArgs: {'price': value},
+                  ),
                   style: context.appTheme.textRegular13Subtle,
                 );
               },
             ),
             child: CustomTextField(
               controller: sellPriceController,
-              label: 'Giá bán',
+              label: LKey.configPriceFormSellingLabel.tr(),
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.next,
             ),
@@ -398,15 +425,20 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
             titleWidget: AnimatedBuilder(
               animation: purchasePriceController,
               builder: (BuildContext context, Widget? child) {
+                final value = purchasePrice() != null
+                    ? purchasePrice()!.priceFormat()
+                    : '';
                 return Text(
-                  'Giá vốn: ${purchasePrice() != null ? purchasePrice()!.priceFormat() : ''}',
+                  LKey.configPriceFormPurchasePreview.tr(
+                     namedArgs: {'price': value},
+                  ),
                   style: context.appTheme.textRegular13Subtle,
                 );
               },
             ),
             child: CustomTextField(
               controller: purchasePriceController,
-              label: 'Giá vốn',
+              label: LKey.configPriceFormPurchaseLabel.tr(),
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.done,
             ),
@@ -431,9 +463,10 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
                     }
                   },
             onCancel: () {
-              Navigator.pop(context);
-            },
-            saveButtonText: formState.isSaving ? 'Đang lưu...' : null,
+                Navigator.pop(context);
+              },
+            saveButtonText:
+                formState.isSaving ? LKey.configPriceFormSaving.tr() : null,
           ),
         ],
       ),

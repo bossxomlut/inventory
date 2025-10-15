@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../domain/index.dart';
 import '../../../provider/index.dart';
+import '../../../resources/index.dart';
 import '../../../resources/theme.dart';
 import '../../../shared_widgets/index.dart';
 import '../../authentication/provider/auth_provider.dart';
@@ -20,7 +21,8 @@ class CreateSessionState {
   });
 }
 
-class CreateSessionBottomSheet extends HookConsumerWidget with ShowBottomSheet<CreateSessionState> {
+class CreateSessionBottomSheet extends HookConsumerWidget
+    with ShowBottomSheet<CreateSessionState> {
   const CreateSessionBottomSheet({super.key});
 
   @override
@@ -29,20 +31,28 @@ class CreateSessionBottomSheet extends HookConsumerWidget with ShowBottomSheet<C
     final createdByController = useTextEditingController();
     final noteController = useTextEditingController();
 
+    final locale = context.locale;
+
     useEffect(() {
-      final sessionName = 'Phiên kiểm kê ${DateTime.now().toString().substring(0, 16)}';
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final timestamp = DateTime.now().toString().substring(0, 16);
+        final sessionName = LKey.checkSessionCreateDefaultName.tr(
+          namedArgs: {'timestamp': timestamp},
+        );
 
-      final user = ref.read(authControllerProvider);
+        final user = ref.read(authControllerProvider);
 
-      final userName = user.maybeWhen(
-        authenticated: (user, _) => user.role.name,
-        orElse: () => 'Người dùng',
-      );
+        final userName = user.maybeWhen(
+          authenticated: (user, _) => user.username,
+          orElse: () => LKey.checkSessionCreateDefaultCreator.tr(),
+        );
 
-      nameController.text = sessionName;
-
-      createdByController.text = userName; // Mặc định người tạo là người đăng nhập
-    }, []);
+        nameController.text = sessionName;
+        createdByController.text =
+            userName; // Mặc định người tạo là người đăng nhập
+      });
+      return null;
+    }, [locale]);
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -53,9 +63,9 @@ class CreateSessionBottomSheet extends HookConsumerWidget with ShowBottomSheet<C
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Tạo phiên kiểm kê mới',
-                style: TextStyle(
+              Text(
+                LKey.checkSessionCreateTitle.tr(context: context),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -69,53 +79,62 @@ class CreateSessionBottomSheet extends HookConsumerWidget with ShowBottomSheet<C
           const SizedBox(height: 10),
           TextField(
             controller: nameController,
-            decoration: const InputDecoration(
-              labelText: 'Tên phiên *',
-              hintText: 'VD: Kiểm kê tháng 06/2025',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: LKey.checkSessionCreateNameLabel.tr(context: context),
+              hintText: LKey.checkSessionCreateNameHint.tr(context: context),
+              border: const OutlineInputBorder(),
             ),
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 10),
           TextField(
             controller: createdByController,
-            decoration: const InputDecoration(
-              labelText: 'Người tạo *',
-              hintText: 'VD: Nguyễn Văn A',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText:
+                  LKey.checkSessionCreateCreatedByLabel.tr(context: context),
+              hintText:
+                  LKey.checkSessionCreateCreatedByHint.tr(context: context),
+              border: const OutlineInputBorder(),
             ),
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 10),
           TextField(
             controller: noteController,
-            decoration: const InputDecoration(
-              labelText: 'Ghi chú',
-              hintText: 'Mô tả ngắn về phiên kiểm kê',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: LKey.checkSessionCreateNoteLabel.tr(context: context),
+              hintText: LKey.checkSessionCreateNoteHint.tr(context: context),
+              border: const OutlineInputBorder(),
             ),
             maxLines: 3,
           ),
           const SizedBox(height: 24),
           BottomButtonBar(
             padding: EdgeInsets.zero,
-            cancelButtonText: 'Huỷ',
-            saveButtonText: 'Tạo phiên',
+            cancelButtonText: LKey.buttonCancel.tr(context: context),
+            saveButtonText: LKey.checkSessionCreateSubmit.tr(context: context),
             onCancel: () => Navigator.pop(context),
             onSave: () {
-              if (nameController.text.isNotEmpty && createdByController.text.isNotEmpty) {
+              if (nameController.text.isNotEmpty &&
+                  createdByController.text.isNotEmpty) {
                 Navigator.pop(
                     context,
                     CreateSessionState(
                       name: nameController.text.trim(),
                       createdBy: createdByController.text.trim(),
-                      note: noteController.text.isNotEmpty ? noteController.text.trim() : null,
+                      note: noteController.text.isNotEmpty
+                          ? noteController.text.trim()
+                          : null,
                     ));
               } else {
                 // Show validation message
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Vui lòng nhập đầy đủ thông tin bắt buộc'),
+                  SnackBar(
+                    content: Text(
+                      LKey.checkSessionCreateValidationRequired.tr(
+                        context: context,
+                      ),
+                    ),
                     duration: Duration(seconds: 2),
                   ),
                 );
@@ -147,7 +166,7 @@ class SessionDetailBottomSheet extends StatelessWidget with ShowBottomSheet {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Thông tin phiên kiểm kê',
+                LKey.checkSessionDetailTitle.tr(context: context),
                 style: appTheme.headingSemibold20Default,
               ),
               IconButton(
@@ -164,7 +183,7 @@ class SessionDetailBottomSheet extends StatelessWidget with ShowBottomSheet {
           // Session name
           _buildInfoRow(
             icon: Icons.label_outline,
-            label: 'Tên phiên',
+            label: LKey.checkSessionDetailName.tr(context: context),
             value: session.name,
             appTheme: appTheme,
           ),
@@ -173,7 +192,7 @@ class SessionDetailBottomSheet extends StatelessWidget with ShowBottomSheet {
           // Created by
           _buildInfoRow(
             icon: Icons.person_outline,
-            label: 'Người tạo',
+            label: LKey.checkSessionDetailCreatedBy.tr(context: context),
             value: session.createdBy,
             appTheme: appTheme,
           ),
@@ -182,7 +201,7 @@ class SessionDetailBottomSheet extends StatelessWidget with ShowBottomSheet {
           // Created date
           _buildInfoRow(
             icon: Icons.calendar_today_outlined,
-            label: 'Ngày tạo',
+            label: LKey.checkSessionDetailCreatedAt.tr(context: context),
             value: session.startDate.toString().substring(0, 16),
             appTheme: appTheme,
           ),
@@ -191,8 +210,10 @@ class SessionDetailBottomSheet extends StatelessWidget with ShowBottomSheet {
           // Status
           _buildInfoRow(
             icon: Icons.flag_outlined,
-            label: 'Trạng thái',
-            value: session.status == CheckSessionStatus.inProgress ? 'Đang tiến hành' : 'Đã hoàn thành',
+            label: LKey.checkSessionDetailStatus.tr(context: context),
+            value: session.status == CheckSessionStatus.inProgress
+                ? LKey.checkSessionStatusInProgress.tr(context: context)
+                : LKey.checkSessionStatusCompleted.tr(context: context),
             appTheme: appTheme,
             isStatus: true,
             statusColor: session.status == CheckSessionStatus.inProgress
@@ -205,7 +226,7 @@ class SessionDetailBottomSheet extends StatelessWidget with ShowBottomSheet {
             const SizedBox(height: 10),
             _buildInfoRow(
               icon: Icons.note_outlined,
-              label: 'Ghi chú',
+              label: LKey.checkSessionDetailNote.tr(context: context),
               value: session.note!,
               appTheme: appTheme,
               isMultiline: true,
@@ -216,7 +237,7 @@ class SessionDetailBottomSheet extends StatelessWidget with ShowBottomSheet {
           SizedBox(
             width: double.infinity,
             child: AppButton.primary(
-              title: 'Đóng',
+              title: LKey.buttonClose.tr(context: context),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -242,7 +263,8 @@ class SessionDetailBottomSheet extends StatelessWidget with ShowBottomSheet {
         border: Border.all(color: appTheme.colorBorderSubtle),
       ),
       child: Row(
-        crossAxisAlignment: isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        crossAxisAlignment:
+            isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
         children: [
           Icon(
             icon,
@@ -263,7 +285,8 @@ class SessionDetailBottomSheet extends StatelessWidget with ShowBottomSheet {
                 const SizedBox(height: 4),
                 if (isStatus && statusColor != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),

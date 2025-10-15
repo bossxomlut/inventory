@@ -4,6 +4,7 @@ import '../../../domain/index.dart';
 import '../../../domain/repositories/order/order_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
+import '../../../resources/index.dart';
 
 part 'order_list_provider.g.dart';
 
@@ -33,7 +34,11 @@ class OrderList extends _$OrderList with LoadListController<Order>, CommonProvid
     final updatedOrders = List<Order>.from(state.data);
     updatedOrders.remove(order);
     state = state.copyWith(data: updatedOrders);
-    showSuccess('Xóa đơn hàng thành công đơn #${order.id}');
+    showSuccess(
+      LKey.orderDeleteSuccess.tr(
+        namedArgs: {'orderId': '${order.id}'},
+      ),
+    );
   }
 
   Future cancelOrder(Order oder) async {
@@ -44,7 +49,11 @@ class OrderList extends _$OrderList with LoadListController<Order>, CommonProvid
     updatedOrders.remove(oder);
     state = state.copyWith(data: updatedOrders);
 
-    showSuccess('Hủy đơn hàng thành công đơn #${oder.id}');
+    showSuccess(
+      LKey.orderCancelSuccess.tr(
+        namedArgs: {'orderId': '${oder.id}'},
+      ),
+    );
   }
 
   Future confirmOrder(Order oder) async {
@@ -54,6 +63,10 @@ class OrderList extends _$OrderList with LoadListController<Order>, CommonProvid
     final updatedOrders = List<Order>.from(state.data);
     updatedOrders.remove(oder);
     state = state.copyWith(data: updatedOrders);
-    showSuccess('Chúc mừng bạn đã hoàn thành đơn hàng #${oder.id}');
+    showSuccess(
+      LKey.orderCompleteSuccess.tr(
+        namedArgs: {'orderId': '${oder.id}'},
+      ),
+    );
   }
 }

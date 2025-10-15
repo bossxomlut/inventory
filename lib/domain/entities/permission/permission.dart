@@ -17,19 +17,19 @@ extension PermissionGroupIdX on PermissionGroupId {
   String get title {
     switch (this) {
       case PermissionGroupId.product:
-        return 'Quản lý sản phẩm';
+        return 'Product management';
       case PermissionGroupId.inventory:
-        return 'Kiểm kê';
+        return 'Stocktake';
       case PermissionGroupId.order:
-        return 'Đơn hàng';
+        return 'Orders';
       case PermissionGroupId.pricing:
-        return 'Giá bán';
+        return 'Pricing';
       case PermissionGroupId.dataManagement:
-        return 'Quản lý dữ liệu';
+        return 'Data management';
       case PermissionGroupId.reports:
-        return 'Báo cáo';
+        return 'Reports';
       case PermissionGroupId.system:
-        return 'Hệ thống';
+        return 'System';
     }
   }
 
@@ -111,208 +111,208 @@ class PermissionCatalog {
     PermissionDefinition(
       key: PermissionKey.productView,
       group: PermissionGroupId.product,
-      title: 'Xem sản phẩm',
-      description: 'Truy cập danh sách và chi tiết sản phẩm.',
+      title: 'View products',
+      description: 'Access product lists and details.',
       defaultEnabledForUser: true,
     ),
     PermissionDefinition(
       key: PermissionKey.productCreate,
       group: PermissionGroupId.product,
-      title: 'Tạo sản phẩm',
-      description: 'Tạo mới sản phẩm trong hệ thống.',
+      title: 'Create products',
+      description: 'Add new products to the catalog.',
     ),
     PermissionDefinition(
       key: PermissionKey.productUpdate,
       group: PermissionGroupId.product,
-      title: 'Cập nhật sản phẩm',
-      description: 'Chỉnh sửa thông tin sản phẩm.',
+      title: 'Update products',
+      description: 'Edit product information.',
     ),
     PermissionDefinition(
       key: PermissionKey.productDelete,
       group: PermissionGroupId.product,
-      title: 'Xóa sản phẩm',
-      description: 'Xóa sản phẩm khỏi hệ thống.',
+      title: 'Delete products',
+      description: 'Remove products from the catalog.',
     ),
     PermissionDefinition(
       key: PermissionKey.categoryView,
       group: PermissionGroupId.product,
-      title: 'Xem danh mục',
-      description: 'Truy cập danh mục sản phẩm.',
+      title: 'View categories',
+      description: 'Access product categories.',
     ),
     PermissionDefinition(
       key: PermissionKey.categoryCreate,
       group: PermissionGroupId.product,
-      title: 'Tạo danh mục',
-      description: 'Tạo danh mục sản phẩm mới.',
+      title: 'Create categories',
+      description: 'Add new product categories.',
     ),
     PermissionDefinition(
       key: PermissionKey.categoryUpdate,
       group: PermissionGroupId.product,
-      title: 'Cập nhật danh mục',
-      description: 'Chỉnh sửa thông tin danh mục.',
+      title: 'Update categories',
+      description: 'Modify existing category information.',
     ),
     PermissionDefinition(
       key: PermissionKey.categoryDelete,
       group: PermissionGroupId.product,
-      title: 'Xóa danh mục',
-      description: 'Xóa danh mục không sử dụng.',
+      title: 'Delete categories',
+      description: 'Remove unused categories.',
     ),
     PermissionDefinition(
       key: PermissionKey.unitView,
       group: PermissionGroupId.product,
-      title: 'Xem đơn vị/ quy cách',
-      description: 'Truy cập danh sách các đơn vị/quy cách.',
+      title: 'View units',
+      description: 'Access measurement units and packaging.',
     ),
     PermissionDefinition(
       key: PermissionKey.unitCreate,
       group: PermissionGroupId.product,
-      title: 'Tạo đơn vị/ quy cách',
-      description: 'Thêm đơn vị/quy cách mới.',
+      title: 'Create units',
+      description: 'Add new measurement units.',
     ),
     PermissionDefinition(
       key: PermissionKey.unitUpdate,
       group: PermissionGroupId.product,
-      title: 'Cập nhật đơn vị/ quy cách',
-      description: 'Chỉnh sửa đơn vị/quy cách hiện tại.',
+      title: 'Update units',
+      description: 'Edit existing measurement units.',
     ),
     PermissionDefinition(
       key: PermissionKey.unitDelete,
       group: PermissionGroupId.product,
-      title: 'Xóa đơn vị/ quy cách',
-      description: 'Xóa các đơn vị/quy cách không còn sử dụng.',
+      title: 'Delete units',
+      description: 'Remove unused measurement units.',
     ),
     PermissionDefinition(
       key: PermissionKey.inventoryView,
       group: PermissionGroupId.inventory,
-      title: 'Xem phiên kiểm kê',
-      description: 'Truy cập các phiên kiểm kê và kết quả.',
+      title: 'View stocktake sessions',
+      description: 'Access stocktake sessions and results.',
       defaultEnabledForUser: true,
     ),
     PermissionDefinition(
       key: PermissionKey.inventoryCreateSession,
       group: PermissionGroupId.inventory,
-      title: 'Tạo phiên kiểm kê',
-      description: 'Khởi tạo các phiên kiểm kê mới.',
+      title: 'Create stocktake sessions',
+      description: 'Start new stocktake sessions.',
     ),
     PermissionDefinition(
       key: PermissionKey.inventoryFinalizeSession,
       group: PermissionGroupId.inventory,
-      title: 'Hoàn tất kiểm kê',
-      description: 'Khóa và hoàn tất các phiên kiểm kê.',
+      title: 'Complete stocktake sessions',
+      description: 'Finalize and lock stocktake sessions.',
     ),
     PermissionDefinition(
       key: PermissionKey.priceUpdate,
       group: PermissionGroupId.pricing,
-      title: 'Cập nhật giá bán',
-      description: 'Chỉnh sửa giá bán của sản phẩm.',
+      title: 'Update prices',
+      description: 'Modify product selling prices.',
     ),
     PermissionDefinition(
       key: PermissionKey.orderCreate,
       group: PermissionGroupId.order,
-      title: 'Tạo đơn hàng',
-      description: 'Khởi tạo đơn hàng mới.',
+      title: 'Create orders',
+      description: 'Create new orders.',
       defaultEnabledForUser: true,
     ),
     PermissionDefinition(
       key: PermissionKey.orderView,
       group: PermissionGroupId.order,
-      title: 'Xem danh sách đơn hàng',
-      description: 'Xem danh sách và chi tiết đơn hàng.',
+      title: 'View orders',
+      description: 'View order lists and details.',
       defaultEnabledForUser: true,
     ),
     PermissionDefinition(
       key: PermissionKey.orderViewDraft,
       group: PermissionGroupId.order,
-      title: 'Xem đơn hàng nháp',
-      description: 'Truy cập các đơn hàng ở trạng thái Nháp.',
+      title: 'View draft orders',
+      description: 'Access orders in Draft status.',
       defaultEnabledForUser: true,
     ),
     PermissionDefinition(
       key: PermissionKey.orderViewConfirmed,
       group: PermissionGroupId.order,
-      title: 'Xem đơn hàng chờ xử lý',
-      description: 'Truy cập các đơn hàng đang chờ xử lý.',
+      title: 'View confirmed orders',
+      description: 'Access orders pending processing.',
       defaultEnabledForUser: true,
     ),
     PermissionDefinition(
       key: PermissionKey.orderViewDone,
       group: PermissionGroupId.order,
-      title: 'Xem đơn hàng hoàn tất',
-      description: 'Truy cập các đơn hàng đã hoàn tất.',
+      title: 'View completed orders',
+      description: 'Access orders that have been completed.',
       defaultEnabledForUser: true,
     ),
     PermissionDefinition(
       key: PermissionKey.orderViewCancelled,
       group: PermissionGroupId.order,
-      title: 'Xem đơn hàng đã hủy',
-      description: 'Truy cập các đơn hàng đã hủy.',
+      title: 'View cancelled orders',
+      description: 'Access orders that were cancelled.',
       defaultEnabledForUser: true,
     ),
     PermissionDefinition(
       key: PermissionKey.orderDelete,
       group: PermissionGroupId.order,
-      title: 'Xóa đơn hàng',
-      description: 'Xóa đơn hàng khỏi hệ thống.',
+      title: 'Delete orders',
+      description: 'Remove orders from the system.',
     ),
     PermissionDefinition(
       key: PermissionKey.orderConfirm,
       group: PermissionGroupId.order,
-      title: 'Xác nhận đơn hàng',
-      description: 'Thay đổi trạng thái đơn hàng sang Chờ xử lý/Đang xử lý.',
+      title: 'Confirm orders',
+      description: 'Move orders to the Pending or In progress statuses.',
     ),
     PermissionDefinition(
       key: PermissionKey.orderComplete,
       group: PermissionGroupId.order,
-      title: 'Hoàn tất đơn hàng',
-      description: 'Chuyển đơn hàng sang trạng thái Hoàn tất.',
+      title: 'Complete orders',
+      description: 'Move orders to the Completed status.',
     ),
     PermissionDefinition(
       key: PermissionKey.orderCancel,
       group: PermissionGroupId.order,
-      title: 'Hủy đơn hàng',
-      description: 'Chuyển đơn hàng sang trạng thái Hủy.',
+      title: 'Cancel orders',
+      description: 'Move orders to the Cancelled status.',
     ),
     PermissionDefinition(
       key: PermissionKey.dataCreateSample,
       group: PermissionGroupId.dataManagement,
-      title: 'Tạo dữ liệu mẫu',
-      description: 'Khởi tạo dữ liệu mẫu cho hệ thống.',
+      title: 'Create sample data',
+      description: 'Populate the system with sample data.',
     ),
     PermissionDefinition(
       key: PermissionKey.dataImport,
       group: PermissionGroupId.dataManagement,
-      title: 'Nhập dữ liệu',
-      description: 'Nhập dữ liệu từ file hoặc nguồn khác.',
+      title: 'Import data',
+      description: 'Import data from files or other sources.',
     ),
     PermissionDefinition(
       key: PermissionKey.dataExport,
       group: PermissionGroupId.dataManagement,
-      title: 'Xuất dữ liệu',
-      description: 'Xuất dữ liệu ra file.',
+      title: 'Export data',
+      description: 'Export data to a file.',
     ),
     PermissionDefinition(
       key: PermissionKey.dataDelete,
       group: PermissionGroupId.dataManagement,
-      title: 'Xóa dữ liệu',
-      description: 'Xóa dữ liệu hiện có trong hệ thống.',
+      title: 'Delete data',
+      description: 'Remove existing data from the system.',
     ),
     PermissionDefinition(
       key: PermissionKey.reportView,
       group: PermissionGroupId.reports,
-      title: 'Xem báo cáo',
-      description: 'Truy cập các báo cáo thống kê.',
+      title: 'View reports',
+      description: 'Access analytical reports.',
     ),
     PermissionDefinition(
       key: PermissionKey.userManage,
       group: PermissionGroupId.system,
-      title: 'Quản lý người dùng',
-      description: 'Truy cập danh sách và kích hoạt người dùng.',
+      title: 'Manage users',
+      description: 'Access user lists and activate accounts.',
     ),
     PermissionDefinition(
       key: PermissionKey.permissionManage,
       group: PermissionGroupId.system,
-      title: 'Phân quyền người dùng',
-      description: 'Chỉnh sửa quyền truy cập của người dùng.',
+      title: 'Manage permissions',
+      description: 'Update user access rights.',
     ),
   ];
 

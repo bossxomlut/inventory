@@ -4,6 +4,7 @@ import 'package:hugeicons/hugeicons.dart';
 
 import '../../domain/models/shop_type.dart';
 import '../../provider/theme.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
 import 'data_import_test_page.dart';
 import 'product_selection_page.dart';
@@ -15,10 +16,11 @@ class CreateSampleDataPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
+    String t(String key) => key.tr(context: context);
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Tạo dữ liệu mẫu',
+        title: t(LKey.dataManagementSampleTitle),
         actions: [
           IconButton(
             onPressed: () => _navigateToTestPage(context),
@@ -26,7 +28,7 @@ class CreateSampleDataPage extends ConsumerWidget {
               HugeIcons.strokeRoundedTestTube,
               color: Colors.white,
             ),
-            tooltip: 'Test giao diện nhập dữ liệu',
+            tooltip: t(LKey.dataManagementSampleTestTooltip),
           ),
         ],
       ),
@@ -51,14 +53,14 @@ class CreateSampleDataPage extends ConsumerWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Chọn loại cửa hàng',
+                          t(LKey.dataManagementSampleChooseTitle),
                           style: theme.headingSemibold20Default,
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Chọn loại cửa hàng phù hợp để tạo dữ liệu mẫu tương ứng:',
+                      t(LKey.dataManagementSampleChooseDescription),
                       style: theme.textRegular14Default,
                     ),
                   ],

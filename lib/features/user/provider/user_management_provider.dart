@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/entities/user/user.dart';
 import '../../../domain/repositories/auth/auth_repository.dart';
+import '../../../resources/index.dart';
 import '../../../shared_widgets/toast.dart';
 
 // Provider để quản lý danh sách user
@@ -76,17 +77,25 @@ class UserManagementNotifier extends StateNotifier<AsyncValue<void>> {
       
       // Show success message
       showSuccess(
-        message: isActive 
-          ? 'Đã kích hoạt tài khoản người dùng thành công'
-          : 'Đã khóa tài khoản người dùng thành công'
+        message: isActive
+            ? LKey.userActivateSuccess.tr()
+            : LKey.userDeactivateSuccess.tr(),
       );
       
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
       
       // Show error message
+      final actionLabel = isActive
+          ? LKey.userToggleActionActivate.tr()
+          : LKey.userToggleActionDeactivate.tr();
       showError(
-        message: 'Có lỗi xảy ra khi ${isActive ? 'kích hoạt' : 'khóa'} tài khoản: ${error.toString()}'
+        message: LKey.userToggleError.tr(
+          namedArgs: {
+            'action': actionLabel,
+            'error': error.toString(),
+          },
+        ),
       );
     }
   }

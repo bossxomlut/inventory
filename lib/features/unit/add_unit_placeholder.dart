@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/index.dart';
 import '../../features/product/widget/add_product_widget.dart';
+import '../../resources/index.dart';
 import 'select_unit_widget.dart';
 
 class AddUnitPlaceHolder extends CommonAddPlaceHolder<Unit> {
@@ -22,6 +23,6 @@ class AddUnitPlaceHolder extends CommonAddPlaceHolder<Unit> {
           },
           value: value,
           getName: (Unit? value) => value?.name ?? '',
-          title: 'Thêm đơn vị',
+          titleKey: LKey.productFormAddUnit,
         );
 }

@@ -2,6 +2,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../core/helpers/scaffold_utils.dart';
 import '../domain/entities/permission/permission.dart';
@@ -10,9 +11,10 @@ import '../features/authentication/provider/auth_provider.dart';
 import '../provider/index.dart';
 import '../shared_widgets/toast.dart';
 import 'app_router.dart';
+import '../resources/string.dart';
 
-const _permissionDeniedMessage = 'Bạn không có quyền truy cập vào trang này';
-const _permissionCheckFailedMessage = 'Không thể kiểm tra quyền truy cập';
+const String _permissionDeniedMessageKey = LKey.guardPermissionDenied;
+const String _permissionCheckFailedMessageKey = LKey.guardPermissionCheckFailed;
 
 enum PermissionGuardDecision { allow, redirectToLogin, deny }
 
@@ -40,49 +42,49 @@ Future<PermissionGuardEvaluation> evaluatePermissionGuard({
   required ProviderContainer container,
   required PermissionKey requiredPermission,
 }) async {
-    final authState = container.read(authControllerProvider);
+  final authState = container.read(authControllerProvider);
 
-    return authState.when<Future<PermissionGuardEvaluation>>(
-      authenticated: (User user, DateTime? lastLoginTime) async {
-        if (user.role == UserRole.admin || user.role == UserRole.guest) {
+  return authState.when<Future<PermissionGuardEvaluation>>(
+    authenticated: (User user, DateTime? lastLoginTime) async {
+      if (user.role == UserRole.admin || user.role == UserRole.guest) {
+        return const PermissionGuardEvaluation.allow();
+      }
+
+      final permissionsValue = container.read(currentUserPermissionsProvider);
+
+      if (permissionsValue.hasError) {
+        return const PermissionGuardEvaluation.deny(
+          _permissionCheckFailedMessageKey,
+        );
+      }
+
+      if (permissionsValue.hasValue) {
+        return permissionsValue.value!.contains(requiredPermission)
+            ? const PermissionGuardEvaluation.allow()
+            : const PermissionGuardEvaluation.deny(
+                _permissionDeniedMessageKey,
+              );
+      }
+
+      try {
+        final permissions =
+            await container.read(currentUserPermissionsProvider.future);
+        if (permissions.contains(requiredPermission)) {
           return const PermissionGuardEvaluation.allow();
         }
-
-        final permissionsValue = container.read(currentUserPermissionsProvider);
-
-        if (permissionsValue.hasError) {
-          return const PermissionGuardEvaluation.deny(
-            _permissionCheckFailedMessage,
-          );
-        }
-
-        if (permissionsValue.hasValue) {
-          return permissionsValue.value!.contains(requiredPermission)
-              ? const PermissionGuardEvaluation.allow()
-              : const PermissionGuardEvaluation.deny(
-                  _permissionDeniedMessage,
-                );
-        }
-
-        try {
-          final permissions =
-              await container.read(currentUserPermissionsProvider.future);
-          if (permissions.contains(requiredPermission)) {
-            return const PermissionGuardEvaluation.allow();
-          }
-          return const PermissionGuardEvaluation.deny(
-            _permissionDeniedMessage,
-          );
-        } catch (_) {
-          return const PermissionGuardEvaluation.deny(
-            _permissionCheckFailedMessage,
-          );
-        }
-      },
-      unauthenticated: () async =>
-          const PermissionGuardEvaluation.redirectToLogin(),
-      initial: () async => const PermissionGuardEvaluation.redirectToLogin(),
-    );
+        return const PermissionGuardEvaluation.deny(
+          _permissionDeniedMessageKey,
+        );
+      } catch (_) {
+        return const PermissionGuardEvaluation.deny(
+          _permissionCheckFailedMessageKey,
+        );
+      }
+    },
+    unauthenticated: () async =>
+        const PermissionGuardEvaluation.redirectToLogin(),
+    initial: () async => const PermissionGuardEvaluation.redirectToLogin(),
+  );
 }
 
 class AdminGuard extends AutoRouteGuard {
@@ -101,7 +103,9 @@ class AdminGuard extends AutoRouteGuard {
           if (user.role == UserRole.admin || user.role == UserRole.guest) {
             resolver.next();
           } else {
-            showError(message: 'Bạn không có quyền truy cập vào trang này');
+            showError(
+              message: _permissionDeniedMessageKey.tr(context: context),
+            );
             resolver.next(false);
           }
         },
@@ -152,7 +156,9 @@ class PermissionGuard extends AutoRouteGuard {
           break;
         case PermissionGuardDecision.deny:
           if (evaluation.errorMessage != null) {
-            showError(message: evaluation.errorMessage!);
+            showError(
+              message: evaluation.errorMessage!.tr(context: context),
+            );
           }
           resolver.next(false);
           break;

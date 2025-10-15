@@ -83,7 +83,13 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
 
   Future<void> _saveSelectedProducts() async {
     if (_selectedProducts.isEmpty) {
-      ref.read(notificationProvider.notifier).showError('Vui lòng chọn ít nhất một sản phẩm');
+      ref
+          .read(notificationProvider.notifier)
+          .showError(
+            LKey.dataManagementProductSelectionErrorNone.tr(
+              context: context,
+            ),
+          );
       return;
     }
 
@@ -93,7 +99,10 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
       final result = await dataImportService.importFromSampleProductsWithUI(
         context,
         _selectedProducts,
-        title: 'Nhập sản phẩm đã chọn',
+        title: LKey.dataManagementProductSelectionButtonSelected.tr(
+          context: context,
+          namedArgs: {'count': '${_selectedProducts.length}'},
+        ),
       );
 
       // Navigate back if successful
@@ -102,7 +111,12 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
       }
     } catch (e) {
       if (mounted) {
-        ref.read(notificationProvider.notifier).showError('Lỗi khi lưu dữ liệu: $e');
+        ref.read(notificationProvider.notifier).showError(
+              LKey.commonErrorWithMessage.tr(
+                context: context,
+                namedArgs: {'error': '$e'},
+              ),
+            );
       }
     }
   }
@@ -110,6 +124,8 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -122,7 +138,9 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
                 _selectedProducts.length == _products.length ? HugeIcons.strokeRoundedCancel01 : HugeIcons.strokeRoundedCheckmarkSquare02,
                 color: Colors.white,
               ),
-              tooltip: _selectedProducts.length == _products.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả',
+              tooltip: _selectedProducts.length == _products.length
+                  ? t(LKey.dataManagementProductSelectionTooltipDeselectAll)
+                  : t(LKey.dataManagementProductSelectionTooltipSelectAll),
             ),
           ],
         ],
@@ -133,6 +151,8 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
   }
 
   Widget _buildBody(AppThemeData theme) {
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -151,7 +171,7 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Có lỗi xảy ra',
+              t(LKey.dataManagementProductSelectionLoadingErrorTitle),
               style: theme.headingSemibold20Default,
             ),
             const SizedBox(height: 8),
@@ -162,7 +182,7 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
             ),
             const SizedBox(height: 16),
             AppButton.primary(
-              title: 'Thử lại',
+              title: t(LKey.dataManagementProductSelectionRetry),
               onPressed: _loadProducts,
             ),
           ],
@@ -282,7 +302,7 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
               children: [
                 _buildStatItem(
                   theme,
-                  'Tổng SP',
+                  LKey.dataManagementProductSelectionStatsProducts.tr(),
                   '${_products.length}',
                   HugeIcons.strokeRoundedPackage,
                 ),
@@ -293,7 +313,7 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
                 ),
                 _buildStatItem(
                   theme,
-                  'Đã chọn',
+                  LKey.dataManagementProductSelectionStatsSelected.tr(),
                   '${_selectedProducts.length}',
                   HugeIcons.strokeRoundedCheckmarkSquare02,
                 ),
@@ -304,7 +324,7 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
                 ),
                 _buildStatItem(
                   theme,
-                  'Tổng SL',
+                  LKey.dataManagementProductSelectionStatsQuantity.tr(),
                   '${_selectedProducts.fold<int>(0, (sum, product) => sum + product.quantity)}',
                   HugeIcons.strokeRoundedCube,
                 ),
@@ -343,6 +363,8 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
   }
 
   Widget _buildBottomBar(AppThemeData theme) {
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
     if (_isLoading || _error != null) {
       return const SizedBox.shrink();
     }
@@ -366,7 +388,12 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
       ),
       child: SafeArea(
         child: AppButton.primary(
-          title: _selectedProducts.isEmpty ? 'Chọn ít nhất 1 sản phẩm' : 'Hoàn thành (${_selectedProducts.length})',
+          title: _selectedProducts.isEmpty
+              ? t(LKey.dataManagementProductSelectionButtonEmpty)
+              : t(
+                  LKey.dataManagementProductSelectionButtonSelected,
+                  namedArgs: {'count': '${_selectedProducts.length}'},
+                ),
           onPressed: _selectedProducts.isNotEmpty ? _saveSelectedProducts : null,
         ),
       ),

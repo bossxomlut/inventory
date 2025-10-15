@@ -1073,11 +1073,14 @@ class _LotListTile extends StatelessWidget {
     final daysDifference = expiryDate.difference(today).inDays;
     final isExpired = daysDifference < 0;
 
-    final statusText = isExpired
-        ? 'Đã hết hạn'
+    final String statusText = isExpired
+        ? LKey.productLotExpired.tr(context: context)
         : daysDifference == 0
-            ? 'Hết hạn hôm nay'
-            : 'Còn $daysDifference ngày';
+            ? LKey.productLotExpiresToday.tr(context: context)
+            : LKey.productLotRemainingDays.tr(
+                context: context,
+                namedArgs: {'days': '$daysDifference'},
+              );
     final statusColor =
         isExpired ? theme.colorTextSupportRed : theme.colorTextSupportGreen;
 
@@ -1097,7 +1100,12 @@ class _LotListTile extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Hết hạn: ${dateFormat.format(lot.expiryDate)}',
+                  LKey.productLotExpiryLabel.tr(
+                    context: context,
+                    namedArgs: {
+                      'date': dateFormat.format(lot.expiryDate),
+                    },
+                  ),
                   style: theme.textMedium15Default,
                 ),
               ),
@@ -1134,7 +1142,12 @@ class _LotListTile extends StatelessWidget {
                     size: 16, color: theme.colorIconSubtle),
                 const SizedBox(width: 4),
                 Text(
-                  'SX: ${dateFormat.format(lot.manufactureDate!)}',
+                  LKey.productLotManufactureLabel.tr(
+                    context: context,
+                    namedArgs: {
+                      'date': dateFormat.format(lot.manufactureDate!),
+                    },
+                  ),
                   style: theme.textRegular13Subtle,
                 ),
               ],

@@ -308,9 +308,11 @@ class PlusMinusButton extends StatelessWidget {
             padding: EdgeInsets.zero,
             iconSize: 20,
             icon: const Icon(Icons.add),
-            onPressed: !canIncrement ? null : () {
-              onChanged(value + 1);
-            },
+            onPressed: !canIncrement
+                ? null
+                : () {
+                    onChanged(value + 1);
+                  },
           ),
         ),
       ],
@@ -334,9 +336,8 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
     if (maxValue < minValue) {
       return [minValue];
     }
-    return List.generate(
-        (maxValue - minValue) +1, (index) {
-          return minValue + index;
+    return List.generate((maxValue - minValue) + 1, (index) {
+      return minValue + index;
     });
   }
 
@@ -374,7 +375,6 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
         getNumberFromText();
       },
       itemBuilder: (BuildContext item, int number, int index) {
-
         return ListTile(
           title: Text('$number'),
           onTap: () {
@@ -400,7 +400,7 @@ class NumberInputWithList extends HookWidget with ShowBottomSheet<int> {
             .where((number) => number.toString().contains(keyword))
             .toList();
       },
-      title: 'Nhập số lượng',
+      title: LKey.inputEnterQuantity.tr(context: context),
       addItemWidget: Icon(
         Icons.navigate_next_sharp,
         color: context.appTheme.colorIcon,

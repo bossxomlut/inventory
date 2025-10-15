@@ -10,6 +10,7 @@ import '../../core/index.dart';
 import '../../domain/index.dart';
 import '../../provider/index.dart';
 import '../../routes/app_router.dart';
+import '../../resources/index.dart';
 import 'provider/check_session_provider.dart';
 import 'widget/create_session_bottom_sheet.dart';
 
@@ -37,7 +38,7 @@ class CheckSessionsPage extends HookConsumerWidget {
                 const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
-                  'Không thể tải quyền truy cập',
+                  LKey.permissionsLoadFailed.tr(context: context),
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -46,7 +47,7 @@ class CheckSessionsPage extends HookConsumerWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref.refresh(currentUserPermissionsProvider),
-                  child: const Text('Thử lại'),
+                  child: Text(LKey.buttonRetry.tr(context: context)),
                 ),
               ],
             ),
@@ -58,13 +59,15 @@ class CheckSessionsPage extends HookConsumerWidget {
         final canCreateSession = permissions.contains(PermissionKey.inventoryCreateSession);
 
         if (!canViewSessions) {
-          return const Scaffold(
-            appBar: CustomAppBar(title: 'Phiên kiểm kê'),
+          return Scaffold(
+            appBar: CustomAppBar(
+              title: LKey.checkSessionPageTitle.tr(context: context),
+            ),
             body: Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Bạn không có quyền xem danh sách phiên kiểm kê.',
+                  LKey.checkSessionPermissionDenied.tr(context: context),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -89,7 +92,14 @@ class CheckSessionsPage extends HookConsumerWidget {
             } catch (e) {
               if (isMounted()) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Lỗi tạo phiên: $e')),
+                  SnackBar(
+                    content: Text(
+                      LKey.checkSessionCreateError.tr(
+                        context: context,
+                        namedArgs: {'error': '$e'},
+                      ),
+                    ),
+                  ),
                 );
               }
             }
@@ -98,12 +108,18 @@ class CheckSessionsPage extends HookConsumerWidget {
 
         return Scaffold(
           appBar: CustomAppBar(
-            title: 'Phiên kiểm kê',
+            title: LKey.checkSessionPageTitle.tr(context: context),
             bottom: TabBar(
               controller: tabController,
-              tabs: const [
-                Tab(text: 'Đang hoạt động', icon: Icon(Icons.pending_actions)),
-                Tab(text: 'Đã hoàn thành', icon: Icon(Icons.done_all)),
+              tabs: [
+                Tab(
+                  text: LKey.checkSessionTabActive.tr(context: context),
+                  icon: const Icon(Icons.pending_actions),
+                ),
+                Tab(
+                  text: LKey.checkSessionTabCompleted.tr(context: context),
+                  icon: const Icon(Icons.done_all),
+                ),
               ],
               indicatorColor: Colors.white,
               labelColor: Colors.white,
@@ -165,12 +181,18 @@ class SessionCard extends ConsumerWidget {
             children: [
               const SizedBox(height: 4),
               Text(
-                'Kiểm kê bởi: ${session.createdBy}',
+                LKey.checkSessionCreatedByLabel.tr(
+                  context: context,
+                  namedArgs: {'user': session.createdBy},
+                ),
                 style: theme.textRegular13Default,
               ),
               const SizedBox(height: 2),
               Text(
-                'Ngày: ${session.startDate.timeAgo}',
+                LKey.checkSessionDateLabel.tr(
+                  context: context,
+                  namedArgs: {'date': session.startDate.timeAgo},
+                ),
                 style: theme.textRegular13Default,
               ),
             ],
@@ -185,7 +207,10 @@ class SessionCard extends ConsumerWidget {
                         children: [
                           Icon(Icons.delete, color: Colors.red[300]),
                           const SizedBox(width: 8),
-                          Text('Xóa', style: TextStyle(color: Colors.red[300])),
+                          Text(
+                            LKey.buttonDelete.tr(context: context),
+                            style: TextStyle(color: Colors.red[300]),
+                          ),
                         ],
                       ),
                     ),
@@ -196,12 +221,22 @@ class SessionCard extends ConsumerWidget {
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: const Text('Xác nhận xóa'),
-                            content: const Text('Bạn có chắc chắn muốn xóa phiên kiểm kê này?'),
+                            title: Text(
+                              LKey.checkSessionDeleteConfirmTitle.tr(
+                                context: context,
+                              ),
+                            ),
+                            content: Text(
+                              LKey.checkSessionDeleteConfirmMessage.tr(
+                                context: context,
+                              ),
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Hủy'),
+                                child: Text(
+                                  LKey.buttonCancel.tr(context: context),
+                                ),
                               ),
                               TextButton(
                                 onPressed: () {
@@ -209,7 +244,10 @@ class SessionCard extends ConsumerWidget {
                                   final notifier = ref.read(loadCheckSessionProvider(ActiveViewType.active).notifier);
                                   notifier.deleteCheckSession(session);
                                 },
-                                child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+                                child: Text(
+                                  LKey.buttonDelete.tr(context: context),
+                                  style: const TextStyle(color: Colors.red),
+                                ),
                               ),
                             ],
                           );
@@ -280,12 +318,21 @@ class ActiveSessionPage extends HookConsumerWidget {
     }
 
     if (activeSession.hasError) {
-      return Center(child: Text('Lỗi: ${activeSession.error}'));
+      return Center(
+        child: Text(
+          LKey.commonErrorWithMessage.tr(
+            context: context,
+            namedArgs: {'error': '${activeSession.error}'},
+          ),
+        ),
+      );
     }
 
     if (activeSession.isEmpty) {
-      return const Center(
-        child: Text('Không có phiên kiểm kê nào đang hoạt động'),
+      return Center(
+        child: Text(
+          LKey.checkSessionEmptyActive.tr(context: context),
+        ),
       );
     }
 
@@ -328,12 +375,21 @@ class DoneSessionPage extends HookConsumerWidget {
     }
 
     if (activeSession.hasError) {
-      return Center(child: Text('Lỗi: ${activeSession.error}'));
+      return Center(
+        child: Text(
+          LKey.commonErrorWithMessage.tr(
+            context: context,
+            namedArgs: {'error': '${activeSession.error}'},
+          ),
+        ),
+      );
     }
 
     if (activeSession.isEmpty) {
-      return const Center(
-        child: Text('Không có phiên kiểm kê nào đang hoạt động'),
+      return Center(
+        child: Text(
+          LKey.checkSessionEmptyCompleted.tr(context: context),
+        ),
       );
     }
 

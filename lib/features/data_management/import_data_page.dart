@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../core/helpers/scaffold_utils.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/app_bar.dart';
 
 @RoutePage()
@@ -22,6 +23,9 @@ class _ImportDataPageState extends State<ImportDataPage> {
   bool _isLoading = false;
 
   Future<void> _pickFile() async {
+    final context = this.context;
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
     setState(() {
       _isLoading = true;
       _resultMessage = null;
@@ -38,7 +42,8 @@ class _ImportDataPageState extends State<ImportDataPage> {
       final ext = _fileName!.split('.').last.toLowerCase();
       if (!['jsonl', 'csv', 'xlsx'].contains(ext)) {
         setState(() {
-          _resultMessage = 'Định dạng file không được hỗ trợ.';
+          _resultMessage =
+              t(LKey.dataManagementImportResultUnsupported);
           _success = false;
           _isLoading = false;
         });
@@ -47,7 +52,9 @@ class _ImportDataPageState extends State<ImportDataPage> {
       // Validate file content (giả lập)
       final isValid = await _validateFileContent(file, ext);
       setState(() {
-        _resultMessage = isValid ? 'Nhập dữ liệu thành công!' : 'File không đúng định dạng dữ liệu ứng dụng.';
+        _resultMessage = isValid
+            ? t(LKey.dataManagementImportResultSuccess)
+            : t(LKey.dataManagementImportResultInvalid);
         _success = isValid;
         _isLoading = false;
       });
@@ -74,18 +81,23 @@ class _ImportDataPageState extends State<ImportDataPage> {
 
   @override
   Widget build(BuildContext context) {
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Nhập dữ liệu từ file'),
+      appBar: CustomAppBar(title: t(LKey.dataManagementImportTitle)),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(HugeIcons.strokeRoundedInformationCircle, color: Colors.blue),
-                SizedBox(width: 8),
-                Text('Các định dạng hỗ trợ:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Icon(HugeIcons.strokeRoundedInformationCircle, color: Colors.blue),
+                const SizedBox(width: 8),
+                Text(
+                  t(LKey.dataManagementImportFormatsTitle),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -96,22 +108,25 @@ class _ImportDataPageState extends State<ImportDataPage> {
                 border: Border.all(color: Colors.blue.withOpacity(0.2)),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('- JSONL: Mỗi dòng là một object JSON, đúng cấu trúc export từ ứng dụng.'),
-                  Text('- CSV: File bảng, cột và tên cột đúng như file export từ ứng dụng.'),
-                  Text('- XLSX: File Excel, sheet và cột đúng như file export từ ứng dụng.'),
-                  SizedBox(height: 8),
-                  Text(
-                      'Lưu ý: Chỉ nhập file được xuất từ ứng dụng này hoặc có định dạng, cấu trúc giống như hướng dẫn ở trên.'),
+                  Text(t(LKey.dataManagementImportFormatJsonl)),
+                  Text(t(LKey.dataManagementImportFormatCsv)),
+                  Text(t(LKey.dataManagementImportFormatXlsx)),
+                  const SizedBox(height: 8),
+                  Text(t(LKey.dataManagementImportFormatNote)),
                 ],
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               icon: const Icon(HugeIcons.strokeRoundedFolder02),
-              label: Text(_fileName == null ? 'Chọn file để nhập dữ liệu' : _fileName!),
+              label: Text(
+                _fileName == null
+                    ? t(LKey.dataManagementImportButtonSelect)
+                    : _fileName!,
+              ),
               onPressed: _isLoading ? null : _pickFile,
             ),
             const SizedBox(height: 24),
@@ -126,7 +141,7 @@ class _ImportDataPageState extends State<ImportDataPage> {
                 ],
               ),
             const SizedBox(height: 24),
-            const Text('Lưu ý: Chỉ nhập file được xuất từ ứng dụng này hoặc có định dạng tương tự.'),
+            Text(t(LKey.dataManagementImportNote)),
           ],
         ),
       ),

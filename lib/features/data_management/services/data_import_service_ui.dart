@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../domain/models/sample_product.dart';
+import '../../../resources/index.dart';
 import '../../../shared_widgets/index.dart';
 import 'data_import_service.dart';
 
@@ -13,6 +14,8 @@ extension DataImportServiceUI on DataImportService {
     String jsonlContent, {
     String? title,
   }) async {
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
     try {
       // Validate first
       final validation = await validateJsonlContent(jsonlContent);
@@ -21,7 +24,7 @@ extension DataImportServiceUI on DataImportService {
       final shouldProceed = await DataValidationResultDialog.showValidation(
         context,
         validation,
-        title: title ?? 'Kiểm tra dữ liệu nhập',
+        title: title ?? t(LKey.dataManagementImportValidationTitle),
       );
 
       if (!shouldProceed || !validation.isValid) {
@@ -36,7 +39,7 @@ extension DataImportServiceUI on DataImportService {
         await DataImportResultDialog.showResult(
           context,
           result,
-          title: 'Kết quả nhập dữ liệu',
+          title: t(LKey.dataManagementImportResultTitle),
         );
       }
 
@@ -44,7 +47,14 @@ extension DataImportServiceUI on DataImportService {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e')),
+          SnackBar(
+            content: Text(
+              LKey.commonErrorWithMessage.tr(
+                context: context,
+                namedArgs: {'error': '$e'},
+              ),
+            ),
+          ),
         );
       }
       return null;
@@ -57,6 +67,8 @@ extension DataImportServiceUI on DataImportService {
     String assetPath, {
     String? title,
   }) async {
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
     try {
       // Load file content first for validation
       final stringData = await rootBundle.loadString(assetPath);
@@ -68,7 +80,14 @@ extension DataImportServiceUI on DataImportService {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể tải tệp: $e')),
+          SnackBar(
+            content: Text(
+              t(
+                LKey.commonErrorWithMessage,
+                namedArgs: {'error': '$e'},
+              ),
+            ),
+          ),
         );
       }
       return null;
@@ -81,6 +100,8 @@ extension DataImportServiceUI on DataImportService {
     List<SampleProduct> products, {
     String? title,
   }) async {
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
     try {
       final result = await importFromSampleProducts(products);
 
@@ -88,7 +109,7 @@ extension DataImportServiceUI on DataImportService {
         await DataImportResultDialog.showResult(
           context,
           result,
-          title: title ?? 'Kết quả nhập sản phẩm',
+          title: title ?? t(LKey.dataManagementImportResultTitle),
         );
       }
 
@@ -96,7 +117,14 @@ extension DataImportServiceUI on DataImportService {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e')),
+          SnackBar(
+            content: Text(
+              LKey.commonErrorWithMessage.tr(
+                context: context,
+                namedArgs: {'error': '$e'},
+              ),
+            ),
+          ),
         );
       }
       return null;

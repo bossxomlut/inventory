@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../resources/string.dart';
+import 'localization_text.dart';
+
 class NotFoundWidget extends StatelessWidget {
   const NotFoundWidget({super.key});
 
@@ -16,8 +19,8 @@ class NotFoundWidget extends StatelessWidget {
             color: Colors.grey[400],
           ),
           const SizedBox(height: 16),
-          Text(
-            'Không tìm thấy dữ liệu',
+          LText(
+            LKey.notFoundNoData,
             style: TextStyle(
               fontSize: 18,
               color: Colors.grey[600],

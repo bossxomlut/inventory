@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:isar/isar.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -7,6 +8,7 @@ import '../../../domain/index.dart';
 import '../../../domain/repositories/auth/pin_code_repository.dart';
 import '../../../features/data_management/services/data_import_service.dart';
 import '../../../provider/notification.dart';
+import '../../../resources/index.dart';
 import '../../../provider/storage_provider.dart';
 import '../../../routes/app_router.dart';
 
@@ -38,22 +40,35 @@ class AuthController extends _$AuthController {
           if (user.role == UserRole.guest) {
             //check load database for guest mode use _isCreatedGuestData
             final storage = await ref.read(simpleStorageProvider);
-            final isCreatedGuestData = await storage.getBool(_isCreatedGuestData);
+            final isCreatedGuestData =
+                await storage.getBool(_isCreatedGuestData);
             if (isCreatedGuestData != true) {
               //load assets using DataImportService
               try {
                 final dataImportService = ref.read(dataImportServiceProvider);
-                final result = await dataImportService.importFromAssetFile('assets/data/mock.jsonl');
+                final result = await dataImportService
+                    .importFromAssetFile('assets/data/mock.jsonl');
 
                 if (result.success) {
                   // Show success message using the notification provider
-                  ref
-                      .read(notificationProvider.notifier)
-                      .showSuccess('Đã tải ${result.successfulImports} sản phẩm mẫu thành công!');
+                  ref.read(notificationProvider.notifier).showSuccess(
+                        LKey.authGuestImportSuccess.tr(
+                          namedArgs: {
+                            'success': '${result.successfulImports}',
+                          },
+                        ),
+                      );
                 } else if (result.hasPartialSuccess) {
                   // Show warning for partial success
                   ref.read(notificationProvider.notifier).showWarning(
-                      'Đã tải ${result.successfulImports}/${result.totalLines} sản phẩm. ${result.failedImports} sản phẩm lỗi.');
+                        LKey.authGuestImportPartial.tr(
+                          namedArgs: {
+                            'success': '${result.successfulImports}',
+                            'total': '${result.totalLines}',
+                            'failed': '${result.failedImports}',
+                          },
+                        ),
+                      );
                 } else {
                   // Log errors but don't fail the login process
                   for (final error in result.errors) {
@@ -61,7 +76,8 @@ class AuthController extends _$AuthController {
                   }
                 }
 
-                print('Data import completed: ${result.successfulImports}/${result.totalLines} products imported');
+                print(
+                    'Data import completed: ${result.successfulImports}/${result.totalLines} products imported');
               } catch (e) {
                 print('Failed to import guest data: $e');
               }
@@ -89,7 +105,8 @@ class AuthController extends _$AuthController {
   Future<AuthState> _loadAuthData() async {
     try {
       final prefs = ref.read(securityStorageProvider);
-      final authState = await prefs.getObject(_authStateKey, AuthState.fromJson);
+      final authState =
+          await prefs.getObject(_authStateKey, AuthState.fromJson);
 
       if (authState != null) {
         return authState;
@@ -131,7 +148,7 @@ class AuthController extends _$AuthController {
     final newState = AuthState.authenticated(
       user: User(
         id: -1,
-        username: 'Guest',
+        username: LKey.authGuestName.tr(),
         role: UserRole.guest,
       ),
       lastLoginTime: DateTime.now(),
@@ -147,8 +164,8 @@ class AuthController extends _$AuthController {
       // webOrigin: 'http://example.com',
 
       // Customizing the notification message only on iOS
-      notificationTitle: 'Restarting App',
-      notificationBody: 'Please tap here to open the app again.',
+      notificationTitle: LKey.authRestartTitle.tr(),
+      notificationBody: LKey.authRestartMessage.tr(),
     );
   }
 
@@ -172,8 +189,8 @@ class AuthController extends _$AuthController {
         // webOrigin: 'http://example.com',
 
         // Customizing the notification message only on iOS
-        notificationTitle: 'Restarting App',
-        notificationBody: 'Please tap here to open the app again.',
+        notificationTitle: LKey.authRestartTitle.tr(),
+        notificationBody: LKey.authRestartMessage.tr(),
       );
     } else {
       state = const AuthState.unauthenticated();

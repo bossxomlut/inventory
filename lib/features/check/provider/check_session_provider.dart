@@ -5,6 +5,7 @@ import '../../../domain/entities/check/check_session.dart';
 import '../../../domain/repositories/check/check_repository.dart';
 import '../../../provider/index.dart';
 import '../../../provider/load_list.dart';
+import '../../../resources/index.dart';
 import '../widget/create_session_bottom_sheet.dart';
 
 part 'check_session_provider.g.dart';
@@ -67,10 +68,10 @@ class LoadCheckSession extends _$LoadCheckSession
       final checkRepo = ref.read(checkRepositoryProvider);
       await checkRepo.updateSession(session.copyWith(status: status));
       refresh();
-      showSuccess('Cập nhật phiên kiểm kê thành công');
+      showSuccess(LKey.checkSessionUpdateSuccess.tr());
     } catch (e) {
       state = state.copyWith(error: e.toString());
-      showError('Cập nhật phiên kiểm kê thất bại');
+      showError(LKey.checkSessionUpdateError.tr());
     }
   }
 
@@ -81,10 +82,10 @@ class LoadCheckSession extends _$LoadCheckSession
       final newList = state.data.toList();
       newList.removeWhere((e) => e.id == session.id);
       state = state.copyWith(data: newList);
-      showSuccess('Xóa phiên kiểm kê thành công');
+      showSuccess(LKey.checkSessionDeleteSuccess.tr());
     } catch (e) {
       state = state.copyWith(error: e.toString());
-      showError('Xóa phiên kiểm kê thất bại');
+      showError(LKey.checkSessionDeleteError.tr());
     }
   }
 }

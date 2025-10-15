@@ -43,7 +43,8 @@ class BottomButtonBar extends StatelessWidget {
                 if (showCancelButton)
                   Expanded(
                     child: AppButton.secondary(
-                      title: cancelButtonText ?? 'Huỷ',
+                      title: cancelButtonText ??
+                          LKey.buttonCancel.tr(context: context),
                       onPressed: onCancel,
                     ),
                   ),
@@ -51,7 +52,8 @@ class BottomButtonBar extends StatelessWidget {
                 if (showSaveButton)
                   Expanded(
                     child: AppButton.primary(
-                      title: saveButtonText ?? 'Lưu',
+                      title: saveButtonText ??
+                          LKey.buttonSave.tr(context: context),
                       onPressed: onSave,
                     ),
                   ),

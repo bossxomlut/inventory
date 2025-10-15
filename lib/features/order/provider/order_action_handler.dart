@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../authentication/provider/auth_provider.dart';
 import '../../../domain/entities/order/order.dart';
+import '../../../resources/index.dart';
 import '../../../routes/app_router.dart';
 import '../../home/menu_manager.dart';
 import 'order_action_confirm_provider.dart';
@@ -32,18 +33,18 @@ class OrderActionHandler {
     }
 
     final title = switch (type) {
-      OrderActionType.confirm => 'Xác nhận hành động',
-      OrderActionType.cancel => 'Huỷ đơn hàng',
-      OrderActionType.delete => 'Xoá đơn hàng',
+      OrderActionType.confirm => LKey.orderActionConfirmTitle.tr(),
+      OrderActionType.cancel => LKey.orderActionCancelTitle.tr(),
+      OrderActionType.delete => LKey.orderActionDeleteTitle.tr(),
     };
 
     final message = switch (type) {
-      OrderActionType.confirm =>
-          'Bạn có chắc chắn muốn hoàn thành đơn hàng #${order.id}?',
-      OrderActionType.cancel =>
-          'Bạn có chắc chắn muốn huỷ đơn hàng #${order.id}?',
-      OrderActionType.delete =>
-          'Bạn có chắc chắn muốn xoá đơn hàng #${order.id}?',
+      OrderActionType.confirm => LKey.orderActionConfirmMessage.tr(
+          namedArgs: {'orderId': '${order.id}'}),
+      OrderActionType.cancel => LKey.orderActionCancelMessage.tr(
+          namedArgs: {'orderId': '${order.id}'}),
+      OrderActionType.delete => LKey.orderActionDeleteMessage.tr(
+          namedArgs: {'orderId': '${order.id}'}),
     };
 
     final result = await showDialog<bool>(
@@ -54,11 +55,11 @@ class OrderActionHandler {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Huỷ'),
+            child: Text(LKey.buttonCancel.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Đồng ý'),
+            child: Text(LKey.buttonConfirm.tr()),
           ),
         ],
       ),

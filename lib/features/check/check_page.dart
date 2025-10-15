@@ -7,6 +7,7 @@ import '../../domain/index.dart';
 import '../../domain/repositories/check/check_repository.dart';
 import '../../domain/repositories/product/inventory_repository.dart';
 import '../../provider/index.dart';
+import '../../resources/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import '../product/widget/product_card.dart';
@@ -112,7 +113,14 @@ class _CheckPageState extends ConsumerState<CheckPage> {
       _onSearchProductResult(product);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi quét mã vạch: $e')),
+        SnackBar(
+          content: Text(
+            LKey.checkScanError.tr(
+              context: context,
+              namedArgs: {'error': '$e'},
+            ),
+          ),
+        ),
       );
       return;
     }
@@ -141,7 +149,6 @@ class _CheckPageState extends ConsumerState<CheckPage> {
   }
 
   void _showSessionInfo() {
-    final appTheme = context.appTheme;
     SessionDetailBottomSheet(session: widget.session).show(context);
   }
 
@@ -164,7 +171,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                     size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
-                  'Không thể tải quyền truy cập',
+                  LKey.checkPermissionLoadFailed.tr(context: context),
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -173,7 +180,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref.refresh(currentUserPermissionsProvider),
-                  child: const Text('Thử lại'),
+                  child: LText(LKey.buttonRetry),
                 ),
               ],
             ),
@@ -194,11 +201,11 @@ class _CheckPageState extends ConsumerState<CheckPage> {
         if (!canViewSession) {
           return Scaffold(
             appBar: CustomAppBar(title: widget.session.name),
-            body: const Center(
+            body: Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'Bạn không có quyền xem chi tiết phiên kiểm kê này.',
+                padding: const EdgeInsets.all(24),
+                child: LText(
+                  LKey.checkPermissionViewDenied,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -276,8 +283,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Sản phẩm đã kiểm kê',
+                        LText(
+                          LKey.checkCheckedProductsTitle,
                           style: theme.headingSemibold20Default,
                         ),
                         const SizedBox(height: 4),
@@ -288,7 +295,10 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                           builder: (context, snapshot) {
                             final count = snapshot.data?.length ?? 0;
                             return Text(
-                              '$count sản phẩm',
+                              LKey.checkCheckedProductsCount.tr(
+                                context: context,
+                                namedArgs: {'count': '$count'},
+                              ),
                               style: theme.textRegular14Sublest,
                             );
                           },
@@ -353,16 +363,17 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              Text(
-                                'Chưa có sản phẩm nào được kiểm kê',
+                              LText(
+                                LKey.checkCheckedProductsEmpty,
                                 style: theme.headingSemibold20Default,
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                canModifySession
-                                    ? 'Hãy quét mã vạch hoặc tìm kiếm sản phẩm để bắt đầu'
-                                    : 'Bạn không có quyền chỉnh sửa phiên kiểm kê này.',
+                                (canModifySession
+                                        ? LKey.checkCheckedProductsScanPrompt
+                                        : LKey.checkCheckedProductsNoEdit)
+                                    .tr(context: context),
                                 style: theme.textRegular14Sublest,
                                 textAlign: TextAlign.center,
                               ),
@@ -402,7 +413,8 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                                     icon: const Icon(Icons.search,
                                         color: Colors.white),
                                     label: Text(
-                                      'Tìm sản phẩm',
+                                      LKey.checkSearchProduct
+                                          .tr(context: context),
                                       style: theme.buttonSemibold14
                                           .copyWith(color: Colors.white),
                                     ),
@@ -451,7 +463,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                           color: theme.colorBackgroundSurface,
                         ),
                         child: AppButton.primary(
-                          title: 'Hoàn thành kiểm kê',
+                          title: LKey.checkCompleteSession.tr(context: context),
                           onPressed: haveCheck
                               ? () {
                                   try {
@@ -464,7 +476,14 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                                     appRouter.popForced();
                                   } catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Lỗi: $e')),
+                                      SnackBar(
+                                        content: Text(
+                                          LKey.checkGenericError.tr(
+                                            context: context,
+                                            namedArgs: {'error': '$e'},
+                                          ),
+                                        ),
+                                      ),
                                     );
                                   }
                                 }
@@ -498,6 +517,13 @@ class CheckProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.appTheme;
     final product = check.product;
+    final int difference = check.difference;
+    final String statusLabel = _statusLabel(check.status, context);
+    final String differenceLabel = difference == 0
+        ? statusLabel
+        : difference > 0
+            ? '+$difference'
+            : '$difference';
 
     return Container(
       decoration: BoxDecoration(
@@ -540,14 +566,14 @@ class CheckProductCard extends StatelessWidget {
                             children: [
                               _buildQuantityChip(
                                 theme,
-                                'Hệ thống',
+                                LKey.checkQuantityExpected.tr(context: context),
                                 '${check.expectedQuantity}',
                                 theme.colorTextSupportBlue,
                               ),
                               const SizedBox(width: 8),
                               _buildQuantityChip(
                                 theme,
-                                'Thực tế',
+                                LKey.checkQuantityActual.tr(context: context),
                                 '${check.actualQuantity}',
                                 theme.colorTextSupportGreen,
                               ),
@@ -618,7 +644,7 @@ class CheckProductCard extends StatelessWidget {
                           ),
                           const Gap(4),
                           Text(
-                            check.differenceText,
+                            differenceLabel,
                             style: theme.textMedium13Default.copyWith(
                               color: _getStatusColor(check.status, theme),
                               fontWeight: FontWeight.bold,
@@ -672,7 +698,7 @@ class CheckProductCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(CheckStatus status, dynamic theme) {
+  Color _getStatusColor(CheckStatus status, AppThemeData theme) {
     switch (status) {
       case CheckStatus.match:
         return Colors.green;
@@ -680,7 +706,21 @@ class CheckProductCard extends StatelessWidget {
         return Colors.blue;
       case CheckStatus.shortage:
         return Colors.red;
+      default:
+        return theme.colorPrimary;
     }
+  }
+
+  String _statusLabel(CheckStatus status, BuildContext context) {
+    switch (status) {
+      case CheckStatus.match:
+        return LKey.checkStatusMatch.tr(context: context);
+      case CheckStatus.surplus:
+        return LKey.checkStatusSurplus.tr(context: context);
+      case CheckStatus.shortage:
+        return LKey.checkStatusShortage.tr(context: context);
+    }
+    return LKey.checkStatusUnknown.tr(context: context);
   }
 
   IconData _getStatusIcon(CheckStatus status) {
@@ -691,6 +731,8 @@ class CheckProductCard extends StatelessWidget {
         return Icons.trending_up;
       case CheckStatus.shortage:
         return Icons.trending_down;
+      default:
+        return Icons.help_outline;
     }
   }
 }

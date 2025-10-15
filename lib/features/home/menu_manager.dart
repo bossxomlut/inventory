@@ -2,16 +2,35 @@ import 'package:flutter/material.dart';
 
 import '../../domain/entities/permission/permission.dart';
 import '../../domain/entities/user/user.dart';
+import '../../resources/index.dart';
 import '../../routes/app_router.dart';
 
 // Model cho menu item
+enum MenuItemId {
+  productList,
+  inventory,
+  categories,
+  units,
+  priceConfig,
+  orderCreate,
+  orderList,
+  userManagement,
+  report,
+  createSampleData,
+  importData,
+  exportData,
+  deleteData,
+}
+
 class MenuItem {
+  final MenuItemId id;
   final String title;
   final IconData icon;
   final VoidCallback destinationCallback;
   final Set<PermissionKey> requiredPermissions;
 
   MenuItem({
+    required this.id,
     required this.title,
     required this.icon,
     required this.destinationCallback,
@@ -37,6 +56,7 @@ class MenuGroup {
 /// Class quản lý menu cho từng UserRole
 class MenuManager {
   static List<MenuGroup> getMenuGroups({
+    BuildContext? context,
     required User user,
     required Set<PermissionKey> permissions,
     List<MenuGroupId>? preferredOrder,
@@ -50,7 +70,7 @@ class MenuManager {
 
     final groups = <MenuGroup>[];
 
-    for (final baseGroup in _baseMenuGroups()) {
+    for (final baseGroup in _baseMenuGroups(context)) {
       final filteredItems = baseGroup.items
           .where((item) =>
               item.requiredPermissions.every(effectivePermissions.contains))
@@ -85,14 +105,23 @@ class MenuManager {
     return groups;
   }
 
-  static List<MenuGroup> _baseMenuGroups() {
+  static List<MenuGroup> _baseMenuGroups(BuildContext? context) {
     return [
       MenuGroup(
         id: MenuGroupId.productManagement,
-        title: 'Quản lý sản phẩm',
+        title: _t(
+          context,
+          key: LKey.homeMenuGroupProductManagement,
+          fallback: 'Product management',
+        ),
         items: [
           MenuItem(
-            title: 'Sản phẩm',
+            id: MenuItemId.productList,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemProducts,
+              fallback: 'Products',
+            ),
             icon: Icons.inventory,
             destinationCallback: () {
               appRouter.goToProductList();
@@ -100,7 +129,12 @@ class MenuManager {
             requiredPermissions: {PermissionKey.productView},
           ),
           MenuItem(
-            title: 'Kiểm kê',
+            id: MenuItemId.inventory,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemInventory,
+              fallback: 'Inventory',
+            ),
             icon: Icons.fact_check,
             destinationCallback: () {
               appRouter.goToCheckSessions();
@@ -108,7 +142,12 @@ class MenuManager {
             requiredPermissions: {PermissionKey.inventoryView},
           ),
           MenuItem(
-            title: 'Danh mục',
+            id: MenuItemId.categories,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemCategories,
+              fallback: 'Categories',
+            ),
             icon: Icons.category,
             destinationCallback: () {
               appRouter.goToCategory();
@@ -116,7 +155,12 @@ class MenuManager {
             requiredPermissions: {PermissionKey.categoryView},
           ),
           MenuItem(
-            title: 'Đơn vị/Quy cách',
+            id: MenuItemId.units,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemUnits,
+              fallback: 'Units',
+            ),
             icon: Icons.straighten,
             destinationCallback: () {
               appRouter.goToUnit();
@@ -127,10 +171,19 @@ class MenuManager {
       ),
       MenuGroup(
         id: MenuGroupId.priceAndOrder,
-        title: 'Giá & Đơn hàng',
+        title: _t(
+          context,
+          key: LKey.homeMenuGroupPriceOrder,
+          fallback: 'Pricing & Orders',
+        ),
         items: [
           MenuItem(
-            title: 'Giá bán',
+            id: MenuItemId.priceConfig,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemPricing,
+              fallback: 'Pricing',
+            ),
             icon: Icons.price_change,
             destinationCallback: () {
               appRouter.goToConfigProductPrice();
@@ -138,7 +191,12 @@ class MenuManager {
             requiredPermissions: {PermissionKey.priceUpdate},
           ),
           MenuItem(
-            title: 'Tạo đơn hàng',
+            id: MenuItemId.orderCreate,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemCreateOrder,
+              fallback: 'Create order',
+            ),
             icon: Icons.add_shopping_cart,
             destinationCallback: () {
               appRouter.goToCreateOrder();
@@ -146,7 +204,12 @@ class MenuManager {
             requiredPermissions: {PermissionKey.orderCreate},
           ),
           MenuItem(
-            title: 'Danh sách đơn hàng',
+            id: MenuItemId.orderList,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemOrderList,
+              fallback: 'Order list',
+            ),
             icon: Icons.assignment_turned_in,
             destinationCallback: () {
               appRouter.goToOrderStatusList();
@@ -157,10 +220,19 @@ class MenuManager {
       ),
       MenuGroup(
         id: MenuGroupId.systemAdministration,
-        title: 'Quản trị hệ thống',
+        title: _t(
+          context,
+          key: LKey.homeMenuGroupSystemAdministration,
+          fallback: 'System administration',
+        ),
         items: [
           MenuItem(
-            title: 'Quản lý người dùng',
+            id: MenuItemId.userManagement,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemUserManagement,
+              fallback: 'User management',
+            ),
             icon: Icons.people,
             destinationCallback: () {
               appRouter.goToUserManagement();
@@ -168,7 +240,12 @@ class MenuManager {
             requiredPermissions: {PermissionKey.userManage},
           ),
           MenuItem(
-            title: 'Báo cáo thống kê',
+            id: MenuItemId.report,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemReports,
+              fallback: 'Reports',
+            ),
             icon: Icons.analytics,
             destinationCallback: () {
               appRouter.goToReport();
@@ -179,10 +256,19 @@ class MenuManager {
       ),
       MenuGroup(
         id: MenuGroupId.dataManagement,
-        title: 'Quản lý dữ liệu',
+        title: _t(
+          context,
+          key: LKey.homeMenuGroupDataManagement,
+          fallback: 'Data management',
+        ),
         items: [
           MenuItem(
-            title: 'Tạo dữ liệu mẫu',
+            id: MenuItemId.createSampleData,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemCreateSampleData,
+              fallback: 'Create sample data',
+            ),
             icon: Icons.dataset,
             destinationCallback: () {
               appRouter.goToCreateSampleData();
@@ -190,7 +276,12 @@ class MenuManager {
             requiredPermissions: {PermissionKey.dataCreateSample},
           ),
           MenuItem(
-            title: 'Nhập dữ liệu',
+            id: MenuItemId.importData,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemImportData,
+              fallback: 'Import data',
+            ),
             icon: Icons.file_upload,
             destinationCallback: () {
               appRouter.goToImportData();
@@ -198,7 +289,12 @@ class MenuManager {
             requiredPermissions: {PermissionKey.dataImport},
           ),
           MenuItem(
-            title: 'Xuất dữ liệu',
+            id: MenuItemId.exportData,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemExportData,
+              fallback: 'Export data',
+            ),
             icon: Icons.file_download,
             destinationCallback: () {
               appRouter.goToExportData();
@@ -206,7 +302,12 @@ class MenuManager {
             requiredPermissions: {PermissionKey.dataExport},
           ),
           MenuItem(
-            title: 'Xóa dữ liệu',
+            id: MenuItemId.deleteData,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemDeleteData,
+              fallback: 'Delete data',
+            ),
             icon: Icons.delete_forever,
             destinationCallback: () {
               appRouter.goToDeleteData();
@@ -218,16 +319,53 @@ class MenuManager {
     ];
   }
 
-  static String titleFor(MenuGroupId id) {
+  static String titleFor(MenuGroupId id, BuildContext context) {
     switch (id) {
       case MenuGroupId.productManagement:
-        return 'Quản lý sản phẩm';
+        return _t(
+          context,
+          key: LKey.homeMenuGroupProductManagement,
+          fallback: 'Product management',
+        );
       case MenuGroupId.priceAndOrder:
-        return 'Giá & Đơn hàng';
+        return _t(
+          context,
+          key: LKey.homeMenuGroupPriceOrder,
+          fallback: 'Pricing & Orders',
+        );
       case MenuGroupId.systemAdministration:
-        return 'Quản trị hệ thống';
+        return _t(
+          context,
+          key: LKey.homeMenuGroupSystemAdministration,
+          fallback: 'System administration',
+        );
       case MenuGroupId.dataManagement:
-        return 'Quản lý dữ liệu';
+        return _t(
+          context,
+          key: LKey.homeMenuGroupDataManagement,
+          fallback: 'Data management',
+        );
     }
+  }
+
+  static String _t(
+    BuildContext? context, {
+    required String key,
+    required String fallback,
+    Map<String, String>? namedArgs,
+  }) {
+    if (context != null) {
+      return key.tr(context: context, namedArgs: namedArgs);
+    }
+
+    if (namedArgs == null || namedArgs.isEmpty) {
+      return fallback;
+    }
+
+    var result = fallback;
+    namedArgs.forEach((k, v) {
+      result = result.replaceAll('{$k}', v);
+    });
+    return result;
   }
 }

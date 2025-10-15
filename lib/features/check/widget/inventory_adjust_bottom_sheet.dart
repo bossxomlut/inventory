@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/index.dart';
 import '../../../domain/index.dart';
 import '../../../provider/index.dart';
+import '../../../resources/index.dart';
 import '../../../shared_widgets/index.dart';
 import '../../../shared_widgets/toast.dart';
 import '../../product/widget/index.dart';
@@ -183,7 +184,12 @@ class InventoryAdjustBottomSheet extends HookWidget with ShowBottomSheet {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        'Tồn hệ thống: ${product.quantity.displayFormat()}',
+                        LKey.checkInventorySystemQuantityLabel.tr(
+                          context: context,
+                          namedArgs: {
+                            'quantity': product.quantity.displayFormat(),
+                          },
+                        ),
                         style: theme.textRegular13Inverse,
                       ),
                     ),
@@ -192,7 +198,8 @@ class InventoryAdjustBottomSheet extends HookWidget with ShowBottomSheet {
                   const AppDivider(),
                   const SizedBox(height: 12),
                   TitleBlockWidget(
-                    title: 'Số lượng kiểm kê',
+                    title:
+                        LKey.checkInventoryCountQuantity.tr(context: context),
                     child: trackByExpiry
                         ? _LotQuantitySummary(context, quantity.value)
                         : PlusMinusInputView(
@@ -215,10 +222,11 @@ class InventoryAdjustBottomSheet extends HookWidget with ShowBottomSheet {
                     const SizedBox(height: 12),
                   ],
                   TitleBlockWidget(
-                    title: 'Ghi chú',
+                    title:
+                        LKey.checkInventoryNoteLabel.tr(context: context),
                     child: CustomTextField(
                       controller: noteController,
-                      hint: 'Nhập ghi chú',
+                      hint: LKey.checkInventoryNoteHint.tr(context: context),
                     ),
                   ),
                 ],
@@ -231,7 +239,8 @@ class InventoryAdjustBottomSheet extends HookWidget with ShowBottomSheet {
             final trimmedNote = noteController.text.trim();
 
             if (trackByExpiry) {
-              final validationMessage = _validateLotChecks(lotDrafts.value);
+              final validationMessage =
+                  _validateLotChecks(context, lotDrafts.value);
               if (validationMessage != null) {
                 showError(message: validationMessage);
                 return;
@@ -336,7 +345,7 @@ class _LotCheckSection extends StatelessWidget {
               border: Border.all(color: theme.colorBorderSubtle),
             ),
             child: Text(
-              'Chưa có lô kiểm kê. Thêm mới để ghi nhận.',
+              LKey.checkInventoryLotsEmpty.tr(context: context),
               style: theme.textRegular14Subtle,
             ),
           ),
@@ -358,7 +367,10 @@ class _LotCheckSection extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'Lô ${index + 1}',
+                        LKey.checkInventoryLotTitle.tr(
+                          context: context,
+                          namedArgs: {'index': '${index + 1}'},
+                        ),
                         style: theme.textMedium15Default,
                       ),
                       const SizedBox(width: 8),
@@ -371,7 +383,9 @@ class _LotCheckSection extends StatelessWidget {
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
-                            'Tồn hệ thống',
+                            LKey.checkInventoryLotSystemTag.tr(
+                              context: context,
+                            ),
                             style: theme.textRegular12Default
                                 .copyWith(color: theme.colorPrimary),
                           ),
@@ -379,7 +393,8 @@ class _LotCheckSection extends StatelessWidget {
                       const Spacer(),
                       if (lot.inventoryLotId == null)
                         IconButton(
-                          tooltip: 'Xoá lô',
+                          tooltip: LKey.checkInventoryLotRemoveTooltip
+                              .tr(context: context),
                           onPressed: () => onRemoveLot(index),
                           icon: const Icon(Icons.close),
                         ),
@@ -387,16 +402,29 @@ class _LotCheckSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Hệ thống: ${lot.expectedQuantity.displayFormat()}',
+                    LKey.checkInventoryLotExpected.tr(
+                      context: context,
+                      namedArgs: {
+                        'quantity': lot.expectedQuantity.displayFormat(),
+                      },
+                    ),
                     style: theme.textRegular13Subtle,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Ngày hết hạn: ${dateFormat.format(lot.expiryDate)}',
+                    LKey.checkInventoryLotExpiry.tr(
+                      context: context,
+                      namedArgs: {
+                        'date': dateFormat.format(lot.expiryDate),
+                      },
+                    ),
                     style: theme.textRegular13Default,
                   ),
                   const SizedBox(height: 12),
-                  Text('Số lượng thực tế', style: theme.textRegular12Subtle),
+                  Text(
+                    LKey.checkInventoryLotActualLabel.tr(context: context),
+                    style: theme.textRegular12Subtle,
+                  ),
                   const SizedBox(height: 8),
                   PlusMinusInputView(
                     initialValue: lot.actualQuantity,
@@ -407,7 +435,8 @@ class _LotCheckSection extends StatelessWidget {
                   Column(
                     children: [
                       _LotDateInput(
-                        label: 'Hết hạn',
+                        label: LKey.checkInventoryLotExpiryLabel
+                            .tr(context: context),
                         value: lot.expiryDate,
                         dateFormat: dateFormat,
                         onTap: lot.inventoryLotId != null
@@ -418,7 +447,8 @@ class _LotCheckSection extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       _LotDateInput(
-                        label: 'Sản xuất (tuỳ chọn)',
+                        label: LKey.checkInventoryLotManufactureLabel
+                            .tr(context: context),
                         value: lot.manufactureDate,
                         dateFormat: dateFormat,
                         onTap: lot.inventoryLotId != null
@@ -441,7 +471,7 @@ class _LotCheckSection extends StatelessWidget {
         OutlinedButton.icon(
           onPressed: onAddLot,
           icon: const Icon(Icons.add),
-          label: const Text('Thêm lô kiểm kê'),
+          label: Text(LKey.checkInventoryLotAddButton.tr(context: context)),
         ),
       ],
     );
@@ -592,7 +622,7 @@ Widget _LotQuantitySummary(BuildContext context, int totalQuantity) {
       children: [
         Expanded(
           child: Text(
-            'Tổng số lượng lô',
+            LKey.checkInventoryLotSummaryTitle.tr(context: context),
             style: theme.textRegular14Subtle,
           ),
         ),
@@ -605,22 +635,22 @@ Widget _LotQuantitySummary(BuildContext context, int totalQuantity) {
   );
 }
 
-String? _validateLotChecks(List<_LotCheckDraft> lots) {
+String? _validateLotChecks(BuildContext context, List<_LotCheckDraft> lots) {
   if (lots.isEmpty) {
-    return 'Vui lòng thêm ít nhất một lô kiểm kê.';
+    return LKey.checkInventoryValidationNoLot.tr(context: context);
   }
 
   final keys = <String>{};
 
   for (final lot in lots) {
     if (lot.actualQuantity < 0) {
-      return 'Số lượng thực tế không được âm.';
+      return LKey.checkInventoryValidationNegative.tr(context: context);
     }
 
     final key =
         '${lot.inventoryLotId ?? 'manual'}|${lot.expiryDate.toIso8601String()}|${lot.manufactureDate?.toIso8601String() ?? 'null'}';
     if (!keys.add(key)) {
-      return 'Không thể có hai lô trùng cả ngày sản xuất và ngày hết hạn.';
+      return LKey.checkInventoryValidationDuplicate.tr(context: context);
     }
   }
 

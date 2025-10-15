@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:sample_app/core/persistence/simple_key_value_storage.dart';
 import 'package:sample_app/features/order/provider/order_action_confirm_provider.dart';
 import 'package:sample_app/provider/storage_provider.dart';
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../provider/theme.dart';
+import '../../resources/string.dart';
 import '../../resources/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
@@ -22,24 +23,27 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingContent> _onboardingData = [
-    const OnboardingContent(
-      title: 'Chào mừng đến với Đơn và kho hàng',
-      description:
-          'Ứng dụng quản lý kho hàng thông minh, giúp bạn dễ dàng theo dõi sản phẩm, quản lý tồn kho và kiểm soát đơn hàng một cách hiệu quả. Tất cả trong một giao diện đơn giản và trực quan.',
+  final List<OnboardingContent> _onboardingData = const [
+    OnboardingContent(
+      titleKey: LKey.onboardingSlideWelcomeTitle,
+      descriptionKey: LKey.onboardingSlideWelcomeDescription,
+      subtitleKey: LKey.onboardingSlideWelcomeSubtitle,
       imagePath: 'assets/images/onboarding_welcome.png',
+      icon: Icons.inventory_2_outlined,
     ),
-    const OnboardingContent(
-      title: 'Tính năng nổi bật',
-      description:
-          '• Quản lý sản phẩm và danh mục\n• Kiểm kê tự động với mã QR\n• Theo dõi đơn hàng và giao dịch\n• Báo cáo chi tiết và thống kê\n• Xuất nhập dữ liệu dễ dàng\n• Giao diện thân thiện với người dùng',
+    OnboardingContent(
+      titleKey: LKey.onboardingSlideFeaturesTitle,
+      descriptionKey: LKey.onboardingSlideFeaturesDescription,
+      subtitleKey: LKey.onboardingSlideFeaturesSubtitle,
       imagePath: 'assets/images/onboarding_features.png',
+      icon: Icons.featured_play_list_outlined,
     ),
-    const OnboardingContent(
-      title: 'Dữ liệu an toàn',
-      description:
-          'Tất cả dữ liệu của bạn được lưu trữ cục bộ trên thiết bị, đảm bảo bảo mật tuyệt đối. Bạn có toàn quyền kiểm soát dữ liệu: xuất backup khi cần thiết hoặc xóa hoàn toàn bất cứ lúc nào.',
+    OnboardingContent(
+      titleKey: LKey.onboardingSlideDataTitle,
+      descriptionKey: LKey.onboardingSlideDataDescription,
+      subtitleKey: LKey.onboardingSlideDataSubtitle,
       imagePath: 'assets/images/onboarding_data.png',
+      icon: Icons.security_outlined,
     ),
   ];
 
@@ -100,11 +104,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: _skipOnboarding,
-                  child: Text(
-                    'Bỏ qua',
-                    style: theme.textRegular14Default.copyWith(
-                      color: theme.colorTextSubtle,
-                    ),
+                  child: LText(
+                    LKey.onBoardingSkip,
+                    style: theme.textRegular14Default
+                        .copyWith(color: theme.colorTextSubtle),
                   ),
                 ),
               ),
@@ -155,11 +158,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                               side: BorderSide(color: theme.colorPrimary),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
-                            child: Text(
-                              'Quay lại',
-                              style: theme.buttonSemibold14.copyWith(
-                                color: theme.colorPrimary,
-                              ),
+                            child: LText(
+                              LKey.onBoardingPrevious,
+                              style: theme.buttonSemibold14
+                                  .copyWith(color: theme.colorPrimary),
                             ),
                           ),
                         ),
@@ -175,10 +177,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           child: Text(
-                            _currentPage == _onboardingData.length - 1 ? 'Bắt đầu' : 'Tiếp theo',
-                            style: theme.buttonSemibold14.copyWith(
-                              color: Colors.white,
-                            ),
+                            _currentPage == _onboardingData.length - 1
+                                ? LKey.onBoardingGetStarted.tr(context: context)
+                                : LKey.onBoardingNext.tr(context: context),
+                            style: theme.buttonSemibold14
+                                .copyWith(color: Colors.white),
                           ),
                         ),
                       ),
@@ -200,7 +203,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       height: 8,
       width: _currentPage == index ? 24 : 8,
       decoration: BoxDecoration(
-        color: _currentPage == index ? theme.colorPrimary : theme.colorPrimary.withOpacity(0.3),
+        color: _currentPage == index
+            ? theme.colorPrimary
+            : theme.colorPrimary.withOpacity(0.3),
         borderRadius: BorderRadius.circular(4),
       ),
     );

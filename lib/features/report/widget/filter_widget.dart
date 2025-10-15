@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../resources/index.dart';
 import '../../product/provider/product_filter_provider.dart';
 
 class TimeFilterMenuWidget extends StatelessWidget {
@@ -43,35 +44,23 @@ class SegmentTimeFilterMenuWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final segments = TimeFilterTypeExtension.predefinedTypes
+        .map(
+          (type) => ButtonSegment<TimeFilterType>(
+            value: type,
+            label: Text(type.displayName),
+            icon: Icon(type.icon),
+          ),
+        )
+        .toList();
+
     return SegmentedButton<TimeFilterType>(
-        segments: [
-          ButtonSegment<TimeFilterType>(
-            value: TimeFilterType.today,
-            label: Text('Day'),
-            icon: Icon(Icons.calendar_view_day),
-          ),
-          ButtonSegment<TimeFilterType>(
-            value: TimeFilterType.last7Days,
-            label: Text('Week'),
-            icon: Icon(Icons.calendar_view_week),
-          ),
-          ButtonSegment<TimeFilterType>(
-            value: TimeFilterType.last1Month,
-            label: Text('Month'),
-            icon: Icon(Icons.calendar_view_month),
-          ),
-          ButtonSegment<TimeFilterType>(
-            value: TimeFilterType.last3Months,
-            label: Text('Year'),
-            icon: Icon(Icons.calendar_today),
-          ),
-        ],
-        selected: {
-          selected
-        },
-        onSelectionChanged: (newSelection) {
-          onSelected(newSelection.first);
-        });
+      segments: segments,
+      selected: {selected},
+      onSelectionChanged: (newSelection) {
+        onSelected(newSelection.first);
+      },
+    );
   }
 }
 
@@ -87,11 +76,14 @@ class TabTimeFilterMenuWidget extends StatefulWidget {
   final ValueChanged<TimeFilterType> onSelected;
 
   @override
-  State<TabTimeFilterMenuWidget> createState() => _TabTimeFilterMenuWidgetState();
+  State<TabTimeFilterMenuWidget> createState() =>
+      _TabTimeFilterMenuWidgetState();
 }
 
-class _TabTimeFilterMenuWidgetState extends State<TabTimeFilterMenuWidget> with SingleTickerProviderStateMixin {
-  late final TabController _tabController = TabController(length: 5, vsync: this);
+class _TabTimeFilterMenuWidgetState extends State<TabTimeFilterMenuWidget>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController =
+      TabController(length: 5, vsync: this);
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +94,9 @@ class _TabTimeFilterMenuWidgetState extends State<TabTimeFilterMenuWidget> with 
         Container(
           margin: const EdgeInsets.only(left: 16.0, right: 8.0),
           decoration: BoxDecoration(
-            color: widget.selected == TimeFilterType.custom ? Theme.of(context).colorScheme.primary : Colors.white,
+            color: widget.selected == TimeFilterType.custom
+                ? Theme.of(context).colorScheme.primary
+                : Colors.white,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
@@ -117,6 +111,7 @@ class _TabTimeFilterMenuWidgetState extends State<TabTimeFilterMenuWidget> with 
             onPressed: () {
               widget.onSelected(TimeFilterType.custom);
             },
+            tooltip: LKey.productTimeCustom.tr(context: context),
           ),
         ),
         Expanded(

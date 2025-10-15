@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../domain/index.dart';
 import '../../provider/index.dart';
 import '../../provider/load_list.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
 import 'add_unit.dart';
 import 'provider/unit_filter_provider.dart';
@@ -42,7 +43,7 @@ class UnitPage extends HookConsumerWidget {
                     size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
-                  'Không thể tải quyền truy cập',
+                  LKey.permissionsLoadFailed.tr(context: context),
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -51,7 +52,7 @@ class UnitPage extends HookConsumerWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref.refresh(currentUserPermissionsProvider),
-                  child: const Text('Thử lại'),
+                  child: Text(LKey.buttonRetry.tr(context: context)),
                 ),
               ],
             ),
@@ -68,12 +69,14 @@ class UnitPage extends HookConsumerWidget {
 
         if (!canView) {
           return Scaffold(
-            appBar: const CustomAppBar(title: 'Đơn vị'),
-            body: const Center(
+            appBar: CustomAppBar(
+              title: LKey.unitPageTitle.tr(context: context),
+            ),
+            body: Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Bạn không có quyền xem danh sách đơn vị.',
+                  LKey.unitPagePermissionDenied.tr(context: context),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -98,7 +101,7 @@ class UnitPage extends HookConsumerWidget {
                 final isNotEmpty = multiState.data.isNotEmpty;
 
                 return CustomAppBar(
-                  title: 'Đơn vị',
+                  title: LKey.unitPageTitle.tr(context: context),
                   leading: enable
                       ? IconButton(
                           onPressed: () {
@@ -128,7 +131,7 @@ class UnitPage extends HookConsumerWidget {
                     if (!enable && canDelete)
                       IconButton(
                         icon: Text(
-                          'Chọn',
+                          LKey.buttonSelect.tr(context: context),
                           style: theme.textMedium13Default.copyWith(
                             color: Colors.white,
                           ),
@@ -151,9 +154,20 @@ class UnitPage extends HookConsumerWidget {
           body: Builder(
             builder: (BuildContext context) {
               if (units.hasError) {
-                return Center(child: Text('Lỗi: ${units.error}'));
+                return Center(
+                  child: Text(
+                    LKey.commonErrorWithMessage.tr(
+                      context: context,
+                      namedArgs: {'error': '${units.error}'},
+                    ),
+                  ),
+                );
               } else if (units.data.isEmpty) {
-                return const Center(child: Text('Không tìm thấy đơn vị nào.'));
+                return Center(
+                  child: Text(
+                    LKey.unitPageEmpty.tr(context: context),
+                  ),
+                );
               }
 
               return ListView.builder(

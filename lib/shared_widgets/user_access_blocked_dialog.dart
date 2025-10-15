@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../provider/theme.dart';
+import '../../resources/string.dart';
 import '../../routes/app_router.dart';
+import 'localization_text.dart';
 
 class UserAccessBlockedDialog extends StatelessWidget {
   const UserAccessBlockedDialog({
@@ -11,18 +13,20 @@ class UserAccessBlockedDialog extends StatelessWidget {
 
   final bool isRegistrationSuccess;
 
-  static Future<void> show(BuildContext context, {bool isRegistrationSuccess = false}) {
+  static Future<void> show(BuildContext context,
+      {bool isRegistrationSuccess = false}) {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => UserAccessBlockedDialog(isRegistrationSuccess: isRegistrationSuccess),
+      builder: (context) =>
+          UserAccessBlockedDialog(isRegistrationSuccess: isRegistrationSuccess),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
-    
+
     return AlertDialog(
       title: Row(
         children: [
@@ -32,8 +36,10 @@ class UserAccessBlockedDialog extends StatelessWidget {
             size: 28,
           ),
           const SizedBox(width: 12),
-          Text(
-            isRegistrationSuccess ? 'Đăng ký thành công' : 'Tài khoản bị khóa',
+          LText(
+            isRegistrationSuccess
+                ? LKey.userAccessBlockedRegistrationSuccessTitle
+                : LKey.userAccessBlockedBlockedTitle,
             style: theme.textMedium16Default.copyWith(
               color: isRegistrationSuccess ? Colors.orange : theme.colorError,
               fontWeight: FontWeight.bold,
@@ -45,15 +51,15 @@ class UserAccessBlockedDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            isRegistrationSuccess 
-              ? 'Tài khoản của bạn cần được admin kích hoạt trước khi có thể sử dụng.'
-              : 'Tài khoản chưa được kích hoạt hoặc đã bị admin khóa.',
+          LText(
+            isRegistrationSuccess
+                ? LKey.userAccessBlockedRegistrationDescription
+                : LKey.userAccessBlockedBlockedDescription,
             style: theme.textRegular14Default,
           ),
           const SizedBox(height: 12),
-          Text(
-            'Vui lòng liên hệ với quản trị viên để được hỗ trợ.',
+          LText(
+            LKey.userAccessBlockedContactAdmin,
             style: theme.textRegular14Subtle,
           ),
         ],
@@ -62,13 +68,13 @@ class UserAccessBlockedDialog extends StatelessWidget {
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
-            // Nếu là đăng ký thành công, điều hướng về màn hình đăng nhập
+            // If registration just completed, return to the login screen
             if (isRegistrationSuccess) {
               appRouter.goToLogin();
             }
           },
-          child: Text(
-            'Đã hiểu',
+          child: LText(
+            LKey.userAccessBlockedUnderstood,
             style: theme.textMedium14Default.copyWith(
               color: theme.colorPrimary,
               fontWeight: FontWeight.bold,

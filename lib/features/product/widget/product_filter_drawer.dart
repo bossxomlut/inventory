@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../domain/entities/product/inventory.dart';
+import '../../../resources/index.dart';
 import '../../../provider/index.dart';
 import '../../../shared_widgets/button/bottom_button_bar.dart';
 import '../../category/provider/category_provider.dart';
@@ -51,9 +52,15 @@ class ProductFilterDrawer extends ConsumerWidget {
     required bool isCreatedFilter,
   }) {
     final isSelected = selectedType == type;
-    final filterTypeProvider = isCreatedFilter ? createdTimeFilterTypeProvider : updatedTimeFilterTypeProvider;
-    final customRangeProvider = isCreatedFilter ? createdTimeCustomRangeProvider : updatedTimeCustomRangeProvider;
-    final otherFilterProvider = isCreatedFilter ? updatedTimeFilterTypeProvider : createdTimeFilterTypeProvider;
+    final filterTypeProvider = isCreatedFilter
+        ? createdTimeFilterTypeProvider
+        : updatedTimeFilterTypeProvider;
+    final customRangeProvider = isCreatedFilter
+        ? createdTimeCustomRangeProvider
+        : updatedTimeCustomRangeProvider;
+    final otherFilterProvider = isCreatedFilter
+        ? updatedTimeFilterTypeProvider
+        : createdTimeFilterTypeProvider;
 
     if (type == TimeFilterType.custom) {
       return FilterChip(
@@ -63,7 +70,7 @@ class ProductFilterDrawer extends ConsumerWidget {
           type.icon,
           size: 16,
         ),
-        label: const Text('Tùy chỉnh'),
+        label: Text(LKey.productTimeCustom.tr(context: context)),
         onSelected: (_) async {
           if (isSelected) {
             // Nếu đang chọn thì bỏ chọn
@@ -86,7 +93,8 @@ class ProductFilterDrawer extends ConsumerWidget {
             ref.read(customRangeProvider.notifier).state = picked;
             ref.read(filterTypeProvider.notifier).state = TimeFilterType.custom;
             ref.read(otherFilterProvider.notifier).state = TimeFilterType.none;
-            ref.read(activeTimeFilterTypeProvider.notifier).state = isCreatedFilter ? 'created' : 'updated';
+            ref.read(activeTimeFilterTypeProvider.notifier).state =
+                isCreatedFilter ? 'created' : 'updated';
           }
         },
         elevation: 0,
@@ -115,7 +123,8 @@ class ProductFilterDrawer extends ConsumerWidget {
         } else {
           ref.read(filterTypeProvider.notifier).state = type;
           ref.read(otherFilterProvider.notifier).state = TimeFilterType.none;
-          ref.read(activeTimeFilterTypeProvider.notifier).state = isCreatedFilter ? 'created' : 'updated';
+          ref.read(activeTimeFilterTypeProvider.notifier).state =
+              isCreatedFilter ? 'created' : 'updated';
         }
       },
       elevation: 0,
@@ -132,24 +141,30 @@ class ProductFilterDrawer extends ConsumerWidget {
     required bool isCreatedFilter,
   }) {
     final appTheme = context.appTheme;
-    final customRangeProvider = isCreatedFilter ? createdTimeCustomRangeProvider : updatedTimeCustomRangeProvider;
+    final customRangeProvider = isCreatedFilter
+        ? createdTimeCustomRangeProvider
+        : updatedTimeCustomRangeProvider;
     final customRange = ref.watch(customRangeProvider);
     if (customRange == null) return const SizedBox.shrink();
 
     final start = customRange.start;
     final end = customRange.end;
+    final fromLabel = '${LKey.from.tr(context: context)}: ';
+    final toLabel = '${LKey.to.tr(context: context)}: ';
     final label = RichText(
       text: TextSpan(
         style: appTheme.textRegular13Subtle,
         children: [
-          const TextSpan(text: 'Từ: '),
+          TextSpan(text: fromLabel),
           TextSpan(
-            text: '${start.day.toString().padLeft(2, '0')}/${start.month.toString().padLeft(2, '0')}/${start.year}',
+            text:
+                '${start.day.toString().padLeft(2, '0')}/${start.month.toString().padLeft(2, '0')}/${start.year}',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          const TextSpan(text: '  đến: '),
+          TextSpan(text: '  $toLabel'),
           TextSpan(
-            text: '${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}',
+            text:
+                '${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
@@ -216,7 +231,9 @@ class ProductFilterDrawer extends ConsumerWidget {
             ? Icon(
                 iconData,
                 size: 16,
-                color: isSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurfaceVariant,
+                color: isSelected
+                    ? theme.colorScheme.onPrimaryContainer
+                    : theme.colorScheme.onSurfaceVariant,
               )
             : isSelected && !showCheckmark
                 ? Icon(
@@ -229,10 +246,14 @@ class ProductFilterDrawer extends ConsumerWidget {
             ? selectedColor ?? theme.colorScheme.primaryContainer
             : backgroundColor ?? theme.colorScheme.surface,
         labelStyle: theme.textTheme.bodyMedium?.copyWith(
-          color: isSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface,
+          color: isSelected
+              ? theme.colorScheme.onPrimaryContainer
+              : theme.colorScheme.onSurface,
         ),
         side: BorderSide(
-          color: isSelected ? appTheme.colorPrimary : theme.colorScheme.outline.withOpacity(0.3),
+          color: isSelected
+              ? appTheme.colorPrimary
+              : theme.colorScheme.outline.withOpacity(0.3),
           width: 1,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -248,7 +269,7 @@ class ProductFilterDrawer extends ConsumerWidget {
     final appTheme = context.appTheme;
     return showDateRangePicker(
       context: context,
-      locale: const Locale('vi', 'VN'),
+      locale: context.locale,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       initialDateRange: initialDateRange,
@@ -277,6 +298,8 @@ class ProductFilterDrawer extends ConsumerWidget {
     final categories = ref.watch(allCategoriesProvider);
     final units = ref.watch(allUnitsProvider);
     final appTheme = context.appTheme;
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
 
     final hasActiveFilters = sortType != ProductSortType.none ||
         selectedCategories.data.isNotEmpty ||
@@ -293,7 +316,8 @@ class ProductFilterDrawer extends ConsumerWidget {
         children: [
           // Header với nền màu sắc
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             decoration: BoxDecoration(
               color: appTheme.colorPrimary,
               boxShadow: [
@@ -309,7 +333,7 @@ class ProductFilterDrawer extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Bộ lọc sản phẩm',
+                  t(LKey.productFilterTitle),
                   style: appTheme.textMedium16Default.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -320,6 +344,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                     Icons.close,
                     color: Colors.white,
                   ),
+                  tooltip: t(LKey.buttonClose),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -336,7 +361,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                 // Sort section
                 _buildSectionHeader(
                   context: context,
-                  title: 'Sắp xếp theo',
+                  title: t(LKey.productFilterSortSection),
                   icon: Icons.sort,
                 ),
 
@@ -359,7 +384,8 @@ class ProductFilterDrawer extends ConsumerWidget {
                         padding: EdgeInsets.zero,
                         side: BorderSide(width: 1),
                         onSelected: (_) {
-                          ref.read(productSortTypeProvider.notifier).state = isSelected ? ProductSortType.none : type;
+                          ref.read(productSortTypeProvider.notifier).state =
+                              isSelected ? ProductSortType.none : type;
                         },
                       );
                     }).toList(),
@@ -371,7 +397,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                 // Time Filters with segmented control
                 _buildSectionHeader(
                   context: context,
-                  title: 'Thời gian',
+                  title: t(LKey.productFilterTimeSection),
                   icon: Icons.calendar_today_outlined,
                 ),
 
@@ -386,39 +412,54 @@ class ProductFilterDrawer extends ConsumerWidget {
                       // Tab selection
                       Consumer(
                         builder: (context, ref, _) {
-                          final activeFilter = ref.watch(activeTimeFilterTypeProvider);
+                          final activeFilter =
+                              ref.watch(activeTimeFilterTypeProvider);
                           return CupertinoSlidingSegmentedControl<String?>(
                             groupValue: activeFilter,
                             padding: EdgeInsets.zero,
                             children: {
                               'created': Container(
-                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 16),
                                 child: Text(
-                                  'Thời gian thêm',
+                                  t(LKey.productFilterTimeCreatedTab),
                                   style: TextStyle(
-                                    fontWeight: activeFilter == 'created' ? FontWeight.bold : FontWeight.normal,
+                                    fontWeight: activeFilter == 'created'
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                                   ),
                                 ),
                               ),
                               'updated': Container(
-                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 16),
                                 child: Text(
-                                  'Thời gian thay đổi',
+                                  t(LKey.productFilterTimeUpdatedTab),
                                   style: TextStyle(
-                                    fontWeight: activeFilter == 'updated' ? FontWeight.bold : FontWeight.normal,
+                                    fontWeight: activeFilter == 'updated'
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                                   ),
                                 ),
                               ),
                             },
                             onValueChanged: (value) {
                               if (value == null) return;
-                              ref.read(activeTimeFilterTypeProvider.notifier).state = value;
+                              ref
+                                  .read(activeTimeFilterTypeProvider.notifier)
+                                  .state = value;
 
                               // Reset the other filter type
                               if (value == 'created') {
-                                ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
+                                ref
+                                    .read(
+                                        updatedTimeFilterTypeProvider.notifier)
+                                    .state = TimeFilterType.none;
                               } else {
-                                ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
+                                ref
+                                    .read(
+                                        createdTimeFilterTypeProvider.notifier)
+                                    .state = TimeFilterType.none;
                               }
                             },
                           );
@@ -430,10 +471,12 @@ class ProductFilterDrawer extends ConsumerWidget {
                       // Time filter options based on active tab
                       Consumer(
                         builder: (context, ref, _) {
-                          final activeFilter = ref.watch(activeTimeFilterTypeProvider);
+                          final activeFilter =
+                              ref.watch(activeTimeFilterTypeProvider);
                           final isCreatedActive = activeFilter == 'created';
-                          final currentProvider =
-                              isCreatedActive ? createdTimeFilterTypeProvider : updatedTimeFilterTypeProvider;
+                          final currentProvider = isCreatedActive
+                              ? createdTimeFilterTypeProvider
+                              : updatedTimeFilterTypeProvider;
                           final selectedType = ref.watch(currentProvider);
 
                           if (activeFilter == null) {
@@ -441,7 +484,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(
-                                  'Chọn loại thời gian để lọc',
+                                  t(LKey.productFilterTimeSelectPrompt),
                                 ),
                               ),
                             );
@@ -486,7 +529,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                 // Category filter section
                 _buildSectionHeader(
                   context: context,
-                  title: 'Danh mục',
+                  title: t(LKey.productFilterCategorySection),
                   icon: Icons.category_outlined,
                 ),
 
@@ -497,9 +540,9 @@ class ProductFilterDrawer extends ConsumerWidget {
                   child: categories.when(
                     data: (List<Category> data) {
                       if (data.isEmpty) {
-                        return const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Không có danh mục nào'),
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(t(LKey.productFilterCategoryEmpty)),
                         );
                       }
                       return Column(
@@ -508,18 +551,22 @@ class ProductFilterDrawer extends ConsumerWidget {
                           // Quick selection row with "All" option
                           InkWell(
                             onTap: () {
-                              ref.read(multiSelectCategoryProvider.notifier).clear();
+                              ref
+                                  .read(multiSelectCategoryProvider.notifier)
+                                  .clear();
                             },
                             child: Chip(
-                              label: Text('Tất cả danh mục'),
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              label: Text(t(LKey.productFilterCategoryAll)),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                               avatar: selectedCategories.data.isEmpty
                                   ? Icon(
                                       Icons.check,
                                       size: 18,
                                     )
                                   : null,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 8),
                             ),
                           ),
 
@@ -530,11 +577,15 @@ class ProductFilterDrawer extends ConsumerWidget {
                             runSpacing: 6,
                             spacing: 8,
                             children: data.map((category) {
-                              final isSelected = selectedCategories.isSelected(category);
+                              final isSelected =
+                                  selectedCategories.isSelected(category);
                               return InkWell(
                                 onTap: () {
                                   if (!isSelected) {
-                                    ref.read(multiSelectCategoryProvider.notifier).toggle(category);
+                                    ref
+                                        .read(multiSelectCategoryProvider
+                                            .notifier)
+                                        .toggle(category);
                                   }
                                 },
                                 child: Chip(
@@ -545,12 +596,19 @@ class ProductFilterDrawer extends ConsumerWidget {
                                           size: 16,
                                         )
                                       : null,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  deleteIcon: isSelected ? const Icon(Icons.close, size: 16) : null,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  deleteIcon: isSelected
+                                      ? const Icon(Icons.close, size: 16)
+                                      : null,
                                   onDeleted: isSelected
                                       ? () {
-                                          ref.read(multiSelectCategoryProvider.notifier).toggle(category);
+                                          ref
+                                              .read(multiSelectCategoryProvider
+                                                  .notifier)
+                                              .toggle(category);
                                         }
                                       : null,
                                 ),
@@ -564,7 +622,10 @@ class ProductFilterDrawer extends ConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          'Lỗi tải danh mục: $error',
+                          t(
+                            LKey.productFilterCategoryError,
+                            namedArgs: {'error': '$error'},
+                          ),
                         ),
                       );
                     },
@@ -582,7 +643,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                 // Unit filter section
                 _buildSectionHeader(
                   context: context,
-                  title: 'Đơn vị',
+                  title: t(LKey.productFilterUnitSection),
                   icon: Icons.straighten_outlined,
                 ),
 
@@ -593,9 +654,9 @@ class ProductFilterDrawer extends ConsumerWidget {
                   child: units.when(
                     data: (List<Unit> data) {
                       if (data.isEmpty) {
-                        return const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Không có đơn vị nào'),
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(t(LKey.productFilterUnitEmpty)),
                         );
                       }
                       return Column(
@@ -604,18 +665,22 @@ class ProductFilterDrawer extends ConsumerWidget {
                           // Quick selection row with "All" option
                           InkWell(
                             onTap: () {
-                              ref.read(multiSelectUnitProvider.notifier).clear();
+                              ref
+                                  .read(multiSelectUnitProvider.notifier)
+                                  .clear();
                             },
                             child: Chip(
-                              label: Text('Tất cả đơn vị'),
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              label: Text(t(LKey.productFilterUnitAll)),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                               avatar: selectedUnits.data.isEmpty
                                   ? Icon(
                                       Icons.check,
                                       size: 18,
                                     )
                                   : null,
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 8),
                             ),
                           ),
 
@@ -630,7 +695,9 @@ class ProductFilterDrawer extends ConsumerWidget {
                               return InkWell(
                                 onTap: () {
                                   if (!isSelected) {
-                                    ref.read(multiSelectUnitProvider.notifier).toggle(unit);
+                                    ref
+                                        .read(multiSelectUnitProvider.notifier)
+                                        .toggle(unit);
                                   }
                                 },
                                 child: Chip(
@@ -643,12 +710,19 @@ class ProductFilterDrawer extends ConsumerWidget {
                                           size: 16,
                                         )
                                       : null,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  deleteIcon: isSelected ? const Icon(Icons.close, size: 16) : null,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  deleteIcon: isSelected
+                                      ? const Icon(Icons.close, size: 16)
+                                      : null,
                                   onDeleted: isSelected
                                       ? () {
-                                          ref.read(multiSelectUnitProvider.notifier).toggle(unit);
+                                          ref
+                                              .read(multiSelectUnitProvider
+                                                  .notifier)
+                                              .toggle(unit);
                                         }
                                       : null,
                                 ),
@@ -662,7 +736,10 @@ class ProductFilterDrawer extends ConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          'Lỗi tải đơn vị: $error',
+                          t(
+                            LKey.productFilterUnitError,
+                            namedArgs: {'error': '$error'},
+                          ),
                         ),
                       );
                     },
@@ -681,12 +758,16 @@ class ProductFilterDrawer extends ConsumerWidget {
           ),
           // Bottom action buttons
           BottomButtonBar(
-            cancelButtonText: 'Đặt lại',
-            saveButtonText: hasActiveFilters ? 'Áp dụng' : 'Đóng',
+            cancelButtonText: t(LKey.buttonReset),
+            saveButtonText:
+                hasActiveFilters ? t(LKey.buttonApply) : t(LKey.buttonClose),
             onCancel: () {
-              ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
-              ref.read(createdTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
-              ref.read(updatedTimeFilterTypeProvider.notifier).state = TimeFilterType.none;
+              ref.read(productSortTypeProvider.notifier).state =
+                  ProductSortType.none;
+              ref.read(createdTimeFilterTypeProvider.notifier).state =
+                  TimeFilterType.none;
+              ref.read(updatedTimeFilterTypeProvider.notifier).state =
+                  TimeFilterType.none;
               ref.read(activeTimeFilterTypeProvider.notifier).state = null;
               ref.read(multiSelectCategoryProvider.notifier).clear();
               ref.read(multiSelectUnitProvider.notifier).clear();

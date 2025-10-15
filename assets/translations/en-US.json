@@ -43,15 +43,25 @@
     "finish": "Finish",
     "add": "Add",
     "apply": "Apply",
+    "reset": "Reset",
     "accept": "Accept",
     "reject": "Reject",
     "retry": "Retry",
+    "save": "Save",
+    "close": "Close",
+    "undo": "Undo",
     "request": "Request",
     "backToHome": "Back To Home",
     "dontAllow": "Don't Allow",
     "allow": "Allow",
     "oke": "OKE",
+    "select": "Select",
+    "delete": "Delete",
     "openSettings": "Open settings"
+  },
+  "permissions": {
+    "loadFailed": "Unable to load permissions",
+    "loadFailedWithError": "Unable to load permissions: {error}"
   },
   "message": {
     "defaultApiError": "Something went wrong, please try again",
@@ -75,6 +85,19 @@
     "withdrawSuccessfully": "Withdrawal request successful",
     "customerLocationNotFound": "Customer location not found"
   },
+  "common": {
+    "errorWithMessage": "Error: {error}"
+  },
+  "splash": {
+    "welcomeBack": "Welcome back",
+    "loading": "Loading..."
+  },
+  "imagePicker": {
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "product": "Product images",
+    "sourceTitle": "Choose image source"
+  },
   "onBoarding": {
     "next": "Next",
     "skip": "Skip",
@@ -86,17 +109,84 @@
     "title1": "Personalized Security",
     "content1": "Customize your security services to fit your specific needs, whether for personal or event protection.",
     "title2": "Real Time Communication",
-    "content2": "Receive instant updates and stay connected with your security team through real-time messaging."
+    "content2": "Receive instant updates and stay connected with your security team through real-time messaging.",
+    "slide": {
+      "welcome": {
+        "title": "Welcome to Inventory Manager",
+        "description": "A smart warehouse solution that helps you track products, manage stock levels, and control orders effortlessly—all from one intuitive interface.",
+        "subtitle": "Smart inventory management"
+      },
+      "features": {
+        "title": "Powerful features",
+        "description": "• Manage products and categories\n• Stocktake with QR codes\n• Track orders and transactions\n• Detailed analytics and reports\n• Import/export data with ease\n• Friendly interface for everyone",
+        "subtitle": "Everything you need in one app"
+      },
+      "data": {
+        "title": "Your data, your control",
+        "description": "All information stays locally on your device for maximum security. Export backups whenever needed or wipe everything with a single tap.",
+        "subtitle": "Security and full control"
+      }
+    },
+    "previous": "Back"
   },
   "user": {
     "role": {
       "client": "Client",
       "partner": "Partner"
+    },
+    "toast": {
+      "activateSuccess": "User account activated successfully",
+      "deactivateSuccess": "User account locked successfully",
+      "actionActivate": "activate",
+      "actionDeactivate": "lock",
+      "toggleError": "Something went wrong when trying to {action} the account: {error}"
+    },
+    "management": {
+      "title": "User management",
+      "refresh": "Refresh list",
+      "stats": {
+        "total": "Total users: {count}",
+        "activeLocked": "Active: {active} | Locked: {locked}"
+      },
+      "empty": {
+        "title": "No users yet",
+        "description": "The user list will appear here once people sign up.",
+        "hint": "New users must be activated by an admin before they can use the app.",
+        "cta": "Guide your team to create accounts to get started"
+      },
+      "status": {
+        "active": "Active",
+        "locked": "Locked"
+      },
+      "info": {
+        "id": "ID: {id}",
+        "lastLogin": "Last login: {datetime}",
+        "createdAt": "Created: {datetime}"
+      },
+      "actions": {
+        "lock": "Lock account",
+        "activate": "Activate account",
+        "permissions": "Permissions"
+      },
+      "dialog": {
+        "activateTitle": "Activate account",
+        "lockTitle": "Lock account",
+        "activateMessage": "Are you sure you want to grant access for this user? Once activated, they will be able to sign in.",
+        "lockMessage": "Are you sure you want to revoke access for this user? They will not be able to sign in until reactivated.",
+        "confirmActivate": "Activate",
+        "confirmLock": "Lock"
+      },
+      "error": {
+        "load": "Failed to load user list"
+      }
     }
   },
   "loginPage": {
     "message": {
       "loginFailed": "Login failed, please try again. Or use other account"
+    },
+    "error": {
+      "userNotFound": "Account information not found"
     }
   },
   "signUp": {
@@ -207,7 +297,41 @@
     "jobNearBy": "Job Near By",
     "setUpWorkDay": "Set Up Work Day",
     "availableDayTitle": "Available for full day work?",
-    "appTutorialVideo": "App Tutorial Video"
+    "appTutorialVideo": "App Tutorial Video",
+    "menu": {
+      "permissionsError": "Unable to load permissions",
+      "noPermissionMessage": "Your account has no accessible features yet. Please contact the administrator.",
+      "greeting": "Hello,",
+      "reorderTooltip": "Reorder menu groups",
+      "reorderTitle": "Arrange feature groups",
+      "reorderDescription": "Drag and drop to prioritise what you see first. This applies only to your account.",
+      "reorderReset": "Default",
+      "reorderSaved": "Menu order saved",
+      "reorderPositionLabel": "Current position: {position}",
+      "group": {
+        "productManagement": "Product management",
+        "priceOrder": "Pricing & Orders",
+        "systemAdministration": "System administration",
+        "dataManagement": "Data management"
+      },
+      "item": {
+        "products": "Products",
+        "inventory": "Inventory",
+        "categories": "Categories",
+        "units": "Units",
+        "pricing": "Pricing",
+        "createOrder": "Create order",
+        "orderList": "Order list",
+        "userManagement": "User management",
+        "reports": "Reports",
+        "createSampleData": "Create sample data",
+        "importData": "Import data",
+        "exportData": "Export data",
+        "deleteData": "Delete data"
+      },
+      "unauthenticatedTitle": "Inventory management",
+      "unauthenticatedMessage": "Please log in to continue."
+    }
   },
   "setting": {
     "title": "Settings",
@@ -218,7 +342,20 @@
     "language": "Language",
     "changePassword": "Change Password",
     "logout": "Logout",
-    "account": "Account"
+    "account": "Account",
+    "dataManagement": "Data Management",
+    "createFromSample": "Create from Sample Data",
+    "exportData": "Export Data",
+    "deleteData": "Delete Data",
+    "aboutApp": "About the App",
+    "userGuide": "User Guide",
+    "feedback": "Send Feedback",
+    "feedbackSubtitle": "Report bugs or request new features",
+    "reviewApp": "Rate the App",
+    "replayOnboarding": "View Onboarding Again",
+    "replayOnboardingSubtitle": "Show the introduction screens again",
+    "resetOnboardingSuccess": "Reset successful. Restart the app to see the guide again.",
+    "resetOnboardingError": "An error occurred while resetting the guide."
   },
   "notification": {
     "noNotificationFound": "No notification found"
@@ -244,5 +381,696 @@
   "chat": {
     "joinChat": "Join Chat",
     "typeAMessage": "Type a message..."
+  },
+  "feedback": {
+    "title": "Send Feedback",
+    "description": "We listen to every comment. Please share details below to report bugs or request new features.",
+    "type": {
+      "label": "Feedback type",
+      "hint": "Select a feedback type",
+      "bug": "Bug report",
+      "feature": "Feature request",
+      "other": "Other",
+      "pickerTitle": "Select feedback type"
+    },
+    "form": {
+      "titleLabel": "Title",
+      "titleHint": "Example: Cannot log in",
+      "contactLabel": "Contact info (optional)",
+      "contactHint": "Email or phone number",
+      "contentLabel": "Details",
+      "contentHint": "Describe the issue or suggestion",
+      "submit": "Send feedback",
+      "submitting": "Sending..."
+    },
+    "error": {
+      "emptyContent": "Please enter feedback details."
+    },
+    "mail": {
+      "subject": "[Inventory] App feedback",
+      "sendDate": "Sent at",
+      "version": "App version",
+      "type": "Type",
+      "title": "Title",
+      "contact": "Contact",
+      "content": "Content"
+    },
+    "toast": {
+      "openEmailError": "Unable to open an email app on this device.",
+      "openEmailSuccess": "Opening your email app to send feedback.",
+      "prepareError": "An error occurred while preparing the feedback email."
+    }
+  },
+  "languageName": {
+    "english": "English",
+    "vietnamese": "Vietnamese"
+  },
+  "auth": {
+    "defaultAdmin": {
+      "title": "Account information",
+      "welcome": "Welcome to the inventory management app!",
+      "defaultAccount": "Default admin account:",
+      "username": "Username: {username}",
+      "password": "Password: {password}",
+      "securityAnswer": "Security answer: {answer}",
+      "instruction": "Please change the password and update the security question after your first login.",
+      "understood": "Got it",
+      "securityQuestion": "Security question: {question}"
+    },
+    "guest": {
+      "importSuccess": "Imported {success} sample products successfully!",
+      "importPartial": "Imported {success}/{total} products. {failed} products failed.",
+      "name": "Guest"
+    },
+    "restart": {
+      "title": "Restarting app",
+      "message": "Please tap here to open the app again."
+    }
+  },
+  "guard": {
+    "permissionDenied": "You do not have permission to access this page.",
+    "permissionCheckFailed": "Unable to verify permissions."
+  },
+  "product": {
+    "lot": {
+      "expired": "Expired",
+      "expiresToday": "Expires today",
+      "remainingDays": "{days} day(s) remaining",
+      "expiryLabel": "Expires on {date}",
+      "manufactureLabel": "Manufactured on {date}"
+    },
+    "create": {
+      "success": "Product created successfully",
+      "errorTitle": "Failed to create product",
+      "errorMessage": "Unable to create the product. Please try again.",
+      "errorFallback": "Creating product failed: {error}"
+    },
+    "update": {
+      "success": "Product updated successfully",
+      "errorTitle": "Failed to update product",
+      "errorMessage": "Unable to update the product. Please try again.",
+      "errorFallback": "Updating product failed: {error}"
+    },
+    "detail": {
+      "loadError": "Unable to load product details: {error}"
+    },
+    "sort": {
+      "nameAsc": "Name A-Z",
+      "nameDesc": "Name Z-A",
+      "quantityAsc": "Quantity ascending",
+      "quantityDesc": "Quantity descending",
+      "default": "Default"
+    },
+    "time": {
+      "yesterday": "Yesterday",
+      "today": "Today",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "custom": "Custom",
+      "none": "No filter"
+    },
+    "list": {
+      "title": "Products",
+      "permissionDenied": "You do not have permission to view the product list.",
+      "searchHint": "Search products...",
+      "searchTooltip": "Search",
+      "filterTooltip": "Filter products",
+      "sortLabel": "Sort: {value}",
+      "createdFilter": "Added: {value}",
+      "updatedFilter": "Updated: {value}",
+      "clearFilters": "Clear all",
+      "loadedStatus": "Loaded {loaded}/{total} products",
+      "empty": "No products found"
+    },
+    "filter": {
+      "title": "Product filters",
+      "section": {
+        "sort": "Sort by",
+        "time": "Time",
+        "category": "Category",
+        "unit": "Unit"
+      },
+      "time": {
+        "createdTab": "Added time",
+        "updatedTab": "Updated time",
+        "selectPrompt": "Choose a time type to filter"
+      },
+      "category": {
+        "empty": "No categories available",
+        "all": "All categories",
+        "error": "Failed to load categories: {error}"
+      },
+      "unit": {
+        "empty": "No units available",
+        "all": "All units",
+        "error": "Failed to load units: {error}"
+      }
+    },
+    "form": {
+      "createTitle": "Add product",
+      "editTitle": "Edit product",
+      "validationRequired": "Please fill in the required information.",
+      "permissionDenied": "You do not have permission to create a product.",
+      "fields": {
+        "nameLabel": "Product name",
+        "nameHint": "Enter product name",
+        "quantityLabel": "Stock",
+        "expiryLabel": "Expiry tracking",
+        "skuLabel": "Product code (SKU)",
+        "categoryLabel": "Category",
+        "unitLabel": "Unit",
+        "imagesLabel": "Product images",
+        "imagesAdd": "Add images",
+        "noteLabel": "Note",
+        "noteHint": "Enter note"
+      },
+      "expiry": {
+        "trackingLabel": "Track by lots",
+        "trackingDescription": "Manage stock by expiry date"
+      },
+      "inventory": {
+        "totalLots": "Total lot quantity",
+        "empty": "No lots yet. Add one to get started.",
+        "lotTitle": "Lot {index}",
+        "removeLot": "Remove lot",
+        "quantityLabel": "Quantity",
+        "expiryLabel": "Expiry date",
+        "manufactureLabel": "Manufacture (optional)",
+        "chooseDate": "Select date",
+        "addLot": "Add lot"
+      },
+      "validation": {
+        "noLot": "Please add at least one lot.",
+        "missingExpiry": "Please select expiry date for each lot.",
+        "lotQuantity": "Lot quantity must be greater than 0.",
+        "manufactureAfterExpiry": "Manufacture date cannot be after expiry date.",
+        "duplicateLot": "Cannot have two lots with identical manufacture and expiry dates."
+      },
+      "sku": {
+        "placeholderTitle": "Add product code (SKU)",
+        "inputHint": "Enter SKU",
+        "scanBarcode": "Scan barcode",
+        "scanAction": "Scan",
+        "random": "Generate random",
+        "qrPlaceholder": "Enter SKU to generate QR code",
+        "qrError": "Failed to generate QR code",
+        "downloadError": "Enter SKU to download QR code.",
+        "downloadSuccess": "QR code saved successfully!",
+        "downloadButton": "Save to device"
+      },
+      "media": {
+        "selectImageTitle": "Select images"
+      },
+      "addCategory": "Add category",
+      "addUnit": "Add unit"
+    }
+  },
+  "category": {
+    "page": {
+      "title": "Categories",
+      "permissionDenied": "You do not have permission to view the category list.",
+      "empty": "No categories found."
+    },
+    "form": {
+      "nameLabel": "Name",
+      "nameHint": "Category name",
+      "descriptionLabel": "Notes",
+      "descriptionHint": "Notes",
+      "nameRequired": "Please enter a category name.",
+      "updateError": "Unable to update category: {error}"
+    },
+    "toast": {
+      "createSuccess": "Category created successfully",
+      "createError": "Failed to create category",
+      "updateSuccess": "Category updated successfully",
+      "updateError": "Failed to update category",
+      "deleteSuccess": "Category deleted successfully",
+      "deleteError": "Failed to delete category",
+      "bulkDeleteSuccess": "Selected categories deleted successfully",
+      "bulkDeleteError": "Failed to delete selected categories",
+      "noSelection": "No category selected"
+    }
+  },
+  "unit": {
+    "page": {
+      "title": "Units",
+      "permissionDenied": "You do not have permission to view the unit list.",
+      "empty": "No units found."
+    },
+    "form": {
+      "nameLabel": "Name",
+      "nameHint": "Unit name",
+      "descriptionLabel": "Notes",
+      "descriptionHint": "Notes",
+      "nameRequired": "Please enter a unit name.",
+      "updateError": "Unable to update unit: {error}"
+    },
+    "toast": {
+      "createSuccess": "Unit created successfully",
+      "createError": "Failed to create unit",
+      "updateSuccess": "Unit updated successfully",
+      "updateError": "Failed to update unit",
+      "deleteSuccess": "Unit deleted successfully",
+      "deleteError": "Failed to delete unit",
+      "noSelection": "No unit selected",
+      "fetchError": "Failed to load units"
+    }
+  },
+  "notFound": {
+    "noData": "No data found"
+  },
+  "check": {
+    "status": {
+      "match": "Match",
+      "surplus": "Surplus",
+      "shortage": "Shortage",
+      "unknown": "Unknown"
+    },
+    "product": {
+      "addSuccess": "Product added to stocktake successfully",
+      "updateSuccess": "Stocktake updated successfully"
+    },
+    "session": {
+      "updateSuccess": "Stocktake session updated successfully",
+      "updateError": "Failed to update stocktake session",
+      "deleteSuccess": "Stocktake session deleted successfully",
+      "deleteError": "Failed to delete stocktake session"
+    },
+    "sessionList": {
+      "title": "Stocktake sessions",
+      "permissionDenied": "You do not have permission to view the stocktake session list.",
+      "tab": {
+        "active": "Active",
+        "completed": "Completed"
+      },
+      "createdBy": "Performed by: {user}",
+      "date": "Date: {date}",
+      "deleteConfirmTitle": "Delete session",
+      "deleteConfirmMessage": "Are you sure you want to delete this stocktake session?",
+      "emptyActive": "No active stocktake sessions",
+      "emptyCompleted": "No completed stocktake sessions",
+      "createError": "Failed to create session: {error}"
+    },
+    "sessionCreate": {
+      "title": "Create new stocktake session",
+      "defaultName": "Stocktake session {timestamp}",
+      "nameLabel": "Session name *",
+      "nameHint": "e.g. Stocktake Jun 2025",
+      "createdByLabel": "Created by *",
+      "createdByHint": "e.g. John Doe",
+      "noteLabel": "Notes",
+      "noteHint": "Short description about this session",
+      "submit": "Create session",
+      "validationRequired": "Please fill in all required information.",
+      "defaultCreator": "User"
+    },
+    "sessionDetail": {
+      "title": "Stocktake session details",
+      "name": "Session name",
+      "createdBy": "Created by",
+      "createdAt": "Created at",
+      "status": "Status",
+      "note": "Notes"
+    },
+    "sessionStatus": {
+      "inProgress": "In progress",
+      "completed": "Completed"
+    },
+    "inventory": {
+      "systemQuantityLabel": "System stock: {quantity}",
+      "countQuantity": "Stocktake quantity",
+      "noteLabel": "Notes",
+      "noteHint": "Enter notes",
+      "lotsEmpty": "No lots added yet. Add a lot to record counts.",
+      "lotTitle": "Lot {index}",
+      "lotSystemTag": "System stock",
+      "lotRemoveTooltip": "Remove lot",
+      "lotExpected": "System: {quantity}",
+      "lotExpiry": "Expiry date: {date}",
+      "lotActualLabel": "Actual quantity",
+      "lotExpiryLabel": "Expiry",
+      "lotManufactureLabel": "Manufacture (optional)",
+      "lotAddButton": "Add inventory lot",
+      "lotSummaryTitle": "Total lot quantity",
+      "validation": {
+        "noLot": "Please add at least one inventory lot.",
+        "negative": "Actual quantity cannot be negative.",
+        "duplicate": "Cannot have two lots with identical manufacture and expiry dates."
+      }
+    },
+    "permissionLoadFailed": "Unable to load permission data.",
+    "permissionViewDenied": "You don't have permission to view this stocktake session.",
+    "checkedProductsTitle": "Checked products",
+    "checkedProductsCount": "{count} item(s)",
+    "checkedProductsEmpty": "No products have been checked yet",
+    "checkedProductsScanPrompt": "Scan a barcode or search for a product to get started",
+    "checkedProductsNoEdit": "You don't have permission to edit this session.",
+    "searchProduct": "Search product",
+    "completeSession": "Complete stocktake",
+    "scanError": "Barcode scan failed: {error}",
+    "genericError": "Error: {error}",
+    "quantityExpected": "System",
+    "quantityActual": "Actual"
+  },
+  "input": {
+    "enterQuantity": "Enter quantity"
+  },
+  "report": {
+    "page": {
+      "title": "Reports",
+      "tab": {
+        "overview": "Overview",
+        "orders": "Orders",
+        "inventory": "Inventory"
+      }
+    },
+    "summary": {
+      "revenue": "Revenue",
+      "totalOrders": "Total orders",
+      "productsSold": "Products sold",
+      "quantitySold": "Quantity sold"
+    },
+    "chart": {
+      "revenueByDay": "Revenue by day",
+      "revenueByCategory": "Revenue by category",
+      "topSellingProducts": "Top 5 selling products"
+    }
+  },
+  "configPrice": {
+    "error": {
+      "invalidNumber": "Please enter a valid number",
+      "saveFailed": "Unable to save price, please try again later"
+    },
+    "list": {
+      "title": "Product pricing",
+      "searchHint": "Search products...",
+      "searchTooltip": "Search",
+      "loadedStatus": "Loaded {loaded}/{total} products",
+      "costLabel": "Cost price",
+      "sellingLabel": "Selling price",
+      "notSet": "Not set",
+      "profitLabel": "Profit:"
+    },
+    "form": {
+      "sellingPreview": "Selling price: {price}",
+      "purchasePreview": "Cost price: {price}",
+      "sellingLabel": "Selling price",
+      "purchaseLabel": "Cost price",
+      "saving": "Saving..."
+    }
+  },
+  "dataManagement": {
+    "import": {
+      "title": "Import data from file",
+      "formatsTitle": "Supported formats:",
+      "formatJsonl": "- JSONL: Each line is a JSON object following the app export structure.",
+      "formatCsv": "- CSV: Spreadsheet with columns matching the exported file.",
+      "formatXlsx": "- XLSX: Excel file with sheets and columns matching the exported file.",
+      "formatNote": "Note: Only import files exported from this app or with the same structure.",
+      "buttonSelect": "Choose a file to import",
+      "resultSuccess": "Data imported successfully!",
+      "resultInvalid": "The file does not match the expected data structure.",
+      "resultUnsupported": "File format is not supported.",
+      "note": "Note: Only import files exported from this app or with a similar format."
+    },
+    "export": {
+      "title": "Export data",
+      "infoTitle": "Information",
+      "infoDescription": "Export application data to files for backup or transferring to another device. Supported formats:",
+      "infoJsonl": "• JSONL: Developer-friendly format containing full object information.",
+      "infoCsv": "• CSV: Spreadsheet-friendly format with simplified data.",
+      "infoBackup": "• Backup: Full JSON backup file.",
+      "infoTip": "CSV includes category/unit names only, JSONL includes full object details.",
+      "infoStorageTitle": "File location:",
+      "infoStoragePathAndroid": "Documents/Inventory_Manager/",
+      "infoStoragePathIos": "Files/On My iPhone/[app_name]/",
+      "products": {
+        "title": "Export products",
+        "description": "CSV: product name, category, unit. JSONL: full product details."
+      },
+      "categories": {
+        "title": "Export categories",
+        "description": "CSV: basic information. JSONL: complete metadata and timestamps."
+      },
+      "units": {
+        "title": "Export units",
+        "description": "CSV: basic information. JSONL: complete metadata and timestamps."
+      },
+      "orders": {
+        "title": "Export orders",
+        "description": "CSV: readable summary. JSONL: full order details."
+      },
+      "backup": {
+        "title": "Full data backup",
+        "description": "Create a backup file containing all application data.",
+        "button": "Create backup"
+      }
+    },
+    "delete": {
+      "title": "Delete data",
+      "warningTitle": "Warning",
+      "warningDescription": "Deleting data cannot be undone. Make sure you have a backup before proceeding.",
+      "warningBackup": "• Create a backup before deleting",
+      "warningIrreversible": "• Deleted data cannot be restored",
+      "warningDuration": "• Deletion may take several minutes",
+      "level": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "label": "Level: {level}"
+      },
+      "products": {
+        "title": "Delete products",
+        "description": "Remove all products from inventory"
+      },
+      "categories": {
+        "title": "Delete categories",
+        "description": "Remove all product categories"
+      },
+      "units": {
+        "title": "Delete units",
+        "description": "Remove all measurement units"
+      },
+      "orders": {
+        "title": "Delete orders",
+        "description": "Remove all orders and their history"
+      },
+      "stocktake": {
+        "title": "Delete stocktakes",
+        "description": "Remove all stocktake sessions"
+      },
+      "transactions": {
+        "title": "Delete transactions",
+        "description": "Remove all product change history"
+      },
+      "actionButton": "Delete data",
+      "all": {
+        "title": "Delete all data",
+        "description": "Remove every record and reset the app",
+        "button": "DELETE ALL DATA"
+      }
+    },
+    "sample": {
+      "title": "Create sample data",
+      "testTooltip": "Test data import UI",
+      "chooseTitle": "Choose a store type",
+      "chooseDescription": "Select a store type to generate matching sample data."
+    },
+    "productSelection": {
+      "errorNone": "Please select at least one product",
+      "loadingErrorTitle": "Something went wrong",
+      "retry": "Retry",
+      "statsProducts": "Products",
+      "statsSelected": "Selected",
+      "statsQuantity": "Total quantity",
+      "tooltipSelectAll": "Select all",
+      "tooltipDeselectAll": "Deselect all",
+      "buttonEmpty": "Select at least one product",
+      "buttonSelected": "Done ({count})"
+    },
+    "test": {
+      "title": "Data management",
+      "sectionTitle": "New interface tests",
+      "sectionDescription": "Try the new notification flows for data import:",
+      "successFull": "Fully successful import",
+      "successFullDescription": "Show result with 100% successful import",
+      "partial": "Partially successful import",
+      "partialDescription": "Show result with partial errors",
+      "failed": "Failed import",
+      "failedDescription": "Show result when import fails",
+      "validationSuccess": "Validation succeeded",
+      "validationSuccessDescription": "Show validation success state",
+      "validationWarning": "Validation with warnings",
+      "validationWarningDescription": "Show validation with warnings",
+      "validationError": "Validation failed",
+      "validationErrorDescription": "Show validation failure state",
+      "flow": "Validation + import flow",
+      "flowDescription": "Test the full flow from validation to import",
+      "deleteTitle": "Data deletion management",
+      "deleteDescription": "Data deletion with confirmation and notifications:",
+      "deleteNavigation": "Open delete data screen",
+      "deleteNavigationDescription": "Go to the delete data management page"
+    },
+    "validation": {
+      "title": "Validate data",
+      "statusSuccess": "Data is ready for import",
+      "statusWarning": "Data contains warnings",
+      "statusError": "Data contains errors",
+      "summaryTitle": "Summary",
+      "summaryTotal": "Total lines",
+      "summaryValid": "Valid",
+      "summaryWarnings": "Warnings",
+      "summaryErrors": "Errors",
+      "errorsTitle": "Errors",
+      "warningsTitle": "Warnings",
+      "cancel": "Cancel",
+      "proceed": "Continue import",
+      "hasErrors": "Cannot continue while errors exist"
+    },
+    "importResult": {
+      "title": "Import result",
+      "summaryTitle": "Summary",
+      "summaryTotal": "Total lines: {count}",
+      "summarySuccess": "Imported: {count}",
+      "summaryFailed": "Failed: {count}",
+      "summaryDuration": "Duration: {seconds}s",
+      "errorsTitle": "Errors",
+      "warningsTitle": "Warnings",
+      "close": "Close",
+      "retry": "Retry"
+    }
+  },
+  "search": {
+    "placeholder": "Search...",
+    "noResults": "No results found",
+    "addNew": "Add new"
+  },
+  "userAccessBlocked": {
+    "registrationSuccessTitle": "Registration successful",
+    "blockedTitle": "Account locked",
+    "registrationDescription": "Your account needs admin approval before it can be used.",
+    "blockedDescription": "Your account has not been activated or has been locked by an administrator.",
+    "contactAdmin": "Please contact the administrator for support.",
+    "understood": "Got it"
+  },
+  "appTitle": "Inventory & Orders",
+  "order": {
+    "create": {
+      "title": "Create order",
+      "saveDraft": "Save as draft",
+      "submit": "Submit order",
+      "ordersListTooltip": "Order list",
+      "productsTitle": "Products",
+      "productsEmpty": "No products in this order yet",
+      "addProduct": "Add product",
+      "scanProduct": "Scan product",
+      "scanNotFound": "No product found for barcode {barcode}"
+    },
+    "customer": {
+      "sectionTitle": "Customer",
+      "name": "Customer name",
+      "contact": "Contact",
+      "dialogTitle": "Customer information",
+      "nameLabel": "Customer name",
+      "contactLabel": "Contact",
+      "validation": "Please enter customer information"
+    },
+    "note": {
+      "title": "Note",
+      "placeholder": "Enter note"
+    },
+    "payment": {
+      "title": "Payment",
+      "totalQuantity": "Total quantity",
+      "totalAmount": "Total amount"
+    },
+    "products": {
+      "addedSuccess": "{name} has been added to the order"
+    },
+    "detail": {
+      "title": "Order details",
+      "infoSectionTitle": "Order information",
+      "code": "Order code",
+      "totalQuantity": "Total quantity",
+      "totalAmount": "Total amount",
+      "customerName": "Customer name",
+      "customerContact": "Contact",
+      "note": "Note",
+      "productsTitle": "Products"
+    },
+    "status": {
+      "draft": "Draft",
+      "confirmed": "Confirmed",
+      "done": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "list": {
+      "title": "Orders",
+      "permissionDenied": "You do not have permission to view any order status.",
+      "settingsTooltip": "Action confirmation settings",
+      "settingsTitle": "Action confirmation settings",
+      "settingsLoadError": "Unable to load settings: {error}",
+      "toggle": {
+        "confirmTitle": "Confirm/Complete order",
+        "confirmDescription": "On: show a confirmation dialog before marking an order as completed.\nOff: apply immediately without confirmation.",
+        "cancelTitle": "Cancel order",
+        "cancelDescription": "On: show a confirmation dialog before canceling an order.\nOff: cancel immediately.",
+        "deleteTitle": "Delete order",
+        "deleteDescription": "On: require confirmation before deleting an order from the list.\nOff: delete immediately."
+      },
+      "settingsReset": "Restore defaults",
+      "orderCode": "Order code: #{id}",
+      "customer": "Customer: {name}",
+      "contact": "Contact: {contact}",
+      "productsLabel": "Products:",
+      "quantityLabel": "Quantity:",
+      "totalLabel": "Total:",
+      "noteLabel": "Note: {note}",
+      "action": {
+        "complete": "Complete",
+        "cancel": "Cancel",
+        "delete": "Delete"
+      },
+      "empty": {
+        "draft": "No draft orders yet",
+        "confirmed": "No confirmed orders yet",
+        "done": "No completed orders yet",
+        "cancelled": "No cancelled orders yet"
+      },
+      "createHint": "Tap the + button to create a new order",
+      "contactAdmin": "Contact the administrator to request order creation access."
+    },
+    "action": {
+      "edit": "Edit",
+      "complete": "Complete",
+      "cancel": "Cancel order",
+      "confirmTitle": "Confirm action",
+      "cancelTitle": "Cancel order",
+      "deleteTitle": "Delete order",
+      "confirmMessage": "Are you sure you want to complete order #{orderId}?",
+      "cancelMessage": "Are you sure you want to cancel order #{orderId}?",
+      "deleteMessage": "Are you sure you want to delete order #{orderId}?"
+    },
+    "warning": {
+      "quantityExceedsStock": "Quantity exceeds stock ({stock})"
+    },
+    "label": {
+      "inventory": "In stock:",
+      "price": "Price:",
+      "orderQuantity": "Order quantity: {quantity}",
+      "lineTotal": "Line total: {amount}"
+    },
+    "toast": {
+      "createSuccess": "Order created successfully",
+      "draftSuccess": "Order draft saved successfully",
+      "draftError": "Failed to save order draft",
+      "completeSuccess": "Great job! Order #{orderId} completed",
+      "cancelSuccess": "Order #{orderId} canceled successfully",
+      "deleteSuccess": "Order #{orderId} deleted successfully"
+    },
+    "common": {
+      "notSet": "Not set"
+    }
   }
 }

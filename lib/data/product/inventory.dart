@@ -51,26 +51,26 @@ class UnitCollection {
 class TransactionCollection {
   Id id = Isar.autoIncrement;
 
-  // Liên kết với sản phẩm
+  // Link to the related product
   @Index()
   late int productId;
 
-  // Liên kết với lô hàng nếu có
+  // Link to the inventory lot when applicable
   @Index()
   int? inventoryLotId;
 
-  // Số lượng giao dịch
+  // Transaction quantity
   late int quantity;
 
-  // Loại giao dịch: sử dụng enum để rõ ràng hơn
+  // Transaction type defined by the enum for clarity
   @enumerated
   late TransactionType type;
 
-  // Thời gian giao dịch
+  // Timestamp of the transaction
   @Index(type: IndexType.value)
   late DateTime timestamp;
 
-  // Loại giao dịch bổ sung (nếu cần phân loại chi tiết hơn)
+  // Optional extra transaction category when finer classification is needed
   @enumerated
   late TransactionCategory category;
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../provider/theme.dart';
+import '../resources/index.dart';
 import '../resources/theme.dart';
 import '../features/data_management/services/data_import_service.dart';
 import 'dialog.dart';
@@ -9,14 +10,14 @@ import 'dialog.dart';
 /// Widget để hiển thị kết quả validation dữ liệu trước khi nhập
 class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
   final ValidationResult result;
-  final String title;
+  final String? title;
   final VoidCallback? onProceedImport;
   final bool barrierDismissible;
 
   const DataValidationResultDialog({
     super.key,
     required this.result,
-    this.title = 'Kiểm tra dữ liệu',
+    this.title,
     this.onProceedImport,
     this.barrierDismissible = false, // Không cho phép tap outside khi đang validation
   });
@@ -27,6 +28,9 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
   @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
+    final dialogTitle = title ?? t(LKey.dataManagementImportValidationTitle);
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -65,13 +69,13 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          title,
+                          dialogTitle,
                           style: theme.headingSemibold20Default.copyWith(
                             color: Colors.white,
                           ),
                         ),
                         Text(
-                          _getStatusText(),
+                          _getStatusText(context),
                           style: theme.textRegular14Default.copyWith(
                             color: Colors.white.withOpacity(0.9),
                           ),
@@ -139,7 +143,7 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
                         color: theme.colorTextSubtle,
                       ),
                       label: Text(
-                        'Hủy',
+                        t(LKey.dataManagementImportValidationCancel),
                         style: TextStyle(
                           color: theme.colorTextSubtle,
                           fontWeight: FontWeight.w600,
@@ -166,7 +170,9 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
                         color: Colors.white,
                       ),
                       label: Text(
-                        result.isValid ? 'Tiếp tục nhập' : 'Có lỗi',
+                        result.isValid
+                            ? t(LKey.dataManagementImportValidationProceed)
+                            : t(LKey.dataManagementImportValidationHasErrors),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -201,7 +207,7 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Thống kê kiểm tra',
+            LKey.dataManagementImportValidationSummaryTitle.tr(),
             style: theme.headingSemibold20Default,
           ),
           const SizedBox(height: 12),
@@ -210,7 +216,7 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
               Expanded(
                 child: _buildStatItem(
                   theme,
-                  'Tổng số dòng',
+                  LKey.dataManagementImportValidationSummaryTotal.tr(),
                   result.totalLines.toString(),
                   HugeIcons.strokeRoundedFile02,
                   theme.colorTextSubtle,
@@ -219,7 +225,7 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
               Expanded(
                 child: _buildStatItem(
                   theme,
-                  'Dòng hợp lệ',
+                  LKey.dataManagementImportValidationSummaryValid.tr(),
                   result.validLines.toString(),
                   HugeIcons.strokeRoundedCheckmarkCircle02,
                   theme.colorTextSupportGreen,
@@ -233,7 +239,7 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
               Expanded(
                 child: _buildStatItem(
                   theme,
-                  'Lỗi',
+                  LKey.dataManagementImportValidationSummaryErrors.tr(),
                   result.errors.length.toString(),
                   HugeIcons.strokeRoundedCancelCircle,
                   theme.colorError,
@@ -242,7 +248,7 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
               Expanded(
                 child: _buildStatItem(
                   theme,
-                  'Cảnh báo',
+                  LKey.dataManagementImportValidationSummaryWarnings.tr(),
                   result.warnings.length.toString(),
                   HugeIcons.strokeRoundedAlert02,
                   theme.colorTextSupportBlue,
@@ -287,7 +293,7 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
   Widget _buildErrorSection(AppThemeData theme) {
     return _buildIssueSection(
       theme,
-      'Lỗi cần sửa',
+      LKey.dataManagementImportValidationErrorsTitle.tr(),
       result.errors,
       theme.colorError,
       HugeIcons.strokeRoundedAlert02,
@@ -297,7 +303,7 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
   Widget _buildWarningSection(AppThemeData theme) {
     return _buildIssueSection(
       theme,
-      'Cảnh báo',
+      LKey.dataManagementImportValidationWarningsTitle.tr(),
       result.warnings,
       theme.colorTextSupportBlue,
       HugeIcons.strokeRoundedInformationCircle,
@@ -405,13 +411,14 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
     }
   }
 
-  String _getStatusText() {
+  String _getStatusText(BuildContext context) {
+    String t(String key) => key.tr(context: context);
     if (result.isValid && !result.hasWarnings) {
-      return 'Dữ liệu hợp lệ, sẵn sàng nhập';
+      return t(LKey.dataManagementImportValidationStatusSuccess);
     } else if (result.isValid && result.hasWarnings) {
-      return 'Dữ liệu hợp lệ nhưng có cảnh báo';
+      return t(LKey.dataManagementImportValidationStatusWarning);
     } else {
-      return 'Dữ liệu có lỗi cần sửa';
+      return t(LKey.dataManagementImportValidationStatusError);
     }
   }
 
@@ -425,7 +432,7 @@ class DataValidationResultDialog extends StatelessWidget with ShowDialog<bool> {
   }) async {
     final result_ = await DataValidationResultDialog(
       result: result,
-      title: title ?? 'Kiểm tra dữ liệu',
+      title: title ?? LKey.dataManagementImportValidationTitle.tr(context: context),
       onProceedImport: onProceedImport,
       barrierDismissible: barrierDismissible,
     ).show(context, barrierDismissible: barrierDismissible);

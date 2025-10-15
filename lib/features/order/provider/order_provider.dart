@@ -6,6 +6,7 @@ import '../../../domain/index.dart';
 import '../../../domain/repositories/order/order_repository.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../provider/index.dart';
+import '../../../resources/index.dart';
 import 'order_list_provider.dart';
 
 part 'order_provider.freezed.dart';
@@ -69,7 +70,7 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
 
     state = const OrderState(orderItems: {});
 
-    showSuccess('Tạo đơn hàng thành công');
+    showSuccess(LKey.orderCreateSuccess.tr());
   }
 
   Future saveDraft() async {
@@ -99,10 +100,10 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
 
       hideLoading();
       state = const OrderState(orderItems: {});
-      showSuccess('Lưu nháp đơn hàng thành công');
+      showSuccess(LKey.orderDraftSuccess.tr());
     }).onError((error, st) {
       hideLoading();
-      showError('Lỗi khi lưu nháp đơn hàng');
+      showError(LKey.orderDraftError.tr());
       log('create draft error', error: error, stackTrace: st);
     });
   }
@@ -238,7 +239,7 @@ class OrderDetail extends _$OrderDetail with CommonProvider<OrderState> {
 
     hideLoading();
 
-    showSuccess('Tạo đơn hàng thành công');
+    showSuccess(LKey.orderCreateSuccess.tr());
   }
 
   Future completeOrder() async {
@@ -251,7 +252,11 @@ class OrderDetail extends _$OrderDetail with CommonProvider<OrderState> {
 
     hideLoading();
 
-    showSuccess('Chúc mừng bạn đã hoàn thành đơn hàng #${state.order!.id}');
+    showSuccess(
+      LKey.orderCompleteSuccess.tr(
+        namedArgs: {'orderId': '${state.order!.id}'},
+      ),
+    );
   }
 
   Future cancelOrder() async {
@@ -264,7 +269,11 @@ class OrderDetail extends _$OrderDetail with CommonProvider<OrderState> {
 
     hideLoading();
 
-    showSuccess('Hủy đơn hàng thành công đơn #${state.order!.id}');
+    showSuccess(
+      LKey.orderCancelSuccess.tr(
+        namedArgs: {'orderId': '${state.order!.id}'},
+      ),
+    );
   }
 }
 

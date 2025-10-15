@@ -131,14 +131,15 @@ class UpdateProductRepositoryImpl implements UpdateProductRepository {
   }) async {
     final existProduct = await _productRepository.read(productId);
     if (quantity <= 0) {
-      throw ValidationException('Số lượng bổ sung phải lớn hơn 0.');
+      throw ValidationException('Refill quantity must be greater than 0.');
     }
 
     if (allocations.isNotEmpty) {
       final allocatedQuantity =
           allocations.fold<int>(0, (sum, allocation) => sum + allocation.quantity);
       if (allocatedQuantity != quantity) {
-        throw ValidationException('Số lượng lô không khớp với số lượng cần hoàn.');
+        throw ValidationException(
+            'Allocated lot quantity does not match the requested refill amount.');
       }
 
       await _inventoryLotService.restoreAllocations(
@@ -152,7 +153,7 @@ class UpdateProductRepositoryImpl implements UpdateProductRepository {
 
     if (existProduct.enableExpiryTracking) {
       throw ValidationException(
-          'Vui lòng điều chỉnh số lượng theo từng lô đối với sản phẩm đang quản lý hạn sử dụng.');
+          'Please adjust quantities per lot for products with expiry tracking enabled.');
     }
 
     final updatedProduct = await _productRepository.update(
@@ -175,13 +176,14 @@ class UpdateProductRepositoryImpl implements UpdateProductRepository {
   Future<StockDeductionResult> deductStock(
       int productId, int quantity, TransactionCategory category) async {
     if (quantity <= 0) {
-      throw ValidationException('Số lượng trừ phải lớn hơn 0.');
+      throw ValidationException('Deduction quantity must be greater than 0.');
     }
 
     final existProduct = await _productRepository.read(productId);
 
     if (quantity > existProduct.quantity) {
-      throw ValidationException('Số lượng cần trừ vượt quá tồn kho hiện có.');
+      throw ValidationException(
+          'Requested deduction exceeds the current stock quantity.');
     }
 
     if (existProduct.enableExpiryTracking) {

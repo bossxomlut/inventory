@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/helpers/double_utils.dart';
 import '../../../core/index.dart';
 import '../../../domain/entities/report/dashboard_chart.dart';
+import '../../../resources/index.dart';
 import '../../../shared_widgets/box.dart';
 import 'dashboard_chart_container.dart';
 import 'full_screen_chart_page.dart';
@@ -15,34 +16,42 @@ class DashboardChartsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
+    final revenueByDayTitle = t(LKey.reportChartRevenueByDay);
+    final revenueByCategoryTitle = t(LKey.reportChartRevenueByCategory);
+    final topProductsTitle = t(LKey.reportChartTopSellingProducts);
+
     return Column(
       children: [
         DashboardChartContainer(
-          title: "Doanh thu theo ngày",
-          chart: AspectRatio(aspectRatio: 4 / 3, child: RevenueLineChart(data: data.revenueByDay)),
+          title: revenueByDayTitle,
+          chart: AspectRatio(
+              aspectRatio: 4 / 3,
+              child: RevenueLineChart(data: data.revenueByDay)),
           onExpand: () {
             FullScreenChartPage.show(
               context,
-              title: "Doanh thu theo ngày",
+              title: revenueByDayTitle,
               chart: RevenueLineChart(data: data.revenueByDay),
             );
           },
         ),
         const SizedBox(height: 12),
         DashboardChartContainer(
-          title: "Cơ cấu doanh thu theo nhóm hàng",
+          title: revenueByCategoryTitle,
           chart: RevenueCategoryPieChart(data: data.revenueByCategory),
           onExpand: () {
             FullScreenChartPage.show(
               context,
-              title: "Cơ cấu doanh thu theo nhóm hàng",
+              title: revenueByCategoryTitle,
               chart: RevenueCategoryPieChart(data: data.revenueByCategory),
             );
           },
         ),
         const SizedBox(height: 12),
         DashboardChartContainer(
-          title: "Top 5 sản phẩm bán chạy",
+          title: topProductsTitle,
           chart: AspectRatio(
             aspectRatio: 1,
             child: TopProductsBarChart(data: data.topSellingProducts),
@@ -50,7 +59,7 @@ class DashboardChartsWidget extends StatelessWidget {
           onExpand: () {
             FullScreenChartPage.show(
               context,
-              title: "Top 5 sản phẩm bán chạy",
+              title: topProductsTitle,
               chart: TopProductsBarChart(data: data.topSellingProducts),
             );
           },
@@ -99,8 +108,10 @@ class RevenueLineChart extends StatelessWidget {
               },
             ),
           ),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         lineBarsData: [
           LineChartBarData(
@@ -146,9 +157,12 @@ class TopProductsBarChart extends StatelessWidget {
                 leftTitles: const AxisTitles(
                   sideTitles: SideTitles(showTitles: true),
                 ),
-                bottomTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                bottomTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
               ),
               barGroups: data.asMap().entries.map((e) {
                 return BarChartGroupData(
@@ -158,7 +172,9 @@ class TopProductsBarChart extends StatelessWidget {
                       toY: e.value.quantitySold.toDouble(),
                       color: e.value.productName.colorFromString,
                       width: 20,
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(4),
+                          topRight: Radius.circular(4)),
                     ),
                   ],
                 );
@@ -246,8 +262,10 @@ class RevenueCategoryPieChart extends StatelessWidget {
                         child: Row(
                           children: [
                             Flexible(
-                              child: LayoutBuilder(builder: (context, constraints) {
-                                final widthPercentage = (data[i].percentage / 100).clamp(0.0, 1.0);
+                              child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                final widthPercentage =
+                                    (data[i].percentage / 100).clamp(0.0, 1.0);
                                 return AnimatedFractionallySizedBox(
                                   duration: const Duration(milliseconds: 300),
                                   widthFactor: widthPercentage,
@@ -255,10 +273,13 @@ class RevenueCategoryPieChart extends StatelessWidget {
                                     height: 40,
                                     alignment: Alignment.centerLeft,
                                     decoration: BoxDecoration(
-                                      color: theme.colorScheme.secondaryContainer,
+                                      color:
+                                          theme.colorScheme.secondaryContainer,
                                       border: Border(
                                         right: BorderSide(
-                                          color: data[i].categoryName.colorFromString,
+                                          color: data[i]
+                                              .categoryName
+                                              .colorFromString,
                                           width: 2,
                                         ),
                                       ),
@@ -299,7 +320,8 @@ class BubbleCategoryChart extends StatelessWidget {
     }
 
     // Lấy top 3 theo percentage
-    final topData = [...data]..sort((a, b) => b.percentage.compareTo(a.percentage));
+    final topData = [...data]
+      ..sort((a, b) => b.percentage.compareTo(a.percentage));
     final top3 = topData.take(3).toList();
 
     final screenWidth = MediaQuery.of(context).size.width;

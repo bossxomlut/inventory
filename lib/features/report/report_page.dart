@@ -25,15 +25,15 @@ class ReportPage extends StatefulWidget {
 class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<String> tabs = [
-    'Tổng quan',
-    'Đơn hàng',
-    'Tồn kho',
+  final List<String> tabKeys = const [
+    LKey.reportTabOverview,
+    LKey.reportTabOrders,
+    LKey.reportTabInventory,
   ];
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: tabs.length, vsync: this);
+    _tabController = TabController(length: tabKeys.length, vsync: this);
   }
 
   @override
@@ -44,16 +44,17 @@ class _ReportPageState extends State<ReportPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.appTheme;
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Báo cáo',
+        title: t(LKey.reportPageTitle),
         // bottom: TabBar(
         //   labelStyle: theme.textMedium15Default.copyWith(color: Colors.white),
         //   labelColor: Colors.white,
         //   unselectedLabelColor: Colors.white70,
         //   controller: _tabController,
-        //   tabs: tabs.map((e) => Tab(text: e)).toList(),
+        //   tabs: tabKeys.map((key) => Tab(text: t(key))).toList(),
         //   isScrollable: true,
         //   tabAlignment: TabAlignment.start,
         // ),
@@ -83,9 +84,11 @@ class _OverviewContentState extends ConsumerState<OverviewContent> {
 
   DateTimeRange? customDateRange;
 
-  DateTime get startDate => selectedFilter.startDate ?? customDateRange?.start ?? DateTime.now();
+  DateTime get startDate =>
+      selectedFilter.startDate ?? customDateRange?.start ?? DateTime.now();
 
-  DateTime get endDate => selectedFilter.endDate ?? customDateRange?.end ?? DateTime.now();
+  DateTime get endDate =>
+      selectedFilter.endDate ?? customDateRange?.end ?? DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -103,18 +106,21 @@ class _OverviewContentState extends ConsumerState<OverviewContent> {
                 case TimeFilterType.custom:
                   showDateRangePicker(
                     context: context,
+                    locale: context.locale,
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
                     initialDateRange: customDateRange ??
                         DateTimeRange(
-                          start: DateTime.now().subtract(const Duration(days: 7)),
+                          start:
+                              DateTime.now().subtract(const Duration(days: 7)),
                           end: DateTime.now(),
                         ),
                   ).then((pickedRange) {
                     if (pickedRange != null) {
                       setState(() {
                         selectedFilter = value;
-                        final start = DateTimeUtils.getOnlyDate(pickedRange.start);
+                        final start =
+                            DateTimeUtils.getOnlyDate(pickedRange.start);
                         final end = DateTimeUtils.getEndOfDay(pickedRange.end);
 
                         customDateRange = DateTimeRange(start: start, end: end);
@@ -166,8 +172,10 @@ class DashboardWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final overviewAsync = ref.watch(dashboardOverviewProvider(DateTimeRange(start: startDate, end: endDate)));
-    final theme = Theme.of(context);
+    final overviewAsync = ref.watch(dashboardOverviewProvider(
+        DateTimeRange(start: startDate, end: endDate)));
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -184,23 +192,24 @@ class DashboardWidget extends ConsumerWidget {
               padding: EdgeInsets.zero,
               children: [
                 DashboardSummaryWidget(
-                  title: "Doanh thu",
+                  title: t(LKey.reportSummaryRevenue),
                   value: "${overview.todayRevenue.value.priceFormat()}",
                   difference: overview.todayRevenue.difference,
                 ),
                 DashboardSummaryWidget(
-                  title: "Tổng đơn hàng",
+                  title: t(LKey.reportSummaryTotalOrders),
                   value: "${overview.totalOrders.value.displayFormat()}",
                   difference: overview.totalOrders.difference,
                 ),
                 DashboardSummaryWidget(
-                  title: "Sản phẩm đã bán",
+                  title: t(LKey.reportSummaryProductsSold),
                   value: "${overview.totalProductsSold.value.displayFormat()}",
                   difference: overview.totalProductsSold.difference,
                 ),
                 DashboardSummaryWidget(
-                  title: "Số lượng đã bán",
-                  value: "${overview.totalProductQuantitySold.value.displayFormat()}",
+                  title: t(LKey.reportSummaryQuantitySold),
+                  value:
+                      "${overview.totalProductQuantitySold.value.displayFormat()}",
                   difference: overview.totalProductQuantitySold.difference,
                 ),
               ],
@@ -217,29 +226,37 @@ class DashboardWidget extends ConsumerWidget {
               padding: EdgeInsets.zero,
               children: [
                 DashboardSummaryWidget(
-                  title: "Doanh thu",
+                  title: t(LKey.reportSummaryRevenue),
                   value: 0.0.priceFormat(),
                   difference: DifferenceEntity.empty(),
                 ),
                 DashboardSummaryWidget(
-                  title: "Tổng đơn hàng",
+                  title: t(LKey.reportSummaryTotalOrders),
                   value: 0.0.displayFormat(),
                   difference: DifferenceEntity.empty(),
                 ),
                 DashboardSummaryWidget(
-                  title: "Sản phẩm đã bán",
+                  title: t(LKey.reportSummaryProductsSold),
                   value: 0.0.displayFormat(),
                   difference: DifferenceEntity.empty(),
                 ),
                 DashboardSummaryWidget(
-                  title: "Số lượng đã bán",
+                  title: t(LKey.reportSummaryQuantitySold),
                   value: 0.0.displayFormat(),
                   difference: DifferenceEntity.empty(),
                 ),
               ],
             ),
           ),
-          error: (e, _) => Center(child: Text("Error: $e")),
+          error: (e, _) => Center(
+            child: Text(
+              t(
+                LKey.commonErrorWithMessage,
+                namedArgs: {'error': '$e'},
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ],
     );
@@ -263,8 +280,15 @@ class DashboardWidget2 extends ConsumerWidget {
         // Charts
         chartsAsync.when(
           data: (charts) => DashboardChartsWidget(data: charts),
-          loading: () => DashboardChartsWidget(data: DashboardChartData.empty()),
-          error: (e, _) => Text("Error: $e"),
+          loading: () =>
+              DashboardChartsWidget(data: DashboardChartData.empty()),
+          error: (e, _) => Text(
+            LKey.commonErrorWithMessage.tr(
+              context: context,
+              namedArgs: {'error': '$e'},
+            ),
+            textAlign: TextAlign.center,
+          ),
         ),
       ],
     );

@@ -47,7 +47,7 @@ class InventoryLotRepositoryImpl extends InventoryLotRepository
     final product = await _productCollection.get(lot.productId);
     if (product == null) {
       throw NotFoundException(
-          'Không tìm thấy sản phẩm với mã ${lot.productId}');
+          'No product found with id ${lot.productId}.');
     }
     lot.product.value = product;
     await lot.product.save();
@@ -72,7 +72,7 @@ class InventoryLotRepositoryImpl extends InventoryLotRepository
   Future<InventoryLot> update(InventoryLot item) async {
     if (item.id == undefinedId) {
       throw ValidationException(
-          'Không thể cập nhật lô hàng chưa có mã định danh.');
+          'Cannot update an inventory lot before it has an identifier.');
     }
 
     final lot = updateNewItem(item)
@@ -120,7 +120,7 @@ class InventoryLotRepositoryImpl extends InventoryLotRepository
     if (error is IsarError &&
         error.message.contains('Unique index violation')) {
       throw DuplicateEntryException(
-          'Đã tồn tại lô với cùng ngày hết hạn và ngày sản xuất cho sản phẩm này.');
+          'A lot with the same expiry and manufacture date already exists for this product.');
     }
     throw error;
   }

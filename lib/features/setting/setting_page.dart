@@ -47,8 +47,8 @@ class SettingPage extends WidgetByDeviceTemplate {
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(
-                'Quản lý dữ liệu',
+              child: LText(
+                LKey.settingDataManagement,
                 style: theme.headingSemibold20Default.copyWith(
                   color: theme.colorTextSubtle,
                   fontSize: 18,
@@ -61,7 +61,7 @@ class SettingPage extends WidgetByDeviceTemplate {
                 children: [
                   ListTile(
                     leading: const Icon(HugeIcons.strokeRoundedDatabaseAdd),
-                    title: const Text('Tạo từ dữ liệu mẫu'),
+                    title: const LText(LKey.settingCreateFromSample),
                     onTap: () {
                       appRouter.goToCreateSampleData();
                     },
@@ -77,7 +77,7 @@ class SettingPage extends WidgetByDeviceTemplate {
                   // const _Divider(),
                   ListTile(
                     leading: const Icon(HugeIcons.strokeRoundedDatabaseExport),
-                    title: const Text('Xuất dữ liệu'),
+                    title: const LText(LKey.settingExportData),
                     onTap: () {
                       appRouter.goToExportData();
                     },
@@ -85,7 +85,7 @@ class SettingPage extends WidgetByDeviceTemplate {
                   const _Divider(),
                   ListTile(
                     leading: const Icon(HugeIcons.strokeRoundedDatabaseSetting),
-                    title: const Text('Xóa dữ liệu'),
+                    title: const LText(LKey.settingDeleteData),
                     onTap: () {
                       appRouter.goToDeleteData();
                     },
@@ -97,8 +97,8 @@ class SettingPage extends WidgetByDeviceTemplate {
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              'Về ứng dụng',
+            child: LText(
+              LKey.settingAboutApp,
               style: theme.headingSemibold20Default.copyWith(
                 color: theme.colorTextSubtle,
                 fontSize: 18,
@@ -111,14 +111,21 @@ class SettingPage extends WidgetByDeviceTemplate {
               children: [
                 ListTile(
                   leading: const Icon(HugeIcons.strokeRoundedHelpCircle),
-                  title: const Text('Hướng dẫn sử dụng'),
+                  title: const LText(LKey.settingUserGuide),
                   onTap: () {},
                 ),
                 const _Divider(),
                 ListTile(
+                  leading: const Icon(Icons.language),
+                  title: const LText(LKey.settingLanguage),
+                  subtitle: Text(_languageDisplayName(context, context.locale)),
+                  onTap: () => _showLanguagePicker(context),
+                ),
+                const _Divider(),
+                ListTile(
                   leading: const Icon(Icons.email_outlined),
-                  title: const Text('Gửi phản hồi'),
-                  subtitle: const Text('Báo lỗi hoặc đề xuất tính năng mới'),
+                  title: const LText(LKey.settingFeedback),
+                  subtitle: const LText(LKey.settingFeedbackSubtitle),
                   onTap: () => appRouter.push(const FeedbackRoute()),
                 ),
                 const _Divider(),
@@ -135,7 +142,7 @@ class SettingPage extends WidgetByDeviceTemplate {
                       }
                       return ListTile(
                         leading: const Icon(HugeIcons.strokeRoundedStar),
-                        title: const Text('Đánh giá ứng dụng'),
+                        title: const LText(LKey.settingReviewApp),
                         onTap: () async {
                           inAppReviewUtil.openStoreListing();
                         },
@@ -147,8 +154,8 @@ class SettingPage extends WidgetByDeviceTemplate {
                 if (canAccessDataManagement) ...[
                   ListTile(
                     leading: const Icon(HugeIcons.strokeRoundedRefresh),
-                    title: const Text('Xem lại hướng dẫn'),
-                    subtitle: const Text('Hiển thị lại màn hình giới thiệu'),
+                    title: const LText(LKey.settingReplayOnboarding),
+                    subtitle: const LText(LKey.settingReplayOnboardingSubtitle),
                     onTap: () => _resetOnboarding(context, ref),
                   ),
                   const _Divider(),
@@ -224,7 +231,7 @@ class SettingPage extends WidgetByDeviceTemplate {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'Phiên bản: ${snapshot.data?.version ?? '---'}',
+                      '${LKey.appVersion.tr(context: context)}: ${snapshot.data?.version ?? '---'}',
                       style: theme.textRegular13Subtle,
                     ),
                   ),
@@ -235,6 +242,15 @@ class SettingPage extends WidgetByDeviceTemplate {
     );
   }
 
+  String _languageDisplayName(BuildContext context, Locale locale) {
+    switch (locale.languageCode) {
+      case 'vi':
+        return LKey.languageVietnamese.tr(context: context);
+      default:
+        return LKey.languageEnglish.tr(context: context);
+    }
+  }
+
   Future<void> _resetOnboarding(BuildContext context, WidgetRef ref) async {
     try {
       final onboardingService = ref.read(onboardingServiceProvider);
@@ -242,9 +258,9 @@ class SettingPage extends WidgetByDeviceTemplate {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Đã reset thành công. Khởi động lại ứng dụng để xem lại hướng dẫn.'),
+          SnackBar(
+            content:
+                Text(LKey.settingResetOnboardingSuccess.tr(context: context)),
             backgroundColor: Colors.green,
           ),
         );
@@ -252,13 +268,35 @@ class SettingPage extends WidgetByDeviceTemplate {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Có lỗi xảy ra khi reset hướng dẫn.'),
+          SnackBar(
+            content:
+                Text(LKey.settingResetOnboardingError.tr(context: context)),
             backgroundColor: Colors.red,
           ),
         );
       }
     }
+  }
+
+  Future<void> _showLanguagePicker(BuildContext context) async {
+    const options = <_LanguageOption>[
+      _LanguageOption(
+          locale: Locale('en', 'US'), nameKey: LKey.languageEnglish),
+      _LanguageOption(
+          locale: Locale('vi', 'VN'), nameKey: LKey.languageVietnamese),
+    ];
+
+    final selectedLocale = context.locale;
+    final result = await _LanguagePickerSheet(
+      options: options,
+      selectedLocale: selectedLocale,
+    ).show(context);
+
+    if (result == null || result.languageCode == selectedLocale.languageCode) {
+      return;
+    }
+
+    await context.setLocale(result);
   }
 }
 
@@ -277,4 +315,60 @@ class _Divider extends StatelessWidget {
       ),
     );
   }
+}
+
+class _LanguagePickerSheet extends StatelessWidget
+    with ShowBottomSheet<Locale> {
+  const _LanguagePickerSheet({
+    required this.options,
+    required this.selectedLocale,
+  });
+
+  final List<_LanguageOption> options;
+  final Locale selectedLocale;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                LKey.settingLanguage.tr(context: context),
+                style: theme.headingSemibold20Default,
+              ),
+            ),
+            const Divider(height: 0),
+            ...options.map(
+              (option) => ListTile(
+                title: Text(option.nameKey.tr(context: context)),
+                trailing:
+                    option.locale.languageCode == selectedLocale.languageCode
+                        ? const Icon(Icons.check)
+                        : null,
+                onTap: () => Navigator.of(context).pop(option.locale),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguageOption {
+  const _LanguageOption({
+    required this.locale,
+    required this.nameKey,
+  });
+
+  final Locale locale;
+  final String nameKey;
 }

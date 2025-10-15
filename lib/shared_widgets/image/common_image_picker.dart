@@ -35,9 +35,9 @@ class CommonImagePicker extends StatelessWidget {
     this.onImageRemoved,
     this.height = 100.0,
     this.maxImages,
-    this.cameraLabel = 'Máy ảnh',
-    this.galleryLabel = 'Thư viện',
-    this.productImagesLabel = 'Sản phẩm',
+    this.cameraLabel,
+    this.galleryLabel,
+    this.productImagesLabel,
     this.showRemoveButton = true,
     this.layout = ImagePickerLayout.grid,
     this.showOptions = true,
@@ -67,13 +67,13 @@ class CommonImagePicker extends StatelessWidget {
   final int? maxImages;
 
   /// Label for camera option
-  final String cameraLabel;
+  final String? cameraLabel;
 
   /// Label for gallery option
-  final String galleryLabel;
+  final String? galleryLabel;
 
   /// Label for product images option
-  final String productImagesLabel;
+  final String? productImagesLabel;
 
   /// Whether to show remove button on images
   final bool showRemoveButton;
@@ -94,7 +94,8 @@ class CommonImagePicker extends StatelessWidget {
   final bool showProductLibrary;
 
   bool get _hasImages => images != null && images!.isNotEmpty;
-  bool get _canAddMoreImages => maxImages == null || (images?.length ?? 0) < maxImages!;
+  bool get _canAddMoreImages =>
+      maxImages == null || (images?.length ?? 0) < maxImages!;
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +113,8 @@ class CommonImagePicker extends StatelessWidget {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: images!.length,
-                itemBuilder: (context, index) => _buildImageItem(context, images![index], theme),
+                itemBuilder: (context, index) =>
+                    _buildImageItem(context, images![index], theme),
                 separatorBuilder: (context, index) => const Gap(8),
               ),
             ),
@@ -132,7 +134,7 @@ class CommonImagePicker extends StatelessWidget {
                 child: _buildOptionButton(
                   context: context,
                   icon: HugeIcons.strokeRoundedCamera02,
-                  label: cameraLabel,
+                  label: _cameraText(context),
                   onTap: () => _pickFromCamera(context),
                   theme: theme,
                 ),
@@ -142,7 +144,7 @@ class CommonImagePicker extends StatelessWidget {
                 child: _buildOptionButton(
                   context: context,
                   icon: HugeIcons.strokeRoundedImage03,
-                  label: galleryLabel,
+                  label: _galleryText(context),
                   onTap: () => _pickFromGallery(context),
                   theme: theme,
                 ),
@@ -152,7 +154,7 @@ class CommonImagePicker extends StatelessWidget {
                 child: _buildOptionButton(
                   context: context,
                   icon: HugeIcons.strokeRoundedGooglePhotos,
-                  label: productImagesLabel,
+                  label: _productImagesText(context),
                   onTap: () => _pickFromProductImages(context),
                   theme: theme,
                 ),
@@ -185,7 +187,7 @@ class CommonImagePicker extends StatelessWidget {
             child: _buildOptionButton(
               context: context,
               icon: HugeIcons.strokeRoundedCamera02,
-              label: cameraLabel,
+              label: _cameraText(context),
               onTap: () => _pickFromCamera(context),
               theme: theme,
             ),
@@ -195,7 +197,7 @@ class CommonImagePicker extends StatelessWidget {
             child: _buildOptionButton(
               context: context,
               icon: HugeIcons.strokeRoundedImage03,
-              label: galleryLabel,
+              label: _galleryText(context),
               onTap: () => _pickFromGallery(context),
               theme: theme,
             ),
@@ -205,7 +207,7 @@ class CommonImagePicker extends StatelessWidget {
             child: _buildOptionButton(
               context: context,
               icon: HugeIcons.strokeRoundedGooglePhotos,
-              label: productImagesLabel,
+              label: _productImagesText(context),
               onTap: () => _pickFromProductImages(context),
               theme: theme,
             ),
@@ -301,14 +303,18 @@ class CommonImagePicker extends StatelessWidget {
   }
 
   // Build an image item with an optional remove button
-  Widget _buildImageItem(BuildContext context, ImageStorageModel image, AppThemeData theme) {
+  Widget _buildImageItem(
+      BuildContext context, ImageStorageModel image, AppThemeData theme) {
     final index = images?.indexOf(image) ?? 0;
 
     return GestureDetector(
       onTap: () {
         if (images != null && images!.isNotEmpty) {
           // Navigate to ImagePresentView with the images
-          final validPaths = images!.map((img) => img.path ?? '').where((path) => path.isNotEmpty).toList();
+          final validPaths = images!
+              .map((img) => img.path ?? '')
+              .where((path) => path.isNotEmpty)
+              .toList();
 
           if (validPaths.isEmpty) return;
 
@@ -327,7 +333,8 @@ class CommonImagePicker extends StatelessWidget {
                     // Try to find the original image with this path
                     final originalImage = images!.firstWhere(
                       (img) => img.path == path,
-                      orElse: () => ImageStorageModel(id: undefinedId, path: path),
+                      orElse: () =>
+                          ImageStorageModel(id: undefinedId, path: path),
                     );
                     updatedImages.add(originalImage);
                   }
@@ -398,9 +405,9 @@ class CommonImagePicker extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       builder: (context) => _ImageSourceSelector(
-        cameraLabel: cameraLabel,
-        galleryLabel: galleryLabel,
-        productImagesLabel: productImagesLabel,
+        cameraLabel: _cameraText(context),
+        galleryLabel: _galleryText(context),
+        productImagesLabel: _productImagesText(context),
         onCameraSelected: () {
           Navigator.pop(context);
           _pickFromCamera(context);
@@ -417,6 +424,15 @@ class CommonImagePicker extends StatelessWidget {
     );
   }
 
+  String _cameraText(BuildContext context) =>
+      cameraLabel ?? LKey.imagePickerCamera.tr(context: context);
+
+  String _galleryText(BuildContext context) =>
+      galleryLabel ?? LKey.imagePickerGallery.tr(context: context);
+
+  String _productImagesText(BuildContext context) =>
+      productImagesLabel ?? LKey.imagePickerProduct.tr(context: context);
+
   // Pick image from camera
   void _pickFromCamera(BuildContext context) {
     // Ensure keyboard is dismissed
@@ -424,7 +440,9 @@ class CommonImagePicker extends StatelessWidget {
 
     CameraView.show(context).then((files) {
       if (files != null && files.isNotEmpty) {
-        final images = files.map((file) => ImageStorageModel(id: undefinedId, path: file.path)).toList();
+        final images = files
+            .map((file) => ImageStorageModel(id: undefinedId, path: file.path))
+            .toList();
         onImagesSelected(images);
       }
     });
@@ -437,7 +455,9 @@ class CommonImagePicker extends StatelessWidget {
 
     AppFilePicker.image().pickMultiFiles().then((files) {
       if (files != null && files.isNotEmpty) {
-        final images = files.map((file) => ImageStorageModel(id: undefinedId, path: file.path)).toList();
+        final images = files
+            .map((file) => ImageStorageModel(id: undefinedId, path: file.path))
+            .toList();
         onImagesSelected(images);
       }
     });
@@ -487,7 +507,7 @@ class _ImageSourceSelector extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Chọn nguồn ảnh',
+              LKey.imagePickerSourceTitle.tr(context: context),
               style: theme.headingSemibold20Default,
             ),
             const Gap(16),
@@ -617,7 +637,8 @@ class Base64ImageDisplay extends StatelessWidget {
                   height: 30,
                   decoration: const BoxDecoration(
                     color: Color(0x66000000),
-                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8)),
+                    borderRadius:
+                        BorderRadius.only(bottomLeft: Radius.circular(8)),
                   ),
                   child: const Icon(
                     Icons.close,

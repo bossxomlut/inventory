@@ -15,7 +15,12 @@ class AuthRepositoryImpl implements AuthRepository {
     return _isar.writeTxn(
       () async {
         final hashedPassword = hashPassword(password);
-        final foundUser = await _collection.filter().accountEqualTo(account).and().passwordEqualTo(hashedPassword).findFirst();
+        final foundUser = await _collection
+            .filter()
+            .accountEqualTo(account)
+            .and()
+            .passwordEqualTo(hashedPassword)
+            .findFirst();
 
         if (foundUser == null) {
           throw Exception('Invalid credentials');
@@ -49,7 +54,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
     return _isar.writeTxnSync(() {
       //find if user already exists
-      final existingUser = _collection.filter().accountEqualTo(account).findFirstSync();
+      final existingUser =
+          _collection.filter().accountEqualTo(account).findFirstSync();
 
       if (existingUser != null) {
         throw Exception('User already exists');
@@ -62,7 +68,9 @@ class AuthRepositoryImpl implements AuthRepository {
         ..role = role.index
         ..securityQuestionId = securityQuestionId
         ..securityQuestionAnswer = securityQuestionAnswer
-        ..isActive = (role == UserRole.admin) // Admin luôn active, user cần được kích hoạt
+        ..isActive = (role ==
+            UserRole
+                .admin) // Admin accounts remain active; user accounts require activation
         ..createdAt = DateTime.now();
 
       _collection.putSync(newUser);
@@ -83,15 +91,24 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<bool> checkExistAdmin() {
     return _isar.txn(() async {
-      final foundUser = await _collection.filter().roleEqualTo(UserRole.admin.index).findFirst();
+      final foundUser = await _collection
+          .filter()
+          .roleEqualTo(UserRole.admin.index)
+          .findFirst();
       return foundUser != null;
     });
   }
 
   @override
-  Future<bool> checkSecurityQuestion(String account, int securityQuestionId, String answer) {
+  Future<bool> checkSecurityQuestion(
+      String account, int securityQuestionId, String answer) {
     return _isar.txn(() async {
-      final foundUser = await _collection.filter().accountEqualTo(account).securityQuestionIdEqualTo(securityQuestionId).securityQuestionAnswerEqualTo(answer).findFirst();
+      final foundUser = await _collection
+          .filter()
+          .accountEqualTo(account)
+          .securityQuestionIdEqualTo(securityQuestionId)
+          .securityQuestionAnswerEqualTo(answer)
+          .findFirst();
 
       return foundUser != null;
     });
@@ -100,7 +117,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> updatePassword(String account, String password) async {
     await _isar.writeTxn(() async {
-      final foundUser = await _collection.filter().accountEqualTo(account).findFirst();
+      final foundUser =
+          await _collection.filter().accountEqualTo(account).findFirst();
       if (foundUser == null) {
         throw Exception('User not found');
       }

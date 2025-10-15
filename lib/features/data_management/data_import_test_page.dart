@@ -4,6 +4,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:auto_route/auto_route.dart';
 
 import '../../provider/theme.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
 import '../../routes/app_router.dart';
 import 'services/index.dart';
@@ -15,10 +16,12 @@ class DataImportTestPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
+    String t(String key, {Map<String, String>? namedArgs}) =>
+        key.tr(context: context, namedArgs: namedArgs);
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Quản lý dữ liệu',
+        title: t(LKey.dataManagementImportTestTitle),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -41,14 +44,14 @@ class DataImportTestPage extends ConsumerWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Test giao diện mới',
+                          t(LKey.dataManagementImportTestSectionTitle),
                           style: theme.headingSemibold20Default,
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Thử nghiệm các giao diện thông báo mới cho quá trình nhập dữ liệu:',
+                      t(LKey.dataManagementImportTestSectionDescription),
                       style: theme.textRegular14Default,
                     ),
                   ],
@@ -61,8 +64,8 @@ class DataImportTestPage extends ConsumerWidget {
                 children: [
                   _buildTestCard(
                     context,
-                    'Test thành công hoàn toàn',
-                    'Hiển thị kết quả import thành công 100%',
+                    t(LKey.dataManagementImportTestSuccessFull),
+                    t(LKey.dataManagementImportTestSuccessFullDescription),
                     HugeIcons.strokeRoundedCheckmarkCircle02,
                     theme.colorTextSupportGreen,
                     () => _showSuccessfulImportDialog(context),
@@ -70,8 +73,8 @@ class DataImportTestPage extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _buildTestCard(
                     context,
-                    'Test thành công một phần',
-                    'Hiển thị kết quả import một phần có lỗi',
+                    t(LKey.dataManagementImportTestPartial),
+                    t(LKey.dataManagementImportTestPartialDescription),
                     HugeIcons.strokeRoundedAlert02,
                     theme.colorTextSupportBlue,
                     () => _showPartialSuccessDialog(context),
@@ -79,8 +82,8 @@ class DataImportTestPage extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _buildTestCard(
                     context,
-                    'Test thất bại hoàn toàn',
-                    'Hiển thị kết quả import thất bại',
+                    t(LKey.dataManagementImportTestFailed),
+                    t(LKey.dataManagementImportTestFailedDescription),
                     HugeIcons.strokeRoundedCancelCircle,
                     theme.colorError,
                     () => _showFailedImportDialog(context),
@@ -88,8 +91,8 @@ class DataImportTestPage extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _buildTestCard(
                     context,
-                    'Test validation thành công',
-                    'Hiển thị validation thành công',
+                    t(LKey.dataManagementImportTestValidationSuccess),
+                    t(LKey.dataManagementImportTestValidationSuccessDescription),
                     HugeIcons.strokeRoundedCheckmarkCircle02,
                     theme.colorTextSupportGreen,
                     () => _showValidationSuccessDialog(context),
@@ -97,8 +100,8 @@ class DataImportTestPage extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _buildTestCard(
                     context,
-                    'Test validation có cảnh báo',
-                    'Hiển thị validation có warnings',
+                    t(LKey.dataManagementImportTestValidationWarning),
+                    t(LKey.dataManagementImportTestValidationWarningDescription),
                     HugeIcons.strokeRoundedAlert02,
                     theme.colorTextSupportBlue,
                     () => _showValidationWarningDialog(context),
@@ -106,8 +109,8 @@ class DataImportTestPage extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _buildTestCard(
                     context,
-                    'Test validation có lỗi',
-                    'Hiển thị validation thất bại',
+                    t(LKey.dataManagementImportTestValidationError),
+                    t(LKey.dataManagementImportTestValidationErrorDescription),
                     HugeIcons.strokeRoundedCancelCircle,
                     theme.colorError,
                     () => _showValidationErrorDialog(context),
@@ -115,8 +118,8 @@ class DataImportTestPage extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _buildTestCard(
                     context,
-                    'Test import với validation',
-                    'Test toàn bộ flow từ validation đến import',
+                    t(LKey.dataManagementImportTestFlow),
+                    t(LKey.dataManagementImportTestFlowDescription),
                     HugeIcons.strokeRoundedFlow,
                     theme.colorPrimary,
                     () => _testFullImportFlow(context, ref),
@@ -139,7 +142,7 @@ class DataImportTestPage extends ConsumerWidget {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Quản lý xóa dữ liệu',
+                                t(LKey.dataManagementImportTestDeleteTitle),
                                 style: theme.headingSemibold20Default.copyWith(
                                   color: Colors.red.shade700,
                                 ),
@@ -148,7 +151,7 @@ class DataImportTestPage extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Chức năng xóa dữ liệu với xác nhận và thông báo:',
+                            t(LKey.dataManagementImportTestDeleteDescription),
                             style: theme.textRegular14Default.copyWith(
                               color: Colors.red.shade600,
                             ),
@@ -160,8 +163,8 @@ class DataImportTestPage extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _buildTestCard(
                     context,
-                    'Xem giao diện xóa dữ liệu',
-                    'Chuyển đến trang quản lý xóa dữ liệu',
+                    t(LKey.dataManagementImportTestDeleteNavigation),
+                    t(LKey.dataManagementImportTestDeleteNavigationDescription),
                     HugeIcons.strokeRoundedArrowRight02,
                     Colors.red.shade600,
                     () => _navigateToDeleteDataPage(context),

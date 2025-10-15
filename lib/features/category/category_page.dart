@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../domain/index.dart';
 import '../../provider/index.dart';
 import '../../provider/load_list.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
 import 'add_category.dart';
 import 'category_card.dart';
@@ -40,7 +41,7 @@ class CategoryPage extends HookConsumerWidget {
                 const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
-                  'Không thể tải quyền truy cập',
+                  LKey.permissionsLoadFailed.tr(context: context),
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -49,7 +50,7 @@ class CategoryPage extends HookConsumerWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref.refresh(currentUserPermissionsProvider),
-                  child: const Text('Thử lại'),
+                  child: Text(LKey.buttonRetry.tr(context: context)),
                 ),
               ],
             ),
@@ -59,13 +60,15 @@ class CategoryPage extends HookConsumerWidget {
       data: (permissions) {
         final canView = permissions.contains(PermissionKey.categoryView);
         if (!canView) {
-          return const Scaffold(
-            appBar: CustomAppBar(title: 'Danh mục'),
+          return Scaffold(
+            appBar: CustomAppBar(
+              title: LKey.categoryPageTitle.tr(context: context),
+            ),
             body: Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Bạn không có quyền xem danh sách danh mục.',
+                  LKey.categoryPagePermissionDenied.tr(context: context),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -97,7 +100,7 @@ class CategoryPage extends HookConsumerWidget {
                 final isNotEmpty = multiState.data.isNotEmpty;
 
                 return CustomAppBar(
-                  title: 'Danh mục',
+                  title: LKey.categoryPageTitle.tr(context: context),
                   leading: enable
                       ? IconButton(
                           onPressed: () {
@@ -122,7 +125,7 @@ class CategoryPage extends HookConsumerWidget {
                     if (!enable && canDelete)
                       IconButton(
                         icon: Text(
-                          'Chọn',
+                          LKey.buttonSelect.tr(context: context),
                           style: theme.textMedium13Default.copyWith(
                             color: Colors.white,
                           ),
@@ -143,9 +146,20 @@ class CategoryPage extends HookConsumerWidget {
           body: Builder(
             builder: (BuildContext context) {
               if (categories.hasError) {
-                return Center(child: Text('Lỗi: ${categories.error}'));
+                return Center(
+                  child: Text(
+                    LKey.commonErrorWithMessage.tr(
+                      context: context,
+                      namedArgs: {'error': '${categories.error}'},
+                    ),
+                  ),
+                );
               } else if (categories.data.isEmpty) {
-                return const Center(child: Text('Không tìm thấy danh mục nào.'));
+                return Center(
+                  child: Text(
+                    LKey.categoryPageEmpty.tr(context: context),
+                  ),
+                );
               }
 
               return ListView.builder(

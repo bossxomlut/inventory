@@ -20,6 +20,18 @@ abstract class LKey {
   static const String imagePickerGallery = 'imagePicker.gallery';
   static const String imagePickerProduct = 'imagePicker.product';
   static const String imagePickerSourceTitle = 'imagePicker.sourceTitle';
+  static const String scannerTitle = 'scanner.title';
+  static const String scannerCameraError = 'scanner.cameraError';
+  static const String scannerGallerySuccess = 'scanner.gallerySuccess';
+  static const String scannerGalleryFailure = 'scanner.galleryFailure';
+  static const String scannerTestTooltip = 'scanner.test.tooltip';
+  static const String scannerTestTitle = 'scanner.test.title';
+  static const String scannerTestInstruction = 'scanner.test.instruction';
+  static const String scannerTestInputLabel = 'scanner.test.inputLabel';
+  static const String scannerTestInputHint = 'scanner.test.inputHint';
+  static const String scannerTestAction = 'scanner.test.action';
+  static const String scannerScanningHint = 'scanner.scanningHint';
+  static const String scannerNoDisplayValue = 'scanner.noDisplayValue';
   //questions
   static const String addSecurityQuestion = 'question.addSecurityQuestion';
   static const String addSecurityAnswer = 'question.answer';

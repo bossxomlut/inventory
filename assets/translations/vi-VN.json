@@ -98,6 +98,22 @@
     "product": "Sản phẩm",
     "sourceTitle": "Chọn nguồn ảnh"
   },
+  "scanner": {
+    "title": "Quét mã vạch",
+    "cameraError": "Lỗi camera: {error}",
+    "gallerySuccess": "Đã tìm thấy mã vạch!",
+    "galleryFailure": "Không tìm thấy mã vạch!",
+    "scanningHint": "Quét mã vạch",
+    "noDisplayValue": "Không có giá trị hiển thị.",
+    "test": {
+      "tooltip": "Quét thử (Debug)",
+      "title": "Quét thử",
+      "instruction": "Nhập mã vạch để mô phỏng:",
+      "inputLabel": "Mã vạch",
+      "inputHint": "Nhập mã vạch...",
+      "action": "Quét"
+    }
+  },
   "onBoarding": {
     "next": "Tiếp theo",
     "skip": "Bỏ qua",

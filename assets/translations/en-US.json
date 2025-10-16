@@ -98,6 +98,22 @@
     "product": "Product images",
     "sourceTitle": "Choose image source"
   },
+  "scanner": {
+    "title": "Scan barcode",
+    "cameraError": "Camera error: {error}",
+    "gallerySuccess": "Barcode detected!",
+    "galleryFailure": "No barcode found.",
+    "scanningHint": "Scan a barcode",
+    "noDisplayValue": "No display value.",
+    "test": {
+      "tooltip": "Test Scan (Debug)",
+      "title": "Test Scan",
+      "instruction": "Enter a barcode to simulate:",
+      "inputLabel": "Barcode",
+      "inputHint": "Enter barcode...",
+      "action": "Scan"
+    }
+  },
   "onBoarding": {
     "next": "Next",
     "skip": "Skip",

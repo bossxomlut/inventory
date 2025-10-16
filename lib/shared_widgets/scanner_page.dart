@@ -21,15 +21,16 @@ class ScannerView extends StatefulWidget {
 
   static Future<void> scanBarcodePage(
     BuildContext context, {
-    String title = 'Quét mã vạch',
+    String? title,
     required Future<void> Function(Barcode barcode) onBarcodeScanned,
     bool autoStopCamera = false,
     bool singleScan = false, // New parameter for single scan
   }) {
+    final pageTitle = title ?? LKey.scannerTitle.tr(context: context);
     return Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          appBar: CustomAppBar(title: title),
+          appBar: CustomAppBar(title: pageTitle),
           body: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -39,7 +40,7 @@ class ScannerView extends StatefulWidget {
                   onBarcodeScanned: (Barcode value) {
                     return onBarcodeScanned(value);
                   },
-                  singleScan: false,
+                  singleScan: singleScan,
                 ),
               ),
               const AppDivider(),
@@ -165,7 +166,9 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
 
             final scannedBarcode = barcodeCapture.barcodes.first;
 
-            if (value.size.isEmpty || scannedBarcode.size.isEmpty || scannedBarcode.corners.isEmpty) {
+            if (value.size.isEmpty ||
+                scannedBarcode.size.isEmpty ||
+                scannedBarcode.corners.isEmpty) {
               return const SizedBox();
             }
 
@@ -187,7 +190,10 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
     return ValueListenableBuilder(
       valueListenable: controller,
       builder: (context, value, child) {
-        if (!value.isInitialized || !value.isRunning || value.error != null || value.size.isEmpty) {
+        if (!value.isInitialized ||
+            !value.isRunning ||
+            value.error != null ||
+            value.size.isEmpty) {
           return const SizedBox();
         }
 
@@ -210,7 +216,8 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
             final h = constraints.maxHeight - padding;
 
             final scanWindow = Rect.fromCenter(
-              center: Size(constraints.maxWidth, constraints.maxHeight).center(Offset.zero),
+              center: Size(constraints.maxWidth, constraints.maxHeight)
+                  .center(Offset.zero),
               width: w,
               height: h,
             );
@@ -231,7 +238,14 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
                     // }
                   },
                   errorBuilder: (context, error, _) {
-                    return ErrorWidget('Lỗi camera: $error');
+                    return Center(
+                      child: Text(
+                        LKey.scannerCameraError.tr(
+                          context: context,
+                          namedArgs: {'error': '$error'},
+                        ),
+                      ),
+                    );
                   },
                   fit: BoxFit.fitWidth,
                 ),
@@ -240,7 +254,9 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
                 ValueListenableBuilder(
                   valueListenable: controller,
                   builder: (context, value, child) {
-                    if (!value.isInitialized || !value.isRunning || value.error != null) {
+                    if (!value.isInitialized ||
+                        !value.isRunning ||
+                        value.error != null) {
                       return const SizedBox();
                     }
 
@@ -272,7 +288,8 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
               SwitchCameraButton(controller: controller),
               AnalyzeImageFromGalleryButton(controller: controller),
               // Debug test button
-              if (kDebugMode) TestScanButton(onTestScan: widget.onBarcodeScanned),
+              if (kDebugMode)
+                TestScanButton(onTestScan: widget.onBarcodeScanned),
             ],
           ),
         ),
@@ -384,12 +401,12 @@ class AnalyzeImageFromGalleryButton extends StatelessWidget {
         }
 
         final SnackBar snackbar = barcodes != null
-            ? const SnackBar(
-                content: Text('Đã tìm thấy mã vạch!'),
+            ? SnackBar(
+                content: Text(LKey.scannerGallerySuccess.tr(context: context)),
                 backgroundColor: Colors.green,
               )
-            : const SnackBar(
-                content: Text('Không tìm thấy mã vạch!'),
+            : SnackBar(
+                content: Text(LKey.scannerGalleryFailure.tr(context: context)),
                 backgroundColor: Colors.red,
               );
 
@@ -577,15 +594,17 @@ class ScannedBarcodeLabel extends StatelessWidget {
         final values = scannedBarcodes.map((e) => e.displayValue).join(', ');
 
         if (scannedBarcodes.isEmpty) {
-          return const Text(
-            'Quét mã vạch!',
+          return Text(
+            LKey.scannerScanningHint.tr(context: context),
             overflow: TextOverflow.fade,
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
           );
         }
 
         return Text(
-          values.isEmpty ? 'Không có giá trị hiển thị.' : values,
+          values.isEmpty
+              ? LKey.scannerNoDisplayValue.tr(context: context)
+              : values,
           overflow: TextOverflow.fade,
           style: const TextStyle(color: Colors.white),
         );
@@ -664,7 +683,8 @@ class ScannerOverlay extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // we need to pass the size to the custom paint widget
-    final backgroundPath = Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    final backgroundPath = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
     final cutoutPath = Path()..addRect(scanWindow);
 
     final backgroundPaint = Paint()
@@ -701,7 +721,9 @@ class BarcodeOverlay extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (barcodeCorners.isEmpty || barcodeSize.isEmpty || cameraPreviewSize.isEmpty) {
+    if (barcodeCorners.isEmpty ||
+        barcodeSize.isEmpty ||
+        cameraPreviewSize.isEmpty) {
       return;
     }
 
@@ -776,7 +798,8 @@ class BorderScannerOverlay extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Vẽ nền đen mờ với phần cắt ra ở scanWindow
-    final backgroundPath = Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    final backgroundPath = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
 
     final cutoutPath = Path()
       ..addRRect(
@@ -838,7 +861,8 @@ class BorderScannerOverlay extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant BorderScannerOverlay oldDelegate) {
-    return scanWindow != oldDelegate.scanWindow || borderRadius != oldDelegate.borderRadius;
+    return scanWindow != oldDelegate.scanWindow ||
+        borderRadius != oldDelegate.borderRadius;
   }
 }
 
@@ -862,7 +886,7 @@ class TestScanButton extends StatelessWidget {
     return IconButton(
       onPressed: () => _showTestDialog(context),
       icon: const Icon(Icons.bug_report, color: Colors.orange),
-      tooltip: 'Test Scan (Debug)',
+      tooltip: LKey.scannerTestTooltip.tr(context: context),
     );
   }
 
@@ -872,18 +896,18 @@ class TestScanButton extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Test Scan'),
+        title: Text(LKey.scannerTestTitle.tr(context: context)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Nhập mã vạch test:'),
+            Text(LKey.scannerTestInstruction.tr(context: context)),
             const SizedBox(height: 16),
             TextField(
               controller: textController,
-              decoration: const InputDecoration(
-                labelText: 'Mã vạch',
-                hintText: 'Nhập mã vạch...',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: LKey.scannerTestInputLabel.tr(context: context),
+                hintText: LKey.scannerTestInputHint.tr(context: context),
+                border: const OutlineInputBorder(),
               ),
               autofocus: true,
               onSubmitted: (value) {
@@ -898,7 +922,7 @@ class TestScanButton extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            child: Text(LKey.buttonCancel.tr(context: context)),
           ),
           TextButton(
             onPressed: () {
@@ -908,7 +932,7 @@ class TestScanButton extends StatelessWidget {
                 _simulateScan(value);
               }
             },
-            child: const Text('Scan'),
+            child: Text(LKey.scannerTestAction.tr(context: context)),
           ),
         ],
       ),

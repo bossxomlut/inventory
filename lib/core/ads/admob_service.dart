@@ -15,8 +15,11 @@ class AdMobService {
 
   final Logger _logger = Logger();
 
-  bool get showAds => !kReleaseMode;
+  /// Ads should be visible in release builds and during development (with test IDs).
+  /// Toggle this to false when you want to temporarily disable all ad widgets.
+  bool get showAds => true;
 
+  /// Release builds use the production ad units, dev builds keep Google's test units.
   AdEnvironment get env => kReleaseMode ? AdEnvironment.production : AdEnvironment.test;
 
   // Sử dụng test IDs cho development
@@ -39,6 +42,9 @@ class AdMobService {
   Future<void> initialize() async {
     try {
       await MobileAds.instance.initialize();
+      // MobileAds.instance.openAdInspector((p0) {
+      //   _logger.i('Ad Inspector closed with response: ${p0?.message}');
+      // },);
       _logger.i('AdMob initialized successfully');
     } catch (e) {
       _logger.e('Failed to initialize AdMob: $e');

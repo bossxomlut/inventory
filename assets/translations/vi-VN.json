@@ -419,7 +419,39 @@
       "errorFallback": "Cập nhật sản phẩm thất bại: {error}"
     },
     "detail": {
-      "loadError": "Không thể tải thông tin sản phẩm: {error}"
+      "loadError": "Không thể tải thông tin sản phẩm: {error}",
+      "barcodeTitle": "Mã sản phẩm",
+      "barcodeCopied": "Đã sao chép mã sản phẩm vào bộ nhớ đệm",
+      "barcodeCopy": "Sao chép",
+      "barcodeSaveInfo": "Chức năng lưu trữ mã sẽ được triển khai sau",
+      "barcodeSave": "Lưu trữ",
+      "barcodeEmpty": "Sản phẩm này không có mã barcode",
+      "backTooltip": "Quay lại",
+      "editTooltip": "Chỉnh sửa sản phẩm",
+      "shareTooltip": "Chia sẻ",
+      "priceLabel": "Giá",
+      "priceEmpty": "Chưa có giá",
+      "priceError": "Lỗi tải giá",
+      "inventoryLabel": "Tồn kho",
+      "categoryLabel": "Danh mục",
+      "unitLabel": "Đơn vị",
+      "expiryTrackingWarning": "Sản phẩm đang bật quản lý hạn sử dụng nhưng chưa có lô hàng.",
+      "descriptionTitle": "Mô tả",
+      "transactionHistory": "Lịch sử giao dịch",
+      "transactionEmpty": "Chưa có giao dịch nào",
+      "transactionError": "Lỗi: {error}",
+      "lotSectionTitle": "Lô hàng theo hạn sử dụng",
+      "transactionCategory": {
+        "create": "Tạo mới",
+        "update": "Cập nhật",
+        "lotUpdate": "Điều chỉnh lô hàng",
+        "stockIn": "Nhập kho",
+        "stockOut": "Xuất kho",
+        "check": "Kiểm kê",
+        "transfer": "Chuyển kho",
+        "cancelOrder": "Hủy đơn hàng",
+        "createOrder": "Tạo đơn hàng"
+      }
     },
     "sort": {
       "nameAsc": "Tên A-Z",

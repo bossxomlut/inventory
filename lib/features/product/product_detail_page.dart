@@ -10,7 +10,7 @@ import '../../domain/index.dart';
 import '../../domain/repositories/order/price_repository.dart';
 import '../../domain/repositories/product/transaction_repository.dart';
 import '../../provider/index.dart';
-import '../../resources/theme.dart';
+import '../../resources/index.dart';
 import '../../shared_widgets/image/image_present_view.dart';
 import '../../shared_widgets/index.dart';
 import 'provider/product_detail_provider.dart';
@@ -111,7 +111,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Mã sản phẩm',
+                LKey.productDetailBarcodeTitle.tr(context: context),
                 style: appTheme.headingSemibold24Default,
               ),
               const SizedBox(height: 24),
@@ -143,14 +143,19 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ElevatedButton.icon(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Đã sao chép mã sản phẩm vào bộ nhớ đệm')),
+                          SnackBar(
+                            content: Text(
+                              LKey.productDetailBarcodeCopied
+                                  .tr(context: context),
+                            ),
+                          ),
                         );
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.copy),
-                      label: const Text('Sao chép'),
+                      label: Text(
+                        LKey.productDetailBarcodeCopy.tr(context: context),
+                      ),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: appTheme.colorTextInverse,
                         backgroundColor: appTheme.colorPrimary,
@@ -159,14 +164,19 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     ElevatedButton.icon(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Chức năng lưu trữ mã sẽ được triển khai sau')),
+                          SnackBar(
+                            content: Text(
+                              LKey.productDetailBarcodeSaveInfo
+                                  .tr(context: context),
+                            ),
+                          ),
                         );
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.save),
-                      label: const Text('Lưu trữ'),
+                      label: Text(
+                        LKey.productDetailBarcodeSave.tr(context: context),
+                      ),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: appTheme.colorTextInverse,
                         backgroundColor: appTheme.colorSecondary,
@@ -175,7 +185,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   ],
                 ),
               ] else
-                const Text('Sản phẩm này không có mã barcode'),
+                Text(
+                  LKey.productDetailBarcodeEmpty.tr(context: context),
+                ),
               const SizedBox(height: 16),
             ],
           ),
@@ -225,7 +237,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   onPressed: () => Navigator.of(context).pop(),
                   color: appTheme.colorTextWhite,
                   padding: EdgeInsets.zero,
-                  tooltip: 'Quay lại',
+                  tooltip:
+                      LKey.productDetailBackTooltip.tr(context: context),
                   constraints: const BoxConstraints(
                     minWidth: 36,
                     minHeight: 36,
@@ -435,7 +448,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     child: IconButton(
                       icon: const Icon(Icons.edit_outlined, size: 20),
                       onPressed: _openEditProductScreen,
-                      tooltip: 'Chỉnh sửa sản phẩm',
+                      tooltip:
+                          LKey.productDetailEditTooltip.tr(context: context),
                       color: appTheme.colorTextWhite,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(
@@ -457,7 +471,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     onPressed: () {
                       // TODO: Implement share functionality
                     },
-                    tooltip: 'Chia sẻ',
+                    tooltip:
+                        LKey.productDetailShareTooltip.tr(context: context),
                     color: appTheme.colorTextWhite,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
@@ -546,7 +561,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Giá',
+                                        LKey.productDetailPriceLabel
+                                            .tr(context: context),
                                         style: appTheme.textRegular14Default
                                             .copyWith(
                                           color: appTheme.colorTextSubtle,
@@ -558,7 +574,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                           return Text(
                                             price?.sellingPrice != null
                                                 ? '${price.sellingPrice.priceFormat()}'
-                                                : 'Chưa có giá',
+                                                : LKey.productDetailPriceEmpty
+                                                    .tr(context: context),
                                             style: appTheme
                                                 .headingSemibold24Default
                                                 .copyWith(
@@ -569,7 +586,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                           );
                                         },
                                         error: (error, stackTrace) => Text(
-                                          'Lỗi tải giá',
+                                          LKey.productDetailPriceError
+                                              .tr(context: context),
                                           style: appTheme
                                               .headingSemibold24Default
                                               .copyWith(
@@ -595,7 +613,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Tồn kho',
+                                        LKey.productDetailInventoryLabel
+                                            .tr(context: context),
                                         style: appTheme.textRegular14Default
                                             .copyWith(
                                           color: appTheme.colorTextSubtle,
@@ -692,7 +711,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'Danh mục',
+                                                      LKey
+                                                          .productDetailCategoryLabel
+                                                          .tr(context: context),
                                                       style: appTheme
                                                           .textRegular12Default
                                                           .copyWith(
@@ -756,7 +777,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'Đơn vị',
+                                                      LKey.productDetailUnitLabel
+                                                          .tr(context: context),
                                                       style: appTheme
                                                           .textRegular12Default
                                                           .copyWith(
@@ -812,7 +834,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           border: Border.all(color: appTheme.colorBorderSubtle),
                         ),
                         child: Text(
-                          'Sản phẩm đang bật quản lý hạn sử dụng nhưng chưa có lô hàng.',
+                          LKey.productDetailExpiryTrackingWarning
+                              .tr(context: context),
                           style: appTheme.textRegular15Subtle,
                         ),
                       ),
@@ -834,7 +857,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Mô tả',
+                              LKey.productDetailDescriptionTitle
+                                  .tr(context: context),
                               style: appTheme.textMedium14Default.copyWith(
                                 color: appTheme
                                     .colorTextInverse, // was appTheme.onBackground
@@ -877,7 +901,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Lịch sử giao dịch',
+                            LKey.productDetailTransactionHistory
+                                .tr(context: context),
                             style: appTheme.headingSemibold20Default.copyWith(
                               color:
                                   appTheme.colorTextDefault, // correct property
@@ -894,8 +919,12 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         return transactionRepo.map(
                             data: (AsyncData<List<Transaction>> data) {
                               if (data.value.isEmpty) {
-                                return const Center(
-                                    child: Text('Chưa có giao dịch nào'));
+                                return Center(
+                                  child: Text(
+                                    LKey.productDetailTransactionEmpty
+                                        .tr(context: context),
+                                  ),
+                                );
                               }
 
                               final transactions = data.value!;
@@ -913,7 +942,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                       leading: getTransactionIcon(
                                           transaction.type, appTheme),
                                       title: Text(
-                                        '${transaction.category.displayName}',
+                                        _transactionCategoryLabel(
+                                            transaction.category, context),
                                         style: appTheme.textRegular14Default
                                             .copyWith(
                                           color: appTheme.colorTextDefault,
@@ -948,7 +978,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                               );
                             },
                             error: (AsyncError<List<Transaction>> error) =>
-                                Center(child: Text('Lỗi: ${error.error}')),
+                                Center(
+                                  child: Text(
+                                    LKey.productDetailTransactionError.tr(
+                                      context: context,
+                                      namedArgs: {
+                                        'error': '${error.error}',
+                                      },
+                                    ),
+                                  ),
+                                ),
                             loading:
                                 (AsyncLoading<List<Transaction>> loading) =>
                                     const Center(
@@ -965,6 +1004,39 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         ),
       ),
     );
+  }
+
+  String _transactionCategoryLabel(
+      TransactionCategory category, BuildContext context) {
+    switch (category) {
+      case TransactionCategory.create:
+        return LKey.productDetailTransactionCategoryCreate
+            .tr(context: context);
+      case TransactionCategory.update:
+        return LKey.productDetailTransactionCategoryUpdate
+            .tr(context: context);
+      case TransactionCategory.lotUpdate:
+        return LKey.productDetailTransactionCategoryLotUpdate
+            .tr(context: context);
+      case TransactionCategory.stockIn:
+        return LKey.productDetailTransactionCategoryStockIn
+            .tr(context: context);
+      case TransactionCategory.stockOut:
+        return LKey.productDetailTransactionCategoryStockOut
+            .tr(context: context);
+      case TransactionCategory.check:
+        return LKey.productDetailTransactionCategoryCheck
+            .tr(context: context);
+      case TransactionCategory.transfer:
+        return LKey.productDetailTransactionCategoryTransfer
+            .tr(context: context);
+      case TransactionCategory.cancelOrder:
+        return LKey.productDetailTransactionCategoryCancelOrder
+            .tr(context: context);
+      case TransactionCategory.createOrder:
+        return LKey.productDetailTransactionCategoryCreateOrder
+            .tr(context: context);
+    }
   }
 
   Widget getTransactionIcon(
@@ -1026,7 +1098,7 @@ class _ProductLotSection extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Lô hàng theo hạn sử dụng',
+                  LKey.productDetailLotSectionTitle.tr(context: context),
                   style: theme.textMedium16Default,
                 ),
               ),

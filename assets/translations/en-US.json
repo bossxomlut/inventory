@@ -488,7 +488,39 @@
       "errorFallback": "Updating product failed: {error}"
     },
     "detail": {
-      "loadError": "Unable to load product details: {error}"
+      "loadError": "Unable to load product details: {error}",
+      "barcodeTitle": "Product code",
+      "barcodeCopied": "Product code copied to clipboard",
+      "barcodeCopy": "Copy",
+      "barcodeSaveInfo": "Barcode saving will be available later",
+      "barcodeSave": "Save",
+      "barcodeEmpty": "This product does not have a barcode",
+      "backTooltip": "Back",
+      "editTooltip": "Edit product",
+      "shareTooltip": "Share",
+      "priceLabel": "Price",
+      "priceEmpty": "Price not set",
+      "priceError": "Failed to load price",
+      "inventoryLabel": "Stock",
+      "categoryLabel": "Category",
+      "unitLabel": "Unit",
+      "expiryTrackingWarning": "Expiry tracking is enabled but no lots are available.",
+      "descriptionTitle": "Description",
+      "transactionHistory": "Transaction history",
+      "transactionEmpty": "No transactions yet",
+      "transactionError": "Error: {error}",
+      "lotSectionTitle": "Lots by expiry date",
+      "transactionCategory": {
+        "create": "Created",
+        "update": "Updated",
+        "lotUpdate": "Lot adjustment",
+        "stockIn": "Stock in",
+        "stockOut": "Stock out",
+        "check": "Inventory check",
+        "transfer": "Transfer",
+        "cancelOrder": "Order cancelled",
+        "createOrder": "Order created"
+      }
     },
     "sort": {
       "nameAsc": "Name A-Z",

@@ -534,6 +534,66 @@ abstract class LKey {
   static const String productUpdateErrorFallback =
       'product.update.errorFallback';
   static const String productDetailLoadError = 'product.detail.loadError';
+  static const String productDetailBarcodeTitle =
+      'product.detail.barcodeTitle';
+  static const String productDetailBarcodeCopied =
+      'product.detail.barcodeCopied';
+  static const String productDetailBarcodeCopy =
+      'product.detail.barcodeCopy';
+  static const String productDetailBarcodeSaveInfo =
+      'product.detail.barcodeSaveInfo';
+  static const String productDetailBarcodeSave =
+      'product.detail.barcodeSave';
+  static const String productDetailBarcodeEmpty =
+      'product.detail.barcodeEmpty';
+  static const String productDetailBackTooltip =
+      'product.detail.backTooltip';
+  static const String productDetailEditTooltip =
+      'product.detail.editTooltip';
+  static const String productDetailShareTooltip =
+      'product.detail.shareTooltip';
+  static const String productDetailPriceLabel =
+      'product.detail.priceLabel';
+  static const String productDetailPriceEmpty =
+      'product.detail.priceEmpty';
+  static const String productDetailPriceError =
+      'product.detail.priceError';
+  static const String productDetailInventoryLabel =
+      'product.detail.inventoryLabel';
+  static const String productDetailCategoryLabel =
+      'product.detail.categoryLabel';
+  static const String productDetailUnitLabel =
+      'product.detail.unitLabel';
+  static const String productDetailExpiryTrackingWarning =
+      'product.detail.expiryTrackingWarning';
+  static const String productDetailDescriptionTitle =
+      'product.detail.descriptionTitle';
+  static const String productDetailTransactionHistory =
+      'product.detail.transactionHistory';
+  static const String productDetailTransactionEmpty =
+      'product.detail.transactionEmpty';
+  static const String productDetailTransactionError =
+      'product.detail.transactionError';
+  static const String productDetailLotSectionTitle =
+      'product.detail.lotSectionTitle';
+  static const String productDetailTransactionCategoryCreate =
+      'product.detail.transactionCategory.create';
+  static const String productDetailTransactionCategoryUpdate =
+      'product.detail.transactionCategory.update';
+  static const String productDetailTransactionCategoryLotUpdate =
+      'product.detail.transactionCategory.lotUpdate';
+  static const String productDetailTransactionCategoryStockIn =
+      'product.detail.transactionCategory.stockIn';
+  static const String productDetailTransactionCategoryStockOut =
+      'product.detail.transactionCategory.stockOut';
+  static const String productDetailTransactionCategoryCheck =
+      'product.detail.transactionCategory.check';
+  static const String productDetailTransactionCategoryTransfer =
+      'product.detail.transactionCategory.transfer';
+  static const String productDetailTransactionCategoryCancelOrder =
+      'product.detail.transactionCategory.cancelOrder';
+  static const String productDetailTransactionCategoryCreateOrder =
+      'product.detail.transactionCategory.createOrder';
   static const String productSortNameAsc = 'product.sort.nameAsc';
   static const String productSortNameDesc = 'product.sort.nameDesc';
   static const String productSortQuantityAsc = 'product.sort.quantityAsc';

@@ -10,6 +10,7 @@ import '../../provider/index.dart';
 import '../../resources/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
+import '../../shared_widgets/toast.dart';
 import '../product/widget/product_card.dart';
 import 'provider/check_product_provider.dart';
 import 'provider/check_session_provider.dart';
@@ -112,16 +113,10 @@ class _CheckPageState extends ConsumerState<CheckPage> {
           await searchProductRepo.searchByBarcode(barcode.rawValue ?? '');
       _onSearchProductResult(product);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            LKey.checkScanError.tr(
-              context: context,
-              namedArgs: {'error': '$e'},
-            ),
-          ),
-        ),
-      );
+      showError(message: LKey.checkScanError.tr(
+        context: context,
+        namedArgs: {'error': '$e'},
+      ));
       return;
     }
   }
@@ -261,7 +256,7 @@ class _CheckPageState extends ConsumerState<CheckPage> {
                       Expanded(
                         child: ScannerView(
                           onBarcodeScanned: _onBarcodeScanned,
-                          singleScan: true,
+                          // singleScan: true,
                         ),
                       ),
                     ],

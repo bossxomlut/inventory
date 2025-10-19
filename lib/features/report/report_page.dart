@@ -84,11 +84,9 @@ class _OverviewContentState extends ConsumerState<OverviewContent> {
 
   DateTimeRange? customDateRange;
 
-  DateTime get startDate =>
-      selectedFilter.startDate ?? customDateRange?.start ?? DateTime.now();
+  DateTime get startDate => DateTimeUtils.getOnlyDate(selectedFilter.startDate ?? customDateRange?.start ?? DateTime.now());
 
-  DateTime get endDate =>
-      selectedFilter.endDate ?? customDateRange?.end ?? DateTime.now();
+  DateTime get endDate => DateTimeUtils.getEndOfDay(selectedFilter.endDate ?? customDateRange?.end ?? DateTime.now());
 
   @override
   Widget build(BuildContext context) {
@@ -112,8 +110,8 @@ class _OverviewContentState extends ConsumerState<OverviewContent> {
                     initialDateRange: customDateRange ??
                         DateTimeRange(
                           start:
-                              DateTime.now().subtract(const Duration(days: 7)),
-                          end: DateTime.now(),
+                              DateTimeUtils.getOnlyDate(DateTime.now().subtract(const Duration(days: 7))),
+                          end: DateTimeUtils.getEndOfDay(DateTime.now()),
                         ),
                   ).then((pickedRange) {
                     if (pickedRange != null) {

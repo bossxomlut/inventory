@@ -18,7 +18,6 @@ final dashboardOverviewProvider =
 /// Provider load dữ liệu biểu đồ (DashboardChartData)
 final dashboardChartsProvider =
     FutureProvider.autoDispose.family<DashboardChartData, DateTimeRange>((ref, range) async {
-  final link = ref.keepAlive();
   final repo = ref.read(dashboardChartsRepositoryProvider);
 
   return repo.fetchCharts(from: range.start, to: range.end);

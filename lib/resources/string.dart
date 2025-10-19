@@ -546,6 +546,10 @@ abstract class LKey {
       'product.detail.barcodeSave';
   static const String productDetailBarcodeEmpty =
       'product.detail.barcodeEmpty';
+  static const String productDetailBarcodeQrTitle =
+      'product.detail.barcodeQrTitle';
+  static const String productDetailBarcodeQrError =
+      'product.detail.barcodeQrError';
   static const String productDetailBackTooltip =
       'product.detail.backTooltip';
   static const String productDetailEditTooltip =

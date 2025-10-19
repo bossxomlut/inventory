@@ -426,6 +426,8 @@
       "barcodeSaveInfo": "Chức năng lưu trữ mã sẽ được triển khai sau",
       "barcodeSave": "Lưu trữ",
       "barcodeEmpty": "Sản phẩm này không có mã barcode",
+      "barcodeQrTitle": "Mã QR",
+      "barcodeQrError": "Không thể tạo mã QR",
       "backTooltip": "Quay lại",
       "editTooltip": "Chỉnh sửa sản phẩm",
       "shareTooltip": "Chia sẻ",

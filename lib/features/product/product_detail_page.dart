@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:barcode/barcode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/helpers/double_utils.dart';
@@ -105,92 +107,108 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                LKey.productDetailBarcodeTitle.tr(context: context),
-                style: appTheme.headingSemibold24Default,
-              ),
-              const SizedBox(height: 24),
-              if (product.barcode != null && product.barcode!.isNotEmpty) ...[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: appTheme.colorBackground,
-                    borderRadius: BorderRadius.circular(8),
+        return Builder(
+          builder: (context) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    LKey.productDetailBarcodeTitle.tr(context: context),
+                    style: appTheme.headingSemibold24Default,
                   ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.qr_code,
-                          size: 24, color: appTheme.colorPrimary),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
+                  const SizedBox(height: 24),
+                  if (product.barcode != null && product.barcode!.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: appTheme.colorBackground,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.qr_code,
+                              size: 24, color: appTheme.colorPrimary),
+                          const SizedBox(width: 16),
+                          Flexible(
+                            child: Text(
+                              product.barcode!,
+                              style: appTheme.headingSemibold20Default,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 200,
+                      child: Center(
+                        child: _buildBarcodeQr(
                           product.barcode!,
-                          style: appTheme.headingSemibold20Default,
+                          appTheme,
+                          context,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              LKey.productDetailBarcodeCopied
-                                  .tr(context: context),
-                            ),
-                          ),
-                        );
-                        Navigator.pop(context);
-                      },
-                      icon: const Icon(Icons.copy),
-                      label: Text(
-                        LKey.productDetailBarcodeCopy.tr(context: context),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: appTheme.colorTextInverse,
-                        backgroundColor: appTheme.colorPrimary,
-                      ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              LKey.productDetailBarcodeSaveInfo
-                                  .tr(context: context),
-                            ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  LKey.productDetailBarcodeCopied
+                                      .tr(context: context),
+                                ),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.copy),
+                          label: Text(
+                            LKey.productDetailBarcodeCopy.tr(context: context),
                           ),
-                        );
-                        Navigator.pop(context);
-                      },
-                      icon: const Icon(Icons.save),
-                      label: Text(
-                        LKey.productDetailBarcodeSave.tr(context: context),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: appTheme.colorTextInverse,
-                        backgroundColor: appTheme.colorSecondary,
-                      ),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: appTheme.colorTextInverse,
+                            backgroundColor: appTheme.colorPrimary,
+                          ),
+                        ),
+                        // ElevatedButton.icon(
+                        //   onPressed: () {
+                        //     ScaffoldMessenger.of(context).showSnackBar(
+                        //       SnackBar(
+                        //         content: Text(
+                        //           LKey.productDetailBarcodeSaveInfo
+                        //               .tr(context: context),
+                        //         ),
+                        //       ),
+                        //     );
+                        //     Navigator.pop(context);
+                        //   },
+                        //   icon: const Icon(Icons.save),
+                        //   label: Text(
+                        //     LKey.productDetailBarcodeSave.tr(context: context),
+                        //   ),
+                        //   style: ElevatedButton.styleFrom(
+                        //     foregroundColor: appTheme.colorTextInverse,
+                        //     backgroundColor: appTheme.colorSecondary,
+                        //   ),
+                        // ),
+                      ],
                     ),
-                  ],
-                ),
-              ] else
-                Text(
-                  LKey.productDetailBarcodeEmpty.tr(context: context),
-                ),
-              const SizedBox(height: 16),
-            ],
-          ),
+                  ] else
+                    Text(
+                      LKey.productDetailBarcodeEmpty.tr(context: context),
+                    ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          }
         );
       },
     );
@@ -458,30 +476,30 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                       ),
                     ),
                   ),
-                Container(
-                  margin: const EdgeInsets.only(right: 8, left: 4),
-                  decoration: BoxDecoration(
-                    color: appTheme.colorTextWhite.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  width: 32,
-                  height: 32,
-                  child: IconButton(
-                    icon: const Icon(Icons.share, size: 18),
-                    onPressed: () {
-                      // TODO: Implement share functionality
-                    },
-                    tooltip:
-                        LKey.productDetailShareTooltip.tr(context: context),
-                    color: appTheme.colorTextWhite,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
+                // Container(
+                //   margin: const EdgeInsets.only(right: 8, left: 4),
+                //   decoration: BoxDecoration(
+                //     color: appTheme.colorTextWhite.withOpacity(0.3),
+                //     shape: BoxShape.circle,
+                //   ),
+                //   width: 32,
+                //   height: 32,
+                //   child: IconButton(
+                //     icon: const Icon(Icons.share, size: 18),
+                //     onPressed: () {
+                //       // TODO: Implement share functionality
+                //     },
+                //     tooltip:
+                //         LKey.productDetailShareTooltip.tr(context: context),
+                //     color: appTheme.colorTextWhite,
+                //     padding: EdgeInsets.zero,
+                //     constraints: const BoxConstraints(
+                //       minWidth: 32,
+                //       minHeight: 32,
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(width: 4),
               ],
             ),
 
@@ -1004,6 +1022,32 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildBarcodeQr(
+      String value, AppThemeData appTheme, BuildContext context) {
+    try {
+      final svgString = Barcode.qrCode().toSvg(
+        value,
+        width: 200,
+        height: 200,
+      );
+      return SvgPicture.string(
+        svgString,
+        width: 200,
+        height: 200,
+        fit: BoxFit.contain,
+        placeholderBuilder: (_) => const CircularProgressIndicator(),
+      );
+    } catch (_) {
+      return Text(
+        LKey.productDetailBarcodeQrError.tr(context: context),
+        style: appTheme.textRegular14Default.copyWith(
+          color: appTheme.colorError,
+        ),
+        textAlign: TextAlign.center,
+      );
+    }
   }
 
   String _transactionCategoryLabel(

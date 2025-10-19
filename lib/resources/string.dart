@@ -22,6 +22,13 @@ abstract class LKey {
   static const String imagePickerSourceTitle = 'imagePicker.sourceTitle';
   static const String scannerTitle = 'scanner.title';
   static const String scannerCameraError = 'scanner.cameraError';
+  static const String scannerCameraPermissionDenied =
+      'scanner.cameraPermissionDenied';
+  static const String scannerCameraPermissionPermanentlyDenied =
+      'scanner.cameraPermissionPermanentlyDenied';
+  static const String scannerCameraUnsupported =
+      'scanner.cameraUnsupported';
+  static const String scannerCameraGeneric = 'scanner.cameraGeneric';
   static const String scannerGallerySuccess = 'scanner.gallerySuccess';
   static const String scannerGalleryFailure = 'scanner.galleryFailure';
   static const String scannerTestTooltip = 'scanner.test.tooltip';

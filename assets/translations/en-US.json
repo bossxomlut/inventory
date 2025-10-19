@@ -101,6 +101,10 @@
   "scanner": {
     "title": "Scan barcode",
     "cameraError": "Camera error: {error}",
+    "cameraPermissionDenied": "Camera access is required to scan barcodes.",
+    "cameraPermissionPermanentlyDenied": "Camera permission is permanently denied. Enable it in Settings to keep scanning.",
+    "cameraUnsupported": "This device does not support barcode scanning.",
+    "cameraGeneric": "We couldn't start the camera. Please try again.",
     "gallerySuccess": "Barcode detected!",
     "galleryFailure": "No barcode found.",
     "scanningHint": "Scan a barcode",

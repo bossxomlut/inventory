@@ -101,6 +101,10 @@
   "scanner": {
     "title": "Quét mã vạch",
     "cameraError": "Lỗi camera: {error}",
+    "cameraPermissionDenied": "Ứng dụng cần quyền sử dụng camera.",
+    "cameraPermissionPermanentlyDenied": "Quyền camera đã bị từ chối vĩnh viễn. Vui lòng mở Cài đặt để bật lại và tiếp tục quét.",
+    "cameraUnsupported": "Thiết bị này không hỗ trợ quét mã.",
+    "cameraGeneric": "Không thể khởi động camera. Vui lòng thử lại.",
     "gallerySuccess": "Đã tìm thấy mã vạch!",
     "galleryFailure": "Không tìm thấy mã vạch!",
     "scanningHint": "Quét mã vạch",

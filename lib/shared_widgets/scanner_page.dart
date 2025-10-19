@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'index.dart';
 
@@ -68,6 +69,11 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
   Timer? _timer;
   StreamSubscription<BarcodeCapture>? _barcodeSubscription;
   bool _hasScanned = false; // Track if a scan has occurred
+  bool _permissionChecked = false;
+  bool _hasCameraPermission = false;
+  bool _permissionPermanentlyDenied = false;
+  bool _isRequestingPermission = false;
+  bool _hasRequestedPermission = false;
 
   void _startTimer() {
     if (!widget.autoStopCamera) {
@@ -84,25 +90,77 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
     _startTimer();
   }
 
+  Future<void> _ensureCameraPermission({bool requestIfNeeded = false}) async {
+    if (_isRequestingPermission) {
+      return;
+    }
+
+    setState(() {
+      _isRequestingPermission = true;
+    });
+
+    PermissionStatus status = await Permission.camera.status;
+
+    if (!status.isGranted && requestIfNeeded && !_hasRequestedPermission) {
+      _hasRequestedPermission = true;
+      status = await Permission.camera.request();
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    final bool granted = status.isGranted;
+
+    setState(() {
+      _hasCameraPermission = granted;
+      _permissionChecked = true;
+      _permissionPermanentlyDenied =
+          status.isPermanentlyDenied || status.isRestricted;
+      _isRequestingPermission = false;
+    });
+
+    if (granted) {
+      unawaited(_startScanner());
+      return;
+    }
+
+    await controller.stop();
+    if (_barcodeSubscription != null) {
+      await _barcodeSubscription!.cancel();
+      _barcodeSubscription = null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     stopWatch.start();
     WidgetsBinding.instance.addObserver(this);
-    _startScanner();
+    unawaited(_ensureCameraPermission(requestIfNeeded: true));
 
     if (widget.autoStopCamera) {
       // controller.addListener(_listenAutoStopCamera);
     }
   }
 
-  void _startScanner() {
-    controller.start();
+  Future<void> _startScanner() async {
+    if (_hasCameraPermission != true) {
+      return;
+    }
+
+    await controller.start();
+    if (_barcodeSubscription != null) {
+      await _barcodeSubscription!.cancel();
+    }
     _barcodeSubscription = controller.barcodes.listen(
       (BarcodeCapture event) {
         scanListener(event);
       },
     );
+    if (widget.autoStopCamera) {
+      _startTimer();
+    }
   }
 
   void scanListener(BarcodeCapture event) async {
@@ -131,19 +189,168 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
     }
   }
 
+  String? _extractErrorDetail(MobileScannerException error) {
+    final message = error.errorDetails?.message;
+    if (message != null && message.trim().isNotEmpty) {
+      return message.trim();
+    }
+
+    final details = error.errorDetails?.details;
+    if (details is String && details.trim().isNotEmpty) {
+      return details.trim();
+    }
+
+    return null;
+  }
+
+  Future<bool> _isCameraPermissionPermanentlyDenied() async {
+    final status = await Permission.camera.status;
+    return status.isPermanentlyDenied || status.isRestricted;
+  }
+
+  void _openSystemSettings() {
+    unawaited(openAppSettings());
+  }
+
+  Widget _buildScannerErrorCard(
+    BuildContext context, {
+    required String message,
+    required IconData icon,
+    bool showRetry = true,
+    bool showOpenSettings = false,
+    String? detail,
+    bool isProcessing = false,
+    VoidCallback? onRetry,
+  }) {
+    final theme = Theme.of(context);
+    final actions = <Widget>[];
+
+    if (showOpenSettings && !isProcessing) {
+      actions.add(
+        OutlinedButton.icon(
+          onPressed: _openSystemSettings,
+          icon: const Icon(Icons.settings_rounded),
+          label: Text(
+            LKey.buttonOpenSettings.tr(context: context),
+          ),
+        ),
+      );
+    }
+
+    if (showRetry && !isProcessing) {
+      actions.add(
+        FilledButton.icon(
+          onPressed: onRetry ??
+              () {
+                unawaited(controller.start());
+              },
+          icon: const Icon(Icons.refresh_rounded),
+          label: Text(
+            LKey.buttonRetry.tr(context: context),
+          ),
+        ),
+      );
+    }
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 320),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.shadow.withOpacity(0.05),
+                  blurRadius: 18,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  color: theme.colorScheme.primary,
+                  size: 36,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  message,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (detail != null && detail.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    detail,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+                if (isProcessing) ...[
+                  const SizedBox(height: 18),
+                  const CircularProgressIndicator(),
+                ] else if (actions.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: actions,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPermissionRequestView() {
+    final message = _permissionPermanentlyDenied
+        ? LKey.scannerCameraPermissionPermanentlyDenied.tr(context: context)
+        : LKey.scannerCameraPermissionDenied.tr(context: context);
+
+    return _buildScannerErrorCard(
+      context,
+      message: message,
+      icon: Icons.lock_outline_rounded,
+      showOpenSettings: true,
+      showRetry: false,
+      isProcessing: _isRequestingPermission,
+    );
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
-      case AppLifecycleState.detached:
-      case AppLifecycleState.hidden:
-      case AppLifecycleState.paused:
-        return;
       case AppLifecycleState.resumed:
-        if (!_hasScanned || !widget.singleScan) {
-          unawaited(controller.start());
+        if (_hasCameraPermission) {
+          if (!_hasScanned || !widget.singleScan) {
+            unawaited(controller.start());
+          }
+        } else {
+          unawaited(_ensureCameraPermission());
         }
+        break;
       case AppLifecycleState.inactive:
         unawaited(controller.stop());
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        break;
     }
   }
 
@@ -206,6 +413,14 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    if (!_permissionChecked) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (!_hasCameraPermission) {
+      return _buildPermissionRequestView();
+    }
+
     return Column(
       children: [
         Expanded(
@@ -238,16 +453,50 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
                     // }
                   },
                   errorBuilder: (context, error, _) {
-                    return Center(
-                      child: Text(
-                        LKey.scannerCameraError.tr(
-                          context: context,
-                          namedArgs: {'error': '$error'},
-                        ),
-                      ),
-                    );
+                    final detail = _extractErrorDetail(error);
+
+                    switch (error.errorCode) {
+                      case MobileScannerErrorCode.permissionDenied:
+                        return FutureBuilder<bool>(
+                          future: _isCameraPermissionPermanentlyDenied(),
+                          builder: (context, snapshot) {
+                            final permanentlyDenied = snapshot.data ?? false;
+                            final message = permanentlyDenied
+                                ? LKey.scannerCameraPermissionPermanentlyDenied
+                                    .tr(context: context)
+                                : LKey.scannerCameraPermissionDenied
+                                    .tr(context: context);
+
+                            return _buildScannerErrorCard(
+                              context,
+                              message: message,
+                              icon: Icons.lock_outline_rounded,
+                              detail: detail,
+                              showOpenSettings: true,
+                              showRetry: false,
+                            );
+                          },
+                        );
+                      case MobileScannerErrorCode.unsupported:
+                        return _buildScannerErrorCard(
+                          context,
+                          message: LKey.scannerCameraUnsupported
+                              .tr(context: context),
+                          icon: Icons.phonelink_off_rounded,
+                          detail: detail,
+                          showRetry: false,
+                        );
+                      default:
+                        return _buildScannerErrorCard(
+                          context,
+                          message:
+                              LKey.scannerCameraGeneric.tr(context: context),
+                          icon: Icons.error_outline_rounded,
+                          detail: detail,
+                        );
+                    }
                   },
-                  fit: BoxFit.fitWidth,
+                  fit: BoxFit.cover,
                 ),
                 _buildBarcodeOverlay(),
                 _buildScanWindow(scanWindow),

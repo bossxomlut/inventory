@@ -295,7 +295,15 @@
     "replayOnboarding": "Xem lại hướng dẫn",
     "replayOnboardingSubtitle": "Hiển thị lại màn hình giới thiệu",
     "resetOnboardingSuccess": "Đã reset thành công. Khởi động lại ứng dụng để xem lại hướng dẫn.",
-    "resetOnboardingError": "Có lỗi xảy ra khi reset hướng dẫn."
+    "resetOnboardingError": "Có lỗi xảy ra khi reset hướng dẫn.",
+    "preferences": "Tùy chỉnh"
+  },
+  "account": {
+    "currency": {
+      "label": "Đơn vị tiền tệ",
+      "vnd": "Việt Nam đồng (đ)",
+      "usd": "Đô la Mỹ (USD)"
+    }
   },
   "languageName": {
     "english": "Tiếng Anh",

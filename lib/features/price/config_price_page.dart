@@ -18,6 +18,7 @@ import '../product/product_list_page.dart';
 import '../product/provider/product_provider.dart';
 import '../product/widget/product_card.dart';
 import 'provider/config_price_form_controller.dart';
+import '../setting/provider/currency_settings_provider.dart';
 
 @RoutePage()
 class ConfigProductPricePage extends HookConsumerWidget {
@@ -26,6 +27,7 @@ class ConfigProductPricePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Reset search when leaving the page
+    ref.watch(currencySettingsControllerProvider);
     useEffect(() {
       return () {
         ref.read(textSearchProvider.notifier).state = '';
@@ -41,7 +43,8 @@ class ConfigProductPricePage extends HookConsumerWidget {
 }
 
 // ConfigPriceAppBar with search functionality
-class ConfigPriceAppBar extends HookConsumerWidget implements PreferredSizeWidget {
+class ConfigPriceAppBar extends HookConsumerWidget
+    implements PreferredSizeWidget {
   const ConfigPriceAppBar({super.key});
 
   @override
@@ -53,7 +56,8 @@ class ConfigPriceAppBar extends HookConsumerWidget implements PreferredSizeWidge
 
     // Trigger search when debounced text changes
     useEffect(() {
-      Future(() => ref.read(textSearchProvider.notifier).state = debouncedSearchText);
+      Future(() =>
+          ref.read(textSearchProvider.notifier).state = debouncedSearchText);
       return null;
     }, [debouncedSearchText]);
 
@@ -146,6 +150,7 @@ class ProductListView extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Use loadProductProvider which already has productFilterProvider inside
     final products = ref.watch(loadProductProvider);
+    ref.watch(currencySettingsControllerProvider);
     final theme = context.appTheme;
     String t(String key) => key.tr(context: context);
 
@@ -184,7 +189,9 @@ class ProductListView extends HookConsumerWidget {
                 final product = products.data[index];
                 return Consumer(builder: (context, ref, child) {
                   // Fetch product price by product ID
-                  final productPrice = ref.watch(productPriceByIdProvider(product.id));
+                  ref.watch(currencySettingsControllerProvider);
+                  final productPrice =
+                      ref.watch(productPriceByIdProvider(product.id));
                   return GestureDetector(
                     onTap: () {
                       CreateProductPriceBottomSheet(
@@ -194,7 +201,8 @@ class ProductListView extends HookConsumerWidget {
                     },
                     child: Container(
                       color: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       child: Row(
                         children: [
                           Expanded(child: CustomProductCard(product: product)),
@@ -204,7 +212,8 @@ class ProductListView extends HookConsumerWidget {
                               final profitPercentage = price.profitPercentage;
 
                               return Container(
-                                constraints: const BoxConstraints(maxWidth: 120),
+                                constraints:
+                                    const BoxConstraints(maxWidth: 120),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -237,18 +246,26 @@ class ProductListView extends HookConsumerWidget {
                                     if (profitPercentage != null) ...[
                                       const SizedBox(height: 4),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: [
                                           Icon(
-                                            profitPercentage >= 0 ? Icons.trending_up : Icons.trending_down,
-                                            color: profitPercentage >= 0 ? Colors.green : Colors.red,
+                                            profitPercentage >= 0
+                                                ? Icons.trending_up
+                                                : Icons.trending_down,
+                                            color: profitPercentage >= 0
+                                                ? Colors.green
+                                                : Colors.red,
                                             size: 16,
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
                                             '${profitPercentage >= 0 ? '+' : ''}${profitPercentage.displayFormat()}%',
-                                            style: theme.textRegular12Default.copyWith(
-                                              color: profitPercentage >= 0 ? Colors.green : Colors.red,
+                                            style: theme.textRegular12Default
+                                                .copyWith(
+                                              color: profitPercentage >= 0
+                                                  ? Colors.green
+                                                  : Colors.red,
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -286,7 +303,8 @@ class ProductListView extends HookConsumerWidget {
 }
 
 //create product price bottom sheet
-class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSheet<void> {
+class CreateProductPriceBottomSheet extends HookConsumerWidget
+    with ShowBottomSheet<void> {
   final Product product;
   final ProductPrice? productPrice;
 
@@ -298,6 +316,7 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(currencySettingsControllerProvider);
     final sellPriceController = useTextEditingController();
     final purchasePriceController = useTextEditingController();
     final formArgs = useMemoized(
@@ -331,8 +350,10 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
 
     useEffect(() {
       if (productPrice != null) {
-        sellPriceController.text = productPrice!.sellingPrice?.inputFormat() ?? '';
-        purchasePriceController.text = productPrice!.purchasePrice?.inputFormat() ?? '';
+        sellPriceController.text =
+            productPrice!.sellingPrice?.inputFormat() ?? '';
+        purchasePriceController.text =
+            productPrice!.purchasePrice?.inputFormat() ?? '';
       }
       return null;
     }, [productPrice]);
@@ -347,7 +368,8 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
 
           // Profit percentage display
           AnimatedBuilder(
-            animation: Listenable.merge([sellPriceController, purchasePriceController]),
+            animation: Listenable.merge(
+                [sellPriceController, purchasePriceController]),
             builder: (BuildContext context, Widget? child) {
               final profitPercentage = calculateProfitPercentage();
 
@@ -382,13 +404,15 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
                     const SizedBox(width: 4),
                     Text(
                       '${prefix}${profitPercentage.displayFormat()}%',
-                      style: context.appTheme.textMedium16Default.copyWith(color: color),
+                      style: context.appTheme.textMedium16Default
+                          .copyWith(color: color),
                     ),
                     const Spacer(),
                     if (sellingPrice() != null && purchasePrice() != null)
                       Text(
                         '${prefix}${(sellingPrice()! - purchasePrice()!).priceFormat()}',
-                        style: context.appTheme.textRegular13Subtle.copyWith(color: color),
+                        style: context.appTheme.textRegular13Subtle
+                            .copyWith(color: color),
                       ),
                   ],
                 ),
@@ -430,7 +454,7 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
                     : '';
                 return Text(
                   LKey.configPriceFormPurchasePreview.tr(
-                     namedArgs: {'price': value},
+                    namedArgs: {'price': value},
                   ),
                   style: context.appTheme.textRegular13Subtle,
                 );
@@ -463,8 +487,8 @@ class CreateProductPriceBottomSheet extends HookConsumerWidget with ShowBottomSh
                     }
                   },
             onCancel: () {
-                Navigator.pop(context);
-              },
+              Navigator.pop(context);
+            },
             saveButtonText:
                 formState.isSaving ? LKey.configPriceFormSaving.tr() : null,
           ),

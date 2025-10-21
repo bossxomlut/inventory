@@ -17,6 +17,7 @@ import 'provider/order_action_confirm_provider.dart';
 import 'provider/order_action_handler.dart';
 import 'provider/order_provider.dart';
 import 'widget/confirm_order_badge.dart';
+import '../setting/provider/currency_settings_provider.dart';
 
 @RoutePage()
 class CreateOrderPage extends HookConsumerWidget {
@@ -27,6 +28,7 @@ class CreateOrderPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderStaste = ref.watch(orderCreationProvider);
+    ref.watch(currencySettingsControllerProvider);
     final isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
     final theme = context.appTheme;
     final noteController = useTextEditingController();
@@ -457,6 +459,7 @@ class OrderItemWidget extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isSelected = orderItem != null;
     final productPrice = ref.watch(productPriceByIdProvider(product.id));
+    ref.watch(currencySettingsControllerProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -649,6 +652,7 @@ class OrderDetailPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final orderStaste = ref.watch(orderDetailProvider(order));
     final permissionsAsync = ref.watch(currentUserPermissionsProvider);
+    ref.watch(currencySettingsControllerProvider);
 
     return permissionsAsync.when(
       loading: () => const Scaffold(
@@ -1092,6 +1096,7 @@ class OrderNumberInputWidget extends HookConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final quantity = useState(currentQuantity ?? 1);
     final productPrice = ref.watch(productPriceByIdProvider(product.id));
+    ref.watch(currencySettingsControllerProvider);
 
     return Padding(
       padding: const EdgeInsets.all(16.0),

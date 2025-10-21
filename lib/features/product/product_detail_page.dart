@@ -15,6 +15,7 @@ import '../../provider/index.dart';
 import '../../resources/index.dart';
 import '../../shared_widgets/image/image_present_view.dart';
 import '../../shared_widgets/index.dart';
+import '../setting/provider/currency_settings_provider.dart';
 import 'provider/product_detail_provider.dart';
 import 'widget/add_product_widget.dart';
 import 'widget/index.dart';
@@ -107,109 +108,107 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return Builder(
-          builder: (context) {
-            return Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    LKey.productDetailBarcodeTitle.tr(context: context),
-                    style: appTheme.headingSemibold24Default,
-                  ),
-                  const SizedBox(height: 24),
-                  if (product.barcode != null && product.barcode!.isNotEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: appTheme.colorBackground,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.qr_code,
-                              size: 24, color: appTheme.colorPrimary),
-                          const SizedBox(width: 16),
-                          Flexible(
-                            child: Text(
-                              product.barcode!,
-                              style: appTheme.headingSemibold20Default,
-                            ),
-                          ),
-                        ],
-                      ),
+        return Builder(builder: (context) {
+          return Container(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  LKey.productDetailBarcodeTitle.tr(context: context),
+                  style: appTheme.headingSemibold24Default,
+                ),
+                const SizedBox(height: 24),
+                if (product.barcode != null && product.barcode!.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: appTheme.colorBackground,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 200,
-                      child: Center(
-                        child: _buildBarcodeQr(
-                          product.barcode!,
-                          appTheme,
-                          context,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  LKey.productDetailBarcodeCopied
-                                      .tr(context: context),
-                                ),
-                              ),
-                            );
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.copy),
-                          label: Text(
-                            LKey.productDetailBarcodeCopy.tr(context: context),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: appTheme.colorTextInverse,
-                            backgroundColor: appTheme.colorPrimary,
+                        Icon(Icons.qr_code,
+                            size: 24, color: appTheme.colorPrimary),
+                        const SizedBox(width: 16),
+                        Flexible(
+                          child: Text(
+                            product.barcode!,
+                            style: appTheme.headingSemibold20Default,
                           ),
                         ),
-                        // ElevatedButton.icon(
-                        //   onPressed: () {
-                        //     ScaffoldMessenger.of(context).showSnackBar(
-                        //       SnackBar(
-                        //         content: Text(
-                        //           LKey.productDetailBarcodeSaveInfo
-                        //               .tr(context: context),
-                        //         ),
-                        //       ),
-                        //     );
-                        //     Navigator.pop(context);
-                        //   },
-                        //   icon: const Icon(Icons.save),
-                        //   label: Text(
-                        //     LKey.productDetailBarcodeSave.tr(context: context),
-                        //   ),
-                        //   style: ElevatedButton.styleFrom(
-                        //     foregroundColor: appTheme.colorTextInverse,
-                        //     backgroundColor: appTheme.colorSecondary,
-                        //   ),
-                        // ),
                       ],
                     ),
-                  ] else
-                    Text(
-                      LKey.productDetailBarcodeEmpty.tr(context: context),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 200,
+                    child: Center(
+                      child: _buildBarcodeQr(
+                        product.barcode!,
+                        appTheme,
+                        context,
+                      ),
                     ),
+                  ),
                   const SizedBox(height: 16),
-                ],
-              ),
-            );
-          }
-        );
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                LKey.productDetailBarcodeCopied
+                                    .tr(context: context),
+                              ),
+                            ),
+                          );
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.copy),
+                        label: Text(
+                          LKey.productDetailBarcodeCopy.tr(context: context),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: appTheme.colorTextInverse,
+                          backgroundColor: appTheme.colorPrimary,
+                        ),
+                      ),
+                      // ElevatedButton.icon(
+                      //   onPressed: () {
+                      //     ScaffoldMessenger.of(context).showSnackBar(
+                      //       SnackBar(
+                      //         content: Text(
+                      //           LKey.productDetailBarcodeSaveInfo
+                      //               .tr(context: context),
+                      //         ),
+                      //       ),
+                      //     );
+                      //     Navigator.pop(context);
+                      //   },
+                      //   icon: const Icon(Icons.save),
+                      //   label: Text(
+                      //     LKey.productDetailBarcodeSave.tr(context: context),
+                      //   ),
+                      //   style: ElevatedButton.styleFrom(
+                      //     foregroundColor: appTheme.colorTextInverse,
+                      //     backgroundColor: appTheme.colorSecondary,
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ] else
+                  Text(
+                    LKey.productDetailBarcodeEmpty.tr(context: context),
+                  ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          );
+        });
       },
     );
   }
@@ -218,6 +217,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   Widget build(BuildContext context) {
     final productDetail = ref.watch(productDetailProvider(productId));
     final productPrice = ref.watch(productPriceByIdProvider(productId));
+    ref.watch(currencySettingsControllerProvider);
     final product = productDetail ?? widget.product;
     final appTheme = context.appTheme;
     final images = product.images ?? [];
@@ -255,8 +255,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   onPressed: () => Navigator.of(context).pop(),
                   color: appTheme.colorTextWhite,
                   padding: EdgeInsets.zero,
-                  tooltip:
-                      LKey.productDetailBackTooltip.tr(context: context),
+                  tooltip: LKey.productDetailBackTooltip.tr(context: context),
                   constraints: const BoxConstraints(
                     minWidth: 36,
                     minHeight: 36,
@@ -729,8 +728,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      LKey
-                                                          .productDetailCategoryLabel
+                                                      LKey.productDetailCategoryLabel
                                                           .tr(context: context),
                                                       style: appTheme
                                                           .textRegular12Default
@@ -1054,11 +1052,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
       TransactionCategory category, BuildContext context) {
     switch (category) {
       case TransactionCategory.create:
-        return LKey.productDetailTransactionCategoryCreate
-            .tr(context: context);
+        return LKey.productDetailTransactionCategoryCreate.tr(context: context);
       case TransactionCategory.update:
-        return LKey.productDetailTransactionCategoryUpdate
-            .tr(context: context);
+        return LKey.productDetailTransactionCategoryUpdate.tr(context: context);
       case TransactionCategory.lotUpdate:
         return LKey.productDetailTransactionCategoryLotUpdate
             .tr(context: context);
@@ -1069,8 +1065,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         return LKey.productDetailTransactionCategoryStockOut
             .tr(context: context);
       case TransactionCategory.check:
-        return LKey.productDetailTransactionCategoryCheck
-            .tr(context: context);
+        return LKey.productDetailTransactionCategoryCheck.tr(context: context);
       case TransactionCategory.transfer:
         return LKey.productDetailTransactionCategoryTransfer
             .tr(context: context);

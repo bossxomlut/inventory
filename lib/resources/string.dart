@@ -26,8 +26,7 @@ abstract class LKey {
       'scanner.cameraPermissionDenied';
   static const String scannerCameraPermissionPermanentlyDenied =
       'scanner.cameraPermissionPermanentlyDenied';
-  static const String scannerCameraUnsupported =
-      'scanner.cameraUnsupported';
+  static const String scannerCameraUnsupported = 'scanner.cameraUnsupported';
   static const String scannerCameraGeneric = 'scanner.cameraGeneric';
   static const String scannerGallerySuccess = 'scanner.gallerySuccess';
   static const String scannerGalleryFailure = 'scanner.galleryFailure';
@@ -331,6 +330,7 @@ abstract class LKey {
       'setting.resetOnboardingSuccess';
   static const String settingResetOnboardingError =
       'setting.resetOnboardingError';
+  static const String settingPreferences = 'setting.preferences';
   static const String feedbackTitle = 'feedback.title';
   static const String feedbackDescription = 'feedback.description';
   static const String feedbackTypeLabel = 'feedback.type.label';
@@ -541,40 +541,29 @@ abstract class LKey {
   static const String productUpdateErrorFallback =
       'product.update.errorFallback';
   static const String productDetailLoadError = 'product.detail.loadError';
-  static const String productDetailBarcodeTitle =
-      'product.detail.barcodeTitle';
+  static const String productDetailBarcodeTitle = 'product.detail.barcodeTitle';
   static const String productDetailBarcodeCopied =
       'product.detail.barcodeCopied';
-  static const String productDetailBarcodeCopy =
-      'product.detail.barcodeCopy';
+  static const String productDetailBarcodeCopy = 'product.detail.barcodeCopy';
   static const String productDetailBarcodeSaveInfo =
       'product.detail.barcodeSaveInfo';
-  static const String productDetailBarcodeSave =
-      'product.detail.barcodeSave';
-  static const String productDetailBarcodeEmpty =
-      'product.detail.barcodeEmpty';
+  static const String productDetailBarcodeSave = 'product.detail.barcodeSave';
+  static const String productDetailBarcodeEmpty = 'product.detail.barcodeEmpty';
   static const String productDetailBarcodeQrTitle =
       'product.detail.barcodeQrTitle';
   static const String productDetailBarcodeQrError =
       'product.detail.barcodeQrError';
-  static const String productDetailBackTooltip =
-      'product.detail.backTooltip';
-  static const String productDetailEditTooltip =
-      'product.detail.editTooltip';
-  static const String productDetailShareTooltip =
-      'product.detail.shareTooltip';
-  static const String productDetailPriceLabel =
-      'product.detail.priceLabel';
-  static const String productDetailPriceEmpty =
-      'product.detail.priceEmpty';
-  static const String productDetailPriceError =
-      'product.detail.priceError';
+  static const String productDetailBackTooltip = 'product.detail.backTooltip';
+  static const String productDetailEditTooltip = 'product.detail.editTooltip';
+  static const String productDetailShareTooltip = 'product.detail.shareTooltip';
+  static const String productDetailPriceLabel = 'product.detail.priceLabel';
+  static const String productDetailPriceEmpty = 'product.detail.priceEmpty';
+  static const String productDetailPriceError = 'product.detail.priceError';
   static const String productDetailInventoryLabel =
       'product.detail.inventoryLabel';
   static const String productDetailCategoryLabel =
       'product.detail.categoryLabel';
-  static const String productDetailUnitLabel =
-      'product.detail.unitLabel';
+  static const String productDetailUnitLabel = 'product.detail.unitLabel';
   static const String productDetailExpiryTrackingWarning =
       'product.detail.expiryTrackingWarning';
   static const String productDetailDescriptionTitle =
@@ -1164,7 +1153,9 @@ abstract class LKey {
       'user.toast.actionDeactivate';
   static const String userToggleError = 'user.toast.toggleError';
   static const String accountPaymentMethod = 'account.paymentMethod';
-  static const String accountCurrency = 'account.currency';
+  static const String accountCurrency = 'account.currency.label';
+  static const String accountCurrencyVnd = 'account.currency.vnd';
+  static const String accountCurrencyUsd = 'account.currency.usd';
   static const String accountMyVouchers = 'account.myVouchers';
   static const String accountEmergencyNumber = 'account.emergencyNumber';
   static const String accountEmergencyContact = 'account.emergencyContact';

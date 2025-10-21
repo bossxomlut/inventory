@@ -4,6 +4,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/ads/ad_banner_widget.dart';
+import '../../core/helpers/currency_config.dart';
 import '../../domain/entities/permission/permission.dart';
 import '../../provider/index.dart';
 import '../../provider/permissions.dart';
@@ -12,6 +13,7 @@ import '../../shared_widgets/index.dart';
 import '../authentication/provider/auth_provider.dart';
 import '../onboarding/onboarding_service.dart';
 import 'app_review_utils.dart';
+import 'provider/currency_settings_provider.dart';
 
 @RoutePage()
 class SettingPage extends WidgetByDeviceTemplate {
@@ -22,6 +24,12 @@ class SettingPage extends WidgetByDeviceTemplate {
     final theme = context.appTheme;
     final authState = ref.watch(authControllerProvider);
     final permissionsAsync = ref.watch(currentUserPermissionsProvider);
+    final currencyAsync = ref.watch(currencySettingsControllerProvider);
+    final currencySubtitle = currencyAsync.when(
+      data: (unit) => _currencyDisplayName(context, unit),
+      loading: () => '...',
+      error: (_, __) => '---',
+    );
 
     final grantedPermissions = permissionsAsync.maybeWhen(
       data: (value) => value,
@@ -94,6 +102,34 @@ class SettingPage extends WidgetByDeviceTemplate {
               ),
             ),
           ],
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: LText(
+              LKey.settingPreferences,
+              style: theme.headingSemibold20Default.copyWith(
+                color: theme.colorTextSubtle,
+                fontSize: 18,
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.white,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.currency_exchange),
+                  title: const LText(LKey.accountCurrency),
+                  subtitle: Text(currencySubtitle),
+                  onTap: () => _showCurrencyPicker(
+                    context,
+                    ref,
+                    currencyAsync.valueOrNull ?? CurrencyUnit.vnd,
+                  ),
+                ),
+              ],
+            ),
+          ),
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -242,6 +278,16 @@ class SettingPage extends WidgetByDeviceTemplate {
     );
   }
 
+  String _currencyDisplayName(BuildContext context, CurrencyUnit unit) {
+    switch (unit) {
+      case CurrencyUnit.usd:
+        return LKey.accountCurrencyUsd.tr(context: context);
+      case CurrencyUnit.vnd:
+      default:
+        return LKey.accountCurrencyVnd.tr(context: context);
+    }
+  }
+
   String _languageDisplayName(BuildContext context, Locale locale) {
     switch (locale.languageCode) {
       case 'vi':
@@ -249,6 +295,24 @@ class SettingPage extends WidgetByDeviceTemplate {
       default:
         return LKey.languageEnglish.tr(context: context);
     }
+  }
+
+  Future<void> _showCurrencyPicker(
+    BuildContext context,
+    WidgetRef ref,
+    CurrencyUnit currentUnit,
+  ) async {
+    final result = await _CurrencyPickerSheet(
+      selected: currentUnit,
+    ).show(context);
+
+    if (result == null || result == currentUnit) {
+      return;
+    }
+
+    await ref
+        .read(currencySettingsControllerProvider.notifier)
+        .setCurrencyUnit(result);
   }
 
   Future<void> _resetOnboarding(BuildContext context, WidgetRef ref) async {
@@ -371,4 +435,48 @@ class _LanguageOption {
 
   final Locale locale;
   final String nameKey;
+}
+
+class _CurrencyPickerSheet extends StatelessWidget
+    with ShowBottomSheet<CurrencyUnit> {
+  const _CurrencyPickerSheet({
+    required this.selected,
+  });
+
+  final CurrencyUnit selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                LKey.accountCurrency.tr(context: context),
+                style: theme.headingSemibold20Default,
+              ),
+            ),
+            const Divider(height: 0),
+            for (final unit in supportedCurrencyUnits)
+              ListTile(
+                title: Text(
+                  unit == CurrencyUnit.usd
+                      ? LKey.accountCurrencyUsd.tr(context: context)
+                      : LKey.accountCurrencyVnd.tr(context: context),
+                ),
+                trailing: unit == selected ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.of(context).pop(unit),
+              ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
 }

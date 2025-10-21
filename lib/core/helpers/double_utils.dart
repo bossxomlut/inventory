@@ -1,30 +1,42 @@
 import 'package:intl/intl.dart';
 
+import 'currency_config.dart';
+
 extension DoubleX on double? {
   /// Formats a double value as currency with specified locale and decimal digits.
   /// - [decimalDigits]: Number of decimal digits (default: 0 for VND, 2 for others).
   /// - [locale]: Locale for formatting (default: 'vi_VN' for VND).
   /// - [currencySymbol]: Optional currency symbol (default: '₫' for VND).
   String priceFormat({
-    int decimalDigits = 2,
-    String locale = 'vi_VN',
-    String currencySymbol = '₫',
+    int? decimalDigits,
+    String? locale,
+    String? currencySymbol,
   }) {
     if (this == null) {
       return '---';
-    } else if (this == 0) {
-      return '0$currencySymbol';
     }
 
+    final display = CurrencySettingsHolder.current;
+    final symbol = currencySymbol ?? display.symbol;
+    final useLocale = locale ?? display.locale;
+    final configuredDecimalDigits = decimalDigits ?? display.decimalDigits;
+    final isSymbolOnRight = display.symbolOnRight;
+
     // Check if the number is effectively an integer (e.g., 200.0)
-    final effectiveDecimalDigits = (this! % 1 == 0) ? 0 : decimalDigits;
+    final effectiveDecimalDigits =
+        (this! % 1 == 0) ? 0 : configuredDecimalDigits;
 
     final formatter = NumberFormat.currency(
-      locale: locale,
-      symbol: currencySymbol,
+      locale: useLocale,
+      symbol: isSymbolOnRight ? '' : symbol,
       decimalDigits: effectiveDecimalDigits,
     );
 
-    return formatter.format(this);
+    final formatted = formatter.format(this).trim();
+    if (isSymbolOnRight) {
+      final base = formatted.isEmpty ? '0' : formatted;
+      return '$base $symbol'.trim();
+    }
+    return formatted.isEmpty ? symbol : formatted;
   }
 }

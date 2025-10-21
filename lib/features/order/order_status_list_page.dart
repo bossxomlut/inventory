@@ -13,6 +13,7 @@ import '../../resources/index.dart';
 import '../../resources/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
+import '../setting/provider/currency_settings_provider.dart';
 import 'provider/order_action_confirm_provider.dart';
 import 'provider/order_action_handler.dart';
 import 'provider/order_list_provider.dart';
@@ -22,10 +23,12 @@ class OrderStatusListPage extends ConsumerStatefulWidget {
   const OrderStatusListPage({super.key});
 
   @override
-  ConsumerState<OrderStatusListPage> createState() => _OrderStatusListPageState();
+  ConsumerState<OrderStatusListPage> createState() =>
+      _OrderStatusListPageState();
 }
 
-class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with TickerProviderStateMixin {
+class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   List<OrderStatus> _visibleStatuses = const [];
   final List<OrderStatus> statuses = [
@@ -57,14 +60,18 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
     }
 
     OrderStatus? previousStatus;
-    if (_visibleStatuses.isNotEmpty && _tabController.index < _visibleStatuses.length) {
+    if (_visibleStatuses.isNotEmpty &&
+        _tabController.index < _visibleStatuses.length) {
       previousStatus = _visibleStatuses[_tabController.index];
     }
 
-    final fallbackStatus =
-        visibleStatuses.contains(OrderStatus.confirmed) ? OrderStatus.confirmed : visibleStatuses.first;
+    final fallbackStatus = visibleStatuses.contains(OrderStatus.confirmed)
+        ? OrderStatus.confirmed
+        : visibleStatuses.first;
     final targetStatus =
-        previousStatus != null && visibleStatuses.contains(previousStatus) ? previousStatus : fallbackStatus;
+        previousStatus != null && visibleStatuses.contains(previousStatus)
+            ? previousStatus
+            : fallbackStatus;
     final targetIndex = visibleStatuses.indexOf(targetStatus);
 
     _tabController.dispose();
@@ -81,8 +88,8 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
     _visibleStatuses = List<OrderStatus>.from(visibleStatuses);
   }
 
-  VoidCallback? _buildRemoveCallback(
-      BuildContext context, WidgetRef ref, OrderStatus status, Order order, bool canDelete) {
+  VoidCallback? _buildRemoveCallback(BuildContext context, WidgetRef ref,
+      OrderStatus status, Order order, bool canDelete) {
     if (!canDelete) {
       return null;
     }
@@ -90,23 +97,29 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
     switch (status) {
       case OrderStatus.draft:
         return () async {
-          await ref.read(orderActionHandlerProvider).deleteOrder(context, OrderStatus.draft, order);
+          await ref
+              .read(orderActionHandlerProvider)
+              .deleteOrder(context, OrderStatus.draft, order);
         };
       case OrderStatus.done:
         return () async {
-          await ref.read(orderActionHandlerProvider).deleteOrder(context, OrderStatus.done, order);
+          await ref
+              .read(orderActionHandlerProvider)
+              .deleteOrder(context, OrderStatus.done, order);
         };
       case OrderStatus.cancelled:
         return () async {
-          await ref.read(orderActionHandlerProvider).deleteOrder(context, OrderStatus.cancelled, order);
+          await ref
+              .read(orderActionHandlerProvider)
+              .deleteOrder(context, OrderStatus.cancelled, order);
         };
       case OrderStatus.confirmed:
         return null;
     }
   }
 
-  VoidCallback? _buildCompleteCallback(
-      BuildContext context, WidgetRef ref, OrderStatus status, Order order, bool canComplete) {
+  VoidCallback? _buildCompleteCallback(BuildContext context, WidgetRef ref,
+      OrderStatus status, Order order, bool canComplete) {
     if (status != OrderStatus.confirmed || !canComplete) {
       return null;
     }
@@ -116,8 +129,8 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
     };
   }
 
-  VoidCallback? _buildCancelCallback(
-      BuildContext context, WidgetRef ref, OrderStatus status, Order order, bool canCancel) {
+  VoidCallback? _buildCancelCallback(BuildContext context, WidgetRef ref,
+      OrderStatus status, Order order, bool canCancel) {
     if (status != OrderStatus.confirmed || !canCancel) {
       return null;
     }
@@ -144,6 +157,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
   Widget build(BuildContext context) {
     final theme = context.appTheme;
     final permissionsAsync = ref.watch(currentUserPermissionsProvider);
+    ref.watch(currencySettingsControllerProvider);
     String t(String key) => key.tr(context: context);
 
     return permissionsAsync.when(
@@ -157,7 +171,8 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                const Icon(Icons.warning_amber,
+                    size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
                   t(LKey.permissionsLoadFailed),
@@ -178,9 +193,11 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
       ),
       data: (permissions) {
         final canViewDraft = permissions.contains(PermissionKey.orderViewDraft);
-        final canViewConfirmed = permissions.contains(PermissionKey.orderViewConfirmed);
+        final canViewConfirmed =
+            permissions.contains(PermissionKey.orderViewConfirmed);
         final canViewDone = permissions.contains(PermissionKey.orderViewDone);
-        final canViewCancelled = permissions.contains(PermissionKey.orderViewCancelled);
+        final canViewCancelled =
+            permissions.contains(PermissionKey.orderViewCancelled);
         final canCreate = permissions.contains(PermissionKey.orderCreate);
         final canDelete = permissions.contains(PermissionKey.orderDelete);
         final canComplete = permissions.contains(PermissionKey.orderComplete);
@@ -222,7 +239,8 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
               ),
             ],
             bottom: TabBar(
-              labelStyle: theme.textMedium15Default.copyWith(color: Colors.white),
+              labelStyle:
+                  theme.textMedium15Default.copyWith(color: Colors.white),
               labelColor: Colors.white,
               unselectedLabelColor: Colors.white70,
               controller: _tabController,
@@ -249,9 +267,12 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
                 itemBuilder: (BuildContext context, Order order, int index) {
                   return OrderCard(
                     order: order,
-                    onRemove: _buildRemoveCallback(context, ref, status, order, canDelete),
-                    onComplete: _buildCompleteCallback(context, ref, status, order, canComplete),
-                    onCancel: _buildCancelCallback(context, ref, status, order, canCancel),
+                    onRemove: _buildRemoveCallback(
+                        context, ref, status, order, canDelete),
+                    onComplete: _buildCompleteCallback(
+                        context, ref, status, order, canComplete),
+                    onCancel: _buildCancelCallback(
+                        context, ref, status, order, canCancel),
                   );
                 },
                 canCreateOrder: canCreate,
@@ -267,7 +288,8 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
                           return;
                         }
                         ref.invalidate(orderListProvider(OrderStatus.draft));
-                        ref.invalidate(orderListProvider(OrderStatus.confirmed));
+                        ref.invalidate(
+                            orderListProvider(OrderStatus.confirmed));
                       },
                     );
                   },
@@ -308,7 +330,8 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
               ],
             ),
             data: (settings) {
-              final notifier = ref.read(orderActionConfirmControllerProvider.notifier);
+              final notifier =
+                  ref.read(orderActionConfirmControllerProvider.notifier);
               return AlertDialog(
                 title: Text(t(LKey.orderListSettingsTitle)),
                 content: Column(
@@ -319,21 +342,24 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with 
                       title: t(LKey.orderListToggleConfirmTitle),
                       description: t(LKey.orderListToggleConfirmDescription),
                       value: settings.confirm,
-                      onChanged: (value) => notifier.setActionEnabled(OrderActionType.confirm, value),
+                      onChanged: (value) => notifier.setActionEnabled(
+                          OrderActionType.confirm, value),
                     ),
                     _buildActionToggle(
                       context,
                       title: t(LKey.orderListToggleCancelTitle),
                       description: t(LKey.orderListToggleCancelDescription),
                       value: settings.cancel,
-                      onChanged: (value) => notifier.setActionEnabled(OrderActionType.cancel, value),
+                      onChanged: (value) => notifier.setActionEnabled(
+                          OrderActionType.cancel, value),
                     ),
                     _buildActionToggle(
                       context,
                       title: t(LKey.orderListToggleDeleteTitle),
                       description: t(LKey.orderListToggleDeleteDescription),
                       value: settings.delete,
-                      onChanged: (value) => notifier.setActionEnabled(OrderActionType.delete, value),
+                      onChanged: (value) => notifier.setActionEnabled(
+                          OrderActionType.delete, value),
                     ),
                   ],
                 ),
@@ -386,12 +412,14 @@ class OrderListView extends ConsumerWidget {
   });
 
   final OrderStatus status;
-  final Widget Function(BuildContext context, Order oder, int index) itemBuilder;
+  final Widget Function(BuildContext context, Order oder, int index)
+      itemBuilder;
   final bool canCreateOrder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orders = ref.watch(orderListProvider(status));
+    ref.watch(currencySettingsControllerProvider);
 
     if (orders.data.isEmpty && !orders.isLoading) {
       return OrderEmptyState(status: status, canCreateOrder: canCreateOrder);
@@ -435,8 +463,11 @@ class OrderCard extends StatelessWidget {
     final theme = context.appTheme;
     String t(String key) => key.tr(context: context);
     final notSet = t(LKey.orderCommonNotSet);
-    final customerName = order.customer.isNotNullOrEmpty ? order.customer! : notSet;
-    final contactName = order.customerContact.isNotNullOrEmpty ? order.customerContact! : notSet;
+    final customerName =
+        order.customer.isNotNullOrEmpty ? order.customer! : notSet;
+    final contactName = order.customerContact.isNotNullOrEmpty
+        ? order.customerContact!
+        : notSet;
 
     return InkWell(
       onTap: () {
@@ -551,7 +582,8 @@ class OrderCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
-                        LKey.orderListNoteLabel.tr(namedArgs: {'note': order.note!}),
+                        LKey.orderListNoteLabel
+                            .tr(namedArgs: {'note': order.note!}),
                         style: theme.textRegular15Subtle,
                       ),
                     ),
@@ -570,7 +602,8 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  Widget buildTrailing(BuildContext context, OrderStatus status, AppThemeData theme) {
+  Widget buildTrailing(
+      BuildContext context, OrderStatus status, AppThemeData theme) {
     String t(String key) => key.tr(context: context);
     switch (status) {
       case OrderStatus.confirmed:
@@ -592,7 +625,8 @@ class OrderCard extends StatelessWidget {
                 ),
                 child: Text(
                   t(LKey.orderListActionComplete),
-                  style: theme.textRegular15Default.copyWith(color: Colors.green),
+                  style:
+                      theme.textRegular15Default.copyWith(color: Colors.green),
                 ),
               ),
             if (canComplete && canCancelOrder) const Gap(12),

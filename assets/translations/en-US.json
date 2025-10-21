@@ -375,7 +375,15 @@
     "replayOnboarding": "View Onboarding Again",
     "replayOnboardingSubtitle": "Show the introduction screens again",
     "resetOnboardingSuccess": "Reset successful. Restart the app to see the guide again.",
-    "resetOnboardingError": "An error occurred while resetting the guide."
+    "resetOnboardingError": "An error occurred while resetting the guide.",
+    "preferences": "Preferences"
+  },
+  "account": {
+    "currency": {
+      "label": "Currency",
+      "vnd": "Vietnamese đồng (đ)",
+      "usd": "US Dollar (USD)"
+    }
   },
   "notification": {
     "noNotificationFound": "No notification found"

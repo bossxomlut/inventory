@@ -9,6 +9,7 @@ import '../../domain/entities/report/difference.dart';
 import '../../provider/index.dart';
 import '../../shared_widgets/index.dart';
 import '../product/provider/product_filter_provider.dart';
+import '../setting/provider/currency_settings_provider.dart';
 import 'provider/dash_board_provider.dart';
 import 'widget/dashboard_charts_widget.dart';
 import 'widget/dashboard_summary_widget.dart';
@@ -84,9 +85,11 @@ class _OverviewContentState extends ConsumerState<OverviewContent> {
 
   DateTimeRange? customDateRange;
 
-  DateTime get startDate => DateTimeUtils.getOnlyDate(selectedFilter.startDate ?? customDateRange?.start ?? DateTime.now());
+  DateTime get startDate => DateTimeUtils.getOnlyDate(
+      selectedFilter.startDate ?? customDateRange?.start ?? DateTime.now());
 
-  DateTime get endDate => DateTimeUtils.getEndOfDay(selectedFilter.endDate ?? customDateRange?.end ?? DateTime.now());
+  DateTime get endDate => DateTimeUtils.getEndOfDay(
+      selectedFilter.endDate ?? customDateRange?.end ?? DateTime.now());
 
   @override
   Widget build(BuildContext context) {
@@ -109,8 +112,8 @@ class _OverviewContentState extends ConsumerState<OverviewContent> {
                     lastDate: DateTime.now(),
                     initialDateRange: customDateRange ??
                         DateTimeRange(
-                          start:
-                              DateTimeUtils.getOnlyDate(DateTime.now().subtract(const Duration(days: 7))),
+                          start: DateTimeUtils.getOnlyDate(
+                              DateTime.now().subtract(const Duration(days: 7))),
                           end: DateTimeUtils.getEndOfDay(DateTime.now()),
                         ),
                   ).then((pickedRange) {
@@ -172,6 +175,7 @@ class DashboardWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final overviewAsync = ref.watch(dashboardOverviewProvider(
         DateTimeRange(start: startDate, end: endDate)));
+    ref.watch(currencySettingsControllerProvider);
     String t(String key, {Map<String, String>? namedArgs}) =>
         key.tr(context: context, namedArgs: namedArgs);
 
@@ -271,6 +275,7 @@ class DashboardWidget2 extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chartsAsync = ref.watch(dashboardChartsProvider(dateRange));
+    ref.watch(currencySettingsControllerProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

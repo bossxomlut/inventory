@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
+import '../../../core/helpers/double_utils.dart';
 import '../../../domain/models/sample_product.dart';
 import '../../../provider/theme.dart';
+import '../../setting/provider/currency_settings_provider.dart';
 
-class SampleProductCard extends StatelessWidget {
+class SampleProductCard extends ConsumerWidget {
   final SampleProduct product;
   final bool isSelected;
   final VoidCallback? onTap;
@@ -19,8 +22,9 @@ class SampleProductCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
+    ref.watch(currencySettingsControllerProvider);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -161,7 +165,7 @@ class SampleProductCard extends StatelessWidget {
 
                       // Price
                       Text(
-                        'Giá bán: ${product.price.toStringAsFixed(0)}đ',
+                        'Giá bán: ${product.price.priceFormat()}',
                         style: TextStyle(
                           color: theme.colorPrimary,
                           fontWeight: FontWeight.w600,
@@ -176,7 +180,8 @@ class SampleProductCard extends StatelessWidget {
 
                 // Right side - Quantity only
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.grey[50],
                     borderRadius: BorderRadius.circular(6),

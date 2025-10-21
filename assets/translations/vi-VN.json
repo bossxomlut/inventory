@@ -320,6 +320,15 @@
       "other": "Khác",
       "pickerTitle": "Chọn loại phản hồi"
     },
+    "expiry": {
+      "summary": {
+        "title": "Hạn sử dụng",
+        "expired": "{count} lô đã hết hạn",
+        "expiringSoon": "{count} lô sắp hết hạn",
+        "daysHint": "Trong {days} ngày tới",
+        "actionRequired": "Cần xử lý ngay"
+      }
+    },
     "form": {
       "titleLabel": "Tiêu đề",
       "titleHint": "Ví dụ: Lỗi không thể đăng nhập",
@@ -370,6 +379,7 @@
         "inventory": "Kiểm kê",
         "categories": "Danh mục",
         "units": "Đơn vị/Quy cách",
+        "expiry": "Theo dõi HSD",
         "pricing": "Giá bán",
         "createOrder": "Tạo đơn hàng",
         "orderList": "Danh sách đơn hàng",
@@ -518,6 +528,43 @@
         "empty": "Không có đơn vị nào",
         "all": "Tất cả đơn vị",
         "error": "Lỗi tải đơn vị: {error}"
+      }
+    },
+    "expiry": {
+      "summary": {
+        "title": "Hạn sử dụng",
+        "expired": "{count} lô đã hết hạn",
+        "expiringSoon": "{count} lô sắp hết hạn",
+        "daysHint": "Trong {days} ngày tới",
+        "actionRequired": "Cần xử lý ngay"
+      },
+      "label": {
+        "expired": "Đã hết hạn {days} ngày",
+        "today": "Hết hạn hôm nay",
+        "days": "Còn {days} ngày"
+      },
+      "page": {
+        "title": "Theo dõi hạn sử dụng",
+        "searchHint": "Tìm kiếm sản phẩm theo tên...",
+        "tab": {
+          "expired": "Đã hết hạn",
+          "expiringSoon": "Sắp hết hạn",
+          "all": "Tất cả"
+        },
+        "filter": {
+          "tracking": "Có theo dõi HSD",
+          "nonTracking": "Chưa theo dõi HSD"
+        },
+        "empty": {
+          "tracking": "Không có sản phẩm nào phù hợp với bộ lọc hạn sử dụng.",
+          "nonTracking": "Tất cả sản phẩm đều đang bật theo dõi hạn sử dụng."
+        },
+        "item": {
+          "quantity": "Tồn kho: {quantity}",
+          "earliest": "HSD gần nhất: {date}",
+          "noLot": "Chưa có lô hạn sử dụng",
+          "noTracking": "Không theo dõi hạn sử dụng"
+        }
       }
     },
     "form": {

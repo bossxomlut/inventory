@@ -271,6 +271,7 @@ abstract class LKey {
   static const String homeMenuItemInventory = 'home.menu.item.inventory';
   static const String homeMenuItemCategories = 'home.menu.item.categories';
   static const String homeMenuItemUnits = 'home.menu.item.units';
+  static const String homeMenuItemExpiry = 'home.menu.item.expiry';
   static const String homeMenuItemPricing = 'home.menu.item.pricing';
   static const String homeMenuItemCreateOrder = 'home.menu.item.createOrder';
   static const String homeMenuItemOrderList = 'home.menu.item.orderList';
@@ -638,6 +639,44 @@ abstract class LKey {
   static const String productFilterUnitEmpty = 'product.filter.unit.empty';
   static const String productFilterUnitAll = 'product.filter.unit.all';
   static const String productFilterUnitError = 'product.filter.unit.error';
+  static const String productExpirySummaryTitle =
+      'product.expiry.summary.title';
+  static const String productExpirySummaryExpired =
+      'product.expiry.summary.expired';
+  static const String productExpirySummaryExpiringSoon =
+      'product.expiry.summary.expiringSoon';
+  static const String productExpirySummaryDaysHint =
+      'product.expiry.summary.daysHint';
+  static const String productExpirySummaryActionRequired =
+      'product.expiry.summary.actionRequired';
+  static const String productExpiryPageTitle = 'product.expiry.page.title';
+  static const String productExpirySearchHint =
+      'product.expiry.page.searchHint';
+  static const String productExpiryTabExpired =
+      'product.expiry.page.tab.expired';
+  static const String productExpiryTabExpiringSoon =
+      'product.expiry.page.tab.expiringSoon';
+  static const String productExpiryTabAll = 'product.expiry.page.tab.all';
+  static const String productExpiryFilterTracking =
+      'product.expiry.page.filter.tracking';
+  static const String productExpiryFilterNonTracking =
+      'product.expiry.page.filter.nonTracking';
+  static const String productExpiryEmptyTracking =
+      'product.expiry.page.empty.tracking';
+  static const String productExpiryEmptyNonTracking =
+      'product.expiry.page.empty.nonTracking';
+  static const String productExpiryItemQuantity =
+      'product.expiry.page.item.quantity';
+  static const String productExpiryItemEarliest =
+      'product.expiry.page.item.earliest';
+  static const String productExpiryItemNoLot = 'product.expiry.page.item.noLot';
+  static const String productExpiryItemNoTracking =
+      'product.expiry.page.item.noTracking';
+  static const String productExpiryLabelExpired =
+      'product.expiry.label.expired';
+  static const String productExpiryLabelToday = 'product.expiry.label.today';
+  static const String productExpiryLabelDays = 'product.expiry.label.days';
+
   static const String productFormCreateTitle = 'product.form.createTitle';
   static const String productFormEditTitle = 'product.form.editTitle';
   static const String productFormValidationRequired =

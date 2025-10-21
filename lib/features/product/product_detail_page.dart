@@ -1182,18 +1182,10 @@ class _LotListTile extends StatelessWidget {
     final expiryDate =
         DateTime(lot.expiryDate.year, lot.expiryDate.month, lot.expiryDate.day);
     final daysDifference = expiryDate.difference(today).inDays;
-    final isExpired = daysDifference < 0;
-
-    final String statusText = isExpired
-        ? LKey.productLotExpired.tr(context: context)
-        : daysDifference == 0
-            ? LKey.productLotExpiresToday.tr(context: context)
-            : LKey.productLotRemainingDays.tr(
-                context: context,
-                namedArgs: {'days': '$daysDifference'},
-              );
-    final statusColor =
-        isExpired ? theme.colorTextSupportRed : theme.colorTextSupportGreen;
+    final status = buildProductExpiryStatus(
+      context: context,
+      daysDifference: daysDifference,
+    );
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1234,19 +1226,7 @@ class _LotListTile extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  statusText,
-                  style:
-                      theme.textRegular12Default.copyWith(color: statusColor),
-                ),
-              ),
+              ProductExpiryStatusBadge(status: status),
               if (lot.manufactureDate != null) ...[
                 const SizedBox(width: 12),
                 Icon(Icons.factory_outlined,

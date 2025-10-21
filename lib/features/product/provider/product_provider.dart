@@ -13,6 +13,8 @@ import '../../../routes/app_router.dart';
 import '../../../shared_widgets/index.dart';
 import '../../category/provider/category_provider.dart';
 import '../../unit/provider/unit_filter_provider.dart';
+import 'product_expiry_list_provider.dart';
+import 'product_expiry_summary_provider.dart';
 import 'product_filter_provider.dart';
 
 part 'product_provider.g.dart';
@@ -27,6 +29,7 @@ class LoadProduct extends _$LoadProduct
     ref.listen(
       productFilterProvider,
       (previous, next) {
+        ref.invalidate(productExpiryListControllerProvider);
         refresh();
       },
     );
@@ -59,6 +62,9 @@ class LoadProduct extends _$LoadProduct
           .createProduct(product);
 
       state = state.copyWith(data: [...state.data, created]);
+
+      ref.invalidate(productExpirySummaryProvider);
+      ref.invalidate(productExpiryListControllerProvider);
 
       // Clear all filters and set "Created today" filter
       ref.read(productSortTypeProvider.notifier).state = ProductSortType.none;
@@ -127,6 +133,9 @@ class LoadProduct extends _$LoadProduct
             .toList(),
       );
       hideLoading();
+
+      ref.invalidate(productExpirySummaryProvider);
+      ref.invalidate(productExpiryListControllerProvider);
 
       final successContext = appRouter.context;
       final successMessage = successContext != null

@@ -8,6 +8,7 @@ import '../../routes/app_router.dart';
 // Model cho menu item
 enum MenuItemId {
   productList,
+  expiryMonitor,
   inventory,
   categories,
   units,
@@ -125,6 +126,19 @@ class MenuManager {
             icon: Icons.inventory,
             destinationCallback: () {
               appRouter.goToProductList();
+            },
+            requiredPermissions: {PermissionKey.productView},
+          ),
+          MenuItem(
+            id: MenuItemId.expiryMonitor,
+            title: _t(
+              context,
+              key: LKey.homeMenuItemExpiry,
+              fallback: 'Expiry monitor',
+            ),
+            icon: Icons.schedule,
+            destinationCallback: () {
+              appRouter.goToProductExpiry();
             },
             requiredPermissions: {PermissionKey.productView},
           ),

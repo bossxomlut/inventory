@@ -339,6 +339,7 @@
         "inventory": "Inventory",
         "categories": "Categories",
         "units": "Units",
+        "expiry": "Expiry monitor",
         "pricing": "Pricing",
         "createOrder": "Create order",
         "orderList": "Order list",
@@ -587,6 +588,43 @@
         "empty": "No units available",
         "all": "All units",
         "error": "Failed to load units: {error}"
+      }
+    },
+    "expiry": {
+      "summary": {
+        "title": "Expiry overview",
+        "expired": "{count} lots expired",
+        "expiringSoon": "{count} lots expiring soon",
+        "daysHint": "Within the next {days} days",
+        "actionRequired": "Action required"
+      },
+      "label": {
+        "expired": "Expired {days} day(s) ago",
+        "today": "Expires today",
+        "days": "{days} day(s) remaining"
+      },
+      "page": {
+        "title": "Expiry monitoring",
+        "searchHint": "Search products...",
+        "tab": {
+          "expired": "Expired",
+          "expiringSoon": "Expiring soon",
+          "all": "All"
+        },
+        "filter": {
+          "tracking": "Tracking expiry",
+          "nonTracking": "Not tracking"
+        },
+        "empty": {
+          "tracking": "No products match the selected expiry filters.",
+          "nonTracking": "All products currently track expiry dates."
+        },
+        "item": {
+          "quantity": "Stock: {quantity}",
+          "earliest": "Next expiry: {date}",
+          "noLot": "No expiry lots available",
+          "noTracking": "Expiry tracking disabled"
+        }
       }
     },
     "form": {

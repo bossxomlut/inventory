@@ -20,6 +20,7 @@ class LoadMoreList<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       itemBuilder: (BuildContext context, int index) {
         if (index == items.length) {
           if (isCanLoadMore) {

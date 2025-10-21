@@ -57,6 +57,13 @@ class AppRouter extends $AppRouter {
           ],
         ),
         AutoRoute(
+          page: ProductExpiryRoute.page,
+          guards: [
+            AuthGuard(),
+            PermissionGuard(PermissionKey.productView),
+          ],
+        ),
+        AutoRoute(
           page: ProductDetailRoute.page,
           guards: [
             AuthGuard(),
@@ -321,6 +328,10 @@ extension DataManagementRouterX on AppRouter {
 extension AppRouterInventoryX on AppRouter {
   void goToProductList() {
     push(ProductListRoute());
+  }
+
+  void goToProductExpiry() {
+    push(const ProductExpiryRoute());
   }
 
   void goToProductDetail(Product product) {

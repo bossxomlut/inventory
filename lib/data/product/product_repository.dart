@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../core/helpers/app_image_manager.dart';
 import '../../domain/entities/image.dart';

@@ -31,7 +31,7 @@ if (admobAppId == null || admobAppId.trim().isEmpty()) {
 
 android {
     namespace = "com.bossxomlut.inventory"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "29.0.14206865"
 
     compileOptions {
@@ -82,4 +82,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
+    // các deps khác...
 }

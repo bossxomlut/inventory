@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../domain/entities/index.dart';
 import '../../domain/repositories/product/inventory_repository.dart';

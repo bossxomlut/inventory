@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

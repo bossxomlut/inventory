@@ -1,6 +1,6 @@
 //create SessionMapping
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../domain/entities/check/check_session.dart';
 import '../../domain/entities/check/checked_product.dart';

@@ -414,7 +414,7 @@ class ProductFilterDrawer extends ConsumerWidget {
                         builder: (context, ref, _) {
                           final activeFilter =
                               ref.watch(activeTimeFilterTypeProvider);
-                          return CupertinoSlidingSegmentedControl<String?>(
+                          return CupertinoSlidingSegmentedControl<String>(
                             groupValue: activeFilter,
                             padding: EdgeInsets.zero,
                             children: {

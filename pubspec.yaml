@@ -2,11 +2,11 @@ name: sample_app
 description: "A new Flutter project."
 publish_to: "none"
 
-version: 1.0.13+14
+version: 1.0.16+17
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
-  flutter: ">=3.24.4" #The version of Flutter used in this project.
+  flutter: ">=3.27.0" #The version of Flutter used in this project.
 
 dependencies:
   flutter:
@@ -14,7 +14,7 @@ dependencies:
 
   # A
   analyzer: any
-  auto_route: any # A powerful routing library, supports features like nested routes and route guards.
+  auto_route: ^10.1.0+1 # A powerful routing library, supports features like nested routes and route guards.
   animation_list: ^3.1.0
 
   # B
@@ -25,7 +25,7 @@ dependencies:
   curl_logger_dio_interceptor: ^1.0.0 # Logs Dio HTTP requests in a cURL-like format for easier debugging.
   cached_network_image: ^3.4.1
   csv: ^6.0.0
-  camera: 0.11.0+2 # A Flutter plugin for accessing the device's camera, allowing you to capture photos and videos.
+  camera: ^0.11.2 # A Flutter plugin for accessing the device's camera, allowing you to capture photos and videos.
 
   # D
   dartz: ^0.10.1 # Provides functional data types like Either and Option in Dart.
@@ -42,19 +42,19 @@ dependencies:
   flutter_screenutil: ^5.9.3 # Supports responsive design for multiple screen sizes.
   freezed_annotation: any # Annotation support for the Freezed package to create immutable and sealed classes.
   flutter_secure_storage: ^9.2.2 #Flutter Secure Storage provides API to store data in secure storage.
-  flutter_slidable: ^3.1.2
+  flutter_slidable: ^4.0.3
   flutter_hooks: ^0.21.2
   flutter_riverpod: ^2.6.1
-  file_picker: 10.1.9
-  fl_chart: 0.63.0
+  file_picker: ^10.3.3
+  fl_chart: ^0.71.0
 
   # G
   gap: ^3.0.1 # Provides spacing between widgets in Flutter layouts.
   google_fonts: ^6.2.1
   google_nav_bar: ^5.0.7
-  google_mobile_ads: ^5.1.0 # Google AdMob integration for Flutter
-  extension_google_sign_in_as_googleapis_auth: ^2.0.12
-  googleapis: ^13.2.0
+  google_mobile_ads: ^6.0.0 # Google AdMob integration for Flutter
+  extension_google_sign_in_as_googleapis_auth: ^3.0.0
+  googleapis: ^14.0.0
 
   # H
   highlight_text: ^1.8.0
@@ -64,8 +64,10 @@ dependencies:
   # I
   intl: ^0.19.0 # Provides internationalization features like number formatting, date/time formatting, and translations.
   image_picker: ^1.1.2
-  isar_key_value: ^0.3.0
-  isar: any
+#  isar_key_value: ^0.3.0
+  isar_community: ^3.3.0-dev.1
+  isar_community_flutter_libs:
+    version: ^3.3.0-dev.1
   in_app_review: ^2.0.10
 
   # J
@@ -77,21 +79,21 @@ dependencies:
   loading_animation_widget: ^1.3.0
 
   # M
-  mobile_scanner: 6.0.6
+  mobile_scanner: ^6.0.11
 
   # P
   pretty_dio_logger: ^1.4.0 # A Dio plugin for logging requests/responses in a more readable format.
   pin_code_fields: ^8.0.1
-  permission_handler: ^11.3.1
-  package_info_plus: ^8.1.0
+  permission_handler: ^12.0.1
+  package_info_plus: ^9.0.0
   path_provider: ^2.1.5
 
   # S
   smooth_page_indicator: ^1.2.0+3
   shared_preferences: ^2.3.2
   screenshot: ^3.0.0
-  share_plus: ^10.1.4
-  sign_in_button: ^3.0.0
+  share_plus: ^12.0.1
+  sign_in_button: ^4.0.1
 
   # U
   url_launcher: ^6.3.1
@@ -105,7 +107,7 @@ dependencies:
   restart_app: ^1.3.2
 
   # T
-  toastification: ^2.3.0
+  toastification: ^3.0.3
   photo_view: ^0.15.0
 
   # W
@@ -121,13 +123,13 @@ dev_dependencies:
   freezed: ^2.5.2 # A package that simplifies the creation of immutable classes and unions/sealed classes in Dart.
 
   # I
-  isar_generator: any
+  isar_community_generator: ^3.3.0-dev.1
 
   # J
   json_serializable: ^6.8.0 # A code generator that simplifies JSON serialization/deserialization in Dart.
 
   # R
-  auto_route_generator: ^8.0.0 # A code generator for the auto_route package to simplify route management.
+  auto_route_generator: ^10.0.1 # A code generator for the auto_route package to simplify route management.
   #  retrofit_generator: ^9.1.2  # A code generator for Retrofit, facilitating the creation of RESTful API clients.
   riverpod_generator: ^2.4.0
   # L
@@ -137,10 +139,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.2
 
 dependency_overrides:
-  isar_flutter_libs:
-    git:
-      url: https://github.com/bossxomlut/isar_flutter_libs.git
-      ref: master
+  source_gen: ^2.0.0
 
 flutter:
   uses-material-design: true

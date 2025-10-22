@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:sample_app/data/order/product_price.dart';
 
 import '../../domain/entities/order/price.dart';

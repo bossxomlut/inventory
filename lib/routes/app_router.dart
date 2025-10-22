@@ -15,7 +15,7 @@ final AppRouter _appRouter = AppRouter();
 AppRouter get appRouter => _appRouter;
 
 @AutoRouterConfig()
-class AppRouter extends $AppRouter {
+class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => <AutoRoute>[
         AutoRoute(page: SplashRoute.page, initial: true),

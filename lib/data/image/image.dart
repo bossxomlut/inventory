@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../domain/entities/image.dart';
 import '../shared/mapping_data.dart';

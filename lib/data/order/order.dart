@@ -1,6 +1,6 @@
 //create order collection
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../domain/index.dart';
 

@@ -25,7 +25,7 @@ dependencies:
   curl_logger_dio_interceptor: ^1.0.0 # Logs Dio HTTP requests in a cURL-like format for easier debugging.
   cached_network_image: ^3.4.1
   csv: ^6.0.0
-  camera: ^0.10.0 # A Flutter plugin for accessing the device's camera, allowing you to capture photos and videos.
+  camera: 0.11.0+2 # A Flutter plugin for accessing the device's camera, allowing you to capture photos and videos.
 
   # D
   dartz: ^0.10.1 # Provides functional data types like Either and Option in Dart.
@@ -135,6 +135,13 @@ dev_dependencies:
 
   # F
   flutter_launcher_icons: ^0.14.2
+
+dependency_overrides:
+  isar_flutter_libs:
+    git:
+      url: https://github.com/bossxomlut/isar_flutter_libs.git
+      ref: master
+
 flutter:
   uses-material-design: true
 

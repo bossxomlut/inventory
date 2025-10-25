@@ -29,12 +29,10 @@ class OrderStatusListPage extends ConsumerStatefulWidget {
   const OrderStatusListPage({super.key});
 
   @override
-  ConsumerState<OrderStatusListPage> createState() =>
-      _OrderStatusListPageState();
+  ConsumerState<OrderStatusListPage> createState() => _OrderStatusListPageState();
 }
 
-class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
-    with TickerProviderStateMixin {
+class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage> with TickerProviderStateMixin {
   late TabController _tabController;
   List<OrderStatus> _visibleStatuses = const [];
   final List<OrderStatus> statuses = [
@@ -66,18 +64,14 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
     }
 
     OrderStatus? previousStatus;
-    if (_visibleStatuses.isNotEmpty &&
-        _tabController.index < _visibleStatuses.length) {
+    if (_visibleStatuses.isNotEmpty && _tabController.index < _visibleStatuses.length) {
       previousStatus = _visibleStatuses[_tabController.index];
     }
 
-    final fallbackStatus = visibleStatuses.contains(OrderStatus.confirmed)
-        ? OrderStatus.confirmed
-        : visibleStatuses.first;
+    final fallbackStatus =
+        visibleStatuses.contains(OrderStatus.confirmed) ? OrderStatus.confirmed : visibleStatuses.first;
     final targetStatus =
-        previousStatus != null && visibleStatuses.contains(previousStatus)
-            ? previousStatus
-            : fallbackStatus;
+        previousStatus != null && visibleStatuses.contains(previousStatus) ? previousStatus : fallbackStatus;
     final targetIndex = visibleStatuses.indexOf(targetStatus);
 
     _tabController.dispose();
@@ -125,8 +119,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.warning_amber,
-                    size: 40, color: Colors.redAccent),
+                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
                   t(LKey.permissionsLoadFailed),
@@ -147,11 +140,9 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
       ),
       data: (permissions) {
         final canViewDraft = permissions.contains(PermissionKey.orderViewDraft);
-        final canViewConfirmed =
-            permissions.contains(PermissionKey.orderViewConfirmed);
+        final canViewConfirmed = permissions.contains(PermissionKey.orderViewConfirmed);
         final canViewDone = permissions.contains(PermissionKey.orderViewDone);
-        final canViewCancelled =
-            permissions.contains(PermissionKey.orderViewCancelled);
+        final canViewCancelled = permissions.contains(PermissionKey.orderViewCancelled);
         final canCreate = permissions.contains(PermissionKey.orderCreate);
         final canDelete = permissions.contains(PermissionKey.orderDelete);
         final canComplete = permissions.contains(PermissionKey.orderComplete);
@@ -193,16 +184,14 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
               ),
             ],
             bottom: TabBar(
-              labelStyle:
-                  theme.textMedium15Default.copyWith(color: Colors.white),
+              labelStyle: theme.textMedium15Default.copyWith(color: Colors.white),
               labelColor: Colors.white,
               unselectedLabelColor: Colors.white70,
               controller: _tabController,
               tabs: visibleStatuses.map((status) {
                 return Consumer(
                   builder: (context, ref, child) {
-                    final countAsync =
-                        ref.watch(orderStatusCountProvider(status));
+                    final countAsync = ref.watch(orderStatusCountProvider(status));
                     final count = countAsync.maybeWhen(
                       data: (value) => value,
                       orElse: () => 0,
@@ -230,21 +219,37 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
             }).toList(),
           ),
           floatingActionButton: canCreate
-              ? FloatingActionButton(
-                  onPressed: () {
-                    appRouter.goToCreateOrder().whenComplete(
-                      () {
-                        if (!mounted) {
-                          return;
-                        }
-                        ref.invalidate(orderListProvider(OrderStatus.draft));
-                        ref.invalidate(
-                            orderListProvider(OrderStatus.confirmed));
+              ? AnimatedBuilder(
+                  animation: _tabController,
+                  builder: (context, _) {
+                    final floatingButton = FloatingActionButton(
+                      onPressed: () {
+                        appRouter.goToCreateOrder().whenComplete(
+                          () {
+                            if (!mounted) {
+                              return;
+                            }
+                            ref.invalidate(orderListProvider(OrderStatus.draft));
+                            ref.invalidate(orderListProvider(OrderStatus.confirmed));
+                          },
+                        );
                       },
+                      child: const Icon(Icons.add),
                     );
-                  },
-                  child: const Icon(Icons.add),
-                )
+                    if (visibleStatuses[_tabController.index] == OrderStatus.confirmed && canComplete) {
+                      return AnimatedPadding(
+                        padding: EdgeInsets.only(bottom: 120),
+                        child: floatingButton,
+                        duration: Duration(milliseconds: 200),
+                      );
+                    }
+
+                    return  AnimatedPadding(
+                      padding: EdgeInsets.zero,
+                      child: floatingButton,
+                      duration: Duration(milliseconds: 200),
+                    );
+                  })
               : null,
         );
       },
@@ -280,8 +285,7 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
               ],
             ),
             data: (settings) {
-              final notifier =
-                  ref.read(orderActionConfirmControllerProvider.notifier);
+              final notifier = ref.read(orderActionConfirmControllerProvider.notifier);
               return AlertDialog(
                 title: Text(t(LKey.orderListSettingsTitle)),
                 content: Column(
@@ -292,24 +296,21 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
                       title: t(LKey.orderListToggleConfirmTitle),
                       description: t(LKey.orderListToggleConfirmDescription),
                       value: settings.confirm,
-                      onChanged: (value) => notifier.setActionEnabled(
-                          OrderActionType.confirm, value),
+                      onChanged: (value) => notifier.setActionEnabled(OrderActionType.confirm, value),
                     ),
                     _buildActionToggle(
                       context,
                       title: t(LKey.orderListToggleCancelTitle),
                       description: t(LKey.orderListToggleCancelDescription),
                       value: settings.cancel,
-                      onChanged: (value) => notifier.setActionEnabled(
-                          OrderActionType.cancel, value),
+                      onChanged: (value) => notifier.setActionEnabled(OrderActionType.cancel, value),
                     ),
                     _buildActionToggle(
                       context,
                       title: t(LKey.orderListToggleDeleteTitle),
                       description: t(LKey.orderListToggleDeleteDescription),
                       value: settings.delete,
-                      onChanged: (value) => notifier.setActionEnabled(
-                          OrderActionType.delete, value),
+                      onChanged: (value) => notifier.setActionEnabled(OrderActionType.delete, value),
                     ),
                   ],
                 ),

@@ -131,7 +131,7 @@ class OrderListView extends HookConsumerWidget {
                 onComplete: buildCompleteCallback(order),
                 onCancel:buildCancelCallback(order),
                 isSelected: isSelected,
-                onSelectionToggle: status == OrderStatus.confirmed ? () {
+                onSelectionToggle: status == OrderStatus.confirmed && canCompleteOrder ? () {
                   ref.read(confirmedOrderSelectionProvider.notifier).toggle(order);
                 } : null,
               );
@@ -160,7 +160,7 @@ class OrderListView extends HookConsumerWidget {
         ),
         const AppDivider(),
         Expanded(child: buildBody()),
-        if (status == OrderStatus.confirmed)
+        if (status == OrderStatus.confirmed && canCompleteOrder)
           Consumer(
             builder: (context, ref, _) {
               final selectionState = ref.watch(confirmedOrderSelectionProvider);

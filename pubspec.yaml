@@ -2,11 +2,11 @@ name: sample_app
 description: "A new Flutter project."
 publish_to: "none"
 
-version: 1.0.16+17
+version: 1.0.21+22
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
-  flutter: ">=3.27.0" #The version of Flutter used in this project.
+  flutter: ">=3.25.2" #The version of Flutter used in this project.
 
 dependencies:
   flutter:
@@ -143,6 +143,7 @@ dev_dependencies:
 
 dependency_overrides:
   source_gen: ^2.0.0
+  intl: 0.20.2
 
 flutter:
   uses-material-design: true

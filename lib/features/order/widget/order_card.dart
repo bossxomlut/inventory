@@ -165,9 +165,6 @@ class OrderCard extends StatelessWidget {
                   ),
               ],
             ),
-            const Gap(10),
-            const AppDivider(),
-            const Gap(4),
             buildTrailing(
               context,
               order.status,
@@ -189,36 +186,43 @@ class OrderCard extends StatelessWidget {
         if (!canComplete && !canCancelOrder) {
           return const SizedBox.shrink();
         }
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+        return Column(
           children: [
-            //Button: Hoàn thành
-            if (canComplete)
-              TextButton(
-                onPressed: onComplete,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.green,
-                  backgroundColor: Colors.green.withOpacity(0.1),
-                ),
-                child: Text(
-                  t(LKey.orderListActionComplete),
-                  style: theme.textRegular15Default.copyWith(color: Colors.green),
-                ),
-              ),
-            if (canComplete && canCancelOrder) const Gap(12),
-            //Button: Huỷ
-            if (canCancelOrder)
-              TextButton(
-                onPressed: onCancel,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  backgroundColor: Colors.red.withOpacity(0.1),
-                ),
-                child: Text(
-                  t(LKey.orderListActionCancel),
-                  style: theme.textRegular15Default.copyWith(color: Colors.red),
-                ),
-              ),
+            const Gap(10),
+            const AppDivider(),
+            const Gap(4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                //Button: Hoàn thành
+                if (canComplete)
+                  TextButton(
+                    onPressed: onComplete,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.green,
+                      backgroundColor: Colors.green.withOpacity(0.1),
+                    ),
+                    child: Text(
+                      t(LKey.orderListActionComplete),
+                      style: theme.textRegular15Default.copyWith(color: Colors.green),
+                    ),
+                  ),
+                if (canComplete && canCancelOrder) const Gap(12),
+                //Button: Huỷ
+                if (canCancelOrder)
+                  TextButton(
+                    onPressed: onCancel,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      backgroundColor: Colors.red.withOpacity(0.1),
+                    ),
+                    child: Text(
+                      t(LKey.orderListActionCancel),
+                      style: theme.textRegular15Default.copyWith(color: Colors.red),
+                    ),
+                  ),
+              ],
+            ),
           ],
         );
       case OrderStatus.draft:
@@ -227,19 +231,26 @@ class OrderCard extends StatelessWidget {
         if (onRemove == null) {
           return const SizedBox.shrink();
         }
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+        return Column(
           children: [
-            TextButton(
-              onPressed: onRemove,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-                backgroundColor: Colors.red.withOpacity(0.1),
-              ),
-              child: Text(
-                t(LKey.buttonDelete),
-                style: theme.textRegular15Default.copyWith(color: Colors.red),
-              ),
+            const Gap(10),
+            const AppDivider(),
+            const Gap(4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: onRemove,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    backgroundColor: Colors.red.withOpacity(0.1),
+                  ),
+                  child: Text(
+                    t(LKey.buttonDelete),
+                    style: theme.textRegular15Default.copyWith(color: Colors.red),
+                  ),
+                ),
+              ],
             ),
           ],
         );

@@ -29,6 +29,7 @@ export 'loading_widget.dart';
 export 'localization_text.dart';
 export 'processing_widget.dart';
 export 'scanner_page.dart';
+export 'search/app_search_field.dart';
 export 'search/search_item_widget.dart';
 export 'see_more_widget.dart';
 //Text Field

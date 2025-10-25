@@ -18,7 +18,10 @@ OrderRepository orderRepository(Ref ref) => OrderRepositoryImpl(
 OrderItemRepository orderItemRepository(ref) => OrderItemRepositoryImpl();
 
 abstract class OrderRepository implements CrudRepository<Order, int> {
-  Future<LoadResult<Order>> getOrdersByStatus(OrderStatus status, LoadListQuery query);
+  Future<LoadResult<Order>> getOrdersByStatus(
+      OrderStatus status, LoadListQuery query);
+
+  Future<List<Order>> getAllOrdersByStatus(OrderStatus status);
 
   Future<Order> createOrder(Order order, List<OrderItem> items);
 

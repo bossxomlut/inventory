@@ -1123,6 +1123,18 @@
       "orderCode": "Order code: #{id}",
       "customer": "Customer: {name}",
       "contact": "Contact: {contact}",
+      "searchHint": "Search by order code",
+      "searchEmpty": "No orders match your search keyword.",
+      "bulk": {
+        "completeAll": "Complete all",
+        "completeSelected": "Complete selected",
+        "summary": "{selected}/{total} orders selected",
+        "confirmAll": "Are you sure you want to complete all {count} confirmed orders?",
+        "confirmSelected": "Are you sure you want to complete {count} selected orders?",
+        "emptySelection": "Select at least one order first.",
+        "success": "Successfully completed {count} orders.",
+        "error": "Could not complete the orders. Please try again."
+      },
       "productsLabel": "Products:",
       "quantityLabel": "Quantity:",
       "totalLabel": "Total:",

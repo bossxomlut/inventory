@@ -1063,6 +1063,18 @@
       "orderCode": "Mã đơn hàng: #{id}",
       "customer": "Khách hàng: {name}",
       "contact": "Liên hệ: {contact}",
+      "searchHint": "Tìm kiếm theo mã đơn",
+      "searchEmpty": "Không tìm thấy đơn hàng nào phù hợp với từ khóa.",
+      "bulk": {
+        "completeAll": "Hoàn thành tất cả",
+        "completeSelected": "Hoàn thành đã chọn",
+        "summary": "Đã chọn {selected}/{total} đơn hàng",
+        "confirmAll": "Bạn có chắc chắn muốn hoàn thành tất cả {count} đơn đã xác nhận?",
+        "confirmSelected": "Bạn có chắc chắn muốn hoàn thành {count} đơn đã chọn?",
+        "emptySelection": "Vui lòng chọn ít nhất một đơn hàng.",
+        "success": "Hoàn thành {count} đơn hàng thành công.",
+        "error": "Không thể hoàn thành đơn hàng. Vui lòng thử lại."
+      },
       "productsLabel": "Sản phẩm:",
       "quantityLabel": "Số lượng:",
       "totalLabel": "Tổng tiền:",

@@ -103,7 +103,8 @@ class LoadResult<T> {
 // }
 
 mixin LoadListController<T> on BuildlessAutoDisposeNotifier<LoadListState<T>> {
-  final CancelTask<LoadResult<T>> _cancelTask = CompleterCancelTask<LoadResult<T>>();
+  final CancelTask<LoadResult<T>> _cancelTask =
+      CompleterCancelTask<LoadResult<T>>();
 
   Future<LoadResult<T>> fetchData(LoadListQuery query);
   //
@@ -119,6 +120,7 @@ mixin LoadListController<T> on BuildlessAutoDisposeNotifier<LoadListState<T>> {
   }
 
   Future<void> loadData({required LoadListQuery query}) async {
+    this.query = query;
     try {
       // Set loading state
       state = state.copyWith(
@@ -134,7 +136,9 @@ mixin LoadListController<T> on BuildlessAutoDisposeNotifier<LoadListState<T>> {
       );
 
       // Update state with new data
-      final newList = query.page == firstPage ? newData.data : [...state.data, ...newData.data];
+      final newList = query.page == firstPage
+          ? newData.data
+          : [...state.data, ...newData.data];
 
       print(
           'total count: ${newData.totalCount}, new data length: ${newData.data.length}, current data length: ${state.data.length}');
@@ -169,11 +173,14 @@ mixin LoadListController<T> on BuildlessAutoDisposeNotifier<LoadListState<T>> {
   }
 
   Future<void> search(String keyword) async {
-    resetQuery();
-    await loadData(query: query.copyWith(search: keyword));
+    final normalized = keyword.trim();
+    query = LoadListQueryX.defaultQuery.copyWith(
+      search: normalized.isEmpty ? null : normalized,
+    );
+    await loadData(query: query);
   }
 
-  Future loadMore() async {
+  Future<void> loadMore() async {
     if (state.isLoading || state.isLoadingMore || state.isEndOfList) {
       return;
     }
@@ -227,5 +234,6 @@ class LoadListQuery with _$LoadListQuery {
 
 extension LoadListQueryX on LoadListQuery {
   //default LoadListQuery
-  static LoadListQuery get defaultQuery => const LoadListQuery(page: firstPage, pageSize: defaultPageSize);
+  static LoadListQuery get defaultQuery =>
+      const LoadListQuery(page: firstPage, pageSize: defaultPageSize);
 }

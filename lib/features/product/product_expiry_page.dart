@@ -6,12 +6,13 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/index.dart';
 import '../../provider/index.dart';
 import '../../resources/index.dart';
-import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
+import '../../shared_widgets/toast.dart';
 import '../../shared_widgets/hook/text_controller_hook.dart';
 import '../../shared_widgets/list_view/load_more_list.dart';
 import 'provider/product_expiry_list_provider.dart';
 import 'provider/product_expiry_summary_provider.dart';
+import 'widget/add_product_widget.dart';
 import 'widget/product_card.dart';
 import 'widget/product_expiry_status_badge.dart';
 import 'widget/product_expiry_summary_banner.dart';
@@ -22,7 +23,6 @@ class ProductExpiryPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = context.appTheme;
     final searchController = useTextEditingController();
     final String searchKeyword = ref.watch(productExpirySearchKeywordProvider);
     final debouncedSearchText = useDebouncedText(searchController);
@@ -114,20 +114,11 @@ class ProductExpiryPage extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                        child: TextField(
+                        padding: EdgeInsets.zero,
+                        child: AppSearchField(
                           controller: searchController,
-                          decoration: InputDecoration(
-                            hintText: t(LKey.productExpirySearchHint),
-                            prefixIcon: const Icon(Icons.search),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: theme.colorBorderField),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 4),
-                          ),
+                          hintText: t(LKey.productExpirySearchHint),
+                          margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                         ),
                       ),
                       Padding(
@@ -147,7 +138,8 @@ class ProductExpiryPage extends HookConsumerWidget {
                           ],
                         ),
                       ),
-                      if (trackingFilter == ProductExpiryTrackingFilter.tracking)
+                      if (trackingFilter ==
+                          ProductExpiryTrackingFilter.tracking)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                           child: Wrap(
@@ -319,7 +311,7 @@ class _ExpiryProductTile extends HookConsumerWidget {
       ..sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
 
     final badgeWidgets = <Widget>[];
-    String? infoText;
+    late final String infoText;
 
     if (trackingFilter == ProductExpiryTrackingFilter.nonTracking) {
       infoText = LKey.productExpiryItemNoTracking.tr(context: context);
@@ -387,24 +379,40 @@ class _ExpiryProductTile extends HookConsumerWidget {
         ),
       );
     }
-    if (infoText != null) {
-      if (subtitleChildren.isNotEmpty) {
-        subtitleChildren.add(const SizedBox(height: 4));
-      }
-      subtitleChildren.add(
-        Text(
-          infoText,
-          style: context.appTheme.textRegular12Subtle,
-        ),
-      );
+    if (subtitleChildren.isNotEmpty) {
+      subtitleChildren.add(const SizedBox(height: 4));
     }
+    subtitleChildren.add(
+      Text(
+        infoText,
+        style: context.appTheme.textRegular12Subtle,
+      ),
+    );
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       color: Colors.white,
       child: CustomProductCard(
         product: product,
-        onTap: () => appRouter.goToProductDetail(product),
+        onTap: () async {
+          final permissions = ref.read(currentUserPermissionsProvider);
+          final canEdit = permissions.maybeWhen(
+            data: (value) => value.contains(PermissionKey.productUpdate),
+            orElse: () => false,
+          );
+
+          if (!canEdit) {
+            showError(
+              context: context,
+              message: LKey.productFormPermissionDenied.tr(context: context),
+            );
+            return;
+          }
+
+          await EditProductScreen(product: product).show(context);
+          ref.invalidate(productExpiryListControllerProvider);
+          ref.invalidate(productExpirySummaryProvider);
+        },
         subtitleWidget: subtitleChildren.isEmpty
             ? null
             : Column(

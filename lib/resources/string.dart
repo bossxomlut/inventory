@@ -523,6 +523,19 @@ abstract class LKey {
   static const String orderListQuantityLabel = 'order.list.quantityLabel';
   static const String orderListTotalLabel = 'order.list.totalLabel';
   static const String orderListNoteLabel = 'order.list.noteLabel';
+  static const String orderListSearchHint = 'order.list.searchHint';
+  static const String orderListSearchEmpty = 'order.list.searchEmpty';
+  static const String orderListBulkCompleteAll = 'order.list.bulk.completeAll';
+  static const String orderListBulkCompleteSelected =
+      'order.list.bulk.completeSelected';
+  static const String orderListBulkSummary = 'order.list.bulk.summary';
+  static const String orderListBulkConfirmAll = 'order.list.bulk.confirmAll';
+  static const String orderListBulkConfirmSelected =
+      'order.list.bulk.confirmSelected';
+  static const String orderListBulkEmptySelection =
+      'order.list.bulk.emptySelection';
+  static const String orderListBulkSuccess = 'order.list.bulk.success';
+  static const String orderListBulkError = 'order.list.bulk.error';
   static const String orderListActionComplete = 'order.list.action.complete';
   static const String orderListActionCancel = 'order.list.action.cancel';
   static const String orderListEmptyDraft = 'order.list.empty.draft';

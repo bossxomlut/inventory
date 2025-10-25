@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../domain/entities/order/order.dart';
@@ -13,10 +15,14 @@ import '../../resources/index.dart';
 import '../../resources/theme.dart';
 import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
+import '../../shared_widgets/toast.dart';
 import '../setting/provider/currency_settings_provider.dart';
+import 'order_list_view.dart';
 import 'provider/order_action_confirm_provider.dart';
 import 'provider/order_action_handler.dart';
 import 'provider/order_list_provider.dart';
+import 'provider/order_status_count_provider.dart';
+import 'widget/order_card.dart';
 
 @RoutePage()
 class OrderStatusListPage extends ConsumerStatefulWidget {
@@ -86,58 +92,6 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
       initialIndex: clampedIndex,
     );
     _visibleStatuses = List<OrderStatus>.from(visibleStatuses);
-  }
-
-  VoidCallback? _buildRemoveCallback(BuildContext context, WidgetRef ref,
-      OrderStatus status, Order order, bool canDelete) {
-    if (!canDelete) {
-      return null;
-    }
-
-    switch (status) {
-      case OrderStatus.draft:
-        return () async {
-          await ref
-              .read(orderActionHandlerProvider)
-              .deleteOrder(context, OrderStatus.draft, order);
-        };
-      case OrderStatus.done:
-        return () async {
-          await ref
-              .read(orderActionHandlerProvider)
-              .deleteOrder(context, OrderStatus.done, order);
-        };
-      case OrderStatus.cancelled:
-        return () async {
-          await ref
-              .read(orderActionHandlerProvider)
-              .deleteOrder(context, OrderStatus.cancelled, order);
-        };
-      case OrderStatus.confirmed:
-        return null;
-    }
-  }
-
-  VoidCallback? _buildCompleteCallback(BuildContext context, WidgetRef ref,
-      OrderStatus status, Order order, bool canComplete) {
-    if (status != OrderStatus.confirmed || !canComplete) {
-      return null;
-    }
-
-    return () async {
-      await ref.read(orderActionHandlerProvider).completeOrder(context, order);
-    };
-  }
-
-  VoidCallback? _buildCancelCallback(BuildContext context, WidgetRef ref,
-      OrderStatus status, Order order, bool canCancel) {
-    if (status != OrderStatus.confirmed || !canCancel) {
-      return null;
-    }
-
-    return () async {
-      await ref.read(orderActionHandlerProvider).cancelOrder(context, order);
-    };
   }
 
   String _statusLabel(BuildContext context, OrderStatus status) {
@@ -247,8 +201,12 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
               tabs: visibleStatuses.map((status) {
                 return Consumer(
                   builder: (context, ref, child) {
-                    final orders = ref.watch(orderListProvider(status));
-                    final count = orders.data.length;
+                    final countAsync =
+                        ref.watch(orderStatusCountProvider(status));
+                    final count = countAsync.maybeWhen(
+                      data: (value) => value,
+                      orElse: () => 0,
+                    );
                     return Tab(
                       text: '${_statusLabel(context, status)} ($count)',
                     );
@@ -261,21 +219,13 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
           ),
           body: TabBarView(
             controller: _tabController,
-            children: visibleStatuses.map((status) {
+            children: visibleStatuses.map<Widget>((status) {
               return OrderListView(
                 status: status,
-                itemBuilder: (BuildContext context, Order order, int index) {
-                  return OrderCard(
-                    order: order,
-                    onRemove: _buildRemoveCallback(
-                        context, ref, status, order, canDelete),
-                    onComplete: _buildCompleteCallback(
-                        context, ref, status, order, canComplete),
-                    onCancel: _buildCancelCallback(
-                        context, ref, status, order, canCancel),
-                  );
-                },
                 canCreateOrder: canCreate,
+                canDeleteOrder: canDelete,
+                canCompleteOrder: canComplete,
+                canCancelOrder: canCancel,
               );
             }).toList(),
           ),
@@ -399,362 +349,6 @@ class _OrderStatusListPageState extends ConsumerState<OrderStatusListPage>
         style: Theme.of(context).textTheme.bodySmall,
       ),
       onChanged: onChanged,
-    );
-  }
-}
-
-class OrderListView extends ConsumerWidget {
-  const OrderListView({
-    super.key,
-    required this.status,
-    required this.itemBuilder,
-    required this.canCreateOrder,
-  });
-
-  final OrderStatus status;
-  final Widget Function(BuildContext context, Order oder, int index)
-      itemBuilder;
-  final bool canCreateOrder;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final orders = ref.watch(orderListProvider(status));
-    ref.watch(currencySettingsControllerProvider);
-
-    if (orders.data.isEmpty && !orders.isLoading) {
-      return OrderEmptyState(status: status, canCreateOrder: canCreateOrder);
-    }
-
-    return LoadMoreList<Order>(
-      items: orders.data,
-      itemBuilder: (context, index) {
-        final order = orders.data[index];
-        return itemBuilder(context, order, index);
-      },
-      separatorBuilder: (context, index) => const SizedBox(height: 6),
-      onLoadMore: () async {
-        return Future(
-          () {
-            return ref.read(orderListProvider(status).notifier).loadMore();
-          },
-        );
-      },
-      isCanLoadMore: !orders.isEndOfList,
-    );
-  }
-}
-
-class OrderCard extends StatelessWidget {
-  const OrderCard({
-    super.key,
-    required this.order,
-    this.onRemove,
-    this.onComplete,
-    this.onCancel,
-  });
-
-  final Order order;
-  final VoidCallback? onRemove;
-  final VoidCallback? onComplete;
-  final VoidCallback? onCancel;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.appTheme;
-    String t(String key) => key.tr(context: context);
-    final notSet = t(LKey.orderCommonNotSet);
-    final customerName =
-        order.customer.isNotNullOrEmpty ? order.customer! : notSet;
-    final contactName = order.customerContact.isNotNullOrEmpty
-        ? order.customerContact!
-        : notSet;
-
-    return InkWell(
-      onTap: () {
-        appRouter.goToOrderDetail(order);
-      },
-      child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-          ),
-          child: Column(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  //Mã đơn hàng
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        LKey.orderListOrderCode.tr(
-                          namedArgs: {'id': '${order.id}'},
-                        ),
-                        style: theme.textMedium15Default,
-                      ),
-                      Text(
-                        '${DateFormat('dd/MM/yyyy').format(order.orderDate)}',
-                        style: theme.textRegular14Sublest,
-                      ),
-                    ],
-                  ),
-                  Gap(8),
-                  Row(
-                    children: [
-                      //Tên khách hàng
-                      Text(
-                        LKey.orderListCustomer.tr(
-                          namedArgs: {'name': customerName},
-                        ),
-                        style: theme.textRegular15Default,
-                      ),
-                      VerticalDivider(), //contact
-                      Text(
-                        LKey.orderListContact.tr(
-                          namedArgs: {'contact': contactName},
-                        ),
-                        style: theme.textRegular14Sublest,
-                      ),
-                    ],
-                  ),
-
-                  Gap(8),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    clipBehavior: Clip.none,
-                    child: Row(
-                      children: [
-                        Row(
-                          children: [
-                            //Sản phẩm
-                            //Số sản phẩm
-                            Text(
-                              t(LKey.orderListProductsLabel),
-                              style: theme.textRegular13Subtle,
-                            ),
-                            Gap(4),
-                            Text(
-                              '${order.productCount}',
-                              style: theme.textRegular15Default,
-                            ),
-                            //Tổng tiền
-                          ],
-                        ),
-                        Gap(20),
-                        Row(
-                          children: [
-                            //Sản phẩm
-                            //Số sản phẩm
-                            Text(
-                              t(LKey.orderListQuantityLabel),
-                              style: theme.textRegular13Subtle,
-                            ),
-                            Gap(4),
-                            Text(
-                              '${order.totalAmount}',
-                              style: theme.textRegular15Default,
-                            ),
-                            //Tổng tiền
-                          ],
-                        ),
-                        Gap(20),
-                        Row(
-                          children: [
-                            //Sản phẩm
-                            //Số sản phẩm
-                            Text(
-                              t(LKey.orderListTotalLabel),
-                              style: theme.textRegular13Subtle,
-                            ),
-                            Gap(4),
-                            Text(
-                              '${order.totalPrice.priceFormat()}',
-                              style: theme.textRegular15Default,
-                            ), //Tổng tiền
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  if (order.note != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(
-                        LKey.orderListNoteLabel
-                            .tr(namedArgs: {'note': order.note!}),
-                        style: theme.textRegular15Subtle,
-                      ),
-                    ),
-                ],
-              ),
-              const Gap(10),
-              const AppDivider(),
-              const Gap(4),
-              buildTrailing(
-                context,
-                order.status,
-                theme,
-              ),
-            ],
-          )),
-    );
-  }
-
-  Widget buildTrailing(
-      BuildContext context, OrderStatus status, AppThemeData theme) {
-    String t(String key) => key.tr(context: context);
-    switch (status) {
-      case OrderStatus.confirmed:
-        final bool canComplete = onComplete != null;
-        final bool canCancelOrder = onCancel != null;
-        if (!canComplete && !canCancelOrder) {
-          return const SizedBox.shrink();
-        }
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            //Button: Hoàn thành
-            if (canComplete)
-              TextButton(
-                onPressed: onComplete,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.green,
-                  backgroundColor: Colors.green.withOpacity(0.1),
-                ),
-                child: Text(
-                  t(LKey.orderListActionComplete),
-                  style:
-                      theme.textRegular15Default.copyWith(color: Colors.green),
-                ),
-              ),
-            if (canComplete && canCancelOrder) const Gap(12),
-            //Button: Huỷ
-            if (canCancelOrder)
-              TextButton(
-                onPressed: onCancel,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  backgroundColor: Colors.red.withOpacity(0.1),
-                ),
-                child: Text(
-                  t(LKey.orderListActionCancel),
-                  style: theme.textRegular15Default.copyWith(color: Colors.red),
-                ),
-              ),
-          ],
-        );
-      case OrderStatus.draft:
-      case OrderStatus.done:
-      case OrderStatus.cancelled:
-        if (onRemove == null) {
-          return const SizedBox.shrink();
-        }
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            TextButton(
-              onPressed: onRemove,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-                backgroundColor: Colors.red.withOpacity(0.1),
-              ),
-              child: Text(
-                t(LKey.buttonDelete),
-                style: theme.textRegular15Default.copyWith(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-    }
-  }
-}
-
-class OrderEmptyState extends StatelessWidget {
-  const OrderEmptyState({
-    super.key,
-    required this.status,
-    required this.canCreateOrder,
-  });
-
-  final OrderStatus status;
-  final bool canCreateOrder;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.appTheme;
-    String t(String key) => key.tr(context: context);
-
-    String getMessage() {
-      switch (status) {
-        case OrderStatus.draft:
-          return t(LKey.orderListEmptyDraft);
-        case OrderStatus.confirmed:
-          return t(LKey.orderListEmptyConfirmed);
-        case OrderStatus.done:
-          return t(LKey.orderListEmptyDone);
-        case OrderStatus.cancelled:
-          return t(LKey.orderListEmptyCancelled);
-      }
-    }
-
-    IconData getIcon() {
-      switch (status) {
-        case OrderStatus.draft:
-          return Icons.edit_note_outlined;
-        case OrderStatus.confirmed:
-          return Icons.check_circle_outline;
-        case OrderStatus.done:
-          return Icons.task_alt_outlined;
-        case OrderStatus.cancelled:
-          return Icons.cancel_outlined;
-      }
-    }
-
-    Color getIconColor() {
-      switch (status) {
-        case OrderStatus.draft:
-          return Colors.orange;
-        case OrderStatus.confirmed:
-          return Colors.blue;
-        case OrderStatus.done:
-          return Colors.green;
-        case OrderStatus.cancelled:
-          return Colors.red;
-      }
-    }
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            getIcon(),
-            size: 80,
-            color: getIconColor().withOpacity(0.3),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            getMessage(),
-            style: theme.textRegular16Subtle,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          if (canCreateOrder)
-            Text(
-              t(LKey.orderListCreateHint),
-              style: theme.textRegular14Sublest,
-              textAlign: TextAlign.center,
-            )
-          else
-            Text(
-              t(LKey.orderListContactAdmin),
-              style: theme.textRegular14Sublest,
-              textAlign: TextAlign.center,
-            ),
-        ],
-      ),
     );
   }
 }

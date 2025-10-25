@@ -99,6 +99,9 @@ dependencies:
   url_launcher: ^6.3.1
   uuid: ^4.5.1
 
+  # V
+  visibility_detector: ^0.4.0+2
+
   # R
   retrofit: ^4.4.1 # A library that simplifies making RESTful HTTP requests using code generation and annotations.
   # https://medium.com/mindful-engineering/retrofit-the-easiest-way-to-call-rest-apis-is-flutter-fe55d1e7c5c2

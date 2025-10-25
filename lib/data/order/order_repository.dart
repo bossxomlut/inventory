@@ -2,13 +2,13 @@ import 'package:isar_community/isar.dart';
 
 import '../../domain/index.dart';
 import '../../domain/repositories/order/order_repository.dart';
-import '../../domain/entities/product/inventory_lot_allocation.dart';
 import '../../domain/repositories/product/update_product_repository.dart';
 import '../../provider/load_list.dart';
 import '../database/isar_repository.dart';
 import 'order.dart';
 
-class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order, OrderCollection> {
+class OrderRepositoryImpl extends OrderRepository
+    with IsarCrudRepository<Order, OrderCollection> {
   OrderRepositoryImpl(this._updateProductRepository);
 
   final UpdateProductRepository _updateProductRepository;
@@ -34,7 +34,8 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
     bool isUpdateFromDraft = order.id != undefinedId;
 
     final createdOrder = await isar.writeTxn(() async {
-      final orderCollection = isUpdateFromDraft ? updateNewItem(order) : createNewItem(order);
+      final orderCollection =
+          isUpdateFromDraft ? updateNewItem(order) : createNewItem(order);
 
       final orderId = await iCollection.put(orderCollection);
 
@@ -61,7 +62,8 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
     });
 
     if (createdOrder.status == OrderStatus.confirmed) {
-      final allocationCollection = isar.collection<OrderLotAllocationCollection>();
+      final allocationCollection =
+          isar.collection<OrderLotAllocationCollection>();
       final allocationRecords = <OrderLotAllocationCollection>[];
 
       for (final item in items) {
@@ -139,22 +141,62 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
   }
 
   @override
-  Future<LoadResult<Order>> getOrdersByStatus(OrderStatus status, LoadListQuery query) {
-    return iCollection
+  Future<LoadResult<Order>> getOrdersByStatus(
+      OrderStatus status, LoadListQuery query) {
+    final baseQuery =
+        iCollection.filter().statusEqualTo(status).sortByOrderDateDesc();
+    final offset = (query.page - 1) * query.pageSize;
+    final keyword = query.search?.trim();
+
+    if (keyword == null || keyword.isEmpty) {
+      return baseQuery
+          .offset(offset)
+          .limit(query.pageSize)
+          .findAll()
+          .then((collections) async {
+        final orders = await Future.wait(
+          collections.map((collection) => getItemFromCollection(collection)),
+        );
+        final totalCount =
+            await iCollection.filter().statusEqualTo(status).count();
+        return LoadResult(data: orders, totalCount: totalCount);
+      });
+    }
+
+    return baseQuery.findAll().then((collections) async {
+      final searchText = keyword.toLowerCase();
+      final searchId = int.tryParse(keyword);
+
+      final filtered = collections.where((collection) {
+        final customerMatch =
+            collection.customerName.toLowerCase().contains(searchText);
+        final contactMatch =
+            collection.customerContact.toLowerCase().contains(searchText);
+        final note = collection.note?.toLowerCase() ?? '';
+        final noteMatch = note.contains(searchText);
+        final idMatch = searchId != null && collection.id == searchId;
+        return customerMatch || contactMatch || noteMatch || idMatch;
+      }).toList();
+
+      final totalCount = filtered.length;
+      final paged = filtered.skip(offset).take(query.pageSize).toList();
+      final orders = await Future.wait(
+        paged.map((collection) => getItemFromCollection(collection)),
+      );
+      return LoadResult(data: orders, totalCount: totalCount);
+    });
+  }
+
+  @override
+  Future<List<Order>> getAllOrdersByStatus(OrderStatus status) async {
+    final collections = await iCollection
         .filter()
         .statusEqualTo(status)
         .sortByOrderDateDesc()
-        .offset((query.page - 1) * query.pageSize)
-        .limit(query.pageSize)
-        .findAll()
-        .then((collections) {
-      return Future.wait(collections.map((collection) => getItemFromCollection(collection))).then(
-        (orders) => LoadResult(
-          data: orders,
-          totalCount: iCollection.filter().statusEqualTo(status).countSync(),
-        ),
-      );
-    });
+        .findAll();
+    return Future.wait(
+      collections.map((collection) => getItemFromCollection(collection)),
+    );
   }
 
   @override
@@ -186,8 +228,10 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
 
     //update product stock
     final itemCollection = isar.collection<OrderItemCollection>();
-    final items = await itemCollection.filter().orderIdEqualTo(order.id).findAll();
-    final allocationCollection = isar.collection<OrderLotAllocationCollection>();
+    final items =
+        await itemCollection.filter().orderIdEqualTo(order.id).findAll();
+    final allocationCollection =
+        isar.collection<OrderLotAllocationCollection>();
     for (final item in items) {
       final allocations = (await allocationCollection
               .filter()
@@ -228,7 +272,8 @@ class OrderRepositoryImpl extends OrderRepository with IsarCrudRepository<Order,
   }
 }
 
-class OrderItemRepositoryImpl extends OrderItemRepository with IsarCrudRepository<OrderItem, OrderItemCollection> {
+class OrderItemRepositoryImpl extends OrderItemRepository
+    with IsarCrudRepository<OrderItem, OrderItemCollection> {
   @override
   OrderItemCollection createNewItem(OrderItem item) {
     return OrderItemCollection()
@@ -259,8 +304,13 @@ class OrderItemRepositoryImpl extends OrderItemRepository with IsarCrudRepositor
 
   @override
   Future<List<OrderItem>> getItemsByOrderId(int orderId) {
-    return iCollection.filter().orderIdEqualTo(orderId).findAll().then((collections) {
-      return Future.wait(collections.map((collection) => getItemFromCollection(collection)));
+    return iCollection
+        .filter()
+        .orderIdEqualTo(orderId)
+        .findAll()
+        .then((collections) {
+      return Future.wait(
+          collections.map((collection) => getItemFromCollection(collection)));
     });
   }
 

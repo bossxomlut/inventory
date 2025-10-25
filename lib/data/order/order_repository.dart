@@ -5,6 +5,7 @@ import '../../domain/repositories/order/order_repository.dart';
 import '../../domain/repositories/product/update_product_repository.dart';
 import '../../provider/load_list.dart';
 import '../database/isar_repository.dart';
+import '../product/inventory.dart';
 import 'order.dart';
 
 class OrderRepositoryImpl extends OrderRepository
@@ -232,6 +233,7 @@ class OrderRepositoryImpl extends OrderRepository
         await itemCollection.filter().orderIdEqualTo(order.id).findAll();
     final allocationCollection =
         isar.collection<OrderLotAllocationCollection>();
+    final productCollection = isar.collection<ProductCollection>();
     for (final item in items) {
       final allocations = (await allocationCollection
               .filter()
@@ -249,11 +251,29 @@ class OrderRepositoryImpl extends OrderRepository
                 updatedAt: e.lotUpdatedAt,
               ))
           .toList();
+      final product = await productCollection.get(item.productId);
+      final tracksExpiry = product?.enableExpiryTracking ?? false;
+      var restockAllocations = allocations;
+      if (tracksExpiry && restockAllocations.isEmpty) {
+        final now = DateTime.now();
+        restockAllocations = [
+          InventoryLotAllocation(
+            productId: item.productId,
+            lotId: undefinedId,
+            quantity: item.quantity,
+            expiryDate: now,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ];
+      } else if (!tracksExpiry) {
+        restockAllocations = const <InventoryLotAllocation>[];
+      }
       await _updateProductRepository.refillStock(
         item.productId,
         item.quantity,
         TransactionCategory.cancelOrder,
-        allocations: allocations,
+        allocations: restockAllocations,
       );
     }
   }

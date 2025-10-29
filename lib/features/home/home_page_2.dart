@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/ads/ad_banner_widget.dart';
 import '../../core/helpers/scaffold_utils.dart';
 import '../../domain/index.dart';
 import '../../provider/permissions.dart';
@@ -39,7 +38,8 @@ class HomePage2 extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
+                      const Icon(Icons.warning_amber,
+                          size: 40, color: Colors.redAccent),
                       const SizedBox(height: 12),
                       Text(
                         LKey.homeMenuPermissionsError.tr(context: context),
@@ -50,7 +50,8 @@ class HomePage2 extends ConsumerWidget {
                       Text('$error', textAlign: TextAlign.center),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () => ref.refresh(currentUserPermissionsProvider),
+                        onPressed: () =>
+                            ref.refresh(currentUserPermissionsProvider),
                         child: Text(LKey.buttonRetry.tr(context: context)),
                       ),
                     ],
@@ -59,7 +60,8 @@ class HomePage2 extends ConsumerWidget {
               ),
             ),
             data: (grantedPermissions) {
-              final menuOrderState = ref.watch(menuGroupOrderControllerProvider);
+              final menuOrderState =
+                  ref.watch(menuGroupOrderControllerProvider);
               final preferredOrder = menuOrderState.value;
               final menuGroups = MenuManager.getMenuGroups(
                 context: context,
@@ -76,10 +78,12 @@ class HomePage2 extends ConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.lock_outline, size: 48, color: Colors.grey),
+                          const Icon(Icons.lock_outline,
+                              size: 48, color: Colors.grey),
                           const SizedBox(height: 16),
                           Text(
-                            LKey.homeMenuNoPermissionMessage.tr(context: context),
+                            LKey.homeMenuNoPermissionMessage
+                                .tr(context: context),
                             style: Theme.of(context).textTheme.bodyMedium,
                             textAlign: TextAlign.center,
                           ),
@@ -92,12 +96,12 @@ class HomePage2 extends ConsumerWidget {
 
               return Scaffold(
                 backgroundColor: Colors.white,
-                bottomNavigationBar: const SafeArea(child: AdBannerSmallWidget()),
                 body: SafeArea(
                   child: CustomScrollView(
                     slivers: [
                       SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
                             // Modern header with greeting
@@ -135,7 +139,8 @@ class HomePage2 extends ConsumerWidget {
                                       borderRadius: BorderRadius.circular(16),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: theme.colorPrimary.withOpacity(0.3),
+                                          color: theme.colorPrimary
+                                              .withOpacity(0.3),
                                           blurRadius: 8,
                                           offset: const Offset(0, 2),
                                         ),
@@ -150,10 +155,12 @@ class HomePage2 extends ConsumerWidget {
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          LKey.homeMenuGreeting.tr(context: context),
+                                          LKey.homeMenuGreeting
+                                              .tr(context: context),
                                           style: theme.textRegular14Sublest,
                                         ),
                                         const SizedBox(height: 2),
@@ -170,14 +177,17 @@ class HomePage2 extends ConsumerWidget {
                                         _buildHeaderIcon(
                                           context,
                                           icon: Icons.swap_vert,
-                                          tooltip: LKey.homeMenuReorderTooltip.tr(context: context),
-                                          onTap: () => _openMenuReorderSheet(context, ref, menuGroups),
+                                          tooltip: LKey.homeMenuReorderTooltip
+                                              .tr(context: context),
+                                          onTap: () => _openMenuReorderSheet(
+                                              context, ref, menuGroups),
                                         ),
                                       const SizedBox(width: 12),
                                       _buildHeaderIcon(
                                         context,
                                         icon: Icons.settings_outlined,
-                                        tooltip: LKey.setting.tr(context: context),
+                                        tooltip:
+                                            LKey.setting.tr(context: context),
                                         onTap: () {
                                           appRouter.goToSetting();
                                         },
@@ -200,7 +210,8 @@ class HomePage2 extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 4, bottom: 10),
+                                  padding: const EdgeInsets.only(
+                                      left: 4, bottom: 10),
                                   child: Text(
                                     group.title,
                                     style: theme.headingSemibold20Primary,
@@ -209,7 +220,8 @@ class HomePage2 extends ConsumerWidget {
                                 GridView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
                                     crossAxisSpacing: 12,
                                     mainAxisSpacing: 12,
@@ -224,20 +236,23 @@ class HomePage2 extends ConsumerWidget {
                                       child: Container(
                                         decoration: BoxDecoration(
                                           color: theme.colorBackground,
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
                                           border: Border.all(
                                             color: theme.colorBorderSublest,
                                             width: 1,
                                           ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: theme.colorPrimary.withOpacity(0.06),
+                                              color: theme.colorPrimary
+                                                  .withOpacity(0.06),
                                               blurRadius: 16,
                                               offset: const Offset(0, 4),
                                               spreadRadius: 0,
                                             ),
                                             BoxShadow(
-                                              color: Colors.black.withOpacity(0.02),
+                                              color: Colors.black
+                                                  .withOpacity(0.02),
                                               blurRadius: 4,
                                               offset: const Offset(0, 2),
                                               spreadRadius: 0,
@@ -247,7 +262,8 @@ class HomePage2 extends ConsumerWidget {
                                         child: Padding(
                                           padding: const EdgeInsets.all(16),
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Stack(
                                                 clipBehavior: Clip.none,
@@ -258,15 +274,24 @@ class HomePage2 extends ConsumerWidget {
                                                     decoration: BoxDecoration(
                                                       gradient: LinearGradient(
                                                         colors: [
-                                                          theme.colorPrimary.withOpacity(0.1),
-                                                          theme.colorPrimary.withOpacity(0.05),
+                                                          theme.colorPrimary
+                                                              .withOpacity(0.1),
+                                                          theme.colorPrimary
+                                                              .withOpacity(
+                                                                  0.05),
                                                         ],
-                                                        begin: Alignment.topLeft,
-                                                        end: Alignment.bottomRight,
+                                                        begin:
+                                                            Alignment.topLeft,
+                                                        end: Alignment
+                                                            .bottomRight,
                                                       ),
-                                                      borderRadius: BorderRadius.circular(14),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              14),
                                                       border: Border.all(
-                                                        color: theme.colorPrimary.withOpacity(0.1),
+                                                        color: theme
+                                                            .colorPrimary
+                                                            .withOpacity(0.1),
                                                         width: 1,
                                                       ),
                                                     ),
@@ -277,11 +302,13 @@ class HomePage2 extends ConsumerWidget {
                                                     ),
                                                   ),
                                                   // Show badge only for the order list menu item
-                                                  if (item.id == MenuItemId.orderList)
+                                                  if (item.id ==
+                                                      MenuItemId.orderList)
                                                     const Positioned(
                                                       right: -8,
                                                       top: -8,
-                                                      child: ConfirmOrderBadge(),
+                                                      child:
+                                                          ConfirmOrderBadge(),
                                                     ),
                                                 ],
                                               ),
@@ -290,10 +317,12 @@ class HomePage2 extends ConsumerWidget {
                                                 child: FittedBox(
                                                   child: Text(
                                                     item.title,
-                                                    style: theme.textMedium16Default,
+                                                    style: theme
+                                                        .textMedium16Default,
                                                     textAlign: TextAlign.center,
                                                     maxLines: 2,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ),
@@ -309,7 +338,8 @@ class HomePage2 extends ConsumerWidget {
                             ),
                           );
                         },
-                        separatorBuilder: (BuildContext context, int index) => const SizedBox(
+                        separatorBuilder: (BuildContext context, int index) =>
+                            const SizedBox(
                           height: 12,
                         ),
                         itemCount: menuGroups.length,
@@ -323,13 +353,15 @@ class HomePage2 extends ConsumerWidget {
         },
         unauthenticated: () => Scaffold(
               appBar: AppBar(
-                title: Text(LKey.homeMenuUnauthenticatedTitle.tr(context: context)),
+                title: Text(
+                    LKey.homeMenuUnauthenticatedTitle.tr(context: context)),
               ),
               body: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(LKey.homeMenuUnauthenticatedMessage.tr(context: context)),
+                    Text(LKey.homeMenuUnauthenticatedMessage
+                        .tr(context: context)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
@@ -418,7 +450,8 @@ class HomePage2 extends ConsumerWidget {
                               ? null
                               : () {
                                   setState(() {
-                                    tempOrder = List<MenuGroupId>.from(initialOrder);
+                                    tempOrder =
+                                        List<MenuGroupId>.from(initialOrder);
                                   });
                                 },
                           icon: const Icon(Icons.undo),
@@ -432,7 +465,8 @@ class HomePage2 extends ConsumerWidget {
                             }
                           },
                           icon: const Icon(Icons.restore),
-                          label: Text(LKey.homeMenuReorderReset.tr(context: context)),
+                          label: Text(
+                              LKey.homeMenuReorderReset.tr(context: context)),
                         ),
                       ],
                     ),
@@ -440,7 +474,10 @@ class HomePage2 extends ConsumerWidget {
                     Flexible(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceVariant
+                              .withOpacity(0.3),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: ReorderableListView.builder(
@@ -473,20 +510,27 @@ class HomePage2 extends ConsumerWidget {
                                     children: [
                                       CircleAvatar(
                                         radius: 22,
-                                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primaryContainer,
                                         child: Icon(
                                           Icons.drag_indicator,
-                                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimaryContainer,
                                         ),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               MenuManager.titleFor(id, context),
-                                              style: Theme.of(context).textTheme.titleMedium,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium,
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
@@ -496,7 +540,9 @@ class HomePage2 extends ConsumerWidget {
                                                   'position': '${index + 1}',
                                                 },
                                               ),
-                                              style: Theme.of(context).textTheme.bodySmall,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
                                             ),
                                           ],
                                         ),
@@ -504,7 +550,9 @@ class HomePage2 extends ConsumerWidget {
                                       const SizedBox(width: 12),
                                       Icon(
                                         Icons.reorder,
-                                        color: Theme.of(context).colorScheme.outline,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline,
                                         size: 28,
                                       ),
                                     ],

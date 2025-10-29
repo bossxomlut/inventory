@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sample_app/core/ads/ad_banner_widget.dart';
 import 'package:sample_app/core/ads/admob_service.dart';
 import 'package:sample_app/provider/index.dart';
 import 'package:toastification/toastification.dart';
@@ -122,33 +123,52 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
                       (BuildContext context, AlignmentGeometry alignment) =>
                           EdgeInsets.zero,
                 ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  alignment: Alignment.topCenter,
-                  children: [
-                    MaterialApp.router(
-                      // title: LKey.appTitle.tr(context: context),
-                      routerConfig: appRouter.config(
-                        navigatorObservers: () => <NavigatorObserver>[
-                          RouteLoggerObserver(),
-                        ],
+                child: Material(
+                  color: theme.themeData.colorBackgroundSurface,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const SafeArea(
+                        bottom: false,
+                        child: AdBannerSmallWidget(),
                       ),
-                      themeMode: ThemeMode.light,
-                      theme: dTheme(context, theme.themeData),
-                      darkTheme: dTheme(context, theme.themeData),
-                      localizationsDelegates: [
-                        ...context.localizationDelegates,
-                        GlobalMaterialLocalizations.delegate,
-                        GlobalWidgetsLocalizations.delegate,
-                        GlobalCupertinoLocalizations.delegate,
-                      ],
-                      supportedLocales: context.supportedLocales,
-                      locale: context.locale,
-                      debugShowCheckedModeBanner: false,
-                    ),
-                    const RootLoadingWidget(),
-                    const RootNotificationWidget(),
-                  ],
+                      Expanded(
+                        child: MediaQuery(
+                          data: MediaQuery.of(context)
+                              .removePadding(removeTop: true)
+                              .removeViewPadding(removeTop: true),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            alignment: Alignment.topCenter,
+                            children: [
+                              MaterialApp.router(
+                                // title: LKey.appTitle.tr(context: context),
+                                routerConfig: appRouter.config(
+                                  navigatorObservers: () => <NavigatorObserver>[
+                                    RouteLoggerObserver(),
+                                  ],
+                                ),
+                                themeMode: ThemeMode.light,
+                                theme: dTheme(context, theme.themeData),
+                                darkTheme: dTheme(context, theme.themeData),
+                                localizationsDelegates: [
+                                  ...context.localizationDelegates,
+                                  GlobalMaterialLocalizations.delegate,
+                                  GlobalWidgetsLocalizations.delegate,
+                                  GlobalCupertinoLocalizations.delegate,
+                                ],
+                                supportedLocales: context.supportedLocales,
+                                locale: context.locale,
+                                debugShowCheckedModeBanner: false,
+                              ),
+                              const RootLoadingWidget(),
+                              const RootNotificationWidget(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

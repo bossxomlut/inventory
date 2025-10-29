@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../core/ads/ad_banner_widget.dart';
 import '../../core/helpers/currency_config.dart';
 import '../../domain/entities/permission/permission.dart';
 import '../../provider/index.dart';
@@ -49,7 +48,6 @@ class SettingPage extends WidgetByDeviceTemplate {
       ),
       body: ListView(
         children: [
-          const AdBannerSmallWidget(),
           // Only show "Quản lý dữ liệu" section for admin and guest users
           if (canAccessDataManagement) ...[
             Padding(

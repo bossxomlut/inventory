@@ -31,6 +31,11 @@ class CreateOrderPage extends HookConsumerWidget {
     ref.watch(currencySettingsControllerProvider);
     final isKeyboardVisible = ref.watch(isKeyboardVisibleProvider);
     final theme = context.appTheme;
+    final permissionsAsync = ref.watch(currentUserPermissionsProvider);
+    final canCompleteOrder = permissionsAsync.maybeWhen(
+      data: (permissions) => permissions.contains(PermissionKey.orderComplete),
+      orElse: () => false,
+    );
     final noteController = useTextEditingController();
 
     useEffect(() {
@@ -46,18 +51,23 @@ class CreateOrderPage extends HookConsumerWidget {
       return null;
     }, [orderStaste.order?.note]);
 
+    useEffect(() {
+      if (!canCompleteOrder && orderStaste.completeOnCreate) {
+        ref.read(orderCreationProvider.notifier).setCompleteOnCreate(false);
+      }
+      return null;
+    }, [canCompleteOrder]);
+
     Widget buildBottomButtonBar() {
       return BottomButtonBar(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         cancelButtonText: LKey.orderCreateSaveDraft.tr(context: context),
         saveButtonText: LKey.orderCreateSubmit.tr(context: context),
         onCancel: orderStaste.isNotEmpty
             ? () async {
                 //set note
-                ref
-                    .read(orderCreationProvider.notifier)
-                    .setNote(noteController.text.trim());
-                final isHaveInitialOrder =
-                    ref.read(orderCreationProvider.notifier).haveInitOrder;
+                ref.read(orderCreationProvider.notifier).setNote(noteController.text.trim());
+                final isHaveInitialOrder = ref.read(orderCreationProvider.notifier).haveInitOrder;
                 await ref.read(orderCreationProvider.notifier).saveDraft();
                 if (isHaveInitialOrder) {
                   ref.invalidate(orderListProvider(OrderStatus.draft));
@@ -66,18 +76,86 @@ class CreateOrderPage extends HookConsumerWidget {
             : null,
         onSave: orderStaste.isNotEmpty
             ? () async {
-                ref
-                    .read(orderCreationProvider.notifier)
-                    .setNote(noteController.text.trim());
-                final isHaveInitialOrder =
-                    ref.read(orderCreationProvider.notifier).haveInitOrder;
-                await ref.read(orderCreationProvider.notifier).createOrder();
-                if (isHaveInitialOrder) {
-                  ref.invalidate(orderListProvider(OrderStatus.draft));
-                  ref.invalidate(orderListProvider(OrderStatus.confirmed));
-                }
+                final notifier = ref.read(orderCreationProvider.notifier);
+                notifier.setNote(noteController.text.trim());
+                await notifier.createOrder();
               }
             : null,
+      );
+    }
+
+    Widget buildCompletionSwitch() {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Transform.scale(
+              scale: 0.9,
+              alignment: Alignment.centerLeft,
+              child: Switch.adaptive(
+                value: orderStaste.completeOnCreate,
+                onChanged: (value) {
+                  ref.read(orderCreationProvider.notifier).setCompleteOnCreate(value);
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    LKey.orderCreateCompleteImmediately.tr(context: context),
+                    style: theme.textMedium15Default,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    LKey.orderCreateCompleteImmediatelySubtitle.tr(context: context),
+                    style: theme.textRegular13Subtle,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.verified_outlined,
+              size: 18,
+              color: theme.colorPrimary,
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget buildBottomControls() {
+      return Container(
+        decoration: BoxDecoration(
+          color: theme.colorBackgroundBottomSheet,
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorDynamicBlack80.withOpacity(0.05),
+              blurRadius: 12,
+              offset: const Offset(0, -6),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (canCompleteOrder) ...[
+              buildCompletionSwitch(),
+              const SizedBox(height: 6),
+              const AppDivider(),
+              const SizedBox(height: 6),
+            ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: buildBottomButtonBar(),
+            ),
+          ],
+        ),
       );
     }
 
@@ -114,8 +192,7 @@ class CreateOrderPage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                     child: Text(
                       LKey.orderCreateProductsTitle.tr(context: context),
                       style: theme.textMedium16Default,
@@ -140,10 +217,8 @@ class CreateOrderPage extends HookConsumerWidget {
                     itemCount: orderStaste.orderItems.length,
                     separatorBuilder: (context, index) => const AppDivider(),
                     itemBuilder: (context, index) {
-                      final product =
-                          orderStaste.orderItems.keys.elementAt(index);
-                      final orderItem =
-                          orderStaste.orderItems.values.elementAt(index);
+                      final product = orderStaste.orderItems.keys.elementAt(index);
+                      final orderItem = orderStaste.orderItems.values.elementAt(index);
                       return OrderItemWidget(
                         product: product,
                         orderItem: orderItem,
@@ -182,24 +257,16 @@ class CreateOrderPage extends HookConsumerWidget {
                               onBarcodeScanned: (value) async {
                                 //search product by barcode
                                 try {
-                                  final productRepo =
-                                      ref.read(searchProductRepositoryProvider);
-                                  final product =
-                                      await productRepo.searchByBarcode(
-                                          value.displayValue ?? '');
-                                  final currentQuantity = ref
-                                      .read(orderCreationProvider.select(
-                                          (state) => state.orderItems[product]))
-                                      ?.quantity;
+                                  final productRepo = ref.read(searchProductRepositoryProvider);
+                                  final product = await productRepo.searchByBarcode(value.displayValue ?? '');
+                                  final currentQuantity = ref.read(orderCreationProvider.select((state) => state.orderItems[product]))?.quantity;
 
                                   await OrderNumberInputWidget(
                                     product: product,
                                     currentQuantity: currentQuantity,
                                     onSave: (quantity, price) {
                                       //add order item
-                                      ref
-                                          .read(orderCreationProvider.notifier)
-                                          .addOrderItem(
+                                      ref.read(orderCreationProvider.notifier).addOrderItem(
                                             product,
                                             OrderItem(
                                               id: undefinedId,
@@ -210,8 +277,7 @@ class CreateOrderPage extends HookConsumerWidget {
                                               price: price,
                                             ),
                                           );
-                                      Navigator.pop(
-                                          context); // Đóng bottom sheet sau khi thêm sản phẩm
+                                      Navigator.pop(context); // Đóng bottom sheet sau khi thêm sản phẩm
                                     },
                                   ).show(context);
                                 } catch (e) {
@@ -233,8 +299,7 @@ class CreateOrderPage extends HookConsumerWidget {
                               const Icon(Icons.qr_code),
                               const SizedBox(width: 8),
                               Text(
-                                LKey.orderCreateScanProduct
-                                    .tr(context: context),
+                                LKey.orderCreateScanProduct.tr(context: context),
                                 style: theme.textMedium15Default,
                               ),
                             ],
@@ -260,15 +325,12 @@ class CreateOrderPage extends HookConsumerWidget {
                         customerName: orderStaste.order?.customer,
                         customerContact: orderStaste.order?.customerContact,
                         onSave: (String name, String contact) {
-                          ref
-                              .read(orderCreationProvider.notifier)
-                              .setCustomerInfo(name, contact);
+                          ref.read(orderCreationProvider.notifier).setCustomerInfo(name, contact);
                         },
                       ).show(context);
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                       child: Row(
                         children: [
                           Text(
@@ -294,8 +356,7 @@ class CreateOrderPage extends HookConsumerWidget {
                           style: theme.textRegular15Subtle,
                         ),
                         Text(
-                          orderStaste.order?.customer ??
-                              LKey.orderCommonNotSet.tr(context: context),
+                          orderStaste.order?.customer ?? LKey.orderCommonNotSet.tr(context: context),
                           style: theme.textRegular15Default,
                         ),
                       ],
@@ -312,8 +373,7 @@ class CreateOrderPage extends HookConsumerWidget {
                           style: theme.textRegular15Subtle,
                         ),
                         Text(
-                          orderStaste.order?.customerContact ??
-                              LKey.orderCommonNotSet.tr(context: context),
+                          orderStaste.order?.customerContact ?? LKey.orderCommonNotSet.tr(context: context),
                           style: theme.textRegular15Default,
                         ),
                       ],
@@ -328,8 +388,7 @@ class CreateOrderPage extends HookConsumerWidget {
             ColoredBox(
               color: Colors.white,
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -355,8 +414,7 @@ class CreateOrderPage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                     child: Text(
                       LKey.orderPaymentTitle.tr(context: context),
                       style: theme.textMedium16Default,
@@ -400,10 +458,7 @@ class CreateOrderPage extends HookConsumerWidget {
               ),
             ),
             const SizedBox(height: 10),
-
-            isKeyboardVisible
-                ? buildBottomButtonBar()
-                : const SizedBox(height: 100),
+            isKeyboardVisible ? buildBottomControls() : const SizedBox(height: 100),
 
             //Thanh toán
           ],
@@ -415,7 +470,7 @@ class CreateOrderPage extends HookConsumerWidget {
         },
         child: const Icon(Icons.search),
       ),
-      bottomNavigationBar: buildBottomButtonBar(),
+      bottomNavigationBar: buildBottomControls(),
     );
   }
 }
@@ -433,8 +488,7 @@ void showSelectOrderItem(BuildContext context, WidgetRef ref) {
       final products = await searchProductRepo.search(keyword, page, size);
       return products.data;
     },
-    itemBuilderWithIndex: (BuildContext context, int index) =>
-        const AppDivider(),
+    itemBuilderWithIndex: (BuildContext context, int index) => const AppDivider(),
     addItemWidget: Icon(
       Icons.close,
       size: 20,
@@ -491,9 +545,7 @@ class OrderItemWidget extends HookConsumerWidget {
                         // Xử lý thay đổi trạng thái checkbox
                         if (value == false) {
                           // Nếu bỏ chọn, xóa sản phẩm khỏi đơn hàng
-                          ref
-                              .read(orderCreationProvider.notifier)
-                              .remove(product);
+                          ref.read(orderCreationProvider.notifier).remove(product);
                         } else {
                           // Nếu chọn, thêm sản phẩm vào đơn hàng
                           ref.read(orderCreationProvider.notifier).addOrderItem(
@@ -505,9 +557,7 @@ class OrderItemWidget extends HookConsumerWidget {
                                   productName: product.name,
                                   quantity: 1,
                                   // Mặc định số lượng là 1
-                                  price:
-                                      productPrice.valueOrNull?.sellingPrice ??
-                                          0,
+                                  price: productPrice.valueOrNull?.sellingPrice ?? 0,
                                 ),
                               );
                         }
@@ -561,11 +611,7 @@ class OrderItemSelectionWidget extends HookConsumerWidget {
 }
 
 class CustomerInforWidget extends HookWidget with ShowBottomSheet {
-  const CustomerInforWidget(
-      {super.key,
-      this.customerName,
-      this.customerContact,
-      required this.onSave});
+  const CustomerInforWidget({super.key, this.customerName, this.customerContact, required this.onSave});
 
   final String? customerName;
   final String? customerContact;
@@ -576,8 +622,7 @@ class CustomerInforWidget extends HookWidget with ShowBottomSheet {
   Widget build(BuildContext context) {
     //controllers
     final nameController = useTextEditingController(text: customerName ?? '');
-    final contactController =
-        useTextEditingController(text: customerContact ?? '');
+    final contactController = useTextEditingController(text: customerContact ?? '');
     final theme = context.appTheme;
 
     return Padding(
@@ -665,8 +710,7 @@ class OrderDetailPage extends HookConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.warning_amber,
-                    size: 40, color: Colors.redAccent),
+                const Icon(Icons.warning_amber, size: 40, color: Colors.redAccent),
                 const SizedBox(height: 12),
                 Text(
                   LKey.checkPermissionLoadFailed.tr(context: context),
@@ -687,10 +731,8 @@ class OrderDetailPage extends HookConsumerWidget {
       ),
       data: (permissions) {
         final theme = context.appTheme;
-        final canCreateOrEditOrder =
-            permissions.contains(PermissionKey.orderCreate);
-        final canCompleteOrder =
-            permissions.contains(PermissionKey.orderComplete);
+        final canCreateOrEditOrder = permissions.contains(PermissionKey.orderCreate);
+        final canCompleteOrder = permissions.contains(PermissionKey.orderComplete);
         final canCancelOrder = permissions.contains(PermissionKey.orderCancel);
 
         return Scaffold(
@@ -707,14 +749,12 @@ class OrderDetailPage extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                         child: Row(
                           children: [
                             Flexible(
                               child: Text(
-                                LKey.orderDetailInfoSectionTitle
-                                    .tr(context: context),
+                                LKey.orderDetailInfoSectionTitle.tr(context: context),
                                 style: theme.textMedium16Default,
                               ),
                             ),
@@ -737,9 +777,7 @@ class OrderDetailPage extends HookConsumerWidget {
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
-                              orderStaste.order?.id != null
-                                  ? '#${orderStaste.order!.id}'
-                                  : LKey.orderCommonNotSet.tr(context: context),
+                              orderStaste.order?.id != null ? '#${orderStaste.order!.id}' : LKey.orderCommonNotSet.tr(context: context),
                               style: theme.textRegular15Default,
                             ),
                           ],
@@ -752,8 +790,7 @@ class OrderDetailPage extends HookConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              LKey.orderDetailTotalQuantity
-                                  .tr(context: context),
+                              LKey.orderDetailTotalQuantity.tr(context: context),
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
@@ -791,8 +828,7 @@ class OrderDetailPage extends HookConsumerWidget {
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
-                              orderStaste.order?.customer ??
-                                  LKey.orderCommonNotSet.tr(context: context),
+                              orderStaste.order?.customer ?? LKey.orderCommonNotSet.tr(context: context),
                               style: theme.textRegular15Default,
                             ),
                           ],
@@ -805,13 +841,11 @@ class OrderDetailPage extends HookConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              LKey.orderDetailCustomerContact
-                                  .tr(context: context),
+                              LKey.orderDetailCustomerContact.tr(context: context),
                               style: theme.textRegular15Subtle,
                             ),
                             Text(
-                              orderStaste.order?.customerContact ??
-                                  LKey.orderCommonNotSet.tr(context: context),
+                              orderStaste.order?.customerContact ?? LKey.orderCommonNotSet.tr(context: context),
                               style: theme.textRegular15Default,
                             ),
                           ],
@@ -845,8 +879,7 @@ class OrderDetailPage extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                         child: Text(
                           LKey.orderDetailProductsTitle.tr(context: context),
                           style: theme.textMedium16Default,
@@ -856,12 +889,10 @@ class OrderDetailPage extends HookConsumerWidget {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: orderStaste.orderItems.length,
-                        separatorBuilder: (context, index) =>
-                            const AppDivider(),
+                        separatorBuilder: (context, index) => const AppDivider(),
                         itemBuilder: (context, index) => _OrderItem(
                           product: orderStaste.orderItems.keys.elementAt(index),
-                          orderItem:
-                              orderStaste.orderItems.values.elementAt(index),
+                          orderItem: orderStaste.orderItems.values.elementAt(index),
                         ),
                       ),
                     ],
@@ -920,9 +951,7 @@ class OrderDetailPage extends HookConsumerWidget {
             if (!confirmed) {
               return;
             }
-            await ref
-                .read(orderDetailProvider(sourceOrder).notifier)
-                .createOrder();
+            await ref.read(orderDetailProvider(sourceOrder).notifier).createOrder();
             ref.invalidate(orderListProvider(OrderStatus.draft));
             ref.invalidate(orderListProvider(OrderStatus.confirmed));
           },
@@ -951,9 +980,7 @@ class OrderDetailPage extends HookConsumerWidget {
                   if (!confirmed) {
                     return;
                   }
-                  await ref
-                      .read(orderDetailProvider(sourceOrder).notifier)
-                      .completeOrder();
+                  await ref.read(orderDetailProvider(sourceOrder).notifier).completeOrder();
                   ref.invalidate(orderListProvider(OrderStatus.confirmed));
                   ref.invalidate(orderListProvider(OrderStatus.done));
                 }
@@ -968,9 +995,7 @@ class OrderDetailPage extends HookConsumerWidget {
                   if (!confirmed) {
                     return;
                   }
-                  await ref
-                      .read(orderDetailProvider(sourceOrder).notifier)
-                      .cancelOrder();
+                  await ref.read(orderDetailProvider(sourceOrder).notifier).cancelOrder();
                   ref.invalidate(orderListProvider(OrderStatus.confirmed));
                   ref.invalidate(orderListProvider(OrderStatus.cancelled));
                 }
@@ -1064,9 +1089,7 @@ class _OrderItem extends StatelessWidget {
                 LKey.orderLabelLineTotal.tr(
                   context: context,
                   namedArgs: {
-                    'amount':
-                        ((orderItem?.price ?? 0) * (orderItem?.quantity ?? 0))
-                            .priceFormat(),
+                    'amount': ((orderItem?.price ?? 0) * (orderItem?.quantity ?? 0)).priceFormat(),
                   },
                 ),
                 style: theme.textMedium15Default,
@@ -1079,8 +1102,7 @@ class _OrderItem extends StatelessWidget {
   }
 }
 
-class OrderNumberInputWidget extends HookConsumerWidget
-    with ShowBottomSheet<void> {
+class OrderNumberInputWidget extends HookConsumerWidget with ShowBottomSheet<void> {
   const OrderNumberInputWidget({
     super.key,
     required this.product,
@@ -1125,8 +1147,7 @@ class OrderNumberInputWidget extends HookConsumerWidget
                           'stock': product.quantity.displayFormat(),
                         },
                       ),
-                      style: context.appTheme.textRegular12Default
-                          .copyWith(color: Colors.red),
+                      style: context.appTheme.textRegular12Default.copyWith(color: Colors.red),
                     ),
                   ),
                 ],
@@ -1158,8 +1179,7 @@ class OrderNumberInputWidget extends HookConsumerWidget
                 ),
                 Text(
                   '${product.quantity}',
-                  style: context.appTheme.textMedium16Default
-                      .copyWith(color: Colors.green),
+                  style: context.appTheme.textMedium16Default.copyWith(color: Colors.green),
                 ),
               ],
             ),
@@ -1191,8 +1211,7 @@ class OrderNumberInputWidget extends HookConsumerWidget
                         ),
                         Text(
                           '${price.sellingPrice!.priceFormat()}',
-                          style: context.appTheme.textMedium16Default
-                              .copyWith(color: Colors.blue),
+                          style: context.appTheme.textMedium16Default.copyWith(color: Colors.blue),
                         ),
                       ],
                     ),
@@ -1202,8 +1221,7 @@ class OrderNumberInputWidget extends HookConsumerWidget
             error: (error, stack) => const SizedBox(),
           ),
 
-          if (productPrice.valueOrNull?.sellingPrice != null)
-            const SizedBox(height: 16),
+          if (productPrice.valueOrNull?.sellingPrice != null) const SizedBox(height: 16),
 
           // Quantity input
           TitleBlockWidget.widget(
@@ -1215,8 +1233,7 @@ class OrderNumberInputWidget extends HookConsumerWidget
               style: context.appTheme.textRegular13Subtle,
             ),
             child: PlusMinusInputView(
-              initialValue: quantity.value, minValue: 1,
-              maxValue: product.quantity, // Limit to available stock
+              initialValue: quantity.value, minValue: 1, maxValue: product.quantity, // Limit to available stock
               onChanged: (val) => quantity.value = val,
             ),
           ),

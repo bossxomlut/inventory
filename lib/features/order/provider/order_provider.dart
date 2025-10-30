@@ -14,28 +14,29 @@ part 'order_provider.g.dart';
 
 @riverpod
 class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
+  static const _completeOnCreateStorageKey = 'order.create.completeOnCreate.enabled';
+
   @override
   OrderState build() {
-    return const OrderState(orderItems: {});
+    Future(() async {
+      final storage = ref.read(simpleStorageProvider);
+      await storage.init();
+      final storedValue = await storage.getBool(_completeOnCreateStorageKey);
+      if (storedValue != null && storedValue != state.completeOnCreate) {
+        state = state.copyWith(completeOnCreate: storedValue);
+      }
+    });
+    return const OrderState(orderItems: <Product, OrderItem>{});
   }
 
   void addOrderItem(Product product, OrderItem orderItem) {
-    state = OrderState(
-      order: state.order,
-      orderItems: {
-        ...state.orderItems,
-        product: orderItem,
-      },
-    );
+    final updatedItems = Map<Product, OrderItem>.from(state.orderItems)..[product] = orderItem;
+    state = state.copyWith(orderItems: updatedItems);
   }
 
   void updateOrderItem(Product product, OrderItem orderItem) {
-    state = state.copyWith(
-      orderItems: {
-        ...state.orderItems,
-        product: orderItem,
-      },
-    );
+    final updatedItems = Map<Product, OrderItem>.from(state.orderItems)..[product] = orderItem;
+    state = state.copyWith(orderItems: updatedItems);
   }
 
   void remove(Product product) {
@@ -44,33 +45,66 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
     state = state.copyWith(orderItems: updatedOrderItems);
   }
 
-  Future createOrder() async {
+  void setCompleteOnCreate(bool value) {
+    if (state.completeOnCreate == value) {
+      return;
+    }
+    state = state.copyWith(completeOnCreate: value);
+    final storage = ref.read(simpleStorageProvider);
+    storage.init().then((_) => storage.saveBool(_completeOnCreateStorageKey, value));
+  }
+
+  Future<Order> createOrder() async {
     showLoading();
 
     final orderRepository = ref.read(orderRepositoryProvider);
-    await orderRepository.createOrder(
-        Order(
-          id: haveInitOrder ? state.order!.id : undefinedId,
-          status: OrderStatus.confirmed,
-          orderDate: DateTime.now(),
-          createdAt: DateTime.now(),
-          createdBy: '',
-          productCount: state.orderItems.length,
-          totalAmount: state.totalQuantity,
-          totalPrice: state.totalPrice,
-          customer: state.order?.customer,
-          customerContact: state.order?.customerContact,
-          note: state.order?.note,
-        ),
-        state.orderItems.values.toList());
+    final targetStatus = state.completeOnCreate ? OrderStatus.done : OrderStatus.confirmed;
+    final now = DateTime.now();
+    final DateTime? updatedAt = targetStatus == OrderStatus.done ? now : null;
+
+    final createdOrder = await orderRepository.createOrder(
+      Order(
+        id: haveInitOrder ? state.order!.id : undefinedId,
+        status: targetStatus,
+        orderDate: now,
+        createdAt: now,
+        updatedAt: updatedAt,
+        createdBy: '',
+        productCount: state.orderItems.length,
+        totalAmount: state.totalQuantity,
+        totalPrice: state.totalPrice,
+        customer: state.order?.customer,
+        customerContact: state.order?.customerContact,
+        note: state.order?.note,
+      ),
+      state.orderItems.values.toList(),
+    );
 
     refreshDraftOrderList();
+    ref.invalidate(orderListProvider(OrderStatus.confirmed));
+    if (targetStatus == OrderStatus.done) {
+      ref.invalidate(orderListProvider(OrderStatus.done));
+    }
 
     hideLoading();
 
-    state = const OrderState(orderItems: {});
+    final keepCompleteOnCreate = state.completeOnCreate;
+    state = OrderState(
+      orderItems: const <Product, OrderItem>{},
+      completeOnCreate: keepCompleteOnCreate,
+    );
 
-    showSuccess(LKey.orderCreateSuccess.tr());
+    if (targetStatus == OrderStatus.done) {
+      showSuccess(
+        LKey.orderCompleteSuccess.tr(
+          namedArgs: {'orderId': '${createdOrder.id}'},
+        ),
+      );
+    } else {
+      showSuccess(LKey.orderCreateSuccess.tr());
+    }
+
+    return createdOrder;
   }
 
   Future saveDraft() async {
@@ -99,7 +133,11 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
       refreshDraftOrderList();
 
       hideLoading();
-      state = const OrderState(orderItems: {});
+      final keepCompleteOnCreate = state.completeOnCreate;
+      state = OrderState(
+        orderItems: const <Product, OrderItem>{},
+        completeOnCreate: keepCompleteOnCreate,
+      );
       showSuccess(LKey.orderDraftSuccess.tr());
     }).onError((error, st) {
       hideLoading();
@@ -163,7 +201,10 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
 
   void initializeOrder(Order order) async {
     if (order.id == undefinedId) {
-      state = OrderState(order: order, orderItems: {});
+      state = state.copyWith(
+        order: order,
+        orderItems: const <Product, OrderItem>{},
+      );
     } else {
       //load existing order items
       final orderItemRepository = ref.read(orderItemRepositoryProvider);
@@ -179,10 +220,7 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
         }
       }
 
-      state = OrderState(
-        order: order,
-        orderItems: orderItemsMap,
-      );
+      state = state.copyWith(order: order, orderItems: orderItemsMap);
     }
   }
 
@@ -282,6 +320,7 @@ class OrderState with _$OrderState {
   const factory OrderState({
     Order? order,
     required Map<Product, OrderItem> orderItems,
+    @Default(false) bool completeOnCreate,
   }) = _OrderState;
 }
 

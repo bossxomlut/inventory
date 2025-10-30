@@ -1065,7 +1065,9 @@
       "productsEmpty": "No products in this order yet",
       "addProduct": "Add product",
       "scanProduct": "Scan product",
-      "scanNotFound": "No product found for barcode {barcode}"
+      "scanNotFound": "No product found for barcode {barcode}",
+      "completeImmediately": "Create and complete order",
+      "completeImmediatelySubtitle": "Mark the order as finished right after creation"
     },
     "customer": {
       "sectionTitle": "Customer",

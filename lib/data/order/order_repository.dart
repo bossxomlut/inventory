@@ -50,7 +50,9 @@ class OrderRepositoryImpl extends OrderRepository
           ..quantity = item.quantity
           ..price = item.price;
 
-        if (item.id != undefinedId && order.status == OrderStatus.confirmed) {
+        if (item.id != undefinedId &&
+            (order.status == OrderStatus.confirmed ||
+                order.status == OrderStatus.done)) {
           orderItem.id = item.id; // Preserve the ID if updating
         }
 
@@ -62,7 +64,8 @@ class OrderRepositoryImpl extends OrderRepository
       return getItemFromCollection(orderCollection);
     });
 
-    if (createdOrder.status == OrderStatus.confirmed) {
+    if (createdOrder.status == OrderStatus.confirmed ||
+        createdOrder.status == OrderStatus.done) {
       final allocationCollection =
           isar.collection<OrderLotAllocationCollection>();
       final allocationRecords = <OrderLotAllocationCollection>[];

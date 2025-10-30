@@ -447,6 +447,10 @@ abstract class LKey {
   static const String orderCreateAddProduct = 'order.create.addProduct';
   static const String orderCreateScanProduct = 'order.create.scanProduct';
   static const String orderCreateScanNotFound = 'order.create.scanNotFound';
+  static const String orderCreateCompleteImmediately =
+      'order.create.completeImmediately';
+  static const String orderCreateCompleteImmediatelySubtitle =
+      'order.create.completeImmediatelySubtitle';
   static const String orderCustomerSectionTitle = 'order.customer.sectionTitle';
   static const String orderCustomerName = 'order.customer.name';
   static const String orderCustomerContact = 'order.customer.contact';

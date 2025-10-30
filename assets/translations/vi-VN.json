@@ -1005,7 +1005,9 @@
       "productsEmpty": "Chưa có sản phẩm nào trong đơn hàng",
       "addProduct": "Thêm sản phẩm",
       "scanProduct": "Quét sản phẩm",
-      "scanNotFound": "Không tìm thấy sản phẩm với mã vạch {barcode}"
+      "scanNotFound": "Không tìm thấy sản phẩm với mã vạch {barcode}",
+      "completeImmediately": "Tạo và hoàn thành đơn",
+      "completeImmediatelySubtitle": "Tự động chuyển đơn sang trạng thái hoàn tất sau khi tạo"
     },
     "customer": {
       "sectionTitle": "Khách hàng",

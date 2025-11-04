@@ -56,7 +56,7 @@ class CreateOrderPage extends HookConsumerWidget {
         ref.read(orderCreationProvider.notifier).setCompleteOnCreate(false);
       }
       return null;
-    }, [canCompleteOrder]);
+    }, [canCompleteOrder, orderStaste.completeOnCreate]);
 
     Widget buildBottomButtonBar() {
       return BottomButtonBar(

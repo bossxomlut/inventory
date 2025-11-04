@@ -58,9 +58,16 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
     showLoading();
 
     final orderRepository = ref.read(orderRepositoryProvider);
-    final targetStatus = state.completeOnCreate ? OrderStatus.done : OrderStatus.confirmed;
+    final permissionsAsync = ref.read(currentUserPermissionsProvider);
+    final permissions = permissionsAsync.maybeWhen(
+      data: (value) => value,
+      orElse: () => null,
+    );
+    final canCompleteOrder = permissions?.contains(PermissionKey.orderComplete) ?? false;
+    final shouldComplete = canCompleteOrder && state.completeOnCreate;
+    final targetStatus = shouldComplete ? OrderStatus.done : OrderStatus.confirmed;
     final now = DateTime.now();
-    final DateTime? updatedAt = targetStatus == OrderStatus.done ? now : null;
+    final DateTime? updatedAt = shouldComplete ? now : null;
 
     final createdOrder = await orderRepository.createOrder(
       Order(
@@ -88,7 +95,8 @@ class OrderCreation extends _$OrderCreation with CommonProvider<OrderState> {
 
     hideLoading();
 
-    final keepCompleteOnCreate = state.completeOnCreate;
+    final keepCompleteOnCreate =
+        permissions == null ? state.completeOnCreate : state.completeOnCreate && canCompleteOrder;
     state = OrderState(
       orderItems: const <Product, OrderItem>{},
       completeOnCreate: keepCompleteOnCreate,

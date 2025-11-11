@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -140,8 +142,10 @@ mixin LoadListController<T> on BuildlessAutoDisposeNotifier<LoadListState<T>> {
           ? newData.data
           : [...state.data, ...newData.data];
 
-      print(
-          'total count: ${newData.totalCount}, new data length: ${newData.data.length}, current data length: ${state.data.length}');
+      developer.log(
+        'total count: ${newData.totalCount}, new data length: ${newData.data.length}, current data length: ${state.data.length}',
+        name: 'LoadListController',
+      );
 
       state = state.copyWith(
         error: null,
@@ -159,7 +163,12 @@ mixin LoadListController<T> on BuildlessAutoDisposeNotifier<LoadListState<T>> {
         error: e.toString(),
       );
       // Optionally log stackTrace for debugging
-      print('Error loading data: $e\n$stackTrace');
+      developer.log(
+        'Error loading data: $e\n$stackTrace',
+        name: 'LoadListController',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 

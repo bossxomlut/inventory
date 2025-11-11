@@ -1,6 +1,7 @@
 export 'package:freezed_annotation/freezed_annotation.dart';
 
 export 'app_file.dart';
+export 'auth/default_admin_account.dart';
 export 'auth/auth_state.dart';
 export 'auth/security_question_entity.dart';
 export 'check/check.dart';

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:csv/csv.dart';
@@ -60,14 +61,14 @@ Future<void> deleteCsvRecord(String fileName, int rowIndex) async {
   List<List<dynamic>> rows = await readCsvFile(fileName);
 
   if (rowIndex < 0 || rowIndex >= rows.length) {
-    print("⚠️ Không thể xoá: Chỉ mục không hợp lệ.");
+    developer.log("⚠️ Không thể xoá: Chỉ mục không hợp lệ.", name: 'CsvStorage');
     return;
   }
 
   rows.removeAt(rowIndex); // Xoá dòng dữ liệu theo chỉ mục
 
   await writeCsvFile(fileName, rows);
-  print("✅ Xoá dòng $rowIndex thành công.");
+  developer.log("✅ Xoá dòng $rowIndex thành công.", name: 'CsvStorage');
 }
 
 /// Cập nhật một dòng dữ liệu trong file CSV
@@ -75,14 +76,14 @@ Future<void> updateCsvRecord(String fileName, int rowIndex, List<dynamic> update
   List<List<dynamic>> rows = await readCsvFile(fileName);
 
   if (rowIndex < 0 || rowIndex >= rows.length) {
-    print("⚠️ Không thể cập nhật: Chỉ mục không hợp lệ.");
+    developer.log("⚠️ Không thể cập nhật: Chỉ mục không hợp lệ.", name: 'CsvStorage');
     return;
   }
 
   rows[rowIndex] = updatedRecord; // Cập nhật dòng dữ liệu
 
   await writeCsvFile(fileName, rows);
-  print("✅ Cập nhật dòng $rowIndex thành công.");
+  developer.log("✅ Cập nhật dòng $rowIndex thành công.", name: 'CsvStorage');
 }
 
 /// Tìm kiếm dữ liệu trong file CSV

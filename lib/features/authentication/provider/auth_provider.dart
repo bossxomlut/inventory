@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:isar_community/isar.dart';
 import 'package:restart_app/restart_app.dart';
@@ -72,14 +74,24 @@ class AuthController extends _$AuthController {
                 } else {
                   // Log errors but don't fail the login process
                   for (final error in result.errors) {
-                    print('Data import error: $error');
+                    developer.log(
+                      'Data import error: $error',
+                      name: 'AuthController',
+                    );
                   }
                 }
 
-                print(
-                    'Data import completed: ${result.successfulImports}/${result.totalLines} products imported');
-              } catch (e) {
-                print('Failed to import guest data: $e');
+                developer.log(
+                  'Data import completed: ${result.successfulImports}/${result.totalLines} products imported',
+                  name: 'AuthController',
+                );
+              } catch (e, stackTrace) {
+                developer.log(
+                  'Failed to import guest data: $e',
+                  name: 'AuthController',
+                  error: e,
+                  stackTrace: stackTrace,
+                );
               }
 
               await storage.saveBool(_isCreatedGuestData, true);

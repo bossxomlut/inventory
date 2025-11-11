@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 class PinCodeEncryptUtils {
   // Bảng ánh xạ từ số sang chữ cái
   static const List<String> _numberToLetterMapping = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -70,7 +72,7 @@ void main() {
   String encrypted = PinCodeEncryptUtils.encryptToLettersWithExtra(original);
   String decrypted = PinCodeEncryptUtils.decryptToNumbersWithExtra(encrypted);
 
-  print("Chuỗi ban đầu: $original");
-  print("Chuỗi mã hóa: $encrypted");
-  print("Chuỗi giải mã: $decrypted");
+  developer.log("Chuỗi ban đầu: $original", name: 'EncryptUtils');
+  developer.log("Chuỗi mã hóa: $encrypted", name: 'EncryptUtils');
+  developer.log("Chuỗi giải mã: $decrypted", name: 'EncryptUtils');
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../domain/entities/auth/default_admin_account.dart';
 import '../../../provider/init_provider.dart';
 import '../../../resources/index.dart';
 import '../../../shared_widgets/dialog.dart';
 import '../../../shared_widgets/index.dart';
+import '../provider/login_provider.dart';
 
 class DefaultAdminAccountWidget extends ConsumerWidget with ShowDialog {
   const DefaultAdminAccountWidget({super.key});
@@ -41,27 +43,29 @@ class DefaultAdminAccountWidget extends ConsumerWidget with ShowDialog {
               children: [
                 Text(
                   LKey.authDefaultAdminUsername
-                      .tr(context: context, namedArgs: {'username': 'admin'}),
+                      .tr(context: context, namedArgs: {'username': defaultAdminAccount.username}),
                   style: const TextStyle(fontFamily: 'monospace'),
                 ),
                 Text(
                   LKey.authDefaultAdminPassword
-                      .tr(context: context, namedArgs: {'password': 'admin'}),
+                      .tr(context: context, namedArgs: {'password': defaultAdminAccount.password}),
                   style: const TextStyle(fontFamily: 'monospace'),
                 ),
                 Text(
                   LKey.authDefaultAdminSecurityQuestion.tr(
                     context: context,
                     namedArgs: {
-                      'question':
-                          LKey.whatIsYourFavoriteColor.tr(context: context),
+                      'question': _securityQuestionLabel(
+                        context,
+                        defaultAdminAccount.securityQuestionId,
+                      ),
                     },
                   ),
                   style: const TextStyle(fontFamily: 'monospace'),
                 ),
                 Text(
                   LKey.authDefaultAdminSecurityAnswer
-                      .tr(context: context, namedArgs: {'answer': 'red'}),
+                      .tr(context: context, namedArgs: {'answer': defaultAdminAccount.securityAnswer}),
                   style: const TextStyle(fontFamily: 'monospace'),
                 ),
               ],
@@ -77,12 +81,29 @@ class DefaultAdminAccountWidget extends ConsumerWidget with ShowDialog {
       actions: [
         TextButton(
           onPressed: () async {
-            ref.read(hasShownAdminDialogServiceProvider).setDialogShown();
+            final loginController = ref.read(loginControllerProvider.notifier);
+            loginController
+              ..updateUserName(defaultAdminAccount.username)
+              ..updatePassword(defaultAdminAccount.password);
+            await ref.read(hasShownAdminDialogServiceProvider).setDialogShown();
             Navigator.of(context).pop();
           },
           child: LText(LKey.authDefaultAdminUnderstood),
         ),
       ],
     );
+  }
+
+  String _securityQuestionLabel(BuildContext context, int questionId) {
+    switch (questionId) {
+      case 1:
+        return LKey.whatIsYourFavoriteColor.tr(context: context);
+      case 2:
+        return LKey.whatIsYourFavoriteFood.tr(context: context);
+      case 3:
+        return LKey.whatIsYourFavoriteMovie.tr(context: context);
+      default:
+        return '';
+    }
   }
 }

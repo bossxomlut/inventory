@@ -3,6 +3,8 @@
 /// Service này cung cấp chức năng xóa dữ liệu với giao diện người dùng
 /// bao gồm dialog xác nhận và hiển thị kết quả.
 
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -68,12 +70,24 @@ class CustomDataDeletionHandler {
     final result = await deletionService.deleteAllProducts();
 
     if (result.success) {
-      print('Xóa thành công: ${result.message}');
-      print('Đã xóa: ${result.deletedCount}/${result.totalItems}');
+      developer.log(
+        'Xóa thành công: ${result.message}',
+        name: 'DataDeletionExamples',
+      );
+      developer.log(
+        'Đã xóa: ${result.deletedCount}/${result.totalItems}',
+        name: 'DataDeletionExamples',
+      );
     } else {
-      print('Xóa thất bại: ${result.message}');
+      developer.log(
+        'Xóa thất bại: ${result.message}',
+        name: 'DataDeletionExamples',
+      );
       for (final error in result.errors) {
-        print('Lỗi: $error');
+        developer.log(
+          'Lỗi: $error',
+          name: 'DataDeletionExamples',
+        );
       }
     }
   }

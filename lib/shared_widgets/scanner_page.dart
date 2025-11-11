@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -184,7 +185,10 @@ class ScannerViewState extends State<ScannerView> with WidgetsBindingObserver {
 
   void _listenAutoStopCamera() {
     if (controller.value.isRunning) {
-      print('Camera is running time: ${stopWatch.elapsedMilliseconds}');
+      developer.log(
+        'Camera is running time: ${stopWatch.elapsedMilliseconds}',
+        name: 'ScannerView',
+      );
       resetTimer();
     }
   }

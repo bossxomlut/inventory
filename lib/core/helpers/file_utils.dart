@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -8,8 +9,7 @@ import 'package:share_plus/share_plus.dart';
 /// Hàm lấy đường dẫn đến thư mục lưu trữ tài liệu của ứng dụng.
 Future<String> getFilePath(String fileName) async {
   final directory = await getApplicationDocumentsDirectory();
-  //print
-  print('${directory.path}/$fileName');
+  developer.log('${directory.path}/$fileName', name: 'FileUtils');
   return '${directory.path}/$fileName';
 }
 

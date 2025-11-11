@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:isar_community/isar.dart';
 
 import '../../../domain/index.dart';
@@ -50,7 +52,7 @@ class AuthRepositoryImpl implements AuthRepository {
     int securityQuestionId,
     String securityQuestionAnswer,
   ) async {
-    print('Registering user: $account');
+    developer.log('Registering user: $account', name: 'AuthRepository');
 
     return _isar.writeTxnSync(() {
       //find if user already exists
@@ -162,13 +164,16 @@ class AuthRepositoryImpl implements AuthRepository {
     final adminExists = await checkExistAdmin();
     if (!adminExists) {
       await register(
-        'admin', // account
-        'admin', // password
-        UserRole.admin, // role
-        1, // securityQuestionId
-        'red', // securityQuestionAnswer
+        defaultAdminAccount.username,
+        defaultAdminAccount.password,
+        defaultAdminAccount.role,
+        defaultAdminAccount.securityQuestionId,
+        defaultAdminAccount.securityAnswer,
       );
-      print('Default admin account created: admin/admin');
+      developer.log(
+        'Default admin account created: ${defaultAdminAccount.username}/${defaultAdminAccount.password}',
+        name: 'AuthRepository',
+      );
     }
   }
 }

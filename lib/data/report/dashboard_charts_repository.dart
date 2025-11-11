@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:isar_community/isar.dart';
 
 import '../../domain/entities/report/dashboard_chart.dart';
@@ -73,7 +75,10 @@ class DashboardChartsRepositoryImpl extends DashboardChartsRepository {
     // Generate revenue by category data (mock for now since we don't have product categories)
     final revenueByCategory = await _generateRevenueByCategory(orders);
 
-    print('Revenue by revenueByDay: $revenueByDay');
+    developer.log(
+      'Revenue by revenueByDay: $revenueByDay',
+      name: 'DashboardChartsRepository',
+    );
 
     return DashboardChartData(
       revenueByDay: revenueByDay,

@@ -119,7 +119,7 @@ class SignUpController extends _$SignUpController with CommonProvider<SignUpStat
     //validate username/password
     final userName = state.userName;
     final password = state.password;
-    print('userName: $userName, password: $password');
+    log('userName: $userName, password: $password');
 
     showLoading();
 
@@ -312,7 +312,7 @@ class ResetPasswordController extends _$ResetPasswordController with CommonProvi
     final userAccount = state.userAccount;
     final securityQuestionId = state.securityQuestionId;
     final securityAnswer = state.securityAnswer;
-    print('userAccount: $userAccount, securityQuestionId: $securityQuestionId, securityAnswer: $securityAnswer');
+    log('userAccount: $userAccount, securityQuestionId: $securityQuestionId, securityAnswer: $securityAnswer');
 
     //check data
     try {

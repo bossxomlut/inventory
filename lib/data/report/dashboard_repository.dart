@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:isar_community/isar.dart';
 
 import '../../domain/entities/report/dashboard_overview.dart';
@@ -139,7 +141,10 @@ class DashboardRepositoryImpl extends DashboardRepository {
     DateTime compareDateFrom = from.subtract(Duration(days: totalDifferenceBetweenDays + 1));
     DateTime compareDateTo = to.subtract(Duration(days: totalDifferenceBetweenDays + 1));
 
-    print('Comparing from $compareDateFrom to $compareDateTo');
+    developer.log(
+      'Comparing from $compareDateFrom to $compareDateTo',
+      name: 'DashboardRepository',
+    );
 
     // Get previous period data for comparison
     final yesterdayCompletedOrders =

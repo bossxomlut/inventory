@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -549,7 +550,7 @@ class ProductListView extends HookConsumerWidget {
               },
               separatorBuilder: (context, index) => const AppDivider(),
               onLoadMore: () async {
-                print('Loading more products...');
+                developer.log('Loading more products...', name: 'ProductListView');
                 return Future(
                   () {
                     return ref.read(loadProductProvider.notifier).loadMore();

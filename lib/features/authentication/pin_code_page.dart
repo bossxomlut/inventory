@@ -9,6 +9,7 @@ import '../../routes/app_router.dart';
 import '../../shared_widgets/index.dart';
 import 'widget/number_pad.dart';
 import 'widget/pin_code.dart';
+import 'provider/auth_provider.dart';
 
 const int maxPinLength = 4;
 
@@ -64,9 +65,11 @@ class PinCodePage extends HookConsumerWidget {
 
         // Xử lý mã PIN
 
-        pinCodeRepository.login(pinCodeDebounce!).then((_) {
+        pinCodeRepository.login(pinCodeDebounce!).then((_) async {
           // Xử lý thành công
-          appRouter.goHome();
+          await ref
+              .read(authControllerProvider.notifier)
+              .goToPostLoginDestination();
         }).catchError((error) {
           // Xử lý lỗi
           pinCode.value = '';

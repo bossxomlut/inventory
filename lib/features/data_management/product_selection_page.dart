@@ -4,6 +4,7 @@ import 'package:hugeicons/hugeicons.dart';
 
 import '../../domain/models/sample_product.dart';
 import '../../domain/models/shop_type.dart';
+import '../authentication/provider/auth_provider.dart';
 import '../../provider/notification.dart';
 import '../../provider/theme.dart';
 import '../../resources/index.dart';
@@ -15,10 +16,12 @@ import 'widgets/sample_product_card.dart';
 
 class ProductSelectionPage extends ConsumerStatefulWidget {
   final ShopType shopType;
+  final bool onboardingMode;
 
   const ProductSelectionPage({
     super.key,
     required this.shopType,
+    this.onboardingMode = false,
   });
 
   @override
@@ -107,6 +110,10 @@ class _ProductSelectionPageState extends ConsumerState<ProductSelectionPage> {
 
       // Navigate back if successful
       if (mounted && result != null && result.successfulImports > 0) {
+        if (widget.onboardingMode) {
+          await ref.read(authControllerProvider.notifier).completeAdminSampleDataOnboarding();
+          return;
+        }
         Navigator.pop(context);
       }
     } catch (e) {

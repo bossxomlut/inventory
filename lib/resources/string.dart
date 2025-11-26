@@ -924,6 +924,8 @@ abstract class LKey {
       'dataManagement.sample.chooseTitle';
   static const String dataManagementSampleChooseDescription =
       'dataManagement.sample.chooseDescription';
+  static const String dataManagementSampleSkipToHome =
+      'dataManagement.sample.skipToHome';
   static const String dataManagementProductSelectionErrorNone =
       'dataManagement.productSelection.errorNone';
   static const String dataManagementProductSelectionLoadingErrorTitle =

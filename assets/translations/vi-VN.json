@@ -915,7 +915,8 @@
       "title": "Tạo dữ liệu mẫu",
       "testTooltip": "Test giao diện nhập dữ liệu",
       "chooseTitle": "Chọn loại cửa hàng",
-      "chooseDescription": "Chọn loại cửa hàng phù hợp để tạo dữ liệu mẫu tương ứng."
+      "chooseDescription": "Chọn loại cửa hàng phù hợp để tạo dữ liệu mẫu tương ứng.",
+      "skipToHome": "Bỏ qua và vào màn hình chính"
     },
     "productSelection": {
       "errorNone": "Vui lòng chọn ít nhất một sản phẩm",

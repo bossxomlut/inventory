@@ -3,9 +3,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../domain/models/shop_type.dart';
+import '../authentication/provider/auth_provider.dart';
 import '../../provider/theme.dart';
 import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
+import 'provider/sample_data_onboarding_provider.dart';
 import 'data_import_test_page.dart';
 import 'product_selection_page.dart';
 
@@ -16,12 +18,24 @@ class CreateSampleDataPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.appTheme;
+    final onboardingMode = ref.watch(sampleDataOnboardingProvider);
     String t(String key) => key.tr(context: context);
 
     return Scaffold(
       appBar: CustomAppBar(
         title: t(LKey.dataManagementSampleTitle),
         actions: [
+          if (onboardingMode)
+            TextButton(
+              onPressed: () => ref.read(authControllerProvider.notifier).completeAdminSampleDataOnboarding(),
+              child: Text(
+                t(LKey.buttonSkip),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           IconButton(
             onPressed: () => _navigateToTestPage(context),
             icon: Icon(
@@ -105,7 +119,11 @@ class CreateSampleDataPage extends ConsumerWidget {
                         color: theme.colorPrimary,
                         size: 16,
                       ),
-                      onTap: () => _navigateToProductSelection(context, shopType),
+                      onTap: () => _navigateToProductSelection(
+                        context,
+                        shopType,
+                        onboardingMode,
+                      ),
                     ),
                   );
                 },
@@ -114,15 +132,33 @@ class CreateSampleDataPage extends ConsumerWidget {
           ],
         ),
       ),
+      bottomNavigationBar: onboardingMode
+          ? Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SafeArea(
+                child: AppButton.ghost(
+                  title: t(LKey.dataManagementSampleSkipToHome),
+                  onPressed: () => ref.read(authControllerProvider.notifier).completeAdminSampleDataOnboarding(),
+                ),
+              ),
+            )
+          : null,
     );
   }
 
-  void _navigateToProductSelection(BuildContext context, ShopType shopType) {
+  void _navigateToProductSelection(
+    BuildContext context,
+    ShopType shopType,
+    bool onboardingMode,
+  ) {
     // Navigate to product selection page
     Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (context) => ProductSelectionPage(shopType: shopType),
+        builder: (context) => ProductSelectionPage(
+          shopType: shopType,
+          onboardingMode: onboardingMode,
+        ),
       ),
     );
   }

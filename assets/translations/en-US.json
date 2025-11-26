@@ -975,7 +975,8 @@
       "title": "Create sample data",
       "testTooltip": "Test data import UI",
       "chooseTitle": "Choose a store type",
-      "chooseDescription": "Select a store type to generate matching sample data."
+      "chooseDescription": "Select a store type to generate matching sample data.",
+      "skipToHome": "Skip and go to Home"
     },
     "productSelection": {
       "errorNone": "Please select at least one product",

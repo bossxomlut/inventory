@@ -53,7 +53,7 @@ class LoginController extends _$LoginController with CommonProvider<LoginState> 
 
         hideLoading();
 
-        appRouter.goHomeByRole(value.role);
+        await authProvider.goToPostLoginDestination();
       },
     ).onError(
       (error, StackTrace stackTrace) {
@@ -153,7 +153,7 @@ class SignUpController extends _$SignUpController with CommonProvider<SignUpStat
 
         hideLoading();
 
-        appRouter.goHome();
+        await authProvider.goToPostLoginDestination();
       },
     ).onError(
       (error, StackTrace stackTrace) {

@@ -332,6 +332,66 @@ abstract class LKey {
   static const String settingResetOnboardingError =
       'setting.resetOnboardingError';
   static const String settingPreferences = 'setting.preferences';
+  static const String guideHeroTitle = 'guide.heroTitle';
+  static const String guideHeroSubtitle = 'guide.heroSubtitle';
+  static const String guideActionCommunityTitle = 'guide.actionCommunityTitle';
+  static const String guideActionCommunityDescription =
+      'guide.actionCommunityDescription';
+  static const String guideActionYoutubeTitle = 'guide.actionYoutubeTitle';
+  static const String guideActionYoutubeDescription =
+      'guide.actionYoutubeDescription';
+  static const String guideLinkComingSoon = 'guide.linkComingSoon';
+  static const String guideLinkOpen = 'guide.linkOpen';
+  static const String guideLinkOpenError = 'guide.linkOpenError';
+  static const String guideTextTitle = 'guide.textTitle';
+  static const String guideTextSubtitle = 'guide.textSubtitle';
+  static const String guideSequenceTitle = 'guide.sequenceTitle';
+  static const String guideSequenceStep1 = 'guide.sequenceStep1';
+  static const String guideSequenceStep2 = 'guide.sequenceStep2';
+  static const String guideSequenceStep3 = 'guide.sequenceStep3';
+  static const String guideSequenceStep4 = 'guide.sequenceStep4';
+  static const String guideSectionSetupTitle = 'guide.sectionSetupTitle';
+  static const String guideSectionSetupDescription =
+      'guide.sectionSetupDescription';
+  static const String guideSectionSetupBullet1 = 'guide.sectionSetupBullet1';
+  static const String guideSectionSetupBullet2 = 'guide.sectionSetupBullet2';
+  static const String guideSectionSetupBullet3 = 'guide.sectionSetupBullet3';
+  static const String guideSectionProductTitle = 'guide.sectionProductTitle';
+  static const String guideSectionProductDescription =
+      'guide.sectionProductDescription';
+  static const String guideSectionProductBullet1 =
+      'guide.sectionProductBullet1';
+  static const String guideSectionProductBullet2 =
+      'guide.sectionProductBullet2';
+  static const String guideSectionProductBullet3 =
+      'guide.sectionProductBullet3';
+  static const String guideSectionPriceOrderTitle =
+      'guide.sectionPriceOrderTitle';
+  static const String guideSectionPriceOrderDescription =
+      'guide.sectionPriceOrderDescription';
+  static const String guideSectionPriceOrderBullet1 =
+      'guide.sectionPriceOrderBullet1';
+  static const String guideSectionPriceOrderBullet2 =
+      'guide.sectionPriceOrderBullet2';
+  static const String guideSectionPriceOrderBullet3 =
+      'guide.sectionPriceOrderBullet3';
+  static const String guideSectionAdminDataTitle =
+      'guide.sectionAdminDataTitle';
+  static const String guideSectionAdminDataDescription =
+      'guide.sectionAdminDataDescription';
+  static const String guideSectionAdminDataBullet1 =
+      'guide.sectionAdminDataBullet1';
+  static const String guideSectionAdminDataBullet2 =
+      'guide.sectionAdminDataBullet2';
+  static const String guideSectionAdminDataBullet3 =
+      'guide.sectionAdminDataBullet3';
+  static const String guideSectionReminderTitle = 'guide.sectionReminderTitle';
+  static const String guideSectionReminderBullet1 =
+      'guide.sectionReminderBullet1';
+  static const String guideSectionReminderBullet2 =
+      'guide.sectionReminderBullet2';
+  static const String guideSectionReminderBullet3 =
+      'guide.sectionReminderBullet3';
   static const String feedbackTitle = 'feedback.title';
   static const String feedbackDescription = 'feedback.description';
   static const String feedbackTypeLabel = 'feedback.type.label';

@@ -146,7 +146,9 @@ class SettingPage extends WidgetByDeviceTemplate {
                 ListTile(
                   leading: const Icon(HugeIcons.strokeRoundedHelpCircle),
                   title: const LText(LKey.settingUserGuide),
-                  onTap: () {},
+                  onTap: () {
+                    appRouter.goToUserGuide();
+                  },
                 ),
                 const _Divider(),
                 ListTile(

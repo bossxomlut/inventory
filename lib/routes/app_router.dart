@@ -37,6 +37,7 @@ class AppRouter extends RootStackRouter {
             // AdminGuard(),
           ],
         ),
+        AutoRoute(page: UserGuideRoute.page),
         AutoRoute(page: FeedbackRoute.page),
 
         //home routes
@@ -304,6 +305,10 @@ extension AdminRouterX on AppRouter {
 extension SettingRouterX on AppRouter {
   void goToSetting() {
     push(SettingRoute());
+  }
+
+  void goToUserGuide() {
+    push(const UserGuideRoute());
   }
 }
 

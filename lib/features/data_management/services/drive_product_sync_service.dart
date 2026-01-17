@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -26,12 +28,16 @@ class DriveProductDownload {
   DriveProductDownload({
     required this.fileId,
     required this.fileName,
-    required this.content,
+    this.textContent,
+    this.bytes,
   });
 
   final String fileId;
   final String fileName;
-  final String content;
+  final String? textContent;
+  final Uint8List? bytes;
+
+  bool get isExcel => fileName.toLowerCase().endsWith('.xlsx');
 }
 
 class DriveProductFile {
@@ -74,17 +80,19 @@ class DriveProductSyncService {
     final user = _requireAdmin();
     final signedIn = await _resolveAccount(account);
     final exportService = _ref.read(dataExportServiceProvider);
-    final content = await exportService.exportProductsJsonlContent();
+    final bytes = await exportService.exportProductsXlsxBytes();
     final folderId = await _driveService.ensureFolderId(
       account: signedIn,
       folderName: folderName,
     );
-    final fileName = _buildFileName(user);
-    final file = await _driveService.writeTextFile(
+    final fileName = _buildFileName(user, extension: 'xlsx');
+    final file = await _driveService.writeBytesFile(
       account: signedIn,
       folderId: folderId,
       fileName: fileName,
-      content: content,
+      bytes: bytes,
+      mimeType:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     );
     final fileId = file.id;
     if (fileId == null || fileId.isEmpty) {
@@ -116,14 +124,10 @@ class DriveProductSyncService {
       throw StateError('No product export file found in Drive.');
     }
 
-    final content = await _driveService.readTextFile(
-      account: signedIn,
-      fileId: latestFile.id!,
-    );
-    return DriveProductDownload(
+    return downloadProductsFile(
       fileId: latestFile.id!,
       fileName: latestFile.name ?? 'unknown',
-      content: content,
+      account: signedIn,
     );
   }
 
@@ -134,14 +138,25 @@ class DriveProductSyncService {
   }) async {
     _requireAdmin();
     final signedIn = await _resolveAccount(account);
-    final content = await _driveService.readTextFile(
+    if (fileName.toLowerCase().endsWith('.xlsx')) {
+      final bytes = await _driveService.readBytesFile(
+        account: signedIn,
+        fileId: fileId,
+      );
+      return DriveProductDownload(
+        fileId: fileId,
+        fileName: fileName,
+        bytes: bytes,
+      );
+    }
+    final textContent = await _driveService.readTextFile(
       account: signedIn,
       fileId: fileId,
     );
     return DriveProductDownload(
       fileId: fileId,
       fileName: fileName,
-      content: content,
+      textContent: textContent,
     );
   }
 
@@ -214,12 +229,12 @@ class DriveProductSyncService {
     return _authService.ensureSignedIn();
   }
 
-  String _buildFileName(User user) {
+  String _buildFileName(User user, {required String extension}) {
     final now = DateTime.now();
     final stamp =
         '${now.year}${_twoDigits(now.month)}${_twoDigits(now.day)}_'
         '${_twoDigits(now.hour)}${_twoDigits(now.minute)}${_twoDigits(now.second)}';
-    return '${filePrefix}_${user.id}_$stamp.jsonl';
+    return '${filePrefix}_${user.id}_$stamp.$extension';
   }
 
   String _twoDigits(int value) => value.toString().padLeft(2, '0');

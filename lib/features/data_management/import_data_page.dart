@@ -3,20 +3,23 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../core/helpers/scaffold_utils.dart';
 import '../../resources/index.dart';
 import '../../shared_widgets/app_bar.dart';
+import '../../shared_widgets/data_import_result_dialog.dart';
+import 'services/data_import_service.dart';
 
 @RoutePage()
-class ImportDataPage extends StatefulWidget {
+class ImportDataPage extends ConsumerStatefulWidget {
   const ImportDataPage({super.key});
 
   @override
-  State<ImportDataPage> createState() => _ImportDataPageState();
+  ConsumerState<ImportDataPage> createState() => _ImportDataPageState();
 }
 
-class _ImportDataPageState extends State<ImportDataPage> {
+class _ImportDataPageState extends ConsumerState<ImportDataPage> {
   String? _fileName;
   String? _resultMessage;
   bool? _success;
@@ -49,7 +52,36 @@ class _ImportDataPageState extends State<ImportDataPage> {
         });
         return;
       }
-      // Validate file content (giả lập)
+      if (ext == 'xlsx') {
+        try {
+          final importService = ref.read(dataImportServiceProvider);
+          final bytes = await file.readAsBytes();
+          final result = await importService.importFromExcelBytes(bytes);
+          if (context.mounted) {
+            await DataImportResultDialog.showResult(
+              context,
+              result,
+              title: 'Kết quả nhập dữ liệu Excel',
+            );
+          }
+          setState(() {
+            _resultMessage = result.success
+                ? t(LKey.dataManagementImportResultSuccess)
+                : t(LKey.dataManagementImportResultInvalid);
+            _success = result.success;
+            _isLoading = false;
+          });
+        } catch (e) {
+          setState(() {
+            _resultMessage = 'Lỗi nhập Excel: $e';
+            _success = false;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      // Validate file content (giả lập cho jsonl/csv)
       final isValid = await _validateFileContent(file, ext);
       setState(() {
         _resultMessage = isValid

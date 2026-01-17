@@ -449,11 +449,30 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       );
       if (!mounted) return;
       final dataImportService = ref.read(dataImportServiceProvider);
-      await dataImportService.importFromJsonlStringWithValidation(
-        context,
-        download.content,
-        title: 'Nhập dữ liệu sản phẩm từ Drive',
-      );
+      if (download.isExcel) {
+        final bytes = download.bytes;
+        if (bytes == null || bytes.isEmpty) {
+          throw StateError('File Excel rỗng hoặc không đọc được.');
+        }
+        final result = await dataImportService.importFromExcelBytes(bytes);
+        if (context.mounted) {
+          await DataImportResultDialog.showResult(
+            context,
+            result,
+            title: 'Nhập dữ liệu Excel từ Drive',
+          );
+        }
+      } else {
+        final content = download.textContent;
+        if (content == null || content.isEmpty) {
+          throw StateError('File dữ liệu rỗng hoặc không đọc được.');
+        }
+        await dataImportService.importFromJsonlStringWithValidation(
+          context,
+          content,
+          title: 'Nhập dữ liệu sản phẩm từ Drive',
+        );
+      }
       setState(() {
         _status = 'Đã nhập dữ liệu từ: ${file.name}';
         _lastFileName = file.name;

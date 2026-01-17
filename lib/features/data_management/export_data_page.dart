@@ -137,6 +137,7 @@ class ExportDataPage extends ConsumerWidget {
               description: t(LKey.dataManagementExportProductsDescription),
               onExportJson: () => _exportProductsJsonl(context, ref),
               onExportCsv: () => _exportProductsCsv(context, ref),
+              onExportExcel: () => _exportProductsXlsx(context, ref),
             ),
             const SizedBox(height: 12),
             _buildExportCard(
@@ -222,6 +223,7 @@ class ExportDataPage extends ConsumerWidget {
     required String description,
     required VoidCallback onExportJson,
     required VoidCallback onExportCsv,
+    VoidCallback? onExportExcel,
   }) {
     final theme = context.appTheme;
 
@@ -275,6 +277,16 @@ class ExportDataPage extends ConsumerWidget {
                     label: const Text('CSV'),
                   ),
                 ),
+                if (onExportExcel != null) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onExportExcel,
+                      icon: const Icon(Icons.grid_on),
+                      label: const Text('XLSX'),
+                    ),
+                  ),
+                ],
               ],
             ),
           ],
@@ -307,6 +319,27 @@ class ExportDataPage extends ConsumerWidget {
         final filePath = await exportService.exportProductsToCsv();
         if (context.mounted) {
           _showSuccessMessageWithPath(context, ref, 'Đã xuất dữ liệu sản phẩm ra file CSV!', filePath);
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showErrorMessage(context, 'Lỗi xuất dữ liệu: $e');
+        }
+      }
+    });
+  }
+
+  void _exportProductsXlsx(BuildContext context, WidgetRef ref) {
+    _showExportConfirmation(context, 'sản phẩm', 'XLSX', () async {
+      try {
+        final exportService = ref.read(dataExportServiceProvider);
+        final filePath = await exportService.exportProductsToXlsx();
+        if (context.mounted) {
+          _showSuccessMessageWithPath(
+            context,
+            ref,
+            'Đã xuất dữ liệu sản phẩm ra file Excel!',
+            filePath,
+          );
         }
       } catch (e) {
         if (context.mounted) {

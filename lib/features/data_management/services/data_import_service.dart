@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:excel/excel.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -64,6 +67,115 @@ class DataImportService {
       successfulImports: successfulImports,
       errors: errors,
     );
+  }
+
+  /// Import products from an Excel (XLSX) file bytes
+  Future<DataImportResult> importFromExcelBytes(Uint8List bytes) async {
+    final List<String> errors = [];
+    int successfulImports = 0;
+
+    try {
+      final excel = Excel.decodeBytes(bytes);
+      if (excel.tables.isEmpty) {
+        return DataImportResult(
+          success: false,
+          totalLines: 0,
+          successfulImports: 0,
+          errors: ['Không tìm thấy sheet nào trong file Excel.'],
+        );
+      }
+
+      final sheet = excel.tables.values.first;
+      if (sheet == null || sheet.rows.isEmpty) {
+        return DataImportResult(
+          success: false,
+          totalLines: 0,
+          successfulImports: 0,
+          errors: ['Sheet Excel trống.'],
+        );
+      }
+
+      final rows = sheet.rows;
+      final headerMap = _buildHeaderMap(rows.first);
+      if (headerMap.isEmpty) {
+        return DataImportResult(
+          success: false,
+          totalLines: rows.length,
+          successfulImports: 0,
+          errors: ['Không tìm thấy header hợp lệ trong file Excel.'],
+        );
+      }
+
+      for (int i = 1; i < rows.length; i++) {
+        final row = rows[i];
+        try {
+          final name = _getCellString(row, headerMap, _excelHeaderName);
+          final barcode = _getCellString(row, headerMap, _excelHeaderBarcode);
+          final categoryName =
+              _getCellString(row, headerMap, _excelHeaderCategory);
+          final unitName = _getCellString(row, headerMap, _excelHeaderUnit);
+          final description =
+              _getCellString(row, headerMap, _excelHeaderDescription);
+          final quantity =
+              _getCellInt(row, headerMap, _excelHeaderQuantity, fallback: 0);
+          final price = _getCellDouble(row, headerMap, _excelHeaderPrice);
+          final enableExpiry =
+              _getCellBool(row, headerMap, _excelHeaderExpiry);
+
+          if (name.isEmpty) {
+            // Skip empty rows
+            if (barcode.isEmpty &&
+                categoryName.isEmpty &&
+                unitName.isEmpty &&
+                description.isEmpty) {
+              continue;
+            }
+            throw Exception('Thiếu tên sản phẩm');
+          }
+
+          final jsonData = <String, dynamic>{
+            'id': undefinedId,
+            'name': name,
+            'quantity': quantity,
+            'barcode': barcode.isEmpty ? null : barcode,
+            'description': description.isEmpty ? null : description,
+            'enableExpiryTracking': enableExpiry,
+            if (categoryName.isNotEmpty) 'categoryName': categoryName,
+            if (unitName.isNotEmpty) 'unitName': unitName,
+            if (price != null) 'price': price,
+          };
+
+          await _importSingleProduct(jsonData);
+          successfulImports++;
+        } catch (e) {
+          errors.add('Dòng ${i + 1}: $e');
+        }
+      }
+    } catch (e) {
+      errors.add('Không thể đọc file Excel: $e');
+    }
+
+    return DataImportResult(
+      success: errors.isEmpty,
+      totalLines: successfulImports + errors.length,
+      successfulImports: successfulImports,
+      errors: errors,
+    );
+  }
+
+  /// Import products from an Excel (XLSX) file path
+  Future<DataImportResult> importFromExcelFile(String filePath) async {
+    try {
+      final bytes = await File(filePath).readAsBytes();
+      return importFromExcelBytes(bytes);
+    } catch (e) {
+      return DataImportResult(
+        success: false,
+        totalLines: 0,
+        successfulImports: 0,
+        errors: ['Không thể đọc file Excel: $e'],
+      );
+    }
   }
 
   /// Import products from JSONL string content
@@ -214,6 +326,226 @@ class DataImportService {
       errors: errors,
       warnings: warnings,
     );
+  }
+
+  static const List<String> _excelHeaderName = <String>[
+    'tên sản phẩm',
+    'name',
+  ];
+  static const List<String> _excelHeaderQuantity = <String>[
+    'số lượng',
+    'quantity',
+  ];
+  static const List<String> _excelHeaderBarcode = <String>[
+    'mã vạch',
+    'barcode',
+  ];
+  static const List<String> _excelHeaderCategory = <String>[
+    'danh mục',
+    'category',
+    'categoryname',
+  ];
+  static const List<String> _excelHeaderUnit = <String>[
+    'đơn vị',
+    'unit',
+    'unitname',
+  ];
+  static const List<String> _excelHeaderDescription = <String>[
+    'mô tả',
+    'description',
+  ];
+  static const List<String> _excelHeaderPrice = <String>[
+    'giá',
+    'price',
+  ];
+  static const List<String> _excelHeaderExpiry = <String>[
+    'theo dõi hạn',
+    'expiry',
+    'enableexpirytracking',
+  ];
+
+  Map<String, int> _buildHeaderMap(List<Data?> headerRow) {
+    final Map<String, int> map = <String, int>{};
+    for (int i = 0; i < headerRow.length; i++) {
+      final cellValue = headerRow[i]?.value;
+      if (cellValue == null) {
+        continue;
+      }
+      final key = _normalizeHeader(_cellToString(cellValue));
+      if (key.isNotEmpty) {
+        map[key] = i;
+      }
+    }
+    return map;
+  }
+
+  String _normalizeHeader(String input) {
+    return input.trim().toLowerCase();
+  }
+
+  String _getCellString(
+    List<Data?> row,
+    Map<String, int> headers,
+    List<String> keys,
+  ) {
+    final index = _findHeaderIndex(headers, keys);
+    if (index == null || index >= row.length) {
+      return '';
+    }
+    final value = row[index]?.value;
+    return _cellToString(value);
+  }
+
+  int _getCellInt(
+    List<Data?> row,
+    Map<String, int> headers,
+    List<String> keys, {
+    int fallback = 0,
+  }) {
+    final index = _findHeaderIndex(headers, keys);
+    if (index == null || index >= row.length) {
+      return fallback;
+    }
+    return _cellToInt(row[index]?.value, fallback);
+  }
+
+  double? _getCellDouble(
+    List<Data?> row,
+    Map<String, int> headers,
+    List<String> keys,
+  ) {
+    final index = _findHeaderIndex(headers, keys);
+    if (index == null || index >= row.length) {
+      return null;
+    }
+    return _cellToDouble(row[index]?.value);
+  }
+
+  bool _getCellBool(
+    List<Data?> row,
+    Map<String, int> headers,
+    List<String> keys,
+  ) {
+    final index = _findHeaderIndex(headers, keys);
+    if (index == null || index >= row.length) {
+      return false;
+    }
+    return _cellToBool(row[index]?.value);
+  }
+
+  int? _findHeaderIndex(Map<String, int> headers, List<String> keys) {
+    for (final key in keys) {
+      final index = headers[_normalizeHeader(key)];
+      if (index != null) {
+        return index;
+      }
+    }
+    return null;
+  }
+
+  String _cellToString(CellValue? value) {
+    if (value == null) {
+      return '';
+    }
+    if (value is TextCellValue) {
+      return _textSpanToPlainText(value.value).trim();
+    }
+    if (value is IntCellValue) {
+      return value.value.toString();
+    }
+    if (value is DoubleCellValue) {
+      return value.value.toString();
+    }
+    if (value is BoolCellValue) {
+      return value.value.toString();
+    }
+    if (value is DateCellValue) {
+      return value.asDateTimeLocal().toIso8601String();
+    }
+    if (value is DateTimeCellValue) {
+      return value.asDateTimeLocal().toIso8601String();
+    }
+    if (value is TimeCellValue) {
+      return value.asDuration().toString();
+    }
+    if (value is FormulaCellValue) {
+      return value.formula;
+    }
+    return value.toString();
+  }
+
+  int _cellToInt(CellValue? value, int fallback) {
+    if (value == null) {
+      return fallback;
+    }
+    if (value is IntCellValue) {
+      return value.value;
+    }
+    if (value is DoubleCellValue) {
+      return value.value.round();
+    }
+    if (value is BoolCellValue) {
+      return value.value ? 1 : 0;
+    }
+    if (value is TextCellValue) {
+      final text = _textSpanToPlainText(value.value).trim();
+      return int.tryParse(text) ?? fallback;
+    }
+    return fallback;
+  }
+
+  double? _cellToDouble(CellValue? value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is DoubleCellValue) {
+      return value.value;
+    }
+    if (value is IntCellValue) {
+      return value.value.toDouble();
+    }
+    if (value is BoolCellValue) {
+      return value.value ? 1.0 : 0.0;
+    }
+    if (value is TextCellValue) {
+      final text = _textSpanToPlainText(value.value).trim();
+      return double.tryParse(text.replaceAll(',', '.'));
+    }
+    return null;
+  }
+
+  bool _cellToBool(CellValue? value) {
+    if (value == null) {
+      return false;
+    }
+    if (value is BoolCellValue) {
+      return value.value;
+    }
+    if (value is IntCellValue) {
+      return value.value != 0;
+    }
+    if (value is DoubleCellValue) {
+      return value.value != 0;
+    }
+    if (value is TextCellValue) {
+      final normalized = _textSpanToPlainText(value.value).trim().toLowerCase();
+      return normalized == 'true' || normalized == '1' || normalized == 'yes';
+    }
+    return false;
+  }
+
+  String _textSpanToPlainText(TextSpan span) {
+    final buffer = StringBuffer();
+    if (span.text != null) {
+      buffer.write(span.text);
+    }
+    final children = span.children;
+    if (children != null) {
+      for (final child in children) {
+        buffer.write(_textSpanToPlainText(child));
+      }
+    }
+    return buffer.toString();
   }
 }
 

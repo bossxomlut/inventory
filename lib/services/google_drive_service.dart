@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -85,6 +86,29 @@ class GoogleDriveService {
     );
   }
 
+  Future<drive.File> writeBytesFile({
+    required GoogleSignInAccount account,
+    required String folderId,
+    required String fileName,
+    required List<int> bytes,
+    required String mimeType,
+  }) async {
+    final media = drive.Media(
+      Stream<List<int>>.fromIterable(<List<int>>[bytes]),
+      bytes.length,
+    );
+    final metadata = drive.File()
+      ..name = fileName
+      ..mimeType = mimeType
+      ..parents = <String>[folderId];
+
+    return _withDriveApi(
+      account: account,
+      scopes: <String>[drive.DriveApi.driveFileScope],
+      action: (api) => api.files.create(metadata, uploadMedia: media),
+    );
+  }
+
   Future<String> readTextFile({
     required GoogleSignInAccount account,
     required String fileId,
@@ -98,6 +122,25 @@ class GoogleDriveService {
       ),
     ) as drive.Media;
     return media.stream.transform(utf8.decoder).join();
+  }
+
+  Future<Uint8List> readBytesFile({
+    required GoogleSignInAccount account,
+    required String fileId,
+  }) async {
+    final media = await _withDriveApi(
+      account: account,
+      scopes: <String>[drive.DriveApi.driveFileScope],
+      action: (api) => api.files.get(
+        fileId,
+        downloadOptions: drive.DownloadOptions.fullMedia,
+      ),
+    ) as drive.Media;
+    final builder = BytesBuilder();
+    await for (final chunk in media.stream) {
+      builder.add(chunk);
+    }
+    return builder.toBytes();
   }
 
   Future<List<drive.File>> listFolder({

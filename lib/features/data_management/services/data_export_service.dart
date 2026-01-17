@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../domain/entities/index.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
@@ -64,6 +66,59 @@ class DataExportService {
     } catch (e) {
       throw Exception('Không thể xuất dữ liệu sản phẩm: $e');
     }
+  }
+
+  /// Export products to XLSX format (simple data for users)
+  Future<String> exportProductsToXlsx() async {
+    try {
+      final bytes = await exportProductsXlsxBytes();
+      final file =
+          await _saveBytesToFile('products_${_getTimestamp()}.xlsx', bytes);
+      return file.path;
+    } catch (e) {
+      throw Exception('Không thể xuất dữ liệu sản phẩm: $e');
+    }
+  }
+
+  /// Export products to XLSX bytes (for cloud sync)
+  Future<List<int>> exportProductsXlsxBytes() async {
+    final productRepo = ref.read(productRepositoryProvider);
+    final result = await productRepo.search('', 1, 10000);
+
+    const sheetName = 'Products';
+    final excel = Excel.createExcel();
+    final sheet = excel[sheetName];
+    excel.setDefaultSheet(sheetName);
+    if (excel.sheets.containsKey('Sheet1')) {
+      excel.delete('Sheet1');
+    }
+    sheet.appendRow([
+      TextCellValue('ID'),
+      TextCellValue('Tên sản phẩm'),
+      TextCellValue('Số lượng'),
+      TextCellValue('Mã vạch'),
+      TextCellValue('Danh mục'),
+      TextCellValue('Đơn vị'),
+      TextCellValue('Mô tả'),
+    ]);
+
+    for (final product in result.data) {
+      sheet.appendRow([
+        IntCellValue(product.id),
+        TextCellValue(product.name),
+        IntCellValue(product.quantity),
+        TextCellValue(product.barcode ?? ''),
+        TextCellValue(product.category?.name ?? 'Chưa phân loại'),
+        TextCellValue(product.unit?.name ?? 'Chưa có đơn vị'),
+        TextCellValue(product.description ?? ''),
+      ]);
+    }
+
+    final bytes = excel.encode();
+    if (bytes == null || bytes.isEmpty) {
+      throw Exception('Không thể tạo file Excel.');
+    }
+    return bytes;
   }
 
   /// Export categories to JSONL format (full object data)
@@ -421,54 +476,7 @@ class DataExportService {
   }
 
   Future<File> _saveToFile(String fileName, String content) async {
-    Directory directory;
-
-    if (Platform.isAndroid) {
-      // Request permission trước khi lưu file (để đảm bảo user được thông báo về quyền)
-      await _requestStoragePermission();
-
-      // Thử lưu vào external Documents directory trước (/storage/emulated/0/Documents/Đơn_và_kho_hàng)
-      try {
-        directory = Directory('/storage/emulated/0/Documents/Đơn_và_kho_hàng');
-
-        // Tạo thư mục nếu chưa tồn tại
-        if (!await directory.exists()) {
-          await directory.create(recursive: true);
-        }
-
-        // Thử tạo file test để kiểm tra quyền ghi
-        final testFile = File('${directory.path}/.test');
-        await testFile.writeAsString('test');
-        await testFile.delete();
-
-        debugPrint('Using external Documents directory: ${directory.path}');
-      } catch (e) {
-        debugPrint('Cannot use external Documents directory: $e');
-
-        // Fallback: Sử dụng app documents directory
-        try {
-          directory = await getApplicationDocumentsDirectory();
-          directory = Directory('${directory.path}/Đơn_và_kho_hàng');
-
-          if (!await directory.exists()) {
-            await directory.create(recursive: true);
-          }
-
-          debugPrint('Fallback to app documents directory: ${directory.path}');
-        } catch (e2) {
-          debugPrint('Cannot use app documents directory: $e2');
-          throw Exception('Không thể tạo thư mục lưu file. Vui lòng kiểm tra quyền ứng dụng.');
-        }
-      }
-    } else {
-      // Trên iOS, sử dụng Documents directory
-      directory = await getApplicationDocumentsDirectory();
-      directory = Directory('${directory.path}/Đơn_và_kho_hàng');
-
-      if (!await directory.exists()) {
-        await directory.create(recursive: true);
-      }
-    }
+    final directory = await _resolveExportDirectory();
 
     try {
       final file = File('${directory.path}/$fileName');
@@ -482,6 +490,70 @@ class DataExportService {
       debugPrint('Error writing file: $e');
       throw Exception('Không thể lưu file. Vui lòng thử lại hoặc kiểm tra dung lượng thiết bị.');
     }
+  }
+
+  Future<File> _saveBytesToFile(String fileName, List<int> bytes) async {
+    final directory = await _resolveExportDirectory();
+
+    try {
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(bytes, flush: true);
+
+      debugPrint('File saved successfully to: ${file.path}');
+      return file;
+    } catch (e) {
+      debugPrint('Error writing file: $e');
+      throw Exception('Không thể lưu file. Vui lòng thử lại hoặc kiểm tra dung lượng thiết bị.');
+    }
+  }
+
+  Future<Directory> _resolveExportDirectory() async {
+    Directory directory;
+
+    if (Platform.isAndroid) {
+      await _requestStoragePermission();
+
+      try {
+        directory = Directory('/storage/emulated/0/Documents/Đơn_và_kho_hàng');
+
+        if (!await directory.exists()) {
+          await directory.create(recursive: true);
+        }
+
+        final testFile = File('${directory.path}/.test');
+        await testFile.writeAsString('test');
+        await testFile.delete();
+
+        debugPrint('Using external Documents directory: ${directory.path}');
+        return directory;
+      } catch (e) {
+        debugPrint('Cannot use external Documents directory: $e');
+
+        try {
+          directory = await getApplicationDocumentsDirectory();
+          directory = Directory('${directory.path}/Đơn_và_kho_hàng');
+
+          if (!await directory.exists()) {
+            await directory.create(recursive: true);
+          }
+
+          debugPrint('Fallback to app documents directory: ${directory.path}');
+          return directory;
+        } catch (e2) {
+          debugPrint('Cannot use app documents directory: $e2');
+          throw Exception('Không thể tạo thư mục lưu file. Vui lòng kiểm tra quyền ứng dụng.');
+        }
+      }
+    } else {
+      directory = await getApplicationDocumentsDirectory();
+      directory = Directory('${directory.path}/Đơn_và_kho_hàng');
+
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+    }
+
+    return directory;
   }
 
   String _getTimestamp() {

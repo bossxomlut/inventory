@@ -1,12 +1,10 @@
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:sample_app/domain/use_cases/index.dart';
+import 'package:sample_app/services/google_drive_service.dart';
+import 'package:sample_app/services/google_login_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,16 +37,56 @@ class GoogleLoginScreen extends StatefulWidget {
 
 class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
   bool _loading = false;
-  bool _initialized = false;
   String? _error;
   String? _status;
 
-  Future<void> _ensureGoogleSignInInitialized() async {
-    if (_initialized) {
-      return;
+  final GoogleLoginService _loginService = GoogleLoginService();
+  late final GoogleLoginUseCase _loginUseCase =
+      GoogleLoginUseCase(_loginService);
+  late final GoogleRestoreLoginUseCase _restoreUseCase =
+      GoogleRestoreLoginUseCase(_loginService);
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreLogin();
+  }
+
+  Future<void> _restoreLogin() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+      _status = 'Checking login...';
+    });
+
+    try {
+      final result = await _restoreUseCase.execute(null);
+      if (!mounted) return;
+      if (result == null) {
+        setState(() {
+          _loading = false;
+          _status = 'Not signed in';
+        });
+        return;
+      }
+
+      setState(() {
+        _loading = false;
+        _status = 'Login restored';
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _openSuccessScreen(result);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+        _status = 'Restore failed';
+      });
     }
-    await GoogleSignIn.instance.initialize();
-    _initialized = true;
   }
 
   Future<void> _handleGoogleSignIn() async {
@@ -59,25 +97,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
     });
 
     try {
-      await _ensureGoogleSignInInitialized();
-      if (!GoogleSignIn.instance.supportsAuthenticate()) {
-        throw   UnsupportedError(
-          'Google Sign-In authenticate is not supported on this platform.',
-        );
-      }
-
-      final googleUser = await GoogleSignIn.instance.authenticate();
-      final googleAuth = googleUser.authentication;
-      final idToken = googleAuth.idToken;
-      if (idToken == null) {
-        throw StateError('Missing Google ID token.');
-      }
-      final credential = GoogleAuthProvider.credential(
-        idToken: idToken,
-      );
-
-      final userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      final result = await _loginUseCase.execute(null);
       if (!mounted) return;
 
       setState(() {
@@ -88,14 +108,7 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
         const SnackBar(content: Text('Login success')),
       );
 
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => LoginSuccessScreen(
-            user: userCredential.user,
-            googleUser: googleUser,
-          ),
-        ),
-      );
+      await _openSuccessScreen(result);
     } on GoogleSignInException catch (e) {
       if (!mounted) return;
       if (e.code == GoogleSignInExceptionCode.canceled) {
@@ -127,6 +140,18 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
         const SnackBar(content: Text('Login failed')),
       );
     }
+  }
+
+  Future<void> _openSuccessScreen(GoogleLoginResult result) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LoginSuccessScreen(
+          user: result.user,
+          googleUser: result.googleUser,
+          loginService: _loginService,
+        ),
+      ),
+    );
   }
 
   @override
@@ -189,41 +214,31 @@ class LoginSuccessScreen extends StatefulWidget {
     super.key,
     required this.user,
     required this.googleUser,
+    required this.loginService,
   });
 
   final User? user;
   final GoogleSignInAccount googleUser;
+  final GoogleLoginService loginService;
 
   @override
   State<LoginSuccessScreen> createState() => _LoginSuccessScreenState();
 }
 
 class _LoginSuccessScreenState extends State<LoginSuccessScreen> {
-  static const String _driveFileName = 'inventory_login_test.txt';
-  static const List<String> _driveScopes = <String>[
-    drive.DriveApi.driveFileScope,
-    drive.DriveApi.driveMetadataReadonlyScope,
-  ];
+  static const String _driveFolderName = 'InventoryAppFiles';
+  static const String _driveFilePrefix = 'inventory';
 
   bool _driveBusy = false;
   String? _driveStatus;
   String? _driveFileId;
-
-  Future<T> _withDriveApi<T>(
-    Future<T> Function(drive.DriveApi api) action,
-  ) async {
-    final auth =
-        await widget.googleUser.authorizationClient.authorizeScopes(
-      _driveScopes,
-    );
-    final client = auth.authClient(scopes: _driveScopes);
-    final api = drive.DriveApi(client);
-    try {
-      return await action(api);
-    } finally {
-      client.close();
-    }
-  }
+  final GoogleDriveService _driveService = GoogleDriveService();
+  late final DriveWriteFileUseCase _driveWriteUseCase =
+      DriveWriteFileUseCase(_driveService);
+  late final DriveReadFileUseCase _driveReadUseCase =
+      DriveReadFileUseCase(_driveService);
+  late final DriveListFolderUseCase _driveListUseCase =
+      DriveListFolderUseCase(_driveService);
 
   Future<void> _writeDriveFile() async {
     setState(() {
@@ -233,23 +248,20 @@ class _LoginSuccessScreenState extends State<LoginSuccessScreen> {
 
     try {
       final now = DateTime.now().toIso8601String();
-      final content = 'Inventory login test at $now';
-      final bytes = utf8.encode(content);
-      final media = drive.Media(
-        Stream<List<int>>.fromIterable(<List<int>>[bytes]),
-        bytes.length,
-      );
-      final metadata = drive.File()
-        ..name = _driveFileName
-        ..mimeType = 'text/plain';
-
-      final created = await _withDriveApi(
-        (api) => api.files.create(metadata, uploadMedia: media),
+      final result = await _driveWriteUseCase.execute(
+        DriveWriteParams(
+          googleUser: widget.googleUser,
+          folderName: _driveFolderName,
+          filePrefix: _driveFilePrefix,
+          content: 'Inventory login test at $now',
+          userId: widget.user?.uid,
+        ),
       );
 
       setState(() {
-        _driveFileId = created.id;
-        _driveStatus = 'Drive write success: ${created.name}';
+        _driveFileId = result.fileId;
+        _driveStatus =
+            'Drive write success: ${result.fileName} (folder: $_driveFolderName)';
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -286,29 +298,18 @@ class _LoginSuccessScreenState extends State<LoginSuccessScreen> {
     });
 
     try {
-      final fileId = _driveFileId ?? await _findDriveFileId();
-      if (fileId == null) {
-        setState(() {
-          _driveStatus = 'Drive read failed: file not found';
-        });
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Drive read failed: file not found')),
-        );
-        return;
-      }
-
-      final media = await _withDriveApi(
-        (api) => api.files.get(
-          fileId,
-          downloadOptions: drive.DownloadOptions.fullMedia,
+      final result = await _driveReadUseCase.execute(
+        DriveReadParams(
+          googleUser: widget.googleUser,
+          folderName: _driveFolderName,
+          filePrefix: _driveFilePrefix,
+          fileId: _driveFileId,
         ),
-      ) as drive.Media;
-      final content = await media.stream.transform(utf8.decoder).join();
+      );
 
       setState(() {
-        _driveFileId = fileId;
-        _driveStatus = 'Drive read success:\n$content';
+        _driveFileId = result.fileId;
+        _driveStatus = 'Drive read success:\n${result.content}';
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -338,36 +339,32 @@ class _LoginSuccessScreenState extends State<LoginSuccessScreen> {
     }
   }
 
-  Future<void> _listDriveRoot() async {
+  Future<void> _listDriveFolder() async {
     setState(() {
       _driveBusy = true;
       _driveStatus = null;
     });
 
     try {
-      final result = await _withDriveApi(
-        (api) => api.files.list(
-          q: "'root' in parents and trashed=false",
-          $fields: 'files(id,name,mimeType,modifiedTime,size)',
-          orderBy: 'folder,name',
-          pageSize: 50,
-          spaces: 'drive',
+      final result = await _driveListUseCase.execute(
+        DriveListFolderParams(
+          googleUser: widget.googleUser,
+          folderName: _driveFolderName,
         ),
       );
 
-      final files = result.files ?? <drive.File>[];
-      if (files.isEmpty) {
+      if (result.items.isEmpty) {
         setState(() {
-          _driveStatus = 'Drive list: empty';
+          _driveStatus = 'Drive folder list: empty';
         });
       } else {
-        final buffer = StringBuffer('Drive list (${files.length}):');
-        for (final file in files) {
-          final isFolder =
-              file.mimeType == 'application/vnd.google-apps.folder';
+        final buffer = StringBuffer(
+          'Drive folder list (${result.items.length}): $_driveFolderName',
+        );
+        for (final item in result.items) {
           buffer.writeln();
-          buffer.write(isFolder ? '[Folder] ' : '[File] ');
-          buffer.write(file.name ?? 'Unnamed');
+          buffer.write(item.isFolder ? '[Folder] ' : '[File] ');
+          buffer.write(item.name);
         }
         setState(() {
           _driveStatus = buffer.toString();
@@ -400,18 +397,6 @@ class _LoginSuccessScreenState extends State<LoginSuccessScreen> {
         _driveBusy = false;
       });
     }
-  }
-
-  Future<String?> _findDriveFileId() async {
-    final result = await _withDriveApi(
-      (api) => api.files.list(
-        q: "name='$_driveFileName' and trashed=false",
-        $fields: 'files(id,name)',
-        spaces: 'drive',
-        pageSize: 1,
-      ),
-    );
-    return result.files?.isNotEmpty == true ? result.files!.first.id : null;
   }
 
   @override
@@ -455,8 +440,8 @@ class _LoginSuccessScreenState extends State<LoginSuccessScreen> {
               ),
               const SizedBox(height: 12),
               OutlinedButton(
-                onPressed: _driveBusy ? null : _listDriveRoot,
-                child: const Text('List Drive root'),
+                onPressed: _driveBusy ? null : _listDriveFolder,
+                child: const Text('List Drive folder'),
               ),
               if (_driveStatus != null) ...[
                 const SizedBox(height: 12),
@@ -468,8 +453,7 @@ class _LoginSuccessScreenState extends State<LoginSuccessScreen> {
               const SizedBox(height: 24),
               OutlinedButton(
                 onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  await GoogleSignIn.instance.signOut();
+                  await widget.loginService.signOut();
                   if (context.mounted) {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   }

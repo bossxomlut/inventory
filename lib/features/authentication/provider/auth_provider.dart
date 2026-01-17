@@ -15,6 +15,7 @@ import '../../../provider/notification.dart';
 import '../../../resources/index.dart';
 import '../../../provider/storage_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../../services/google_drive_auth_service.dart';
 
 part 'auth_provider.g.dart';
 
@@ -236,6 +237,25 @@ class AuthController extends _$AuthController {
   // Logout method
   Future<void> logout() async {
     ref.read(sampleDataOnboardingProvider.notifier).state = false;
+
+    final userRole = state.maybeWhen(
+      authenticated: (user, _) => user.role,
+      orElse: () => null,
+    );
+    final bool shouldSignOutGoogle = userRole == UserRole.admin;
+
+    if (shouldSignOutGoogle) {
+      try {
+        await GoogleDriveAuthService().signOut();
+      } catch (e, stackTrace) {
+        developer.log(
+          'Failed to sign out Google account: $e',
+          name: 'AuthController',
+          error: e,
+          stackTrace: stackTrace,
+        );
+      }
+    }
 
     //check if use is guest
     final isGuest = state.maybeWhen(

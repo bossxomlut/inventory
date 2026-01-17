@@ -118,6 +118,17 @@ class GoogleDriveService {
     return result.files ?? <drive.File>[];
   }
 
+  Future<void> deleteFile({
+    required GoogleSignInAccount account,
+    required String fileId,
+  }) async {
+    await _withDriveApi(
+      account: account,
+      scopes: <String>[drive.DriveApi.driveFileScope],
+      action: (api) => api.files.delete(fileId),
+    );
+  }
+
   Future<String?> findLatestFileId({
     required GoogleSignInAccount account,
     required String folderId,
@@ -136,5 +147,25 @@ class GoogleDriveService {
       ),
     );
     return result.files?.isNotEmpty == true ? result.files!.first.id : null;
+  }
+
+  Future<drive.File?> findLatestFile({
+    required GoogleSignInAccount account,
+    required String folderId,
+    required String namePrefix,
+  }) async {
+    final result = await _withDriveApi(
+      account: account,
+      scopes: <String>[drive.DriveApi.driveMetadataReadonlyScope],
+      action: (api) => api.files.list(
+        q:
+            "'$folderId' in parents and trashed=false and name contains '$namePrefix'",
+        $fields: 'files(id,name,modifiedTime)',
+        orderBy: 'modifiedTime desc',
+        spaces: 'drive',
+        pageSize: 1,
+      ),
+    );
+    return result.files?.isNotEmpty == true ? result.files!.first : null;
   }
 }

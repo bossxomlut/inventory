@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'google_sign_in_session.dart';
+
 class GoogleLoginResult {
   const GoogleLoginResult({
     required this.user,
@@ -12,17 +14,8 @@ class GoogleLoginResult {
 }
 
 class GoogleLoginService {
-  static bool _initialized = false;
-  static Future<void>? _initializeFuture;
-
   Future<void> _ensureInitialized() {
-    if (_initialized) {
-      return Future.value();
-    }
-    _initializeFuture ??= GoogleSignIn.instance.initialize().then((_) {
-      _initialized = true;
-    });
-    return _initializeFuture!;
+    return GoogleSignInSession.ensureInitialized();
   }
 
   Future<GoogleLoginResult> login() async {

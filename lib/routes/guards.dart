@@ -126,6 +126,41 @@ class AdminGuard extends AutoRouteGuard {
   }
 }
 
+class AdminOnlyGuard extends AutoRouteGuard {
+  @override
+  void onNavigation(NavigationResolver resolver, StackRouter router) {
+    final context = router.navigatorKey.currentContext;
+
+    if (context != null) {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final user = container.read(authControllerProvider);
+      user.when(
+        authenticated: (User user, DateTime? lastLoginTime) {
+          if (user.role == UserRole.admin) {
+            resolver.next();
+          } else {
+            showError(
+              message: _permissionDeniedMessageKey.tr(context: context),
+            );
+            resolver.next(false);
+          }
+        },
+        unauthenticated: () {
+          router.push(LoginRoute());
+          resolver.next(false);
+        },
+        initial: () {
+          router.push(LoginRoute());
+          resolver.next(false);
+        },
+      );
+    } else {
+      router.push(LoginRoute());
+      resolver.next(false);
+    }
+  }
+}
+
 class PermissionGuard extends AutoRouteGuard {
   const PermissionGuard(this.requiredPermission);
 

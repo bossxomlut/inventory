@@ -146,6 +146,12 @@ class AppRouter extends RootStackRouter {
           ],
         ),
         AutoRoute(
+          page: DriveProductSyncRoute.page,
+          guards: [
+            AdminOnlyGuard(),
+          ],
+        ),
+        AutoRoute(
           page: DeleteDataRoute.page,
           guards: [
             PermissionGuard(PermissionKey.dataDelete),
@@ -323,6 +329,10 @@ extension DataManagementRouterX on AppRouter {
 
   void goToExportData() {
     push(ExportDataRoute());
+  }
+
+  void goToDriveProductSync() {
+    push(DriveProductSyncRoute());
   }
 
   void goToDeleteData() {

@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/helpers/currency_config.dart';
 import '../../domain/entities/permission/permission.dart';
+import '../../domain/entities/user/user.dart';
 import '../../provider/index.dart';
 import '../../provider/permissions.dart';
 import '../../routes/app_router.dart';
@@ -28,6 +29,10 @@ class SettingPage extends WidgetByDeviceTemplate {
       data: (unit) => _currencyDisplayName(context, unit),
       loading: () => '...',
       error: (_, __) => '---',
+    );
+    final bool isAdmin = authState.maybeWhen(
+      authenticated: (user, _) => user.role == UserRole.admin,
+      orElse: () => false,
     );
 
     final grantedPermissions = permissionsAsync.maybeWhen(
@@ -88,6 +93,16 @@ class SettingPage extends WidgetByDeviceTemplate {
                       appRouter.goToExportData();
                     },
                   ),
+                  if (isAdmin) ...[
+                    const _Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.cloud_sync),
+                      title: const Text('Google Drive (Products)'),
+                      onTap: () {
+                        appRouter.goToDriveProductSync();
+                      },
+                    ),
+                  ],
                   const _Divider(),
                   ListTile(
                     leading: const Icon(HugeIcons.strokeRoundedDatabaseSetting),

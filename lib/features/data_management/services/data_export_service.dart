@@ -39,6 +39,18 @@ class DataExportService {
     }
   }
 
+  /// Export products to JSONL content (for cloud sync)
+  Future<String> exportProductsJsonlContent() async {
+    try {
+      final productRepo = ref.read(productRepositoryProvider);
+      final result = await productRepo.search('', 1, 10000); // Get all products
+
+      return result.data.map((product) => jsonEncode(product.toJson())).join('\n');
+    } catch (e) {
+      throw Exception('Không thể xuất dữ liệu sản phẩm: $e');
+    }
+  }
+
   /// Export products to CSV format (simple data with names only for users)
   Future<String> exportProductsToCsv() async {
     try {

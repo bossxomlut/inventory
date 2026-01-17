@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "702935020464",
+    "project_id": "inventory-2eb2b",
+    "storage_bucket": "inventory-2eb2b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:702935020464:android:0a139fe6236cf9c9cb9c75",
+        "android_client_info": {
+          "package_name": "com.bossxomlut.inventory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "702935020464-5qa1d2h39m95utkeiba68gmn4s4di7r1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZq7curq6crUzRYdzpIU8g4H76OX7i4JA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "702935020464-5qa1d2h39m95utkeiba68gmn4s4di7r1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

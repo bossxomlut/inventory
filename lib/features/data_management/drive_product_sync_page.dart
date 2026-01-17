@@ -9,7 +9,6 @@ import '../../shared_widgets/index.dart';
 import '../../services/google_drive_auth_service.dart';
 import '../authentication/provider/auth_provider.dart';
 import 'services/data_import_service.dart';
-import 'services/data_import_service_ui.dart';
 import 'services/drive_product_sync_service.dart';
 
 @RoutePage()
@@ -85,7 +84,12 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Tên file: ${DriveProductSyncService.filePrefix}_<adminId>_yyyyMMdd_HHmmss.jsonl',
+                  'Sheet: ${DriveProductSyncService.sheetName}',
+                  style: theme.textRegular14Default,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tên file: ${DriveProductSyncService.filePrefix}_<adminId>_yyyyMMdd_HHmmss',
                   style: theme.textRegular14Default,
                 ),
               ],
@@ -113,7 +117,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                 child: OutlinedButton.icon(
                   onPressed: _busy ? null : _exportToDrive,
                   icon: const Icon(Icons.cloud_upload_outlined),
-                  label: const Text('Export to Drive'),
+                  label: const Text('Export to Sheets'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -343,8 +347,8 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       }
     }
     final shouldProceed = await _confirm(
-      title: 'Xuất sản phẩm lên Google Drive',
-      message: 'Bạn có chắc chắn muốn xuất dữ liệu sản phẩm lên Google Drive?',
+      title: 'Xuất sản phẩm lên Google Sheets',
+      message: 'Bạn có chắc chắn muốn xuất dữ liệu sản phẩm lên Google Sheets?',
     );
     if (!shouldProceed) {
       return;
@@ -362,7 +366,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       );
       if (!mounted) return;
       setState(() {
-        _status = 'Đã xuất sản phẩm lên Drive: ${result.fileName}';
+        _status = 'Đã xuất sản phẩm lên Sheets: ${result.fileName}';
         _lastFileName = result.fileName;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -372,10 +376,10 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _status = 'Lỗi xuất Drive: $e';
+        _status = 'Lỗi xuất Sheets: $e';
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi xuất Drive: $e')),
+        SnackBar(content: Text('Lỗi xuất Sheets: $e')),
       );
     } finally {
       if (!mounted) return;
@@ -421,7 +425,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
 
   Future<void> _importFile(DriveProductFile file) async {
     final shouldProceed = await _confirm(
-      title: 'Nhập sản phẩm từ Drive',
+      title: 'Nhập sản phẩm từ Google Sheets',
       message: 'Bạn có chắc chắn muốn nhập dữ liệu từ "${file.name}"?',
     );
     if (!shouldProceed) {
@@ -449,28 +453,16 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       );
       if (!mounted) return;
       final dataImportService = ref.read(dataImportServiceProvider);
-      if (download.isExcel) {
-        final bytes = download.bytes;
-        if (bytes == null || bytes.isEmpty) {
-          throw StateError('File Excel rỗng hoặc không đọc được.');
-        }
-        final result = await dataImportService.importFromExcelBytes(bytes);
-        if (context.mounted) {
-          await DataImportResultDialog.showResult(
-            context,
-            result,
-            title: 'Nhập dữ liệu Excel từ Drive',
-          );
-        }
-      } else {
-        final content = download.textContent;
-        if (content == null || content.isEmpty) {
-          throw StateError('File dữ liệu rỗng hoặc không đọc được.');
-        }
-        await dataImportService.importFromJsonlStringWithValidation(
+      if (download.values.isEmpty) {
+        throw StateError('Sheet trống hoặc không đọc được dữ liệu.');
+      }
+      final result =
+          await dataImportService.importFromSheetValues(download.values);
+      if (context.mounted) {
+        await DataImportResultDialog.showResult(
           context,
-          content,
-          title: 'Nhập dữ liệu sản phẩm từ Drive',
+          result,
+          title: 'Nhập dữ liệu sản phẩm từ Google Sheets',
         );
       }
       setState(() {

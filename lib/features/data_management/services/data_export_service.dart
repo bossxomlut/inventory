@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../domain/entities/index.dart';
+import '../../../domain/entities/image.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../domain/repositories/order/order_repository.dart';
 import '../../../provider/load_list.dart';
@@ -92,7 +93,8 @@ class DataExportService {
     if (excel.sheets.containsKey('Sheet1')) {
       excel.delete('Sheet1');
     }
-    sheet.appendRow([
+    final maxImageCount = _maxImageCount(result.data);
+    final header = <CellValue>[
       TextCellValue('ID'),
       TextCellValue('Tên sản phẩm'),
       TextCellValue('Số lượng'),
@@ -100,10 +102,15 @@ class DataExportService {
       TextCellValue('Danh mục'),
       TextCellValue('Đơn vị'),
       TextCellValue('Mô tả'),
-    ]);
+    ];
+    for (int i = 0; i < maxImageCount; i++) {
+      header.add(TextCellValue('Ảnh ${i + 1}'));
+    }
+    sheet.appendRow(header);
 
     for (final product in result.data) {
-      sheet.appendRow([
+      final imageValues = _buildImageValues(product.images, maxImageCount);
+      final row = <CellValue>[
         IntCellValue(product.id),
         TextCellValue(product.name),
         IntCellValue(product.quantity),
@@ -111,7 +118,9 @@ class DataExportService {
         TextCellValue(product.category?.name ?? 'Chưa phân loại'),
         TextCellValue(product.unit?.name ?? 'Chưa có đơn vị'),
         TextCellValue(product.description ?? ''),
-      ]);
+      ];
+      row.addAll(imageValues.map(TextCellValue.new));
+      sheet.appendRow(row);
     }
 
     final bytes = excel.encode();
@@ -119,6 +128,102 @@ class DataExportService {
       throw Exception('Không thể tạo file Excel.');
     }
     return bytes;
+  }
+
+  /// Build values for Google Sheets export
+  Future<List<List<Object?>>> buildProductsSheetValues({
+    Future<List<Object?>> Function(Product product, int maxImageCount)?
+        imageResolver,
+  }) async {
+    final productRepo = ref.read(productRepositoryProvider);
+    final result = await productRepo.search('', 1, 10000);
+    final maxImageCount = _maxImageCount(result.data);
+
+    final header = <Object?>[
+      'ID',
+      'Tên sản phẩm',
+      'Số lượng',
+      'Mã vạch',
+      'Danh mục',
+      'Đơn vị',
+      'Mô tả',
+    ];
+    for (int i = 0; i < maxImageCount; i++) {
+      header.add('Ảnh ${i + 1}');
+    }
+    final values = <List<Object?>>[header];
+
+    for (final product in result.data) {
+      final imageValues = imageResolver != null
+          ? await imageResolver(product, maxImageCount)
+          : _buildImageValues(product.images, maxImageCount);
+      final cells = _padImageCells(imageValues, maxImageCount);
+      values.add(<Object?>[
+        product.id,
+        product.name,
+        product.quantity,
+        product.barcode ?? '',
+        product.category?.name ?? 'Chưa phân loại',
+        product.unit?.name ?? 'Chưa có đơn vị',
+        product.description ?? '',
+        ...cells,
+      ]);
+    }
+
+    return values;
+  }
+
+  int _maxImageCount(List<Product> products) {
+    int maxCount = 0;
+    for (final product in products) {
+      final count = _extractImagePaths(product.images).length;
+      if (count > maxCount) {
+        maxCount = count;
+      }
+    }
+    return maxCount;
+  }
+
+  List<String> _buildImageValues(
+    List<ImageStorageModel>? images,
+    int maxImageCount,
+  ) {
+    final paths = _extractImagePaths(images);
+    if (maxImageCount <= 0) {
+      return <String>[];
+    }
+    if (paths.length >= maxImageCount) {
+      return paths.take(maxImageCount).toList();
+    }
+    return <String>[
+      ...paths,
+      ...List<String>.filled(maxImageCount - paths.length, ''),
+    ];
+  }
+
+  List<String> _extractImagePaths(List<ImageStorageModel>? images) {
+    if (images == null || images.isEmpty) {
+      return <String>[];
+    }
+    final paths = images
+        .map((image) => image.path)
+        .where((path) => path != null && path.trim().isNotEmpty)
+        .map((path) => path!.trim())
+        .toList();
+    return paths;
+  }
+
+  List<Object?> _padImageCells(List<Object?> cells, int maxImageCount) {
+    if (cells.length == maxImageCount) {
+      return cells;
+    }
+    if (cells.length > maxImageCount) {
+      return cells.take(maxImageCount).toList();
+    }
+    return <Object?>[
+      ...cells,
+      ...List<Object?>.filled(maxImageCount - cells.length, ''),
+    ];
   }
 
   /// Export categories to JSONL format (full object data)

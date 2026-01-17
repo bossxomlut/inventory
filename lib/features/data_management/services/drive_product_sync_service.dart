@@ -1,12 +1,15 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../domain/entities/user/user.dart';
+import '../../../domain/entities/product/inventory.dart';
+import '../../../domain/entities/image.dart';
 import '../../authentication/provider/auth_provider.dart';
 import '../../../services/google_drive_auth_service.dart';
 import '../../../services/google_drive_service.dart';
+import '../../../services/google_sheets_service.dart';
 import 'data_export_service.dart';
 import 'data_import_service.dart';
 
@@ -28,16 +31,12 @@ class DriveProductDownload {
   DriveProductDownload({
     required this.fileId,
     required this.fileName,
-    this.textContent,
-    this.bytes,
+    required this.values,
   });
 
   final String fileId;
   final String fileName;
-  final String? textContent;
-  final Uint8List? bytes;
-
-  bool get isExcel => fileName.toLowerCase().endsWith('.xlsx');
+  final List<List<Object?>> values;
 }
 
 class DriveProductFile {
@@ -65,14 +64,20 @@ class DriveProductListResult {
 class DriveProductSyncService {
   DriveProductSyncService(this._ref)
       : _driveService = GoogleDriveService(),
-        _authService = GoogleDriveAuthService();
+        _authService = GoogleDriveAuthService(),
+        _sheetsService = GoogleSheetsService();
 
   static const String folderName = 'InventoryProductExports';
+  static const String imageFolderName = 'InventoryProductImages';
+  static const String sheetName = 'Products';
   static const String filePrefix = 'products_export';
 
   final Ref _ref;
   final GoogleDriveService _driveService;
   final GoogleDriveAuthService _authService;
+  final GoogleSheetsService _sheetsService;
+  String? _imageFolderId;
+  final Map<String, String> _imageFormulaCache = <String, String>{};
 
   Future<DriveProductExportResult> exportProductsToDrive({
     GoogleSignInAccount? account,
@@ -80,23 +85,49 @@ class DriveProductSyncService {
     final user = _requireAdmin();
     final signedIn = await _resolveAccount(account);
     final exportService = _ref.read(dataExportServiceProvider);
-    final bytes = await exportService.exportProductsXlsxBytes();
+    final values = await exportService.buildProductsSheetValues(
+      imageResolver: (product, maxImageCount) async {
+        return _buildImageFormulas(product, maxImageCount, signedIn);
+      },
+    );
+    final header = values.isNotEmpty ? values.first : <Object?>[];
+    final imageColumnIndex = _findImageColumnStart(header);
+    final imageColumnCount = _countImageColumns(header, imageColumnIndex);
     final folderId = await _driveService.ensureFolderId(
       account: signedIn,
       folderName: folderName,
     );
-    final fileName = _buildFileName(user, extension: 'xlsx');
-    final file = await _driveService.writeBytesFile(
+    final fileName = _buildFileName(user);
+    final file = await _driveService.createSpreadsheetFile(
       account: signedIn,
       folderId: folderId,
       fileName: fileName,
-      bytes: bytes,
-      mimeType:
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     );
     final fileId = file.id;
     if (fileId == null || fileId.isEmpty) {
       throw StateError('Drive file id missing after upload.');
+    }
+    await _sheetsService.allowExternalUrlAccess(
+      account: signedIn,
+      spreadsheetId: fileId,
+    );
+    final sheetId = await _sheetsService.writeValues(
+      account: signedIn,
+      spreadsheetId: fileId,
+      sheetTitle: sheetName,
+      values: values,
+    );
+    if (imageColumnIndex >= 0 && imageColumnCount > 0) {
+      await _sheetsService.formatImageColumn(
+        account: signedIn,
+        spreadsheetId: fileId,
+        sheetId: sheetId,
+        imageColumnIndex: imageColumnIndex,
+        imageColumnCount: imageColumnCount,
+        rowCount: values.length,
+        rowHeight: 90,
+        columnWidth: 100,
+      );
     }
     return DriveProductExportResult(
       fileId: fileId,
@@ -104,6 +135,154 @@ class DriveProductSyncService {
       folderId: folderId,
       folderName: folderName,
     );
+  }
+
+  Future<List<Object?>> _buildImageFormulas(
+    Product product,
+    int maxImageCount,
+    GoogleSignInAccount account,
+  ) async {
+    if (maxImageCount <= 0) {
+      return <Object?>[];
+    }
+    final paths = _imagePaths(product.images);
+    if (paths.isEmpty) {
+      return List<Object?>.filled(maxImageCount, '');
+    }
+    final formulas = <Object?>[];
+    for (int i = 0; i < paths.length; i++) {
+      final formula = await _uploadImageFormula(
+        product,
+        paths[i],
+        i,
+        account,
+      );
+      formulas.add(formula);
+    }
+    if (formulas.length > maxImageCount) {
+      return formulas.take(maxImageCount).toList();
+    }
+    if (formulas.length < maxImageCount) {
+      formulas.addAll(
+        List<Object?>.filled(maxImageCount - formulas.length, ''),
+      );
+    }
+    return formulas;
+  }
+
+  Future<String> _uploadImageFormula(
+    Product product,
+    String imagePath,
+    int imageIndex,
+    GoogleSignInAccount account,
+  ) async {
+    final cached = _imageFormulaCache[imagePath];
+    if (cached != null) {
+      return cached;
+    }
+
+    final file = File(imagePath);
+    if (!await file.exists()) {
+      return '';
+    }
+    final bytes = await file.readAsBytes();
+    if (bytes.isEmpty) {
+      return '';
+    }
+
+    _imageFolderId ??= await _driveService.ensureFolderId(
+      account: account,
+      folderName: imageFolderName,
+    );
+    final extension = _fileExtension(imagePath);
+    final fileName =
+        'product_image_${product.id}_${imageIndex}_${DateTime.now().millisecondsSinceEpoch}$extension';
+    final uploaded = await _driveService.writeBytesFile(
+      account: account,
+      folderId: _imageFolderId!,
+      fileName: fileName,
+      bytes: bytes,
+      mimeType: _imageMimeType(extension),
+    );
+    final uploadedId = uploaded.id;
+    if (uploadedId == null || uploadedId.isEmpty) {
+      throw StateError('Drive image id missing after upload.');
+    }
+    await _driveService.makeFilePublic(
+      account: account,
+      fileId: uploadedId,
+    );
+    final url = _driveService.buildPublicFileUrl(uploadedId);
+    final formula = '=IMAGE("$url";4;80;80)';
+    _imageFormulaCache[imagePath] = formula;
+    return formula;
+  }
+
+  List<String> _imagePaths(List<ImageStorageModel>? images) {
+    if (images == null || images.isEmpty) {
+      return <String>[];
+    }
+    final paths = <String>[];
+    for (final image in images) {
+      final path = image.path;
+      if (path != null && path.trim().isNotEmpty) {
+        paths.add(path.trim());
+      }
+    }
+    return paths;
+  }
+
+  int _findImageColumnStart(List<Object?> header) {
+    for (int i = 0; i < header.length; i++) {
+      final label = header[i];
+      if (label is String && _isImageHeaderLabel(label)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  int _countImageColumns(List<Object?> header, int startIndex) {
+    if (startIndex < 0) {
+      return 0;
+    }
+    int count = 0;
+    for (int i = startIndex; i < header.length; i++) {
+      final label = header[i];
+      if (label is String && _isImageHeaderLabel(label)) {
+        count++;
+      } else {
+        break;
+      }
+    }
+    return count;
+  }
+
+  bool _isImageHeaderLabel(String label) {
+    final normalized = label.trim().toLowerCase();
+    return normalized.startsWith('ảnh') || normalized.startsWith('image');
+  }
+
+  String _fileExtension(String path) {
+    final dotIndex = path.lastIndexOf('.');
+    if (dotIndex == -1 || dotIndex == path.length - 1) {
+      return '';
+    }
+    return path.substring(dotIndex).toLowerCase();
+  }
+
+  String _imageMimeType(String extension) {
+    switch (extension) {
+      case '.png':
+        return 'image/png';
+      case '.webp':
+        return 'image/webp';
+      case '.jpg':
+      case '.jpeg':
+        return 'image/jpeg';
+      default:
+        return 'image/jpeg';
+    }
   }
 
   Future<DriveProductDownload> downloadLatestProductsExport({
@@ -138,25 +317,15 @@ class DriveProductSyncService {
   }) async {
     _requireAdmin();
     final signedIn = await _resolveAccount(account);
-    if (fileName.toLowerCase().endsWith('.xlsx')) {
-      final bytes = await _driveService.readBytesFile(
-        account: signedIn,
-        fileId: fileId,
-      );
-      return DriveProductDownload(
-        fileId: fileId,
-        fileName: fileName,
-        bytes: bytes,
-      );
-    }
-    final textContent = await _driveService.readTextFile(
+    final values = await _sheetsService.readValues(
       account: signedIn,
-      fileId: fileId,
+      spreadsheetId: fileId,
+      sheetTitle: sheetName,
     );
     return DriveProductDownload(
       fileId: fileId,
       fileName: fileName,
-      textContent: textContent,
+      values: values,
     );
   }
 
@@ -177,7 +346,8 @@ class DriveProductSyncService {
         .where(
           (file) =>
               file.id != null &&
-              file.mimeType != 'application/vnd.google-apps.folder',
+              file.mimeType == 'application/vnd.google-apps.spreadsheet' &&
+              (file.name ?? '').contains(filePrefix),
         )
         .map(
           (file) => DriveProductFile(
@@ -202,10 +372,12 @@ class DriveProductSyncService {
     );
   }
 
-  Future<DataImportResult> importProductsFromDrive(String content) async {
+  Future<DataImportResult> importProductsFromSheetValues(
+    List<List<Object?>> values,
+  ) async {
     _requireAdmin();
     final dataImportService = _ref.read(dataImportServiceProvider);
-    return dataImportService.importFromJsonlString(content);
+    return dataImportService.importFromSheetValues(values);
   }
 
   User _requireAdmin() {
@@ -229,12 +401,12 @@ class DriveProductSyncService {
     return _authService.ensureSignedIn();
   }
 
-  String _buildFileName(User user, {required String extension}) {
+  String _buildFileName(User user) {
     final now = DateTime.now();
     final stamp =
         '${now.year}${_twoDigits(now.month)}${_twoDigits(now.day)}_'
         '${_twoDigits(now.hour)}${_twoDigits(now.minute)}${_twoDigits(now.second)}';
-    return '${filePrefix}_${user.id}_$stamp.$extension';
+    return '${filePrefix}_${user.id}_$stamp';
   }
 
   String _twoDigits(int value) => value.toString().padLeft(2, '0');

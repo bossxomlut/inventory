@@ -116,6 +116,7 @@ class DataImportService {
           final unitName = _getCellString(row, headerMap, _excelHeaderUnit);
           final description =
               _getCellString(row, headerMap, _excelHeaderDescription);
+          final imageValues = _collectImageValuesFromRow(row, headerMap);
           final quantity =
               _getCellInt(row, headerMap, _excelHeaderQuantity, fallback: 0);
           final price = _getCellDouble(row, headerMap, _excelHeaderPrice);
@@ -127,7 +128,8 @@ class DataImportService {
             if (barcode.isEmpty &&
                 categoryName.isEmpty &&
                 unitName.isEmpty &&
-                description.isEmpty) {
+                description.isEmpty &&
+                imageValues.isEmpty) {
               continue;
             }
             throw Exception('Thiếu tên sản phẩm');
@@ -143,6 +145,8 @@ class DataImportService {
             if (categoryName.isNotEmpty) 'categoryName': categoryName,
             if (unitName.isNotEmpty) 'unitName': unitName,
             if (price != null) 'price': price,
+            if (imageValues.isNotEmpty)
+              'images': _buildImagesFromList(imageValues),
           };
 
           await _importSingleProduct(jsonData);
@@ -153,6 +157,92 @@ class DataImportService {
       }
     } catch (e) {
       errors.add('Không thể đọc file Excel: $e');
+    }
+
+    return DataImportResult(
+      success: errors.isEmpty,
+      totalLines: successfulImports + errors.length,
+      successfulImports: successfulImports,
+      errors: errors,
+    );
+  }
+
+  /// Import products from Google Sheets values
+  Future<DataImportResult> importFromSheetValues(
+    List<List<Object?>> rows,
+  ) async {
+    final List<String> errors = [];
+    int successfulImports = 0;
+
+    if (rows.isEmpty) {
+      return DataImportResult(
+        success: false,
+        totalLines: 0,
+        successfulImports: 0,
+        errors: ['Sheet trống hoặc không có dữ liệu.'],
+      );
+    }
+
+    final headerMap = _buildHeaderMapFromValues(rows.first);
+    if (headerMap.isEmpty) {
+      return DataImportResult(
+        success: false,
+        totalLines: rows.length,
+        successfulImports: 0,
+        errors: ['Không tìm thấy header hợp lệ trong sheet.'],
+      );
+    }
+
+    for (int i = 1; i < rows.length; i++) {
+      final row = rows[i];
+      try {
+        final name = _getSheetString(row, headerMap, _excelHeaderName);
+        final barcode = _getSheetString(row, headerMap, _excelHeaderBarcode);
+        final categoryName =
+            _getSheetString(row, headerMap, _excelHeaderCategory);
+        final unitName = _getSheetString(row, headerMap, _excelHeaderUnit);
+        final description =
+            _getSheetString(row, headerMap, _excelHeaderDescription);
+        final imageValues = _collectImageValuesFromSheetRow(row, headerMap);
+        final quantity = _getSheetInt(
+          row,
+          headerMap,
+          _excelHeaderQuantity,
+          fallback: 0,
+        );
+        final price = _getSheetDouble(row, headerMap, _excelHeaderPrice);
+        final enableExpiry = _getSheetBool(row, headerMap, _excelHeaderExpiry);
+
+        if (name.isEmpty) {
+          if (barcode.isEmpty &&
+              categoryName.isEmpty &&
+              unitName.isEmpty &&
+              description.isEmpty &&
+              imageValues.isEmpty) {
+            continue;
+          }
+          throw Exception('Thiếu tên sản phẩm');
+        }
+
+        final jsonData = <String, dynamic>{
+          'id': undefinedId,
+          'name': name,
+          'quantity': quantity,
+          'barcode': barcode.isEmpty ? null : barcode,
+          'description': description.isEmpty ? null : description,
+          'enableExpiryTracking': enableExpiry,
+          if (categoryName.isNotEmpty) 'categoryName': categoryName,
+          if (unitName.isNotEmpty) 'unitName': unitName,
+          if (price != null) 'price': price,
+          if (imageValues.isNotEmpty)
+            'images': _buildImagesFromList(imageValues),
+        };
+
+        await _importSingleProduct(jsonData);
+        successfulImports++;
+      } catch (e) {
+        errors.add('Dòng ${i + 1}: $e');
+      }
     }
 
     return DataImportResult(
@@ -354,6 +444,11 @@ class DataImportService {
     'mô tả',
     'description',
   ];
+  static const List<String> _excelHeaderImage = <String>[
+    'ảnh',
+    'image',
+    'images',
+  ];
   static const List<String> _excelHeaderPrice = <String>[
     'giá',
     'price',
@@ -379,8 +474,80 @@ class DataImportService {
     return map;
   }
 
+  Map<String, int> _buildHeaderMapFromValues(List<Object?> headerRow) {
+    final Map<String, int> map = <String, int>{};
+    for (int i = 0; i < headerRow.length; i++) {
+      final cellValue = headerRow[i];
+      if (cellValue == null) {
+        continue;
+      }
+      final key = _normalizeHeader(_sheetValueToString(cellValue));
+      if (key.isNotEmpty) {
+        map[key] = i;
+      }
+    }
+    return map;
+  }
+
   String _normalizeHeader(String input) {
     return input.trim().toLowerCase();
+  }
+
+  bool _isImageHeader(String normalized) {
+    if (_excelHeaderImage.contains(normalized)) {
+      return true;
+    }
+    return normalized.startsWith('ảnh') || normalized.startsWith('image');
+  }
+
+  List<String> _collectImageValuesFromRow(
+    List<Data?> row,
+    Map<String, int> headers,
+  ) {
+    final entries = headers.entries
+        .where((entry) => _isImageHeader(entry.key))
+        .toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+    final values = <String>[];
+    for (final entry in entries) {
+      if (entry.value >= row.length) {
+        continue;
+      }
+      final raw = _cellToString(row[entry.value]?.value);
+      final normalized = raw.trim();
+      if (normalized.isEmpty || _isImageFormula(normalized)) {
+        continue;
+      }
+      values.add(normalized);
+    }
+    return values;
+  }
+
+  List<String> _collectImageValuesFromSheetRow(
+    List<Object?> row,
+    Map<String, int> headers,
+  ) {
+    final entries = headers.entries
+        .where((entry) => _isImageHeader(entry.key))
+        .toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+    final values = <String>[];
+    for (final entry in entries) {
+      if (entry.value >= row.length) {
+        continue;
+      }
+      final raw = _sheetValueToString(row[entry.value]);
+      final normalized = raw.trim();
+      if (normalized.isEmpty || _isImageFormula(normalized)) {
+        continue;
+      }
+      values.add(normalized);
+    }
+    return values;
+  }
+
+  bool _isImageFormula(String value) {
+    return value.trim().toUpperCase().startsWith('=IMAGE(');
   }
 
   String _getCellString(
@@ -396,6 +563,18 @@ class DataImportService {
     return _cellToString(value);
   }
 
+  String _getSheetString(
+    List<Object?> row,
+    Map<String, int> headers,
+    List<String> keys,
+  ) {
+    final index = _findHeaderIndex(headers, keys);
+    if (index == null || index >= row.length) {
+      return '';
+    }
+    return _sheetValueToString(row[index]);
+  }
+
   int _getCellInt(
     List<Data?> row,
     Map<String, int> headers,
@@ -407,6 +586,19 @@ class DataImportService {
       return fallback;
     }
     return _cellToInt(row[index]?.value, fallback);
+  }
+
+  int _getSheetInt(
+    List<Object?> row,
+    Map<String, int> headers,
+    List<String> keys, {
+    int fallback = 0,
+  }) {
+    final index = _findHeaderIndex(headers, keys);
+    if (index == null || index >= row.length) {
+      return fallback;
+    }
+    return _sheetValueToInt(row[index], fallback);
   }
 
   double? _getCellDouble(
@@ -421,6 +613,18 @@ class DataImportService {
     return _cellToDouble(row[index]?.value);
   }
 
+  double? _getSheetDouble(
+    List<Object?> row,
+    Map<String, int> headers,
+    List<String> keys,
+  ) {
+    final index = _findHeaderIndex(headers, keys);
+    if (index == null || index >= row.length) {
+      return null;
+    }
+    return _sheetValueToDouble(row[index]);
+  }
+
   bool _getCellBool(
     List<Data?> row,
     Map<String, int> headers,
@@ -431,6 +635,18 @@ class DataImportService {
       return false;
     }
     return _cellToBool(row[index]?.value);
+  }
+
+  bool _getSheetBool(
+    List<Object?> row,
+    Map<String, int> headers,
+    List<String> keys,
+  ) {
+    final index = _findHeaderIndex(headers, keys);
+    if (index == null || index >= row.length) {
+      return false;
+    }
+    return _sheetValueToBool(row[index]);
   }
 
   int? _findHeaderIndex(Map<String, int> headers, List<String> keys) {
@@ -474,6 +690,16 @@ class DataImportService {
     return value.toString();
   }
 
+  String _sheetValueToString(Object? value) {
+    if (value == null) {
+      return '';
+    }
+    if (value is String) {
+      return value.trim();
+    }
+    return value.toString().trim();
+  }
+
   int _cellToInt(CellValue? value, int fallback) {
     if (value == null) {
       return fallback;
@@ -489,6 +715,23 @@ class DataImportService {
     }
     if (value is TextCellValue) {
       final text = _textSpanToPlainText(value.value).trim();
+      return int.tryParse(text) ?? fallback;
+    }
+    return fallback;
+  }
+
+  int _sheetValueToInt(Object? value, int fallback) {
+    if (value == null) {
+      return fallback;
+    }
+    if (value is num) {
+      return value.round();
+    }
+    if (value is bool) {
+      return value ? 1 : 0;
+    }
+    if (value is String) {
+      final text = value.trim();
       return int.tryParse(text) ?? fallback;
     }
     return fallback;
@@ -514,6 +757,23 @@ class DataImportService {
     return null;
   }
 
+  double? _sheetValueToDouble(Object? value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is num) {
+      return value.toDouble();
+    }
+    if (value is bool) {
+      return value ? 1.0 : 0.0;
+    }
+    if (value is String) {
+      final text = value.trim();
+      return double.tryParse(text.replaceAll(',', '.'));
+    }
+    return null;
+  }
+
   bool _cellToBool(CellValue? value) {
     if (value == null) {
       return false;
@@ -532,6 +792,45 @@ class DataImportService {
       return normalized == 'true' || normalized == '1' || normalized == 'yes';
     }
     return false;
+  }
+
+  bool _sheetValueToBool(Object? value) {
+    if (value == null) {
+      return false;
+    }
+    if (value is bool) {
+      return value;
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      return normalized == 'true' || normalized == '1' || normalized == 'yes';
+    }
+    return false;
+  }
+
+  List<Map<String, dynamic>> _buildImagesFromList(List<String> values) {
+    final paths = <String>[];
+    for (final value in values) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty || _isImageFormula(trimmed)) {
+        continue;
+      }
+      paths.addAll(
+        trimmed
+            .split(RegExp(r'[;,\n]+'))
+            .map((item) => item.trim())
+            .where((item) => item.isNotEmpty),
+      );
+    }
+    if (paths.isEmpty) {
+      return <Map<String, dynamic>>[];
+    }
+    return paths
+        .map((path) => <String, dynamic>{'id': undefinedId, 'path': path})
+        .toList();
   }
 
   String _textSpanToPlainText(TextSpan span) {

@@ -86,6 +86,43 @@ class GoogleDriveService {
     );
   }
 
+  Future<drive.File> createSpreadsheetFile({
+    required GoogleSignInAccount account,
+    required String folderId,
+    required String fileName,
+  }) async {
+    final metadata = drive.File()
+      ..name = fileName
+      ..mimeType = 'application/vnd.google-apps.spreadsheet'
+      ..parents = <String>[folderId];
+
+    return _withDriveApi(
+      account: account,
+      scopes: <String>[drive.DriveApi.driveFileScope],
+      action: (api) => api.files.create(metadata),
+    );
+  }
+
+  Future<void> makeFilePublic({
+    required GoogleSignInAccount account,
+    required String fileId,
+  }) async {
+    await _withDriveApi(
+      account: account,
+      scopes: <String>[drive.DriveApi.driveFileScope],
+      action: (api) => api.permissions.create(
+        drive.Permission()
+          ..type = 'anyone'
+          ..role = 'reader',
+        fileId,
+      ),
+    );
+  }
+
+  String buildPublicFileUrl(String fileId) {
+    return 'https://drive.google.com/uc?export=view&id=$fileId';
+  }
+
   Future<drive.File> writeBytesFile({
     required GoogleSignInAccount account,
     required String folderId,

@@ -431,6 +431,7 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
     final quantity = useState<int>(product.quantity);
     final images = useState<List<ImageStorageModel>>(product.images ?? []);
     final enableExpiryTracking = useState<bool>(product.enableExpiryTracking);
+    const int maxImages = 3;
     final lotDrafts = useState<List<_LotDraft>>(
       product.lots
           .map(
@@ -701,9 +702,20 @@ class EditProductScreen extends HookConsumerWidget with ShowBottomSheet<void> {
                             title: t(LKey.productFormFieldImagesAdd),
                             images: images.value,
                             onImagesSelected: (List<ImageStorageModel> value) {
-                              images.value = [...images.value, ...value];
+                              final combined = [...images.value, ...value];
+                              if (combined.length > maxImages) {
+                                showError(message: 'Tối đa 3 ảnh cho mỗi sản phẩm.');
+                                images.value = combined.take(maxImages).toList();
+                                return;
+                              }
+                              images.value = combined;
                             },
                             onImagesChanged: (List<ImageStorageModel> value) {
+                              if (value.length > maxImages) {
+                                showError(message: 'Tối đa 3 ảnh cho mỗi sản phẩm.');
+                                images.value = value.take(maxImages).toList();
+                                return;
+                              }
                               images.value = value;
                             },
                             onImageRemoved: (ImageStorageModel file) {

@@ -14,6 +14,7 @@ import '../../../domain/models/sample_product.dart';
 import '../../../domain/repositories/order/price_repository.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../domain/repositories/product/update_product_repository.dart';
+import 'drive_sync_types.dart';
 
 /// Service for importing product data from JSONL files into the database
 class DataImportService {
@@ -169,11 +170,13 @@ class DataImportService {
 
   /// Import products from Google Sheets values
   Future<DataImportResult> importFromSheetValues(
-    List<List<Object?>> rows,
-  ) async {
+    List<List<Object?>> rows, {
+    DriveSyncCancellationToken? cancellation,
+  }) async {
     final List<String> errors = [];
     int successfulImports = 0;
 
+    cancellation?.throwIfCancelled();
     if (rows.isEmpty) {
       return DataImportResult(
         success: false,
@@ -194,6 +197,7 @@ class DataImportService {
     }
 
     for (int i = 1; i < rows.length; i++) {
+      cancellation?.throwIfCancelled();
       final row = rows[i];
       try {
         final name = _getSheetString(row, headerMap, _excelHeaderName);

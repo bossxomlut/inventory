@@ -272,26 +272,9 @@ class ProductRepositoryImpl extends ProductRepository
       }).toList();
     }
 
-    final results = filteredResults.map((ProductCollection e) {
-      return Product(
-        id: e.id,
-        name: e.name,
-        description: e.description,
-        quantity: e.quantity,
-        category: CategoryMapping().from(e.category.value),
-        unit: e.unit.value != null
-            ? Unit(
-                id: e.unit.value!.id,
-                name: e.unit.value!.name,
-                description: e.unit.value!.description,
-              )
-            : null,
-        barcode: e.barcode,
-        images: e.images
-            .map((image) => ImageStorageModelMapping().from(image))
-            .toList(),
-      );
-    }).toList();
+    final List<Product> results = await Future.wait(
+      filteredResults.map(getItemFromCollection),
+    );
 
     return LoadResult<Product>(
       data: results,

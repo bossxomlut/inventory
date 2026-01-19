@@ -12,6 +12,7 @@ import '../../../services/google_drive_service.dart';
 import '../../../services/google_sheets_service.dart';
 import 'data_export_service.dart';
 import 'data_import_service.dart';
+import 'drive_sync_types.dart';
 
 class DriveProductExportResult {
   DriveProductExportResult({
@@ -81,23 +82,38 @@ class DriveProductSyncService {
 
   Future<DriveProductExportResult> exportProductsToDrive({
     GoogleSignInAccount? account,
+    DriveSyncCancellationToken? cancellation,
+    DriveSyncProgressCallback? onProgress,
   }) async {
     final user = _requireAdmin();
     final signedIn = await _resolveAccount(account);
+    cancellation?.throwIfCancelled();
     final exportService = _ref.read(dataExportServiceProvider);
+    onProgress?.call('Đang tổng hợp dữ liệu sản phẩm...');
     final values = await exportService.buildProductsSheetValues(
       imageResolver: (product, maxImageCount) async {
-        return _buildImageFormulas(product, maxImageCount, signedIn);
+        return _buildImageFormulas(
+          product,
+          maxImageCount,
+          signedIn,
+          cancellation: cancellation,
+          onProgress: onProgress,
+        );
       },
+      cancellation: cancellation,
     );
+    cancellation?.throwIfCancelled();
     final header = values.isNotEmpty ? values.first : <Object?>[];
     final imageColumnIndex = _findImageColumnStart(header);
     final imageColumnCount = _countImageColumns(header, imageColumnIndex);
+    onProgress?.call('Đang tạo thư mục lưu trữ trên Drive...');
     final folderId = await _driveService.ensureFolderId(
       account: signedIn,
       folderName: folderName,
     );
+    cancellation?.throwIfCancelled();
     final fileName = _buildFileName(user);
+    onProgress?.call('Đang tạo file Google Sheets...');
     final file = await _driveService.createSpreadsheetFile(
       account: signedIn,
       folderId: folderId,
@@ -107,17 +123,33 @@ class DriveProductSyncService {
     if (fileId == null || fileId.isEmpty) {
       throw StateError('Drive file id missing after upload.');
     }
+    cancellation?.throwIfCancelled();
+    onProgress?.call('Đang cấp quyền truy cập ảnh...');
     await _sheetsService.allowExternalUrlAccess(
       account: signedIn,
       spreadsheetId: fileId,
     );
+    cancellation?.throwIfCancelled();
+    onProgress?.call('Đang ghi dữ liệu vào Sheets...');
     final sheetId = await _sheetsService.writeValues(
       account: signedIn,
       spreadsheetId: fileId,
       sheetTitle: sheetName,
       values: values,
     );
+    final List<ColumnWidthConfig> columnWidths =
+        _buildColumnWidths(header, imageColumnIndex);
+    if (columnWidths.isNotEmpty) {
+      onProgress?.call('Đang định dạng độ rộng cột...');
+      await _sheetsService.formatColumnWidths(
+        account: signedIn,
+        spreadsheetId: fileId,
+        sheetId: sheetId,
+        columns: columnWidths,
+      );
+    }
     if (imageColumnIndex >= 0 && imageColumnCount > 0) {
+      onProgress?.call('Đang định dạng cột ảnh...');
       await _sheetsService.formatImageColumn(
         account: signedIn,
         spreadsheetId: fileId,
@@ -137,11 +169,51 @@ class DriveProductSyncService {
     );
   }
 
+  List<ColumnWidthConfig> _buildColumnWidths(
+    List<Object?> header,
+    int imageColumnIndex,
+  ) {
+    if (header.isEmpty) {
+      return <ColumnWidthConfig>[];
+    }
+    final int totalColumns = header.length;
+    final int fixedColumnsEnd =
+        imageColumnIndex >= 0 ? imageColumnIndex : totalColumns;
+    const List<int> widths = <int>[
+      60, // ID
+      220, // Tên sản phẩm
+      90, // Số lượng
+      140, // Mã vạch
+      160, // Danh mục
+      120, // Đơn vị
+      260, // Mô tả
+      100, // Giá
+      120, // Theo dõi hạn
+      280, // Lô hàng (HSD)
+    ];
+    final List<ColumnWidthConfig> configs = <ColumnWidthConfig>[];
+    for (int i = 0; i < widths.length; i++) {
+      if (i >= fixedColumnsEnd || i >= totalColumns) {
+        break;
+      }
+      configs.add(
+        ColumnWidthConfig(
+          startIndex: i,
+          endIndex: i + 1,
+          pixelSize: widths[i],
+        ),
+      );
+    }
+    return configs;
+  }
+
   Future<List<Object?>> _buildImageFormulas(
     Product product,
     int maxImageCount,
-    GoogleSignInAccount account,
-  ) async {
+    GoogleSignInAccount account, {
+    DriveSyncCancellationToken? cancellation,
+    DriveSyncProgressCallback? onProgress,
+  }) async {
     if (maxImageCount <= 0) {
       return <Object?>[];
     }
@@ -151,11 +223,14 @@ class DriveProductSyncService {
     }
     final formulas = <Object?>[];
     for (int i = 0; i < paths.length; i++) {
+      cancellation?.throwIfCancelled();
+      onProgress?.call('Đang tải ảnh ${i + 1}/${paths.length}...');
       final formula = await _uploadImageFormula(
         product,
         paths[i],
         i,
         account,
+        cancellation: cancellation,
       );
       formulas.add(formula);
     }
@@ -174,13 +249,15 @@ class DriveProductSyncService {
     Product product,
     String imagePath,
     int imageIndex,
-    GoogleSignInAccount account,
-  ) async {
+    GoogleSignInAccount account, {
+    DriveSyncCancellationToken? cancellation,
+  }) async {
     final cached = _imageFormulaCache[imagePath];
     if (cached != null) {
       return cached;
     }
 
+    cancellation?.throwIfCancelled();
     final file = File(imagePath);
     if (!await file.exists()) {
       return '';
@@ -190,6 +267,7 @@ class DriveProductSyncService {
       return '';
     }
 
+    cancellation?.throwIfCancelled();
     _imageFolderId ??= await _driveService.ensureFolderId(
       account: account,
       folderName: imageFolderName,
@@ -208,6 +286,7 @@ class DriveProductSyncService {
     if (uploadedId == null || uploadedId.isEmpty) {
       throw StateError('Drive image id missing after upload.');
     }
+    cancellation?.throwIfCancelled();
     await _driveService.makeFilePublic(
       account: account,
       fileId: uploadedId,
@@ -287,9 +366,12 @@ class DriveProductSyncService {
 
   Future<DriveProductDownload> downloadLatestProductsExport({
     GoogleSignInAccount? account,
+    DriveSyncCancellationToken? cancellation,
+    DriveSyncProgressCallback? onProgress,
   }) async {
     _requireAdmin();
     final signedIn = await _resolveAccount(account);
+    cancellation?.throwIfCancelled();
     final folderId = await _driveService.ensureFolderId(
       account: signedIn,
       folderName: folderName,
@@ -307,6 +389,8 @@ class DriveProductSyncService {
       fileId: latestFile.id!,
       fileName: latestFile.name ?? 'unknown',
       account: signedIn,
+      cancellation: cancellation,
+      onProgress: onProgress,
     );
   }
 
@@ -314,14 +398,19 @@ class DriveProductSyncService {
     required String fileId,
     required String fileName,
     GoogleSignInAccount? account,
+    DriveSyncCancellationToken? cancellation,
+    DriveSyncProgressCallback? onProgress,
   }) async {
     _requireAdmin();
     final signedIn = await _resolveAccount(account);
+    cancellation?.throwIfCancelled();
+    onProgress?.call('Đang tải dữ liệu từ Google Sheets...');
     final values = await _sheetsService.readValues(
       account: signedIn,
       spreadsheetId: fileId,
       sheetTitle: sheetName,
     );
+    cancellation?.throwIfCancelled();
     return DriveProductDownload(
       fileId: fileId,
       fileName: fileName,
@@ -373,11 +462,15 @@ class DriveProductSyncService {
   }
 
   Future<DataImportResult> importProductsFromSheetValues(
-    List<List<Object?>> values,
-  ) async {
+    List<List<Object?>> values, {
+    DriveSyncCancellationToken? cancellation,
+  }) async {
     _requireAdmin();
     final dataImportService = _ref.read(dataImportServiceProvider);
-    return dataImportService.importFromSheetValues(values);
+    return dataImportService.importFromSheetValues(
+      values,
+      cancellation: cancellation,
+    );
   }
 
   User _requireAdmin() {

@@ -4,6 +4,18 @@ import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sig
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/sheets/v4.dart' as sheets;
 
+class ColumnWidthConfig {
+  const ColumnWidthConfig({
+    required this.startIndex,
+    required this.endIndex,
+    required this.pixelSize,
+  });
+
+  final int startIndex;
+  final int endIndex;
+  final int pixelSize;
+}
+
 class GoogleSheetsService {
   Future<T> _withSheetsApi<T>({
     required GoogleSignInAccount account,
@@ -199,6 +211,45 @@ class GoogleSheetsService {
         ),
       );
     }
+
+    await _withSheetsApi(
+      account: account,
+      scopes: <String>[sheets.SheetsApi.spreadsheetsScope],
+      action: (api) => api.spreadsheets.batchUpdate(
+        sheets.BatchUpdateSpreadsheetRequest(requests: requests),
+        spreadsheetId,
+      ),
+    );
+  }
+
+  Future<void> formatColumnWidths({
+    required GoogleSignInAccount account,
+    required String spreadsheetId,
+    required int sheetId,
+    required List<ColumnWidthConfig> columns,
+  }) async {
+    if (columns.isEmpty) {
+      return;
+    }
+    final List<sheets.Request> requests = columns
+        .map(
+          (config) => sheets.Request(
+            updateDimensionProperties:
+                sheets.UpdateDimensionPropertiesRequest(
+              range: sheets.DimensionRange(
+                sheetId: sheetId,
+                dimension: 'COLUMNS',
+                startIndex: config.startIndex,
+                endIndex: config.endIndex,
+              ),
+              properties: sheets.DimensionProperties(
+                pixelSize: config.pixelSize,
+              ),
+              fields: 'pixelSize',
+            ),
+          ),
+        )
+        .toList();
 
     await _withSheetsApi(
       account: account,

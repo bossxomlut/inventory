@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sample_app/core/ads/ad_banner_widget.dart';
 import 'package:sample_app/core/ads/admob_service.dart';
 import 'package:sample_app/provider/index.dart';
+import 'package:sample_app/features/data_management/widgets/drive_sync_task_banner.dart';
 import 'package:toastification/toastification.dart';
 
 import 'resources/index.dart';
@@ -163,6 +164,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
                               ),
                               const RootLoadingWidget(),
                               const RootNotificationWidget(),
+                              const DriveSyncTaskBanner(),
                             ],
                           ),
                         ),

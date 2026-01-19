@@ -10,9 +10,12 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../domain/entities/index.dart';
 import '../../../domain/entities/image.dart';
+import '../../../domain/entities/order/price.dart';
+import '../../../domain/repositories/order/price_repository.dart';
 import '../../../domain/repositories/product/inventory_repository.dart';
 import '../../../domain/repositories/order/order_repository.dart';
 import '../../../provider/load_list.dart';
+import 'drive_sync_types.dart';
 
 /// Service for exporting application data to different formats
 ///
@@ -85,6 +88,11 @@ class DataExportService {
   Future<List<int>> exportProductsXlsxBytes() async {
     final productRepo = ref.read(productRepositoryProvider);
     final result = await productRepo.search('', 1, 10000);
+    final priceRepo = ref.read(priceRepositoryProvider);
+    final prices = await priceRepo.getAll();
+    final Map<int, ProductPrice> priceMap = <int, ProductPrice>{
+      for (final price in prices) price.productId: price,
+    };
 
     const sheetName = 'Products';
     final excel = Excel.createExcel();
@@ -102,6 +110,9 @@ class DataExportService {
       TextCellValue('Danh mục'),
       TextCellValue('Đơn vị'),
       TextCellValue('Mô tả'),
+      TextCellValue('Giá'),
+      TextCellValue('Theo dõi hạn'),
+      TextCellValue('Lô hàng (HSD)'),
     ];
     for (int i = 0; i < maxImageCount; i++) {
       header.add(TextCellValue('Ảnh ${i + 1}'));
@@ -110,14 +121,22 @@ class DataExportService {
 
     for (final product in result.data) {
       final imageValues = _buildImageValues(product.images, maxImageCount);
+      final priceValue = priceMap[product.id]?.sellingPrice;
+      final lotSummary = _formatLotSummary(product);
       final row = <CellValue>[
         IntCellValue(product.id),
         TextCellValue(product.name),
         IntCellValue(product.quantity),
         TextCellValue(product.barcode ?? ''),
-        TextCellValue(product.category?.name ?? 'Chưa phân loại'),
-        TextCellValue(product.unit?.name ?? 'Chưa có đơn vị'),
+        TextCellValue(product.category?.name ?? ''),
+        TextCellValue(product.unit?.name ?? ''),
         TextCellValue(product.description ?? ''),
+        if (priceValue != null)
+          DoubleCellValue(priceValue)
+        else
+          TextCellValue(''),
+        BoolCellValue(product.enableExpiryTracking),
+        TextCellValue(lotSummary),
       ];
       row.addAll(imageValues.map(TextCellValue.new));
       sheet.appendRow(row);
@@ -134,9 +153,15 @@ class DataExportService {
   Future<List<List<Object?>>> buildProductsSheetValues({
     Future<List<Object?>> Function(Product product, int maxImageCount)?
         imageResolver,
+    DriveSyncCancellationToken? cancellation,
   }) async {
     final productRepo = ref.read(productRepositoryProvider);
     final result = await productRepo.search('', 1, 10000);
+    final priceRepo = ref.read(priceRepositoryProvider);
+    final prices = await priceRepo.getAll();
+    final Map<int, ProductPrice> priceMap = <int, ProductPrice>{
+      for (final price in prices) price.productId: price,
+    };
     final maxImageCount = _maxImageCount(result.data);
 
     final header = <Object?>[
@@ -147,6 +172,9 @@ class DataExportService {
       'Danh mục',
       'Đơn vị',
       'Mô tả',
+      'Giá',
+      'Theo dõi hạn',
+      'Lô hàng (HSD)',
     ];
     for (int i = 0; i < maxImageCount; i++) {
       header.add('Ảnh ${i + 1}');
@@ -154,18 +182,24 @@ class DataExportService {
     final values = <List<Object?>>[header];
 
     for (final product in result.data) {
+      cancellation?.throwIfCancelled();
       final imageValues = imageResolver != null
           ? await imageResolver(product, maxImageCount)
           : _buildImageValues(product.images, maxImageCount);
       final cells = _padImageCells(imageValues, maxImageCount);
+      final priceValue = priceMap[product.id]?.sellingPrice;
+      final lotSummary = _formatLotSummary(product);
       values.add(<Object?>[
         product.id,
         product.name,
         product.quantity,
         product.barcode ?? '',
-        product.category?.name ?? 'Chưa phân loại',
-        product.unit?.name ?? 'Chưa có đơn vị',
+        product.category?.name ?? '',
+        product.unit?.name ?? '',
         product.description ?? '',
+        priceValue ?? '',
+        product.enableExpiryTracking,
+        lotSummary,
         ...cells,
       ]);
     }
@@ -424,8 +458,8 @@ class DataExportService {
         _escapeCsvField(product.name),
         product.quantity.toString(),
         _escapeCsvField(product.barcode ?? ''),
-        _escapeCsvField(product.category?.name ?? 'Chưa phân loại'), // Chỉ export tên danh mục
-        _escapeCsvField(product.unit?.name ?? 'Chưa có đơn vị'), // Chỉ export tên đơn vị
+        _escapeCsvField(product.category?.name ?? ''), // Chỉ export tên danh mục
+        _escapeCsvField(product.unit?.name ?? ''), // Chỉ export tên đơn vị
         _escapeCsvField(product.description ?? ''),
       ].join(',');
     }).join('\n');
@@ -507,6 +541,40 @@ class DataExportService {
     }
     return field;
   }
+
+  String _formatLotSummary(Product product) {
+    if (product.lots.isEmpty) {
+      return '';
+    }
+    final sortedLots = List<InventoryLot>.from(product.lots)
+      ..sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+    final parts = <String>[];
+    for (final lot in sortedLots) {
+      final String expiryLabel = _formatDate(lot.expiryDate);
+      String part = 'SL ${lot.quantity} - HSD $expiryLabel';
+      final DateTime? manufactureDate = lot.manufactureDate;
+      if (manufactureDate != null) {
+        part = '$part - NSX ${_formatDate(manufactureDate)}';
+      }
+      parts.add(part);
+    }
+    return parts.join('\n');
+  }
+
+  DateTime? _nearestExpiryDate(Product product) {
+    if (product.lots.isEmpty) {
+      return null;
+    }
+    final sortedLots = List<InventoryLot>.from(product.lots)
+      ..sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+    return sortedLots.first.expiryDate;
+  }
+
+  String _formatDate(DateTime date) {
+    return '${_twoDigits(date.day)}/${_twoDigits(date.month)}/${date.year}';
+  }
+
+  String _twoDigits(int value) => value.toString().padLeft(2, '0');
 
   /// Request storage permission on Android
   Future<bool> _requestStoragePermission() async {

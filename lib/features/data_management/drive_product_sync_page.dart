@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../domain/entities/user/user.dart';
 import '../../provider/theme.dart';
@@ -8,8 +9,8 @@ import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
 import '../../services/google_drive_auth_service.dart';
 import '../authentication/provider/auth_provider.dart';
-import 'services/data_import_service.dart';
 import 'services/drive_product_sync_service.dart';
+import 'provider/drive_sync_task_provider.dart';
 
 @RoutePage()
 class DriveProductSyncPage extends ConsumerStatefulWidget {
@@ -28,10 +29,63 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   GoogleSignInAccount? _account;
   List<DriveProductFile> _files = <DriveProductFile>[];
   final GoogleDriveAuthService _authService = GoogleDriveAuthService();
+  ProviderSubscription<DriveSyncTaskState>? _syncListener;
 
   @override
   void initState() {
     super.initState();
+    _syncListener = ref.listenManual<DriveSyncTaskState>(
+      driveSyncTaskProvider,
+      (previous, next) {
+        if (!mounted) {
+          return;
+        }
+        if (next.status == DriveSyncTaskStatus.success) {
+          if (next.type == DriveSyncTaskType.export && next.fileName != null) {
+            setState(() {
+              _status = 'Đã xuất sản phẩm lên Sheets: ${next.fileName}';
+              _lastFileName = next.fileName;
+            });
+            _loadFiles();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Export success: ${next.fileName}')),
+            );
+          }
+        }
+        final bool shouldShowImportResult =
+            next.type == DriveSyncTaskType.import &&
+                next.importResult != null &&
+                (next.status == DriveSyncTaskStatus.success ||
+                    next.status == DriveSyncTaskStatus.error);
+        if (shouldShowImportResult) {
+          DataImportResultDialog.showResult(
+            context,
+            next.importResult!,
+            title: 'Nhập dữ liệu sản phẩm từ Google Sheets',
+          );
+          setState(() {
+            _status =
+                next.message ?? 'Đã nhập dữ liệu từ: ${next.fileName ?? ''}';
+            _lastFileName = next.fileName ?? _lastFileName;
+          });
+        }
+        if (next.status == DriveSyncTaskStatus.error) {
+          setState(() {
+            _status = next.message ?? 'Có lỗi khi xử lý dữ liệu.';
+          });
+          if (next.message != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(next.message!)),
+            );
+          }
+        }
+        if (next.status == DriveSyncTaskStatus.cancelled) {
+          setState(() {
+            _status = 'Đã hủy xử lý import/export.';
+          });
+        }
+      },
+    );
     final cachedAccount = _authService.currentAccount;
     if (cachedAccount != null) {
       _account = cachedAccount;
@@ -44,9 +98,17 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   @override
+  void dispose() {
+    _syncListener?.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = context.appTheme;
     final authState = ref.watch(authControllerProvider);
+    final syncState = ref.watch(driveSyncTaskProvider);
+    final bool isProcessing = syncState.status == DriveSyncTaskStatus.running;
     final bool isAdmin = authState.maybeWhen(
       authenticated: (user, _) => user.role == UserRole.admin,
       orElse: () => false,
@@ -58,12 +120,19 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: isAdmin ? _buildAdminBody(context, theme) : _buildAccessDenied(context),
+        child: isAdmin
+            ? _buildAdminBody(context, theme, syncState, isProcessing)
+            : _buildAccessDenied(context),
       ),
     );
   }
 
-  Widget _buildAdminBody(BuildContext context, AppThemeData theme) {
+  Widget _buildAdminBody(
+    BuildContext context,
+    AppThemeData theme,
+    DriveSyncTaskState syncState,
+    bool isProcessing,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -79,7 +148,12 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Folder: ${DriveProductSyncService.folderName}',
+                  'Folder file: ${DriveProductSyncService.folderName} (chứa các file Sheets export)',
+                  style: theme.textRegular14Default,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Folder ảnh: ${DriveProductSyncService.imageFolderName} (chứa ảnh sản phẩm để hiển thị trên sheet)',
                   style: theme.textRegular14Default,
                 ),
                 const SizedBox(height: 4),
@@ -97,6 +171,9 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
           ),
         ),
         const SizedBox(height: 16),
+        _buildSyncStatus(theme, syncState),
+        if (syncState.status == DriveSyncTaskStatus.running)
+          const SizedBox(height: 16),
         if (_account == null) ...[
           Text(
             'Chưa đăng nhập Google.',
@@ -104,18 +181,18 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
           ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            onPressed: _busy ? null : _signIn,
+            onPressed: _busy || isProcessing ? null : _signIn,
             icon: const Icon(Icons.login),
             label: const Text('Sign in with Google'),
           ),
         ] else ...[
-          _buildAccountCard(context, theme),
+          _buildAccountCard(context, theme, isProcessing),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _busy ? null : _exportToDrive,
+                  onPressed: _busy || isProcessing ? null : _exportToDrive,
                   icon: const Icon(Icons.cloud_upload_outlined),
                   label: const Text('Export to Sheets'),
                 ),
@@ -123,7 +200,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _busy ? null : _refreshFiles,
+                  onPressed: _busy || isProcessing ? null : _refreshFiles,
                   icon: const Icon(Icons.refresh),
                   label: const Text('Refresh files'),
                 ),
@@ -131,7 +208,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildFileList(context, theme),
+          _buildFileList(context, theme, isProcessing),
         ],
         if (_busy && _account == null) ...[
           const SizedBox(height: 16),
@@ -155,7 +232,59 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     );
   }
 
-  Widget _buildAccountCard(BuildContext context, AppThemeData theme) {
+  Widget _buildSyncStatus(AppThemeData theme, DriveSyncTaskState syncState) {
+    if (syncState.status != DriveSyncTaskStatus.running) {
+      return const SizedBox.shrink();
+    }
+    final String message = (syncState.message ?? '').trim().isEmpty
+        ? 'Đang xử lý dữ liệu...'
+        : syncState.message!;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: theme.colorPrimary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message,
+                    style: theme.textMedium14Default,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Bạn có thể rời màn hình, tiến trình vẫn tiếp tục.',
+                    style: theme.textRegular12Subtle,
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () =>
+                  ref.read(driveSyncTaskProvider.notifier).cancel(),
+              child: const Text('Hủy'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountCard(
+    BuildContext context,
+    AppThemeData theme,
+    bool isProcessing,
+  ) {
     final account = _account!;
     return Card(
       child: Padding(
@@ -188,7 +317,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
               ),
             ),
             OutlinedButton(
-              onPressed: _busy ? null : _logoutGoogle,
+              onPressed: _busy || isProcessing ? null : _logoutGoogle,
               child: const Text('Logout'),
             ),
           ],
@@ -197,7 +326,11 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     );
   }
 
-  Widget _buildFileList(BuildContext context, AppThemeData theme) {
+  Widget _buildFileList(
+    BuildContext context,
+    AppThemeData theme,
+    bool isProcessing,
+  ) {
     if (_loadingFiles) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -225,12 +358,12 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                 spacing: 8,
                 children: [
                   IconButton(
-                    onPressed: _busy ? null : () => _importFile(file),
+                    onPressed: _busy || isProcessing ? null : () => _importFile(file),
                     icon: const Icon(Icons.cloud_download_outlined),
                     tooltip: 'Import',
                   ),
                   IconButton(
-                    onPressed: _busy ? null : () => _deleteFile(file),
+                    onPressed: _busy || isProcessing ? null : () => _deleteFile(file),
                     icon: const Icon(Icons.delete_outline),
                     tooltip: 'Delete',
                   ),
@@ -355,38 +488,9 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     }
 
     setState(() {
-      _busy = true;
       _status = null;
     });
-
-    try {
-      final driveService = ref.read(driveProductSyncServiceProvider);
-      final result = await driveService.exportProductsToDrive(
-        account: _account,
-      );
-      if (!mounted) return;
-      setState(() {
-        _status = 'Đã xuất sản phẩm lên Sheets: ${result.fileName}';
-        _lastFileName = result.fileName;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export success: ${result.fileName}')),
-      );
-      await _loadFiles();
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _status = 'Lỗi xuất Sheets: $e';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi xuất Sheets: $e')),
-      );
-    } finally {
-      if (!mounted) return;
-      setState(() {
-        _busy = false;
-      });
-    }
+    ref.read(driveSyncTaskProvider.notifier).startExport(account: _account);
   }
 
   Future<void> _refreshFiles() async {
@@ -438,48 +542,13 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
         return;
       }
     }
-
     setState(() {
-      _busy = true;
       _status = null;
     });
-
-    try {
-      final driveService = ref.read(driveProductSyncServiceProvider);
-      final download = await driveService.downloadProductsFile(
-        fileId: file.id,
-        fileName: file.name,
-        account: _account,
-      );
-      if (!mounted) return;
-      final dataImportService = ref.read(dataImportServiceProvider);
-      if (download.values.isEmpty) {
-        throw StateError('Sheet trống hoặc không đọc được dữ liệu.');
-      }
-      final result =
-          await dataImportService.importFromSheetValues(download.values);
-      if (context.mounted) {
-        await DataImportResultDialog.showResult(
-          context,
-          result,
-          title: 'Nhập dữ liệu sản phẩm từ Google Sheets',
+    ref.read(driveSyncTaskProvider.notifier).startImport(
+          file: file,
+          account: _account,
         );
-      }
-      setState(() {
-        _status = 'Đã nhập dữ liệu từ: ${file.name}';
-        _lastFileName = file.name;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _status = 'Lỗi nhập Drive: $e';
-      });
-    } finally {
-      if (!mounted) return;
-      setState(() {
-        _busy = false;
-      });
-    }
   }
 
   Future<void> _deleteFile(DriveProductFile file) async {

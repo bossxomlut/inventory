@@ -409,6 +409,7 @@ class DriveProductSyncService {
       account: signedIn,
       spreadsheetId: fileId,
       sheetTitle: sheetName,
+      valueRenderOption: 'FORMULA',
     );
     cancellation?.throwIfCancelled();
     return DriveProductDownload(

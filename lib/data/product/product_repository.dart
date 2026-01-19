@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:isar_community/isar.dart';
 
 import '../../core/helpers/app_image_manager.dart';
@@ -28,8 +31,23 @@ class ProductRepositoryImpl extends ProductRepository
 
     for (final img in images) {
       // If the image has a path, assume it's already saved
-      if (img.id == undefinedId && img.path != null) {
-        final nImg = await appImageManager.saveImageFromPath(img.path!);
+      final String? path = img.path;
+      if (img.id == undefinedId && path != null) {
+        if (_isRemoteImagePath(path)) {
+          final Uint8List? bytes = await _downloadImageBytes(path);
+          if (bytes == null || bytes.isEmpty) {
+            continue;
+          }
+          final String? fileName = _fileNameFromUrl(path);
+          final nImg = await appImageManager.saveImage(
+            bytes,
+            fileName: fileName,
+            url: path,
+          );
+          savedImages.add(nImg);
+          continue;
+        }
+        final nImg = await appImageManager.saveImageFromPath(path);
         savedImages.add(nImg);
       } else {
         savedImages.add(img);
@@ -37,6 +55,42 @@ class ProductRepositoryImpl extends ProductRepository
     }
 
     return savedImages;
+  }
+
+  bool _isRemoteImagePath(String path) {
+    final Uri? uri = Uri.tryParse(path);
+    if (uri == null) {
+      return false;
+    }
+    return uri.scheme == 'http' || uri.scheme == 'https';
+  }
+
+  Future<Uint8List?> _downloadImageBytes(String url) async {
+    try {
+      final Dio dio = Dio();
+      final Response<List<int>> response = await dio.get<List<int>>(
+        url,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final List<int>? data = response.data;
+      if (data == null || data.isEmpty) {
+        return null;
+      }
+      return Uint8List.fromList(data);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _fileNameFromUrl(String url) {
+    final Uri? uri = Uri.tryParse(url);
+    if (uri == null) {
+      return null;
+    }
+    final String name = uri.pathSegments.isNotEmpty
+        ? uri.pathSegments.last
+        : '';
+    return name.isEmpty ? null : name;
   }
 
   @override

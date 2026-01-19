@@ -154,6 +154,7 @@ class GoogleSheetsService {
     required GoogleSignInAccount account,
     required String spreadsheetId,
     required String sheetTitle,
+    String valueRenderOption = 'FORMATTED_VALUE',
   }) async {
     final result = await _withSheetsApi(
       account: account,
@@ -162,6 +163,7 @@ class GoogleSheetsService {
         spreadsheetId,
         sheetTitle,
         majorDimension: 'ROWS',
+        valueRenderOption: valueRenderOption,
       ),
     );
     return result.values ?? <List<Object?>>[];

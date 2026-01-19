@@ -123,6 +123,9 @@ class DataImportService {
           final price = _getCellDouble(row, headerMap, _excelHeaderPrice);
           final enableExpiry =
               _getCellBool(row, headerMap, _excelHeaderExpiry);
+          final lotRaw = _getCellString(row, headerMap, _excelHeaderLots);
+          final lotEntries = _parseLotSummary(lotRaw);
+          final bool trackExpiry = enableExpiry || lotEntries.isNotEmpty;
 
           if (name.isEmpty) {
             // Skip empty rows
@@ -142,12 +145,13 @@ class DataImportService {
             'quantity': quantity,
             'barcode': barcode.isEmpty ? null : barcode,
             'description': description.isEmpty ? null : description,
-            'enableExpiryTracking': enableExpiry,
+            'enableExpiryTracking': trackExpiry,
             if (categoryName.isNotEmpty) 'categoryName': categoryName,
             if (unitName.isNotEmpty) 'unitName': unitName,
             if (price != null) 'price': price,
             if (imageValues.isNotEmpty)
               'images': _buildImagesFromList(imageValues),
+            if (lotEntries.isNotEmpty) 'lots': lotEntries,
           };
 
           await _importSingleProduct(jsonData);
@@ -216,6 +220,9 @@ class DataImportService {
         );
         final price = _getSheetDouble(row, headerMap, _excelHeaderPrice);
         final enableExpiry = _getSheetBool(row, headerMap, _excelHeaderExpiry);
+        final lotRaw = _getSheetString(row, headerMap, _excelHeaderLots);
+        final lotEntries = _parseLotSummary(lotRaw);
+        final bool trackExpiry = enableExpiry || lotEntries.isNotEmpty;
 
         if (name.isEmpty) {
           if (barcode.isEmpty &&
@@ -234,12 +241,13 @@ class DataImportService {
           'quantity': quantity,
           'barcode': barcode.isEmpty ? null : barcode,
           'description': description.isEmpty ? null : description,
-          'enableExpiryTracking': enableExpiry,
+          'enableExpiryTracking': trackExpiry,
           if (categoryName.isNotEmpty) 'categoryName': categoryName,
           if (unitName.isNotEmpty) 'unitName': unitName,
           if (price != null) 'price': price,
           if (imageValues.isNotEmpty)
             'images': _buildImagesFromList(imageValues),
+          if (lotEntries.isNotEmpty) 'lots': lotEntries,
         };
 
         await _importSingleProduct(jsonData);
@@ -462,6 +470,20 @@ class DataImportService {
     'expiry',
     'enableexpirytracking',
   ];
+  static const List<String> _excelHeaderLots = <String>[
+    'lô hàng (hsd)',
+    'lo hang (hsd)',
+    'lô hàng',
+    'lo hang',
+    'lot',
+    'lots',
+    'inventory lot',
+    'inventory lots',
+  ];
+  static final RegExp _lotLinePattern = RegExp(
+    r'^SL\s*(\d+)\s*-\s*HSD\s*([0-9]{1,2}/[0-9]{1,2}/[0-9]{4})(?:\s*-\s*NSX\s*([0-9]{1,2}/[0-9]{1,2}/[0-9]{4}))?$',
+    caseSensitive: false,
+  );
 
   Map<String, int> _buildHeaderMap(List<Data?> headerRow) {
     final Map<String, int> map = <String, int>{};
@@ -519,7 +541,12 @@ class DataImportService {
       }
       final raw = _cellToString(row[entry.value]?.value);
       final normalized = raw.trim();
-      if (normalized.isEmpty || _isImageFormula(normalized)) {
+      if (normalized.isEmpty) {
+        continue;
+      }
+      final formulaUrl = _extractImageUrlFromFormula(normalized);
+      if (formulaUrl != null && formulaUrl.isNotEmpty) {
+        values.add(formulaUrl);
         continue;
       }
       values.add(normalized);
@@ -542,7 +569,12 @@ class DataImportService {
       }
       final raw = _sheetValueToString(row[entry.value]);
       final normalized = raw.trim();
-      if (normalized.isEmpty || _isImageFormula(normalized)) {
+      if (normalized.isEmpty) {
+        continue;
+      }
+      final formulaUrl = _extractImageUrlFromFormula(normalized);
+      if (formulaUrl != null && formulaUrl.isNotEmpty) {
+        values.add(formulaUrl);
         continue;
       }
       values.add(normalized);
@@ -552,6 +584,34 @@ class DataImportService {
 
   bool _isImageFormula(String value) {
     return value.trim().toUpperCase().startsWith('=IMAGE(');
+  }
+
+  String? _extractImageUrlFromFormula(String value) {
+    if (!_isImageFormula(value)) {
+      return null;
+    }
+    final int startIndex = value.indexOf('(');
+    final int endIndex = value.lastIndexOf(')');
+    if (startIndex == -1 || endIndex == -1 || endIndex <= startIndex) {
+      return null;
+    }
+    final String inside = value.substring(startIndex + 1, endIndex).trim();
+    if (inside.isEmpty) {
+      return null;
+    }
+    final String firstPart = inside.split(RegExp(r'[;,]')).first.trim();
+    return _stripQuotes(firstPart);
+  }
+
+  String _stripQuotes(String value) {
+    if (value.length >= 2) {
+      final String first = value[0];
+      final String last = value[value.length - 1];
+      if ((first == '"' && last == '"') || (first == '\'' && last == '\'')) {
+        return value.substring(1, value.length - 1).trim();
+      }
+    }
+    return value.trim();
   }
 
   String _getCellString(
@@ -813,6 +873,62 @@ class DataImportService {
       return normalized == 'true' || normalized == '1' || normalized == 'yes';
     }
     return false;
+  }
+
+  List<Map<String, dynamic>> _parseLotSummary(String raw) {
+    final String trimmed = raw.trim();
+    if (trimmed.isEmpty) {
+      return <Map<String, dynamic>>[];
+    }
+    final List<String> lines = trimmed.split(RegExp(r'\r?\n'));
+    final List<Map<String, dynamic>> lots = <Map<String, dynamic>>[];
+    for (final line in lines) {
+      final String normalized = line.trim();
+      if (normalized.isEmpty) {
+        continue;
+      }
+      final RegExpMatch? match = _lotLinePattern.firstMatch(normalized);
+      if (match == null) {
+        throw Exception('Định dạng lô hàng không hợp lệ: "$normalized"');
+      }
+      final int? quantity = int.tryParse(match.group(1) ?? '');
+      final DateTime? expiryDate = _parseDateDdMMyyyy(match.group(2));
+      if (quantity == null || expiryDate == null) {
+        throw Exception('Định dạng lô hàng không hợp lệ: "$normalized"');
+      }
+      final String? manufactureRaw = match.group(3);
+      final DateTime? manufactureDate =
+          manufactureRaw == null ? null : _parseDateDdMMyyyy(manufactureRaw);
+      if (manufactureRaw != null && manufactureDate == null) {
+        throw Exception('Định dạng lô hàng không hợp lệ: "$normalized"');
+      }
+      lots.add(<String, dynamic>{
+        'id': undefinedId,
+        'productId': undefinedId,
+        'quantity': quantity,
+        'expiryDate': expiryDate.toIso8601String(),
+        if (manufactureDate != null)
+          'manufactureDate': manufactureDate.toIso8601String(),
+      });
+    }
+    return lots;
+  }
+
+  DateTime? _parseDateDdMMyyyy(String? raw) {
+    if (raw == null) {
+      return null;
+    }
+    final parts = raw.trim().split('/');
+    if (parts.length != 3) {
+      return null;
+    }
+    final int? day = int.tryParse(parts[0]);
+    final int? month = int.tryParse(parts[1]);
+    final int? year = int.tryParse(parts[2]);
+    if (day == null || month == null || year == null) {
+      return null;
+    }
+    return DateTime(year, month, day);
   }
 
   List<Map<String, dynamic>> _buildImagesFromList(List<String> values) {

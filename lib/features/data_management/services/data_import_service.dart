@@ -176,6 +176,7 @@ class DataImportService {
   Future<DataImportResult> importFromSheetValues(
     List<List<Object?>> rows, {
     DriveSyncCancellationToken? cancellation,
+    DriveSyncProgressCallback? onProgress,
   }) async {
     final List<String> errors = [];
     int successfulImports = 0;
@@ -200,6 +201,12 @@ class DataImportService {
       );
     }
 
+    final int total = rows.length > 1 ? rows.length - 1 : 0;
+    if (total > 0) {
+      onProgress?.call('Đang nhập dữ liệu (0/$total)...');
+    }
+
+    int processed = 0;
     for (int i = 1; i < rows.length; i++) {
       cancellation?.throwIfCancelled();
       final row = rows[i];
@@ -223,6 +230,7 @@ class DataImportService {
         final lotRaw = _getSheetString(row, headerMap, _excelHeaderLots);
         final lotEntries = _parseLotSummary(lotRaw);
         final bool trackExpiry = enableExpiry || lotEntries.isNotEmpty;
+        bool shouldSkip = false;
 
         if (name.isEmpty) {
           if (barcode.isEmpty &&
@@ -230,30 +238,42 @@ class DataImportService {
               unitName.isEmpty &&
               description.isEmpty &&
               imageValues.isEmpty) {
-            continue;
+            shouldSkip = true;
+          } else {
+            throw Exception('Thiếu tên sản phẩm');
           }
-          throw Exception('Thiếu tên sản phẩm');
         }
 
-        final jsonData = <String, dynamic>{
-          'id': undefinedId,
-          'name': name,
-          'quantity': quantity,
-          'barcode': barcode.isEmpty ? null : barcode,
-          'description': description.isEmpty ? null : description,
-          'enableExpiryTracking': trackExpiry,
-          if (categoryName.isNotEmpty) 'categoryName': categoryName,
-          if (unitName.isNotEmpty) 'unitName': unitName,
-          if (price != null) 'price': price,
-          if (imageValues.isNotEmpty)
-            'images': _buildImagesFromList(imageValues),
-          if (lotEntries.isNotEmpty) 'lots': lotEntries,
-        };
+        if (!shouldSkip) {
+          final jsonData = <String, dynamic>{
+            'id': undefinedId,
+            'name': name,
+            'quantity': quantity,
+            'barcode': barcode.isEmpty ? null : barcode,
+            'description': description.isEmpty ? null : description,
+            'enableExpiryTracking': trackExpiry,
+            if (categoryName.isNotEmpty) 'categoryName': categoryName,
+            if (unitName.isNotEmpty) 'unitName': unitName,
+            if (price != null) 'price': price,
+            if (imageValues.isNotEmpty)
+              'images': _buildImagesFromList(imageValues),
+            if (lotEntries.isNotEmpty) 'lots': lotEntries,
+          };
 
-        await _importSingleProduct(jsonData);
-        successfulImports++;
+          await _importSingleProduct(jsonData);
+          successfulImports++;
+        }
       } catch (e) {
+        if (e is DriveSyncCancelledException) {
+          rethrow;
+        }
         errors.add('Dòng ${i + 1}: $e');
+      } finally {
+        processed++;
+        if (total > 0 && (processed % 20 == 0 || processed == total)) {
+          onProgress?.call('Đang nhập dữ liệu ($processed/$total)...');
+          await Future<void>.delayed(Duration.zero);
+        }
       }
     }
 

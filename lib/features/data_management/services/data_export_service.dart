@@ -154,6 +154,7 @@ class DataExportService {
     Future<List<Object?>> Function(Product product, int maxImageCount)?
         imageResolver,
     DriveSyncCancellationToken? cancellation,
+    DriveSyncProgressCallback? onProgress,
   }) async {
     final productRepo = ref.read(productRepositoryProvider);
     final result = await productRepo.search('', 1, 10000);
@@ -180,7 +181,13 @@ class DataExportService {
       header.add('Ảnh ${i + 1}');
     }
     final values = <List<Object?>>[header];
+    final int total = result.data.length;
+    if (total == 0) {
+      return values;
+    }
+    onProgress?.call('Đang tổng hợp dữ liệu (0/$total)...');
 
+    int processed = 0;
     for (final product in result.data) {
       cancellation?.throwIfCancelled();
       final imageValues = imageResolver != null
@@ -202,6 +209,11 @@ class DataExportService {
         lotSummary,
         ...cells,
       ]);
+      processed++;
+      if (processed % 10 == 0 || processed == total) {
+        onProgress?.call('Đang tổng hợp dữ liệu ($processed/$total)...');
+        await Future<void>.delayed(Duration.zero);
+      }
     }
 
     return values;

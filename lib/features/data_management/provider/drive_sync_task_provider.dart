@@ -81,6 +81,7 @@ class DriveSyncTaskNotifier extends StateNotifier<DriveSyncTaskState> {
       type: DriveSyncTaskType.export,
       message: 'Đang chuẩn bị dữ liệu...',
     );
+    await Future<void>.delayed(Duration.zero);
     try {
       final driveService = _ref.read(driveProductSyncServiceProvider);
       final result = await driveService.exportProductsToDrive(
@@ -139,6 +140,7 @@ class DriveSyncTaskNotifier extends StateNotifier<DriveSyncTaskState> {
       message: 'Đang tải file ${file.name}...',
       fileName: file.name,
     );
+    await Future<void>.delayed(Duration.zero);
     try {
       final driveService = _ref.read(driveProductSyncServiceProvider);
       final download = await driveService.downloadProductsFile(
@@ -156,6 +158,7 @@ class DriveSyncTaskNotifier extends StateNotifier<DriveSyncTaskState> {
       final result = await driveService.importProductsFromSheetValues(
         download.values,
         cancellation: cancellation,
+        onProgress: _updateProgress,
       );
       if (cancellation.isCancelled) {
         state = const DriveSyncTaskState(

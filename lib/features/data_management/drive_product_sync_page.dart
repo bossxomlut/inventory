@@ -108,7 +108,6 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     final theme = context.appTheme;
     final authState = ref.watch(authControllerProvider);
     final syncState = ref.watch(driveSyncTaskProvider);
-    final bool isProcessing = syncState.status == DriveSyncTaskStatus.running;
     final bool isAdmin = authState.maybeWhen(
       authenticated: (user, _) => user.role == UserRole.admin,
       orElse: () => false,
@@ -121,7 +120,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: isAdmin
-            ? _buildAdminBody(context, theme, syncState, isProcessing)
+            ? _buildAdminBody(context, theme, syncState)
             : _buildAccessDenied(context),
       ),
     );
@@ -131,7 +130,6 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     BuildContext context,
     AppThemeData theme,
     DriveSyncTaskState syncState,
-    bool isProcessing,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,18 +179,18 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
           ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            onPressed: _busy || isProcessing ? null : _signIn,
+            onPressed: _busy ? null : _signIn,
             icon: const Icon(Icons.login),
             label: const Text('Sign in with Google'),
           ),
         ] else ...[
-          _buildAccountCard(context, theme, isProcessing),
+          _buildAccountCard(context, theme),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _busy || isProcessing ? null : _exportToDrive,
+                  onPressed: _busy ? null : _exportToDrive,
                   icon: const Icon(Icons.cloud_upload_outlined),
                   label: const Text('Export to Sheets'),
                 ),
@@ -200,7 +198,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _busy || isProcessing ? null : _refreshFiles,
+                  onPressed: _busy ? null : _refreshFiles,
                   icon: const Icon(Icons.refresh),
                   label: const Text('Refresh files'),
                 ),
@@ -208,7 +206,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildFileList(context, theme, isProcessing),
+          _buildFileList(context, theme),
         ],
         if (_busy && _account == null) ...[
           const SizedBox(height: 16),
@@ -283,7 +281,6 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   Widget _buildAccountCard(
     BuildContext context,
     AppThemeData theme,
-    bool isProcessing,
   ) {
     final account = _account!;
     return Card(
@@ -317,7 +314,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
               ),
             ),
             OutlinedButton(
-              onPressed: _busy || isProcessing ? null : _logoutGoogle,
+              onPressed: _busy ? null : _logoutGoogle,
               child: const Text('Logout'),
             ),
           ],
@@ -329,7 +326,6 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   Widget _buildFileList(
     BuildContext context,
     AppThemeData theme,
-    bool isProcessing,
   ) {
     if (_loadingFiles) {
       return const Center(child: CircularProgressIndicator());
@@ -358,12 +354,12 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                 spacing: 8,
                 children: [
                   IconButton(
-                    onPressed: _busy || isProcessing ? null : () => _importFile(file),
+                    onPressed: _busy ? null : () => _importFile(file),
                     icon: const Icon(Icons.cloud_download_outlined),
                     tooltip: 'Import',
                   ),
                   IconButton(
-                    onPressed: _busy || isProcessing ? null : () => _deleteFile(file),
+                    onPressed: _busy ? null : () => _deleteFile(file),
                     icon: const Icon(Icons.delete_outline),
                     tooltip: 'Delete',
                   ),
@@ -421,6 +417,9 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Future<void> _signIn() async {
+    if (_guardProcessing()) {
+      return;
+    }
     setState(() {
       _busy = true;
       _status = null;
@@ -447,6 +446,9 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Future<void> _logoutGoogle() async {
+    if (_guardProcessing()) {
+      return;
+    }
     setState(() {
       _busy = true;
       _status = null;
@@ -473,6 +475,9 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Future<void> _exportToDrive() async {
+    if (_guardProcessing()) {
+      return;
+    }
     if (_account == null) {
       await _signIn();
       if (_account == null) {
@@ -494,6 +499,9 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Future<void> _refreshFiles() async {
+    if (_guardProcessing()) {
+      return;
+    }
     if (_account == null) {
       return;
     }
@@ -528,6 +536,9 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Future<void> _importFile(DriveProductFile file) async {
+    if (_guardProcessing()) {
+      return;
+    }
     final shouldProceed = await _confirm(
       title: 'Nhập sản phẩm từ Google Sheets',
       message: 'Bạn có chắc chắn muốn nhập dữ liệu từ "${file.name}"?',
@@ -552,6 +563,9 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Future<void> _deleteFile(DriveProductFile file) async {
+    if (_guardProcessing()) {
+      return;
+    }
     final shouldProceed = await _confirm(
       title: 'Xóa file trên Drive',
       message: 'Bạn có chắc chắn muốn xóa "${file.name}"?',
@@ -618,5 +632,18 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       ),
     );
     return result ?? false;
+  }
+
+  bool _guardProcessing() {
+    final syncState = ref.read(driveSyncTaskProvider);
+    if (syncState.status == DriveSyncTaskStatus.running) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đang xử lý import/export. Vui lòng chờ hoặc hủy.'),
+        ),
+      );
+      return true;
+    }
+    return false;
   }
 }

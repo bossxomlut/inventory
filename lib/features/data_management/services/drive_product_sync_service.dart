@@ -101,6 +101,7 @@ class DriveProductSyncService {
         );
       },
       cancellation: cancellation,
+      onProgress: onProgress,
     );
     cancellation?.throwIfCancelled();
     final header = values.isNotEmpty ? values.first : <Object?>[];
@@ -465,12 +466,14 @@ class DriveProductSyncService {
   Future<DataImportResult> importProductsFromSheetValues(
     List<List<Object?>> values, {
     DriveSyncCancellationToken? cancellation,
+    DriveSyncProgressCallback? onProgress,
   }) async {
     _requireAdmin();
     final dataImportService = _ref.read(dataImportServiceProvider);
     return dataImportService.importFromSheetValues(
       values,
       cancellation: cancellation,
+      onProgress: onProgress,
     );
   }
 

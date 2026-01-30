@@ -1229,5 +1229,75 @@
     "common": {
       "notSet": "Not set"
     }
+  },
+  "driveSync": {
+    "title": "Google Drive Sync",
+    "storage": {
+      "title": "Storage Rules",
+      "folderFile": "File folder",
+      "folderImage": "Image folder",
+      "sheet": "Sheet",
+      "fileName": "File name"
+    },
+    "signIn": {
+      "title": "Connect Google Drive",
+      "description": "Sign in to sync product data with Google Sheets",
+      "button": "Sign in with Google",
+      "connecting": "Connecting..."
+    },
+    "account": {
+      "connected": "Connected",
+      "signOut": "Sign out"
+    },
+    "actions": {
+      "export": "Export to Drive",
+      "refresh": "Refresh",
+      "import": "Import data",
+      "delete": "Delete file",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "processing": "Processing data...",
+      "canLeave": "You can leave this screen, the process will continue",
+      "loading": "Loading file list..."
+    },
+    "fileList": {
+      "title": "File list",
+      "empty": "No files yet",
+      "emptyDescription": "Export data to Drive to get started"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{minutes} minutes ago",
+      "hoursAgo": "{hours} hours ago",
+      "yesterday": "Yesterday",
+      "daysAgo": "{days} days ago"
+    },
+    "accessDenied": {
+      "title": "Access Restricted",
+      "description": "Only admins are allowed to use this feature."
+    },
+    "messages": {
+      "exportSuccess": "Products exported to Drive successfully!",
+      "importTitle": "Import product data from Google Sheets",
+      "errorGeneric": "An error occurred while processing data.",
+      "cancelled": "Operation cancelled",
+      "restoreFailed": "Could not restore sign-in",
+      "signInSuccess": "Signed in successfully!",
+      "signInFailed": "Sign-in failed",
+      "signOutSuccess": "Signed out successfully",
+      "signOutFailed": "Could not sign out",
+      "signInRequired": "Please sign in first",
+      "processRunning": "A process is already running. Please wait or cancel first.",
+      "loadFilesFailed": "Could not load file list",
+      "deleteSuccess": "File deleted successfully",
+      "deleteFailed": "Failed to delete file"
+    },
+    "dialog": {
+      "deleteTitle": "Delete file on Drive",
+      "deleteMessage": "Are you sure you want to delete \"{fileName}\"?",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    }
   }
 }

@@ -18,8 +18,7 @@ class DriveProductSyncPage extends ConsumerStatefulWidget {
   const DriveProductSyncPage({super.key});
 
   @override
-  ConsumerState<DriveProductSyncPage> createState() =>
-      _DriveProductSyncPageState();
+  ConsumerState<DriveProductSyncPage> createState() => _DriveProductSyncPageState();
 }
 
 class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
@@ -43,29 +42,25 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
           if (next.type == DriveSyncTaskType.export && next.fileName != null) {
             showSuccess(
               context: context,
-              message: 'Đã xuất sản phẩm lên Drive thành công!',
+              message: LKey.driveSyncMessagesExportSuccess.tr(context: context),
             );
             _loadFilesSilently();
           }
         }
-        final bool shouldShowImportResult =
-            next.type == DriveSyncTaskType.import &&
-                next.importResult != null &&
-                (next.status == DriveSyncTaskStatus.success ||
-                    next.status == DriveSyncTaskStatus.error);
+        final bool shouldShowImportResult = next.type == DriveSyncTaskType.import && next.importResult != null && (next.status == DriveSyncTaskStatus.success || next.status == DriveSyncTaskStatus.error);
         if (shouldShowImportResult) {
           DataImportResultDialog.showResult(
             context,
             next.importResult!,
-            title: 'Nhập dữ liệu sản phẩm từ Google Sheets',
+            title: LKey.driveSyncMessagesImportTitle.tr(context: context),
           );
         }
         if (next.status == DriveSyncTaskStatus.error) {
-          final errorMsg = next.message ?? 'Có lỗi khi xử lý dữ liệu.';
+          final errorMsg = next.message ?? LKey.driveSyncMessagesErrorGeneric.tr(context: context);
           showError(context: context, message: errorMsg);
         }
         if (next.status == DriveSyncTaskStatus.cancelled) {
-          showInfo(context: context, message: 'Đã hủy thao tác');
+          showInfo(context: context, message: LKey.driveSyncMessagesCancelled.tr(context: context));
         }
       },
     );
@@ -98,13 +93,11 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Đồng bộ Google Drive',
+        title: LKey.driveSyncTitle.tr(context: context),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: isAdmin
-            ? _buildAdminBody(context, theme, syncState)
-            : _buildAccessDenied(context),
+        child: isAdmin ? _buildAdminBody(context, theme, syncState) : _buildAccessDenied(context),
       ),
     );
   }
@@ -155,49 +148,52 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Quy tắc lưu trữ',
+                      LKey.driveSyncStorageTitle.tr(context: context),
                       style: theme.headingSemibold20Default,
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 _buildInfoRow(
+                  context,
                   theme,
                   Icons.folder_outlined,
-                  'Folder file',
+                  LKey.driveSyncStorageFolderFile,
                   DriveProductSyncService.folderName,
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
+                  context,
                   theme,
                   Icons.photo_library_outlined,
-                  'Folder ảnh',
+                  LKey.driveSyncStorageFolderImage,
                   DriveProductSyncService.imageFolderName,
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
+                  context,
                   theme,
                   Icons.table_chart_outlined,
-                  'Sheet',
+                  LKey.driveSyncStorageSheet,
                   DriveProductSyncService.sheetName,
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
+                  context,
                   theme,
                   Icons.description_outlined,
-                  'Tên file',
+                  LKey.driveSyncStorageFileName,
                   '${DriveProductSyncService.filePrefix}_<adminId>_yyyyMMdd_HHmmss',
                 ),
               ],
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // Sync Status
           _buildSyncStatus(theme, syncState),
-          if (syncState.status == DriveSyncTaskStatus.running)
-            const SizedBox(height: 20),
-          
+          if (syncState.status == DriveSyncTaskStatus.running) const SizedBox(height: 20),
+
           // Account Section
           if (_account == null) ...[
             _buildSignInSection(context, theme),
@@ -214,9 +210,10 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Widget _buildInfoRow(
+    BuildContext context,
     AppThemeData theme,
     IconData icon,
-    String label,
+    String labelKey,
     String value,
   ) {
     return Row(
@@ -230,7 +227,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
               style: theme.textRegular14Default,
               children: [
                 TextSpan(
-                  text: '$label: ',
+                  text: '${labelKey.tr(context: context)}: ',
                   style: theme.textMedium14Default,
                 ),
                 TextSpan(text: value),
@@ -266,12 +263,12 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Kết nối Google Drive',
+            LKey.driveSyncSignInTitle.tr(context: context),
             style: theme.headingSemibold20Default,
           ),
           const SizedBox(height: 8),
           Text(
-            'Đăng nhập để đồng bộ dữ liệu sản phẩm với Google Sheets',
+            LKey.driveSyncSignInDescription.tr(context: context),
             style: theme.textRegular14Subtle,
             textAlign: TextAlign.center,
           ),
@@ -293,7 +290,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.login),
-              label: Text(_busy ? 'Đang kết nối...' : 'Đăng nhập với Google'),
+              label: Text(_busy ? LKey.driveSyncSignInConnecting.tr(context: context) : LKey.driveSyncSignInButton.tr(context: context)),
             ),
           ),
         ],
@@ -314,7 +311,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
               ),
             ),
             icon: const Icon(Icons.cloud_upload_outlined),
-            label: const Text('Xuất lên Drive'),
+            label: Text(LKey.driveSyncActionsExport.tr(context: context)),
           ),
         ),
         const SizedBox(width: 12),
@@ -326,7 +323,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: _loadingFiles 
+          child: _loadingFiles
               ? const SizedBox(
                   width: 20,
                   height: 20,
@@ -342,10 +339,8 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     if (syncState.status != DriveSyncTaskStatus.running) {
       return const SizedBox.shrink();
     }
-    final String message = (syncState.message ?? '').trim().isEmpty
-        ? 'Đang xử lý dữ liệu...'
-        : syncState.message!;
-    
+    final String message = (syncState.message ?? '').trim().isEmpty ? LKey.driveSyncStatusProcessing.tr(context: context) : syncState.message!;
+
     return AnimatedOpacity(
       opacity: 1.0,
       duration: const Duration(milliseconds: 300),
@@ -407,7 +402,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              'Bạn có thể rời màn hình, tiến trình vẫn tiếp tục',
+                              LKey.driveSyncStatusCanLeave.tr(context: context),
                               style: theme.textRegular12Subtle,
                             ),
                           ),
@@ -417,10 +412,9 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: () =>
-                      ref.read(driveSyncTaskProvider.notifier).cancel(),
+                  onPressed: () => ref.read(driveSyncTaskProvider.notifier).cancel(),
                   icon: const Icon(Icons.close, size: 18),
-                  label: const Text('Hủy'),
+                  label: Text(LKey.driveSyncActionsCancel.tr(context: context)),
                   style: TextButton.styleFrom(
                     foregroundColor: theme.colorError,
                     padding: const EdgeInsets.symmetric(
@@ -478,8 +472,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
             ),
             child: CircleAvatar(
               radius: 28,
-              backgroundImage:
-                  account.photoUrl != null ? NetworkImage(account.photoUrl!) : null,
+              backgroundImage: account.photoUrl != null ? NetworkImage(account.photoUrl!) : null,
               child: account.photoUrl == null
                   ? Icon(
                       Icons.person_outline,
@@ -503,7 +496,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Đã kết nối',
+                      LKey.driveSyncAccountConnected.tr(context: context),
                       style: theme.textRegular12Subtle.copyWith(
                         color: theme.colorTextSupportGreen,
                       ),
@@ -538,7 +531,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
               ),
             ),
             icon: const Icon(Icons.logout, size: 18),
-            label: const Text('Đăng xuất'),
+            label: Text(LKey.driveSyncAccountSignOut.tr(context: context)),
           ),
         ],
       ),
@@ -561,14 +554,14 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Đang tải danh sách file...',
+              LKey.driveSyncStatusLoading.tr(context: context),
               style: theme.textRegular14Subtle,
             ),
           ],
         ),
       );
     }
-    
+
     if (_files.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(32),
@@ -586,12 +579,12 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Chưa có file nào',
+              LKey.driveSyncFileListEmpty.tr(context: context),
               style: theme.textMedium16Default,
             ),
             const SizedBox(height: 8),
             Text(
-              'Hãy xuất dữ liệu lên Drive để bắt đầu',
+              LKey.driveSyncFileListEmptyDescription.tr(context: context),
               style: theme.textRegular14Subtle,
               textAlign: TextAlign.center,
             ),
@@ -599,7 +592,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
         ),
       );
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -614,7 +607,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Danh sách file (${_files.length})',
+                '${LKey.driveSyncFileListTitle.tr(context: context)} (${_files.length})',
                 style: theme.textMedium16Default,
               ),
             ],
@@ -628,7 +621,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
           itemBuilder: (context, index) {
             final file = _files[index];
             final modified = file.modifiedTime;
-            
+
             return Container(
               decoration: BoxDecoration(
                 color: theme.colorBackgroundSurface,
@@ -695,7 +688,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                         Icons.download_outlined,
                         color: theme.colorTextSupportBlue,
                       ),
-                      tooltip: 'Nhập dữ liệu',
+                      tooltip: LKey.driveSyncActionsImport.tr(context: context),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorTextSupportBlue.withOpacity(0.1),
                       ),
@@ -705,15 +698,11 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                       onPressed: _busy ? null : () => _deleteFile(file),
                       icon: Icon(
                         Icons.delete_outline,
-                        color: _busy
-                            ? theme.colorIconDisable
-                            : theme.colorError,
+                        color: _busy ? theme.colorIconDisable : theme.colorError,
                       ),
-                      tooltip: 'Xóa file',
+                      tooltip: LKey.driveSyncActionsDelete.tr(context: context),
                       style: IconButton.styleFrom(
-                        backgroundColor: _busy
-                            ? theme.colorDisabled
-                            : theme.colorError.withOpacity(0.1),
+                        backgroundColor: _busy ? theme.colorDisabled : theme.colorError.withOpacity(0.1),
                       ),
                     ),
                   ],
@@ -729,19 +718,28 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   String _formatDateTime(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
-    
+
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
         if (difference.inMinutes == 0) {
-          return 'Vừa xong';
+          return LKey.driveSyncTimeJustNow.tr(context: context);
         }
-        return '${difference.inMinutes} phút trước';
+        return LKey.driveSyncTimeMinutesAgo.tr(
+          context: context,
+          namedArgs: {'minutes': '${difference.inMinutes}'},
+        );
       }
-      return '${difference.inHours} giờ trước';
+      return LKey.driveSyncTimeHoursAgo.tr(
+        context: context,
+        namedArgs: {'hours': '${difference.inHours}'},
+      );
     } else if (difference.inDays == 1) {
-      return 'Hôm qua';
+      return LKey.driveSyncTimeYesterday.tr(context: context);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} ngày trước';
+      return LKey.driveSyncTimeDaysAgo.tr(
+        context: context,
+        namedArgs: {'days': '${difference.inDays}'},
+      );
     } else {
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     }
@@ -774,12 +772,12 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Quyền truy cập bị hạn chế',
+              LKey.driveSyncAccessDeniedTitle.tr(context: context),
               style: theme.headingSemibold20Default,
             ),
             const SizedBox(height: 12),
             Text(
-              'Chỉ admin mới được phép sử dụng tính năng này.',
+              LKey.driveSyncAccessDeniedDescription.tr(context: context),
               style: theme.textRegular14Subtle,
               textAlign: TextAlign.center,
             ),
@@ -804,7 +802,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      showError(context: context, message: 'Không thể khôi phục đăng nhập');
+      showError(context: context, message: LKey.driveSyncMessagesRestoreFailed.tr(context: context));
     } finally {
       if (!mounted) return;
       setState(() {
@@ -823,11 +821,11 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       setState(() {
         _account = account;
       });
-      showSuccess(context: context, message: 'Đăng nhập thành công!');
+      showSuccess(context: context, message: LKey.driveSyncMessagesSignInSuccess.tr(context: context));
       await _loadFiles();
     } catch (e) {
       if (!mounted) return;
-      showError(context: context, message: 'Đăng nhập thất bại');
+      showError(context: context, message: LKey.driveSyncMessagesSignInFailed.tr(context: context));
     } finally {
       if (!mounted) return;
       setState(() {
@@ -847,10 +845,10 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
         _account = null;
         _files = <DriveProductFile>[];
       });
-      showSuccess(context: context, message: 'Đã đăng xuất thành công');
+      showSuccess(context: context, message: LKey.driveSyncMessagesSignOutSuccess.tr(context: context));
     } catch (e) {
       if (!mounted) return;
-      showError(context: context, message: 'Không thể đăng xuất');
+      showError(context: context, message: LKey.driveSyncMessagesSignOutFailed.tr(context: context));
     } finally {
       if (!mounted) return;
       setState(() {
@@ -863,17 +861,17 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     if (_account == null) {
       showInfo(
         context: context,
-        message: 'Vui lòng đăng nhập trước',
+        message: LKey.driveSyncMessagesSignInRequired.tr(context: context),
       );
       return;
     }
-    
+
     // Check if already processing
     final syncState = ref.read(driveSyncTaskProvider);
     if (syncState.status == DriveSyncTaskStatus.running) {
       showInfo(
         context: context,
-        message: 'Đang có tiến trình đang chạy. Vui lòng đợi hoặc hủy trước.',
+        message: LKey.driveSyncMessagesProcessRunning.tr(context: context),
       );
       return;
     }
@@ -899,7 +897,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       final driveService = ref.read(driveProductSyncServiceProvider);
       final result = await driveService.listProductFiles(account: _account);
       if (!mounted) return;
-      
+
       // Sort files by modified time (newest first)
       final sortedFiles = List<DriveProductFile>.from(result.items)
         ..sort((a, b) {
@@ -908,13 +906,13 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
           if (b.modifiedTime == null) return -1;
           return b.modifiedTime!.compareTo(a.modifiedTime!);
         });
-      
+
       setState(() {
         _files = sortedFiles;
       });
     } catch (e) {
       if (!mounted) return;
-      showError(context: context, message: 'Không thể tải danh sách file');
+      showError(context: context, message: LKey.driveSyncMessagesLoadFilesFailed.tr(context: context));
     } finally {
       if (!mounted) return;
       setState(() {
@@ -931,7 +929,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       final driveService = ref.read(driveProductSyncServiceProvider);
       final result = await driveService.listProductFiles(account: _account);
       if (!mounted) return;
-      
+
       // Sort files by modified time (newest first)
       final sortedFiles = List<DriveProductFile>.from(result.items)
         ..sort((a, b) {
@@ -940,7 +938,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
           if (b.modifiedTime == null) return -1;
           return b.modifiedTime!.compareTo(a.modifiedTime!);
         });
-      
+
       setState(() {
         _files = sortedFiles;
       });
@@ -953,17 +951,17 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     if (_account == null) {
       showInfo(
         context: context,
-        message: 'Vui lòng đăng nhập trước',
+        message: LKey.driveSyncMessagesSignInRequired.tr(context: context),
       );
       return;
     }
-    
+
     // Check if already processing
     final syncState = ref.read(driveSyncTaskProvider);
     if (syncState.status == DriveSyncTaskStatus.running) {
       showInfo(
         context: context,
-        message: 'Đang có tiến trình đang chạy. Vui lòng đợi hoặc hủy trước.',
+        message: LKey.driveSyncMessagesProcessRunning.tr(context: context),
       );
       return;
     }
@@ -978,14 +976,17 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     if (_account == null) {
       showInfo(
         context: context,
-        message: 'Vui lòng đăng nhập trước',
+        message: LKey.driveSyncMessagesSignInRequired.tr(context: context),
       );
       return;
     }
-    
+
     final shouldProceed = await _confirm(
-      title: 'Xóa file trên Drive',
-      message: 'Bạn có chắc chắn muốn xóa "${file.name}"?',
+      title: LKey.driveSyncDialogDeleteTitle.tr(context: context),
+      message: LKey.driveSyncDialogDeleteMessage.tr(
+        context: context,
+        namedArgs: {'fileName': file.name},
+      ),
     );
     if (!shouldProceed) {
       return;
@@ -1002,16 +1003,16 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
         account: _account,
       );
       if (!mounted) return;
-      
+
       // Remove the deleted file from the list instead of reloading
       setState(() {
         _files.removeWhere((f) => f.id == file.id);
       });
-      
-      showSuccess(context: context, message: 'Đã xóa file thành công');
+
+      showSuccess(context: context, message: LKey.driveSyncMessagesDeleteSuccess.tr(context: context));
     } catch (e) {
       if (!mounted) return;
-      showError(context: context, message: 'Lỗi xóa file');
+      showError(context: context, message: LKey.driveSyncMessagesDeleteFailed.tr(context: context));
     } finally {
       if (!mounted) return;
       setState(() {
@@ -1070,7 +1071,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Hủy'),
+            child: Text(LKey.driveSyncDialogCancel.tr(context: context)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -1083,12 +1084,11 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Xác nhận'),
+            child: Text(LKey.driveSyncDialogConfirm.tr(context: context)),
           ),
         ],
       ),
     );
     return result ?? false;
   }
-
 }

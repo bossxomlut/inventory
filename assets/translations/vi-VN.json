@@ -1169,5 +1169,75 @@
     "common": {
       "notSet": "Chưa có"
     }
+  },
+  "driveSync": {
+    "title": "Đồng bộ Google Drive",
+    "storage": {
+      "title": "Quy tắc lưu trữ",
+      "folderFile": "Folder file",
+      "folderImage": "Folder ảnh",
+      "sheet": "Sheet",
+      "fileName": "Tên file"
+    },
+    "signIn": {
+      "title": "Kết nối Google Drive",
+      "description": "Đăng nhập để đồng bộ dữ liệu sản phẩm với Google Sheets",
+      "button": "Đăng nhập với Google",
+      "connecting": "Đang kết nối..."
+    },
+    "account": {
+      "connected": "Đã kết nối",
+      "signOut": "Đăng xuất"
+    },
+    "actions": {
+      "export": "Xuất lên Drive",
+      "refresh": "Làm mới",
+      "import": "Nhập dữ liệu",
+      "delete": "Xóa file",
+      "cancel": "Hủy"
+    },
+    "status": {
+      "processing": "Đang xử lý dữ liệu...",
+      "canLeave": "Bạn có thể rời màn hình, tiến trình vẫn tiếp tục",
+      "loading": "Đang tải danh sách file..."
+    },
+    "fileList": {
+      "title": "Danh sách file",
+      "empty": "Chưa có file nào",
+      "emptyDescription": "Hãy xuất dữ liệu lên Drive để bắt đầu"
+    },
+    "time": {
+      "justNow": "Vừa xong",
+      "minutesAgo": "{minutes} phút trước",
+      "hoursAgo": "{hours} giờ trước",
+      "yesterday": "Hôm qua",
+      "daysAgo": "{days} ngày trước"
+    },
+    "accessDenied": {
+      "title": "Quyền truy cập bị hạn chế",
+      "description": "Chỉ admin mới được phép sử dụng tính năng này."
+    },
+    "messages": {
+      "exportSuccess": "Đã xuất sản phẩm lên Drive thành công!",
+      "importTitle": "Nhập dữ liệu sản phẩm từ Google Sheets",
+      "errorGeneric": "Có lỗi khi xử lý dữ liệu.",
+      "cancelled": "Đã hủy thao tác",
+      "restoreFailed": "Không thể khôi phục đăng nhập",
+      "signInSuccess": "Đăng nhập thành công!",
+      "signInFailed": "Đăng nhập thất bại",
+      "signOutSuccess": "Đã đăng xuất thành công",
+      "signOutFailed": "Không thể đăng xuất",
+      "signInRequired": "Vui lòng đăng nhập trước",
+      "processRunning": "Đang có tiến trình đang chạy. Vui lòng đợi hoặc hủy trước.",
+      "loadFilesFailed": "Không thể tải danh sách file",
+      "deleteSuccess": "Đã xóa file thành công",
+      "deleteFailed": "Lỗi xóa file"
+    },
+    "dialog": {
+      "deleteTitle": "Xóa file trên Drive",
+      "deleteMessage": "Bạn có chắc chắn muốn xóa \"{fileName}\"?",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận"
+    }
   }
 }

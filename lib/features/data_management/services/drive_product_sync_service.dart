@@ -138,8 +138,7 @@ class DriveProductSyncService {
       sheetTitle: sheetName,
       values: values,
     );
-    final List<ColumnWidthConfig> columnWidths =
-        _buildColumnWidths(header, imageColumnIndex);
+    final List<ColumnWidthConfig> columnWidths = _buildColumnWidths(header, imageColumnIndex);
     if (columnWidths.isNotEmpty) {
       onProgress?.call('Đang định dạng độ rộng cột...');
       await _sheetsService.formatColumnWidths(
@@ -178,8 +177,7 @@ class DriveProductSyncService {
       return <ColumnWidthConfig>[];
     }
     final int totalColumns = header.length;
-    final int fixedColumnsEnd =
-        imageColumnIndex >= 0 ? imageColumnIndex : totalColumns;
+    final int fixedColumnsEnd = imageColumnIndex >= 0 ? imageColumnIndex : totalColumns;
     const List<int> widths = <int>[
       60, // ID
       220, // Tên sản phẩm
@@ -253,6 +251,9 @@ class DriveProductSyncService {
     GoogleSignInAccount account, {
     DriveSyncCancellationToken? cancellation,
   }) async {
+    // Yield at start to allow UI updates
+    await Future<void>.delayed(Duration.zero);
+
     final cached = _imageFormulaCache[imagePath];
     if (cached != null) {
       return cached;
@@ -268,14 +269,16 @@ class DriveProductSyncService {
       return '';
     }
 
+    // Yield after reading file
+    await Future<void>.delayed(Duration.zero);
+
     cancellation?.throwIfCancelled();
     _imageFolderId ??= await _driveService.ensureFolderId(
       account: account,
       folderName: imageFolderName,
     );
     final extension = _fileExtension(imagePath);
-    final fileName =
-        'product_image_${product.id}_${imageIndex}_${DateTime.now().millisecondsSinceEpoch}$extension';
+    final fileName = 'product_image_${product.id}_${imageIndex}_${DateTime.now().millisecondsSinceEpoch}$extension';
     final uploaded = await _driveService.writeBytesFile(
       account: account,
       folderId: _imageFolderId!,
@@ -283,6 +286,10 @@ class DriveProductSyncService {
       bytes: bytes,
       mimeType: _imageMimeType(extension),
     );
+
+    // Yield after upload
+    await Future<void>.delayed(Duration.zero);
+
     final uploadedId = uploaded.id;
     if (uploadedId == null || uploadedId.isEmpty) {
       throw StateError('Drive image id missing after upload.');
@@ -435,10 +442,7 @@ class DriveProductSyncService {
     );
     final items = files
         .where(
-          (file) =>
-              file.id != null &&
-              file.mimeType == 'application/vnd.google-apps.spreadsheet' &&
-              (file.name ?? '').contains(filePrefix),
+          (file) => file.id != null && file.mimeType == 'application/vnd.google-apps.spreadsheet' && (file.name ?? '').contains(filePrefix),
         )
         .map(
           (file) => DriveProductFile(
@@ -500,8 +504,7 @@ class DriveProductSyncService {
 
   String _buildFileName(User user) {
     final now = DateTime.now();
-    final stamp =
-        '${now.year}${_twoDigits(now.month)}${_twoDigits(now.day)}_'
+    final stamp = '${now.year}${_twoDigits(now.month)}${_twoDigits(now.day)}_'
         '${_twoDigits(now.hour)}${_twoDigits(now.minute)}${_twoDigits(now.second)}';
     return '${filePrefix}_${user.id}_$stamp';
   }
@@ -509,7 +512,6 @@ class DriveProductSyncService {
   String _twoDigits(int value) => value.toString().padLeft(2, '0');
 }
 
-final driveProductSyncServiceProvider =
-    Provider<DriveProductSyncService>((ref) {
+final driveProductSyncServiceProvider = Provider<DriveProductSyncService>((ref) {
   return DriveProductSyncService(ref);
 });

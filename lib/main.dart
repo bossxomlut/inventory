@@ -164,7 +164,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
                               ),
                               const RootLoadingWidget(),
                               const RootNotificationWidget(),
-                              const DriveSyncTaskBanner(),
+                              // const DriveSyncTaskBanner(),
                             ],
                           ),
                         ),

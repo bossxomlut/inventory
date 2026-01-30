@@ -7,6 +7,7 @@ import '../../domain/entities/user/user.dart';
 import '../../provider/theme.dart';
 import '../../resources/index.dart';
 import '../../shared_widgets/index.dart';
+import '../../shared_widgets/toast.dart';
 import '../../services/google_drive_auth_service.dart';
 import '../authentication/provider/auth_provider.dart';
 import 'services/drive_product_sync_service.dart';
@@ -24,8 +25,6 @@ class DriveProductSyncPage extends ConsumerStatefulWidget {
 class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   bool _busy = false;
   bool _loadingFiles = false;
-  String? _status;
-  String? _lastFileName;
   GoogleSignInAccount? _account;
   List<DriveProductFile> _files = <DriveProductFile>[];
   final GoogleDriveAuthService _authService = GoogleDriveAuthService();
@@ -42,14 +41,11 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
         }
         if (next.status == DriveSyncTaskStatus.success) {
           if (next.type == DriveSyncTaskType.export && next.fileName != null) {
-            setState(() {
-              _status = 'Đã xuất sản phẩm lên Sheets: ${next.fileName}';
-              _lastFileName = next.fileName;
-            });
-            _loadFiles();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Export success: ${next.fileName}')),
+            showSuccess(
+              context: context,
+              message: 'Đã xuất sản phẩm lên Drive thành công!',
             );
+            _loadFilesSilently();
           }
         }
         final bool shouldShowImportResult =
@@ -63,26 +59,13 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
             next.importResult!,
             title: 'Nhập dữ liệu sản phẩm từ Google Sheets',
           );
-          setState(() {
-            _status =
-                next.message ?? 'Đã nhập dữ liệu từ: ${next.fileName ?? ''}';
-            _lastFileName = next.fileName ?? _lastFileName;
-          });
         }
         if (next.status == DriveSyncTaskStatus.error) {
-          setState(() {
-            _status = next.message ?? 'Có lỗi khi xử lý dữ liệu.';
-          });
-          if (next.message != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(next.message!)),
-            );
-          }
+          final errorMsg = next.message ?? 'Có lỗi khi xử lý dữ liệu.';
+          showError(context: context, message: errorMsg);
         }
         if (next.status == DriveSyncTaskStatus.cancelled) {
-          setState(() {
-            _status = 'Đã hủy xử lý import/export.';
-          });
+          showInfo(context: context, message: 'Đã hủy thao tác');
         }
       },
     );
@@ -115,7 +98,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Google Drive - Product Sync',
+        title: 'Đồng bộ Google Drive',
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -131,101 +114,226 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     AppThemeData theme,
     DriveSyncTaskState syncState,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Info Card with gradient background
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  theme.colorPrimary.withOpacity(0.1),
+                  theme.colorSecondary.withOpacity(0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: theme.colorBorderSublest,
+                width: 1,
+              ),
+            ),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Quy tắc lưu trữ',
-                  style: theme.headingSemibold20Default,
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: theme.colorPrimary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.info_outline,
+                        color: theme.colorPrimary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Quy tắc lưu trữ',
+                      style: theme.headingSemibold20Default,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _buildInfoRow(
+                  theme,
+                  Icons.folder_outlined,
+                  'Folder file',
+                  DriveProductSyncService.folderName,
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'Folder file: ${DriveProductSyncService.folderName} (chứa các file Sheets export)',
-                  style: theme.textRegular14Default,
+                _buildInfoRow(
+                  theme,
+                  Icons.photo_library_outlined,
+                  'Folder ảnh',
+                  DriveProductSyncService.imageFolderName,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Folder ảnh: ${DriveProductSyncService.imageFolderName} (chứa ảnh sản phẩm để hiển thị trên sheet)',
-                  style: theme.textRegular14Default,
+                const SizedBox(height: 8),
+                _buildInfoRow(
+                  theme,
+                  Icons.table_chart_outlined,
+                  'Sheet',
+                  DriveProductSyncService.sheetName,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Sheet: ${DriveProductSyncService.sheetName}',
-                  style: theme.textRegular14Default,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Tên file: ${DriveProductSyncService.filePrefix}_<adminId>_yyyyMMdd_HHmmss',
-                  style: theme.textRegular14Default,
+                const SizedBox(height: 8),
+                _buildInfoRow(
+                  theme,
+                  Icons.description_outlined,
+                  'Tên file',
+                  '${DriveProductSyncService.filePrefix}_<adminId>_yyyyMMdd_HHmmss',
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 20),
+          
+          // Sync Status
+          _buildSyncStatus(theme, syncState),
+          if (syncState.status == DriveSyncTaskStatus.running)
+            const SizedBox(height: 20),
+          
+          // Account Section
+          if (_account == null) ...[
+            _buildSignInSection(context, theme),
+          ] else ...[
+            _buildAccountCard(context, theme),
+            const SizedBox(height: 20),
+            _buildActionButtons(theme),
+            const SizedBox(height: 20),
+            _buildFileList(context, theme),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(
+    AppThemeData theme,
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: theme.colorIconSubtle),
+        const SizedBox(width: 8),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: theme.textRegular14Default,
+              children: [
+                TextSpan(
+                  text: '$label: ',
+                  style: theme.textMedium14Default,
+                ),
+                TextSpan(text: value),
+              ],
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
-        _buildSyncStatus(theme, syncState),
-        if (syncState.status == DriveSyncTaskStatus.running)
-          const SizedBox(height: 16),
-        if (_account == null) ...[
+      ],
+    );
+  }
+
+  Widget _buildSignInSection(BuildContext context, AppThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: theme.colorBackgroundSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorBorderSublest),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorPrimary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.cloud_outlined,
+              size: 48,
+              color: theme.colorPrimary,
+            ),
+          ),
+          const SizedBox(height: 20),
           Text(
-            'Chưa đăng nhập Google.',
-            style: theme.textRegular14Default,
+            'Kết nối Google Drive',
+            style: theme.headingSemibold20Default,
           ),
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            onPressed: _busy ? null : _signIn,
-            icon: const Icon(Icons.login),
-            label: const Text('Sign in with Google'),
-          ),
-        ] else ...[
-          _buildAccountCard(context, theme),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _busy ? null : _exportToDrive,
-                  icon: const Icon(Icons.cloud_upload_outlined),
-                  label: const Text('Export to Sheets'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _busy ? null : _refreshFiles,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Refresh files'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildFileList(context, theme),
-        ],
-        if (_busy && _account == null) ...[
-          const SizedBox(height: 16),
-          const Center(child: CircularProgressIndicator()),
-        ],
-        if (_status != null) ...[
-          const SizedBox(height: 16),
-          Text(
-            _status!,
-            style: theme.textRegular14Default,
-          ),
-        ],
-        if (_lastFileName != null) ...[
           const SizedBox(height: 8),
           Text(
-            'Last file: $_lastFileName',
-            style: theme.textRegular12Sublest,
+            'Đăng nhập để đồng bộ dữ liệu sản phẩm với Google Sheets',
+            style: theme.textRegular14Subtle,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _busy ? null : _signIn,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: _busy
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.login),
+              label: Text(_busy ? 'Đang kết nối...' : 'Đăng nhập với Google'),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(AppThemeData theme) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _exportToDrive,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: const Icon(Icons.cloud_upload_outlined),
+            label: const Text('Xuất lên Drive'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        ElevatedButton(
+          onPressed: _loadingFiles ? null : _refreshFiles,
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: _loadingFiles 
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.refresh),
+        ),
       ],
     );
   }
@@ -237,40 +345,91 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     final String message = (syncState.message ?? '').trim().isEmpty
         ? 'Đang xử lý dữ liệu...'
         : syncState.message!;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
+    
+    return AnimatedOpacity(
+      opacity: 1.0,
+      duration: const Duration(milliseconds: 300),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              theme.colorPrimary.withOpacity(0.1),
+              theme.colorSecondary.withOpacity(0.05),
+            ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: theme.colorPrimary.withOpacity(0.3),
+            width: 1.5,
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorPrimary,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    message,
-                    style: theme.textMedium14Default,
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: theme.colorPrimary.withOpacity(0.15),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Bạn có thể rời màn hình, tiến trình vẫn tiếp tục.',
-                    style: theme.textRegular12Subtle,
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        theme.colorPrimary,
+                      ),
+                    ),
                   ),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () =>
-                  ref.read(driveSyncTaskProvider.notifier).cancel(),
-              child: const Text('Hủy'),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        message,
+                        style: theme.textMedium14Default,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 14,
+                            color: theme.colorTextSubtle,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Bạn có thể rời màn hình, tiến trình vẫn tiếp tục',
+                              style: theme.textRegular12Subtle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () =>
+                      ref.read(driveSyncTaskProvider.notifier).cancel(),
+                  icon: const Icon(Icons.close, size: 18),
+                  label: const Text('Hủy'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorError,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -283,42 +442,105 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     AppThemeData theme,
   ) {
     final account = _account!;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 20,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            theme.colorBackgroundSurface,
+            theme.colorPrimary.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorBorderSublest,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorPrimary.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: theme.colorPrimary.withOpacity(0.3),
+                width: 2,
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 28,
               backgroundImage:
                   account.photoUrl != null ? NetworkImage(account.photoUrl!) : null,
               child: account.photoUrl == null
-                  ? const Icon(Icons.person_outline)
+                  ? Icon(
+                      Icons.person_outline,
+                      size: 28,
+                      color: theme.colorIconSubtle,
+                    )
                   : null,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    account.displayName ?? 'Unknown',
-                    style: theme.textMedium14Default,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    account.email,
-                    style: theme.textRegular12Sublest,
-                  ),
-                ],
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: theme.colorTextSupportGreen,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Đã kết nối',
+                      style: theme.textRegular12Subtle.copyWith(
+                        color: theme.colorTextSupportGreen,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  account.displayName ?? 'Unknown',
+                  style: theme.textMedium14Default,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  account.email,
+                  style: theme.textRegular12Sublest,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          OutlinedButton.icon(
+            onPressed: _busy ? null : _logoutGoogle,
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-            OutlinedButton(
-              onPressed: _busy ? null : _logoutGoogle,
-              child: const Text('Logout'),
-            ),
-          ],
-        ),
+            icon: const Icon(Icons.logout, size: 18),
+            label: const Text('Đăng xuất'),
+          ),
+        ],
       ),
     );
   }
@@ -328,64 +550,241 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     AppThemeData theme,
   ) {
     if (_loadingFiles) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_files.isEmpty) {
-      return Text(
-        'Không có file trong folder.',
-        style: theme.textRegular14Default,
+      return Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(theme.colorPrimary),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Đang tải danh sách file...',
+              style: theme.textRegular14Subtle,
+            ),
+          ],
+        ),
       );
     }
-    return Expanded(
-      child: ListView.separated(
-        itemCount: _files.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final file = _files[index];
-          final modified = file.modifiedTime;
-          return Card(
-            child: ListTile(
-              leading: const Icon(Icons.description_outlined),
-              title: Text(file.name),
-              subtitle: modified != null
-                  ? Text('Modified: ${modified.toLocal()}')
-                  : const Text('Modified: -'),
-              trailing: Wrap(
-                spacing: 8,
-                children: [
-                  IconButton(
-                    onPressed: _busy ? null : () => _importFile(file),
-                    icon: const Icon(Icons.cloud_download_outlined),
-                    tooltip: 'Import',
-                  ),
-                  IconButton(
-                    onPressed: _busy ? null : () => _deleteFile(file),
-                    icon: const Icon(Icons.delete_outline),
-                    tooltip: 'Delete',
+    
+    if (_files.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: theme.colorBackgroundSurface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.colorBorderSublest),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 48,
+              color: theme.colorIconSubtle,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Chưa có file nào',
+              style: theme.textMedium16Default,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Hãy xuất dữ liệu lên Drive để bắt đầu',
+              style: theme.textRegular14Subtle,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              Icon(
+                Icons.description_outlined,
+                size: 20,
+                color: theme.colorIconSubtle,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Danh sách file (${_files.length})',
+                style: theme.textMedium16Default,
+              ),
+            ],
+          ),
+        ),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _files.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final file = _files[index];
+            final modified = file.modifiedTime;
+            
+            return Container(
+              decoration: BoxDecoration(
+                color: theme.colorBackgroundSurface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: theme.colorBorderSublest,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-            ),
-          );
-        },
-      ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: theme.colorPrimary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.table_chart,
+                    color: theme.colorPrimary,
+                    size: 24,
+                  ),
+                ),
+                title: Text(
+                  file.name,
+                  style: theme.textMedium14Default,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: modified != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: theme.colorIconSubtle,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDateTime(modified),
+                              style: theme.textRegular12Subtle,
+                            ),
+                          ],
+                        ),
+                      )
+                    : null,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => _importFile(file),
+                      icon: Icon(
+                        Icons.download_outlined,
+                        color: theme.colorTextSupportBlue,
+                      ),
+                      tooltip: 'Nhập dữ liệu',
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.colorTextSupportBlue.withOpacity(0.1),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: _busy ? null : () => _deleteFile(file),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: _busy
+                            ? theme.colorIconDisable
+                            : theme.colorError,
+                      ),
+                      tooltip: 'Xóa file',
+                      style: IconButton.styleFrom(
+                        backgroundColor: _busy
+                            ? theme.colorDisabled
+                            : theme.colorError.withOpacity(0.1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+    
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        if (difference.inMinutes == 0) {
+          return 'Vừa xong';
+        }
+        return '${difference.inMinutes} phút trước';
+      }
+      return '${difference.inHours} giờ trước';
+    } else if (difference.inDays == 1) {
+      return 'Hôm qua';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} ngày trước';
+    } else {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
   }
 
   Widget _buildAccessDenied(BuildContext context) {
     final theme = context.appTheme;
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.lock_outline, color: theme.colorError, size: 48),
-          const SizedBox(height: 12),
-          Text(
-            'Chỉ admin mới được phép sử dụng tính năng này.',
-            style: theme.textRegular14Default,
-            textAlign: TextAlign.center,
-          ),
-        ],
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: theme.colorBackgroundSurface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.colorBorderSublest),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.colorError.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.lock_outline,
+                color: theme.colorError,
+                size: 48,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Quyền truy cập bị hạn chế',
+              style: theme.headingSemibold20Default,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Chỉ admin mới được phép sử dụng tính năng này.',
+              style: theme.textRegular14Subtle,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -405,9 +804,7 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _status = 'Không thể khôi phục đăng nhập: $e';
-      });
+      showError(context: context, message: 'Không thể khôi phục đăng nhập');
     } finally {
       if (!mounted) return;
       setState(() {
@@ -417,26 +814,20 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Future<void> _signIn() async {
-    if (_guardProcessing()) {
-      return;
-    }
     setState(() {
       _busy = true;
-      _status = null;
     });
     try {
       final account = await _authService.signIn();
       if (!mounted) return;
       setState(() {
         _account = account;
-        _status = 'Đăng nhập thành công';
       });
+      showSuccess(context: context, message: 'Đăng nhập thành công!');
       await _loadFiles();
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _status = 'Đăng nhập thất bại: $e';
-      });
+      showError(context: context, message: 'Đăng nhập thất bại');
     } finally {
       if (!mounted) return;
       setState(() {
@@ -446,12 +837,8 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Future<void> _logoutGoogle() async {
-    if (_guardProcessing()) {
-      return;
-    }
     setState(() {
       _busy = true;
-      _status = null;
     });
     try {
       await _authService.signOut();
@@ -459,13 +846,11 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       setState(() {
         _account = null;
         _files = <DriveProductFile>[];
-        _status = 'Đã đăng xuất Google';
       });
+      showSuccess(context: context, message: 'Đã đăng xuất thành công');
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _status = 'Không thể đăng xuất: $e';
-      });
+      showError(context: context, message: 'Không thể đăng xuất');
     } finally {
       if (!mounted) return;
       setState(() {
@@ -474,34 +859,29 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     }
   }
 
-  Future<void> _exportToDrive() async {
-    if (_guardProcessing()) {
+  void _exportToDrive() {
+    if (_account == null) {
+      showInfo(
+        context: context,
+        message: 'Vui lòng đăng nhập trước',
+      );
       return;
     }
-    if (_account == null) {
-      await _signIn();
-      if (_account == null) {
-        return;
-      }
-    }
-    final shouldProceed = await _confirm(
-      title: 'Xuất sản phẩm lên Google Sheets',
-      message: 'Bạn có chắc chắn muốn xuất dữ liệu sản phẩm lên Google Sheets?',
-    );
-    if (!shouldProceed) {
+    
+    // Check if already processing
+    final syncState = ref.read(driveSyncTaskProvider);
+    if (syncState.status == DriveSyncTaskStatus.running) {
+      showInfo(
+        context: context,
+        message: 'Đang có tiến trình đang chạy. Vui lòng đợi hoặc hủy trước.',
+      );
       return;
     }
 
-    setState(() {
-      _status = null;
-    });
     ref.read(driveSyncTaskProvider.notifier).startExport(account: _account);
   }
 
   Future<void> _refreshFiles() async {
-    if (_guardProcessing()) {
-      return;
-    }
     if (_account == null) {
       return;
     }
@@ -519,14 +899,22 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       final driveService = ref.read(driveProductSyncServiceProvider);
       final result = await driveService.listProductFiles(account: _account);
       if (!mounted) return;
+      
+      // Sort files by modified time (newest first)
+      final sortedFiles = List<DriveProductFile>.from(result.items)
+        ..sort((a, b) {
+          if (a.modifiedTime == null && b.modifiedTime == null) return 0;
+          if (a.modifiedTime == null) return 1;
+          if (b.modifiedTime == null) return -1;
+          return b.modifiedTime!.compareTo(a.modifiedTime!);
+        });
+      
       setState(() {
-        _files = result.items;
+        _files = sortedFiles;
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _status = 'Không thể tải danh sách file: $e';
-      });
+      showError(context: context, message: 'Không thể tải danh sách file');
     } finally {
       if (!mounted) return;
       setState(() {
@@ -535,27 +923,51 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     }
   }
 
-  Future<void> _importFile(DriveProductFile file) async {
-    if (_guardProcessing()) {
+  Future<void> _loadFilesSilently() async {
+    if (_account == null) {
       return;
     }
-    final shouldProceed = await _confirm(
-      title: 'Nhập sản phẩm từ Google Sheets',
-      message: 'Bạn có chắc chắn muốn nhập dữ liệu từ "${file.name}"?',
-    );
-    if (!shouldProceed) {
+    try {
+      final driveService = ref.read(driveProductSyncServiceProvider);
+      final result = await driveService.listProductFiles(account: _account);
+      if (!mounted) return;
+      
+      // Sort files by modified time (newest first)
+      final sortedFiles = List<DriveProductFile>.from(result.items)
+        ..sort((a, b) {
+          if (a.modifiedTime == null && b.modifiedTime == null) return 0;
+          if (a.modifiedTime == null) return 1;
+          if (b.modifiedTime == null) return -1;
+          return b.modifiedTime!.compareTo(a.modifiedTime!);
+        });
+      
+      setState(() {
+        _files = sortedFiles;
+      });
+    } catch (e) {
+      // Silently fail, don't show error for background refresh
+    }
+  }
+
+  void _importFile(DriveProductFile file) {
+    if (_account == null) {
+      showInfo(
+        context: context,
+        message: 'Vui lòng đăng nhập trước',
+      );
+      return;
+    }
+    
+    // Check if already processing
+    final syncState = ref.read(driveSyncTaskProvider);
+    if (syncState.status == DriveSyncTaskStatus.running) {
+      showInfo(
+        context: context,
+        message: 'Đang có tiến trình đang chạy. Vui lòng đợi hoặc hủy trước.',
+      );
       return;
     }
 
-    if (_account == null) {
-      await _signIn();
-      if (_account == null) {
-        return;
-      }
-    }
-    setState(() {
-      _status = null;
-    });
     ref.read(driveSyncTaskProvider.notifier).startImport(
           file: file,
           account: _account,
@@ -563,9 +975,14 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
   }
 
   Future<void> _deleteFile(DriveProductFile file) async {
-    if (_guardProcessing()) {
+    if (_account == null) {
+      showInfo(
+        context: context,
+        message: 'Vui lòng đăng nhập trước',
+      );
       return;
     }
+    
     final shouldProceed = await _confirm(
       title: 'Xóa file trên Drive',
       message: 'Bạn có chắc chắn muốn xóa "${file.name}"?',
@@ -574,16 +991,8 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
       return;
     }
 
-    if (_account == null) {
-      await _signIn();
-      if (_account == null) {
-        return;
-      }
-    }
-
     setState(() {
       _busy = true;
-      _status = null;
     });
 
     try {
@@ -593,15 +1002,16 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
         account: _account,
       );
       if (!mounted) return;
+      
+      // Remove the deleted file from the list instead of reloading
       setState(() {
-        _status = 'Đã xóa file: ${file.name}';
+        _files.removeWhere((f) => f.id == file.id);
       });
-      await _loadFiles();
+      
+      showSuccess(context: context, message: 'Đã xóa file thành công');
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _status = 'Lỗi xóa file: $e';
-      });
+      showError(context: context, message: 'Lỗi xóa file');
     } finally {
       if (!mounted) return;
       setState(() {
@@ -614,18 +1024,65 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     required String title,
     required String message,
   }) async {
+    final theme = context.appTheme;
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.colorPrimary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.help_outline,
+                color: theme.colorPrimary,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: theme.headingSemibold20Default,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message,
+          style: theme.textRegular14Default,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             child: const Text('Hủy'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             child: const Text('Xác nhận'),
           ),
         ],
@@ -634,16 +1091,4 @@ class _DriveProductSyncPageState extends ConsumerState<DriveProductSyncPage> {
     return result ?? false;
   }
 
-  bool _guardProcessing() {
-    final syncState = ref.read(driveSyncTaskProvider);
-    if (syncState.status == DriveSyncTaskStatus.running) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đang xử lý import/export. Vui lòng chờ hoặc hủy.'),
-        ),
-      );
-      return true;
-    }
-    return false;
-  }
 }
